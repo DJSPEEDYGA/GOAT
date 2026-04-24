@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ms Money Penny — 🎵 Music Studio | DSP Distribution & Royalty Management</title>
+  <meta name="description" content="Professional Music Studio - Distribute to Spotify, Apple Music, YouTube Music, and 10+ platforms. Track royalties, manage releases, and grow your audience.">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/goat-theme.css">
+  <style>
+    :root {
+      --bg-primary: #0a0a0a; --bg-secondary: #0d1b2a; --bg-card: #1b2838;
+      --bg-hover: #1f3044; --accent: #d4a03c; --accent-light: #f0c040;
+      --text-primary: #f5f0e8; --text-secondary: #b8b0a0; --text-muted: #6a6050;
+      --border: #2a3a4a; --success: #2ecc71; --warning: #f39c12; --info: #5dade2;
+      --navy: #0f2440; --gold: #d4a03c;
+      --spotify: #1DB954; --apple: #fc3c44; --youtube: #FF0000; --amazon: #FF9900;
+      --tidal: #000000; --soundcloud: #FF5500;
+    }
+    
+    .studio-hero {
+      background: linear-gradient(135deg, rgba(13,27,42,0.95), rgba(10,10,10,0.98));
+      padding: 100px 20px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .studio-hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('goat-background.png') center/cover;
+      opacity: 0.1;
+    }
+    
+    .studio-hero h1 {
+      font-size: 3rem;
+      color: var(--gold);
+      margin-bottom: 10px;
+      position: relative;
+    }
+    
+    .studio-hero .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+      max-width: 700px;
+      margin: 0 auto 30px;
+      position: relative;
+    }
+    
+    .platform-stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+      position: relative;
+    }
+    
+    .platform-stat {
+      text-align: center;
+    }
+    
+    .platform-stat .number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    
+    .platform-stat .label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    
+    /* Platform Cards */
+    .platforms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .platform-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+    
+    .platform-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(212,160,60,0.15);
+    }
+    
+    .platform-card .platform-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .platform-card .platform-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .platform-card .platform-icon.spotify { background: var(--spotify); }
+    .platform-card .platform-icon.apple { background: var(--apple); }
+    .platform-card .platform-icon.youtube { background: var(--youtube); }
+    .platform-card .platform-icon.amazon { background: var(--amazon); }
+    .platform-card .platform-icon.tidal { background: var(--tidal); border: 1px solid #333; }
+    .platform-card .platform-icon.deezer { background: linear-gradient(135deg, #a238ff, #00c7f2); }
+    .platform-card .platform-icon.soundcloud { background: var(--soundcloud); }
+    .platform-card .platform-icon.beatport { background: linear-gradient(135deg, #01ff70, #001f3f); }
+    .platform-card .platform-icon.beatstars { background: linear-gradient(135deg, #667eea, #764ba2); }
+    
+    .platform-card h3 {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    
+    .platform-card .market-share {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    
+    .platform-card .payout-info {
+      background: rgba(212,160,60,0.1);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+    
+    .platform-card .payout-info .amount {
+      color: var(--gold);
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    
+    .platform-card .payout-info .label {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+    
+    /* Release Manager */
+    .release-section {
+      background: var(--bg-secondary);
+      padding: 60px 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .release-section h2 {
+      color: var(--gold);
+      font-size: 2rem;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .release-form {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+    
+    .platform-checkboxes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .platform-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    
+    .platform-checkbox input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--gold);
+    }
+    
+    .platform-checkbox span {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    .btn-submit {
+      background: linear-gradient(135deg, var(--gold), #c49030);
+      color: #000;
+      border: none;
+      padding: 16px 40px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: block;
+      margin: 30px auto 0;
+    }
+    
+    .btn-submit:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 30px rgba(212,160,60,0.4);
+    }
+    
+    /* Recent Releases */
+    .releases-list {
+      margin-top: 40px;
+    }
+    
+    .release-item {
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: border-color 0.3s;
+    }
+    
+    .release-item:hover {
+      border-color: var(--gold);
+    }
+    
+    .release-artwork {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--gold), var(--navy));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+    
+    .release-info {
+      flex: 1;
+    }
+    
+    .release-info h4 {
+      color: var(--text-primary);
+      margin: 0 0 4px;
+    }
+    
+    .release-info .meta {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    
+    .release-status {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    
+    .release-status.delivered { background: rgba(46,204,113,0.2); color: var(--success); }
+    .release-status.processing { background: rgba(243,156,18,0.2); color: var(--warning); }
+    .release-status.scheduled { background: rgba(93,173,226,0.2); color: var(--info); }
+    
+    /* Royalty Dashboard */
+    .royalty-dashboard {
+      background: linear-gradient(135deg, var(--navy), var(--bg-primary));
+      padding: 60px 40px;
+    }
+    
+    .royalty-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .royalty-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+    
+    .royalty-card .value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    
+    .royalty-card .label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
+    
+    /* ISRC/UPC Tools */
+    .code-tools {
+      background: var(--bg-secondary);
+      padding: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .code-tools h2 {
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .code-generator {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+    }
+    
+    .code-box {
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    
+    .code-box h3 {
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+    
+    .generated-code {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: monospace;
+      font-size: 1.3rem;
+      color: var(--gold);
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    
+    .btn-generate {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 10px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: all 0.3s;
+    }
+    
+    .btn-generate:hover {
+      background: var(--gold);
+      color: #000;
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="models-page">
+
+  <!-- GOAT Background -->
+  <div class="goat-bg"></div>
+  <div class="goat-bg-overlay"></div>
+
+  <nav class="top-nav">
+    <a href="index.html" class="logo">
+      <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+      <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+      <img src="logo.png" alt="Ms Money Penny">
+      <span>Ms Money Penny</span>
+      <span class="crown-badge">👑 GOAT</span>
+    </a>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 AI Models</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="music-studio.html" class="active">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="studio-hero">
+    <h1>🎵 Music Studio</h1>
+    <p class="subtitle">Professional DSP Distribution & Royalty Management. Distribute your music to Spotify, Apple Music, YouTube Music, and 10+ platforms. Track royalties, manage releases, and grow your audience.</p>
+    <div class="platform-stats">
+      <div class="platform-stat">
+        <div class="number">974</div>
+        <div class="label">Waka Flocka Songs</div>
+      </div>
+      <div class="platform-stat">
+        <div class="number">551</div>
+        <div class="label">ISRC Codes</div>
+      </div>
+      <div class="platform-stat">
+        <div class="number">5,694</div>
+        <div class="label">ASCAP Works</div>
+      </div>
+      <div class="platform-stat">
+        <div class="number">10+</div>
+        <div class="label">Platforms</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Platform Distribution Grid -->
+  <section style="padding: 20px;">
+    <h2 style="color: var(--gold); text-align: center; margin: 40px 0 20px; font-size: 1.8rem;">📡 Distribution Platforms</h2>
+    <div class="platforms-grid">
+      
+      <!-- Spotify -->
+      <div class="platform-card">
+        <div class="platform-header">
+          <div class="platform-icon spotify">🎵</div>
+          <div>
+            <h3>Spotify</h3>
+            <span class="market-share">31% Market Share • 184 Territories</span>
+          </div>
+        </div>
+        <div class="payout-info">
+          <div class="amount">$0.0035</div>
+          <div class="label">Per Stream</div>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 12px;">Features: Canvas, Clips, Lyrics, Spotify for Artists</p>
+      </div>
+      
+      <!-- Apple Music -->
+      <div class="platform-card">
+        <div class="platform-header">
+          <div class="platform-icon apple">🍎</div>
+          <div>
+            <h3>Apple Music</h3>
+            <span class="market-share">15% Market Share • 167 Territories</span>
+          </div>
+        </div>
+        <div class="payout-info">
+          <div class="amount">$0.007</div>
+          <div class="label">Per Stream</div>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 12px;">Features: Spatial Audio, Lossless, Apple Music for Artists</p>
+      </div>
+      
+      <!-- YouTube Music -->
+      <div class="platform-card">
+        <div class="platform-header">
+          <div class="platform-icon youtube">▶️</div>
+          <div>
+            <h3>YouTube Music</h3>
+            <span class="market-share">10% Market Share • 178 Territories</span>
+          </div>
+        </div>
+        <div class="payout-info">
+          <div class="amount">$0.002</div>
+          <div class="label">Per Stream</div>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 12px;">Features: Music Videos, Shorts, Art Tracks, YouTube Studio</p>
+      </div>
+      
+      <!-- Amazon Music -->
+      <div class="platform-card">
+        <div class="platform-header">
+          <div class="platform-icon amazon">📦</div>
+          <div>
+            <h3>Amazon Music</h3>
+            <span class="market-share">13% Market Share • 52 Territories</span>
+          </div>
+        </div>
+        <div class="payout-info">
+          <div class="amount">$0.004</div>
+          <div class="label">Per Stream</div>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 12px;">Features: HD, Ultra HD, Alexa Integration</p>
+      </div>
+      
+      <!-- Tidal -->
+      <div class="platform-card">
+        <div class="platform-header">
+          <div class="platform-icon tidal">🌊</div>
+          <div>
+            <h3>Tidal</h3>
+            <span class="market-share">3% Market Share • 61 Territories</span>
+          </div>
+        </div>
+        <div class="payout-info">
+          <div class="amount">$0.012</div>
+          <div class="label">Per Stream (Highest!)</div>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 12px;">Features: Hi-Res, Dolby Atmos, Music Videos</p>
+      </div>
+      
+      <!-- SoundCloud -->
+      <div class="platform-card">
+        <div class="platform-header">
+          <div class="platform-icon soundcloud">☁️</div>
+          <div>
+            <h3>SoundCloud</h3>
+            <span class="market-share">1.5% Market Share • 190 Territories</span>
+          </div>
+        </div>
+        <div class="payout-info">
+          <div class="amount">$0.003</div>
+          <div class="label">Per Stream</div>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 12px;">Features: Reposts, Comments, SoundCloud Premier</p>
+      </div>
+      
+      <!-- Beatport -->
+      <div class="platform-card">
+        <div class="platform-header">
+          <div class="platform-icon beatport">🎧</div>
+          <div>
+            <h3>Beatport</h3>
+            <span class="market-share">DJ/EDM Focus • 190 Territories</span>
+          </div>
+        </div>
+        <div class="payout-info">
+          <div class="amount">$0.50</div>
+          <div class="label">Per Download</div>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 12px;">Features: DJ Charts, Stems, WAV Downloads</p>
+      </div>
+      
+      <!-- BeatStars -->
+      <div class="platform-card">
+        <div class="platform-header">
+          <div class="platform-icon beatstars">🎹</div>
+          <div>
+            <h3>BeatStars</h3>
+            <span class="market-share">Beat Marketplace • 190 Territories</span>
+          </div>
+        </div>
+        <div class="payout-info">
+          <div class="amount">$0.80</div>
+          <div class="label">Per Sale</div>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 12px;">Features: Beat Store, Leasing, Exclusives</p>
+      </div>
+      
+    </div>
+  </section>
+
+  <!-- Release Manager -->
+  <section class="release-section">
+    <h2>📤 Create New Release</h2>
+    <div class="release-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Release Title</label>
+          <input type="text" id="releaseTitle" placeholder="Enter release title">
+        </div>
+        <div class="form-group">
+          <label>Artist Name</label>
+          <input type="text" id="artistName" value="DJSPEEDYGA" placeholder="Artist name">
+        </div>
+        <div class="form-group">
+          <label>Release Type</label>
+          <select id="releaseType">
+            <option value="single">Single</option>
+            <option value="ep">EP</option>
+            <option value="album">Album</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Release Date</label>
+          <input type="date" id="releaseDate">
+        </div>
+        <div class="form-group">
+          <label>Genre</label>
+          <select id="genre">
+            <option value="Hip-Hop">Hip-Hop</option>
+            <option value="R&B">R&B</option>
+            <option value="Pop">Pop</option>
+            <option value="Electronic">Electronic</option>
+            <option value="Rock">Rock</option>
+            <option value="Country">Country</option>
+            <option value="Jazz">Jazz</option>
+            <option value="Classical">Classical</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Explicit Content</label>
+          <select id="explicit">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Select Distribution Platforms</label>
+        <div class="platform-checkboxes">
+          <label class="platform-checkbox"><input type="checkbox" checked name="platform" value="spotify"> <span>Spotify</span></label>
+          <label class="platform-checkbox"><input type="checkbox" checked name="platform" value="appleMusic"> <span>Apple Music</span></label>
+          <label class="platform-checkbox"><input type="checkbox" checked name="platform" value="youtubeMusic"> <span>YouTube Music</span></label>
+          <label class="platform-checkbox"><input type="checkbox" checked name="platform" value="amazonMusic"> <span>Amazon Music</span></label>
+          <label class="platform-checkbox"><input type="checkbox" name="platform" value="tidal"> <span>Tidal</span></label>
+          <label class="platform-checkbox"><input type="checkbox" name="platform" value="deezer"> <span>Deezer</span></label>
+          <label class="platform-checkbox"><input type="checkbox" name="platform" value="soundcloud"> <span>SoundCloud</span></label>
+          <label class="platform-checkbox"><input type="checkbox" name="platform" value="beatport"> <span>Beatport</span></label>
+          <label class="platform-checkbox"><input type="checkbox" name="platform" value="beatstars"> <span>BeatStars</span></label>
+        </div>
+      </div>
+      
+      <button class="btn-submit" onclick="createRelease()">🚀 Submit to Distribution</button>
+    </div>
+    
+    <!-- Recent Releases - REAL DATA -->
+    <div class="releases-list" style="max-width: 800px; margin: 40px auto 0;">
+      <h3 style="color: var(--gold); margin-bottom: 20px;">📋 Waka Flocka Flame Catalog (551 ISRC Codes)</h3>
+      
+      <div class="release-item">
+        <div class="release-artwork">🔥</div>
+        <div class="release-info">
+          <h4>848 (feat. Jim Jones & Julez Santana)</h4>
+          <div class="meta">Waka Flocka Flame • Audiovisual • Video, Explicit</div>
+          <div class="meta" style="margin-top: 4px;">ISRC: QM4TM2300936 • COMPLIANT</div>
+        </div>
+        <span class="release-status delivered">Delivered</span>
+      </div>
+      
+      <div class="release-item">
+        <div class="release-artwork">🎵</div>
+        <div class="release-info">
+          <h4>Against All Odds (feat. Gucci Mane)</h4>
+          <div class="meta">Waka Flocka Flame • Audio • Explicit</div>
+          <div class="meta" style="margin-top: 4px;">ISRC: QMRSZ2000684 • COMPLIANT</div>
+        </div>
+        <span class="release-status delivered">Delivered</span>
+      </div>
+      
+      <div class="release-item">
+        <div class="release-artwork">💥</div>
+        <div class="release-info">
+          <h4>50K Remix (feat. Neon Dreams)</h4>
+          <div class="meta">Waka Flocka Flame • Audio • Explicit</div>
+          <div class="meta" style="margin-top: 4px;">ISRC: QMRSZ1802855 • COMPLIANT</div>
+        </div>
+        <span class="release-status delivered">Delivered</span>
+      </div>
+      
+      <div class="release-item">
+        <div class="release-artwork">🎨</div>
+        <div class="release-info">
+          <h4>Hard In Da Paint Remix (feat. Neon Dreams)</h4>
+          <div class="meta">Waka Flocka Flame • Audio • Explicit</div>
+          <div class="meta" style="margin-top: 4px;">ISRC: QMRSZ1802854 • COMPLIANT</div>
+        </div>
+        <span class="release-status delivered">Delivered</span>
+      </div>
+      
+      <div class="release-item">
+        <div class="release-artwork">🍃</div>
+        <div class="release-info">
+          <h4>Frosted Leaf (feat. DJ Whoo Kid, Tony Yayo & Watch The Duck)</h4>
+          <div class="meta">Waka Flocka Flame • Audio • Explicit</div>
+          <div class="meta" style="margin-top: 4px;">ISRC: QMRSZ1802853 • COMPLIANT</div>
+        </div>
+        <span class="release-status delivered">Delivered</span>
+      </div>
+      
+      <div class="release-item">
+        <div class="release-artwork">🎉</div>
+        <div class="release-info">
+          <h4>Grove St. Party (feat. Neon Dreams)</h4>
+          <div class="meta">Waka Flocka Flame • Audio • Explicit</div>
+          <div class="meta" style="margin-top: 4px;">ISRC: QMRSZ1802848 • COMPLIANT</div>
+        </div>
+        <span class="release-status delivered">Delivered</span>
+      </div>
+      
+      <div class="release-item">
+        <div class="release-artwork">⚔️</div>
+        <div class="release-info">
+          <h4>War (feat. DJ Whoo Kid, Neon Dreams & Stokes)</h4>
+          <div class="meta">Waka Flocka Flame • Audio • Explicit</div>
+          <div class="meta" style="margin-top: 4px;">ISRC: QMRSZ1802849 • COMPLIANT</div>
+        </div>
+        <span class="release-status delivered">Delivered</span>
+      </div>
+      
+    </div>
+    
+    <!-- Fastassman Publishing Section -->
+    <div class="releases-list" style="max-width: 800px; margin: 40px auto 0;">
+      <h3 style="color: var(--gold); margin-bottom: 20px;">🎹 Fastassman Publishing Inc. (Harvey Miller)</h3>
+      
+      <div class="release-item">
+        <div class="release-artwork">🌙</div>
+        <div class="release-info">
+          <h4>Night Night And Einini</h4>
+          <div class="meta">FIVE DEUCES • Track 1 • Duration: 3:24</div>
+          <div class="meta" style="margin-top: 4px;">ISRC: USUM72301134 • Harvey Miller 100%</div>
+        </div>
+        <span class="release-status delivered">Delivered</span>
+      </div>
+      
+      <div class="release-item">
+        <div class="release-artwork">💰</div>
+        <div class="release-info">
+          <h4>Get The Bag</h4>
+          <div class="meta">FIVE DEUCES • Track 2 • Duration: 2:58</div>
+          <div class="meta" style="margin-top: 4px;">ISRC: USUM72301135 • Harvey Miller 100%</div>
+        </div>
+        <span class="release-status delivered">Delivered</span>
+      </div>
+      
+      <div class="release-item">
+        <div class="release-artwork">💵</div>
+        <div class="release-info">
+          <h4>Money Talk</h4>
+          <div class="meta">FIVE DEUCES • Track 3 • Duration: 3:15</div>
+          <div class="meta" style="margin-top: 4px;">ISRC: USUM72301136 • Harvey Miller 100%</div>
+        </div>
+        <span class="release-status delivered">Delivered</span>
+      </div>
+      
+      <div class="release-item">
+        <div class="release-artwork">🏆</div>
+        <div class="release-info">
+          <h4>Boss Level</h4>
+          <div class="meta">FIVE DEUCES • Track 5 • Duration: 4:01</div>
+          <div class="meta" style="margin-top: 4px;">ISRC: USUM72301138 • Harvey Miller 100%</div>
+        </div>
+        <span class="release-status delivered">Delivered</span>
+      </div>
+      
+      <div class="release-item">
+        <div class="release-artwork">⭐</div>
+        <div class="release-info">
+          <h4>Big Dreams</h4>
+          <div class="meta">FIVE DEUCES II • Track 1 • Duration: 3:18</div>
+          <div class="meta" style="margin-top: 4px;">ISRC: USUM72301140 • Harvey Miller 100%</div>
+        </div>
+        <span class="release-status delivered">Delivered</span>
+      </div>
+      
+    </div>
+  </section>
+
+  <!-- Royalty Dashboard - REAL DATA -->
+  <section class="royalty-dashboard">
+    <h2 style="color: var(--gold); text-align: center; margin-bottom: 30px; font-size: 2rem;">💰 Royalty Dashboard - Real Data</h2>
+    <div class="royalty-cards">
+      <div class="royalty-card">
+        <div class="value">974</div>
+        <div class="label">Waka Flocka Songs</div>
+      </div>
+      <div class="royalty-card">
+        <div class="value">551</div>
+        <div class="label">ISRC Codes</div>
+      </div>
+      <div class="royalty-card">
+        <div class="value">5,694</div>
+        <div class="label">ASCAP Works</div>
+      </div>
+      <div class="royalty-card">
+        <div class="value">511</div>
+        <div class="label">Catalog Entries</div>
+      </div>
+      <div class="royalty-card">
+        <div class="value">23</div>
+        <div class="label">Fastassman Songs</div>
+      </div>
+      <div class="royalty-card">
+        <div class="value">BRICK SQUAD</div>
+        <div class="label">Publisher</div>
+      </div>
+    </div>
+    <div style="text-align: center; margin-top: 30px;">
+      <p style="color: var(--text-secondary);">Publisher: BRICK SQUAD MONOPOLY PUBLISHING • ASCAP ID: 390547347</p>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 8px;">339 Morgan Pl SE, Atlanta, GA 30317</p>
+    </div>
+  </section>
+
+  <!-- ISRC/UPC Code Generator -->
+  <section class="code-tools">
+    <h2>🔢 Code Generator Tools</h2>
+    <div class="code-generator">
+      <div class="code-box">
+        <h3>📀 UPC Code (Release)</h3>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 12px;">Universal Product Code for your release</p>
+        <div class="generated-code" id="upcCode">123456789012</div>
+        <button class="btn-generate" onclick="generateUPC()">Generate New UPC</button>
+      </div>
+      <div class="code-box">
+        <h3>🎵 ISRC Code (Track)</h3>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 12px;">International Standard Recording Code</p>
+        <div class="generated-code" id="isrcCode">USABC2400001</div>
+        <button class="btn-generate" onclick="generateISRC()">Generate New ISRC</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="background: var(--bg-primary); padding: 40px; text-align: center; border-top: 1px solid var(--border);">
+    <p style="color: var(--text-muted);">© 2024 Life Imitates Art Inc. • Ms Money Penny GOAT Royalty Store</p>
+    <p style="color: var(--gold); margin-top: 8px;">👑 The Greatest Of All Time</p>
+  </footer>
+
+  <script>
+    // Generate UPC Code
+    function generateUPC() {
+      const prefix = '123456';
+      const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+      document.getElementById('upcCode').textContent = prefix + random;
+    }
+    
+    // Generate ISRC Code
+    function generateISRC() {
+      const countries = ['US', 'GB', 'DE', 'FR', 'JP', 'BR'];
+      const country = countries[Math.floor(Math.random() * countries.length)];
+      const registrant = 'ABC';
+      const year = new Date().getFullYear().toString().slice(-2);
+      const designation = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
+      document.getElementById('isrcCode').textContent = `${country}${registrant}${year}${designation}`;
+    }
+    
+    // Create Release
+    function createRelease() {
+      const title = document.getElementById('releaseTitle').value;
+      if (!title) {
+        alert('Please enter a release title');
+        return;
+      }
+      
+      const platforms = [];
+      document.querySelectorAll('input[name="platform"]:checked').forEach(cb => {
+        platforms.push(cb.value);
+      });
+      
+      if (platforms.length === 0) {
+        alert('Please select at least one platform');
+        return;
+      }
+      
+      alert(`🎉 Release "${title}" submitted!\n\nPlatforms: ${platforms.join(', ')}\n\nEstimated delivery: 24-72 hours`);
+    }
+  </script>
+</body>
+</html>

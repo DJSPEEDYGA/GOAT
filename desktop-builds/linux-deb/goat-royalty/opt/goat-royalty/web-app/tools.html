@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ms Money Penny — AI Tools & Runtimes</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/goat-theme.css">
+  <link rel="stylesheet" href="css/models-manager.css">
+  <style>
+    :root {
+      --bg-primary: #0a0a0a; --bg-secondary: #0d1b2a; --bg-card: #1b2838;
+      --bg-hover: #1f3044; --accent: #d4a03c; --accent-light: #f0c040;
+      --text-primary: #f5f0e8; --text-secondary: #b8b0a0; --text-muted: #6a6050;
+      --border: #2a3a4a; --success: #2ecc71; --warning: #f39c12; --info: #5dade2;
+      --navy: #0f2440; --gold: #d4a03c;
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="models-page">
+
+  <!-- GOAT Background -->
+  <div class="goat-bg"></div>
+  <div class="goat-bg-overlay"></div>
+
+  <nav class="top-nav">
+    <a href="index.html" class="logo">
+      <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+      <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+      <img src="logo.png" alt="Ms Money Penny">
+      <span>Ms Money Penny</span>
+      <span class="crown-badge">👑 GOAT</span>
+    </a>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 AI Models</a>
+      <a href="tools.html" class="active">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="about.html">👑 About</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="index.html#store">🛒 Store</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>🛠️ AI Tools & Runtimes</h1>
+    <p class="subtitle">Everything you need to run AI models locally — no cloud, no API keys, no subscriptions. All platforms supported.</p>
+    <div class="stats">
+      <div class="stat"><div class="number">12+</div><div class="label">Runtimes</div></div>
+      <div class="stat"><div class="number">3</div><div class="label">Platforms</div></div>
+      <div class="stat"><div class="number">100%</div><div class="label">Free & Offline</div></div>
+      <div class="stat"><div class="number">0</div><div class="label">API Keys Needed</div></div>
+    </div>
+  </div>
+
+  <div class="content" style="padding:0">
+    <main class="main-content" style="max-width:1200px;margin:0 auto">
+
+      <!-- Platform Detection -->
+      <div style="background:var(--bg-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:2px solid var(--border-hover);border-radius:14px;padding:24px;margin-bottom:30px;text-align:center">
+        <h2 style="margin-bottom:8px">🖥️ Your Platform: <span id="detectedOS" style="color:var(--gold)">Detecting...</span></h2>
+        <p style="color:var(--text-secondary);margin-bottom:16px">Commands below auto-adjust for your operating system</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="setOS('linux')" id="btn-linux">🐧 Linux</button>
+          <button class="btn btn-secondary" onclick="setOS('mac')" id="btn-mac">🍎 macOS</button>
+          <button class="btn btn-secondary" onclick="setOS('windows')" id="btn-win">🪟 Windows</button>
+        </div>
+      </div>
+
+      <!-- Image Generation Runtimes -->
+      <div class="section-header">
+        <h2>🖼️ Image Generation Runtimes</h2>
+        <p>Run FLUX, Stable Diffusion, and all LoRA models locally</p>
+      </div>
+
+      <div class="tools-grid" id="imageTools">
+
+        <div class="tool-card">
+          <div class="tool-icon">🎯</div>
+          <h3>ComfyUI</h3>
+          <p>The most powerful node-based image generation GUI. Drag-and-drop workflows, supports every model format.</p>
+          <div class="platforms">
+            <span class="platform-tag">🐧 Linux</span>
+            <span class="platform-tag">🍎 macOS</span>
+            <span class="platform-tag">🪟 Windows</span>
+          </div>
+          <div class="cmd-box">
+            <code id="cmd-comfyui">git clone https://github.com/comfyanonymous/ComfyUI && cd ComfyUI && pip install -r requirements.txt</code>
+            <button class="copy-btn" onclick="copyCmd(document.getElementById('cmd-comfyui').textContent)">📋</button>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <a href="https://github.com/comfyanonymous/ComfyUI" target="_blank" class="btn btn-primary">⬇️ Install</a>
+            <a href="https://github.com/comfyanonymous/ComfyUI/wiki" target="_blank" class="btn btn-secondary">📖 Docs</a>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">🖌️</div>
+          <h3>Stable Diffusion WebUI (Auto1111)</h3>
+          <p>Classic web interface for Stable Diffusion. Huge extension ecosystem, simple LoRA management.</p>
+          <div class="platforms">
+            <span class="platform-tag">🐧 Linux</span>
+            <span class="platform-tag">🍎 macOS</span>
+            <span class="platform-tag">🪟 Windows</span>
+          </div>
+          <div class="cmd-box">
+            <code id="cmd-a1111">git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui && cd stable-diffusion-webui && ./webui.sh</code>
+            <button class="copy-btn" onclick="copyCmd(document.getElementById('cmd-a1111').textContent)">📋</button>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui" target="_blank" class="btn btn-primary">⬇️ Install</a>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">⚒️</div>
+          <h3>SD WebUI Forge</h3>
+          <p>Optimized fork of Auto1111 — 30-60% faster, lower VRAM usage, FLUX support built-in.</p>
+          <div class="platforms">
+            <span class="platform-tag">🐧 Linux</span>
+            <span class="platform-tag">🍎 macOS</span>
+            <span class="platform-tag">🪟 Windows</span>
+          </div>
+          <div class="cmd-box">
+            <code id="cmd-forge">git clone https://github.com/lllyasviel/stable-diffusion-webui-forge && cd stable-diffusion-webui-forge && ./webui.sh</code>
+            <button class="copy-btn" onclick="copyCmd(document.getElementById('cmd-forge').textContent)">📋</button>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <a href="https://github.com/lllyasviel/stable-diffusion-webui-forge" target="_blank" class="btn btn-primary">⬇️ Install</a>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">🐍</div>
+          <h3>Diffusers (Python)</h3>
+          <p>HuggingFace's Python library — programmatic control, scripting, batch processing. Supports all models.</p>
+          <div class="platforms">
+            <span class="platform-tag">🐧 Linux</span>
+            <span class="platform-tag">🍎 macOS</span>
+            <span class="platform-tag">🪟 Windows</span>
+          </div>
+          <div class="cmd-box">
+            <code id="cmd-diffusers">pip install diffusers transformers torch accelerate safetensors</code>
+            <button class="copy-btn" onclick="copyCmd(document.getElementById('cmd-diffusers').textContent)">📋</button>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <a href="https://huggingface.co/docs/diffusers" target="_blank" class="btn btn-primary">📖 Docs</a>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">🎨</div>
+          <h3>InvokeAI</h3>
+          <p>Professional creative AI tool — unified canvas, layer support, inpainting, outpainting.</p>
+          <div class="platforms">
+            <span class="platform-tag">🐧 Linux</span>
+            <span class="platform-tag">🍎 macOS</span>
+            <span class="platform-tag">🪟 Windows</span>
+          </div>
+          <div class="cmd-box">
+            <code id="cmd-invoke">pip install invokeai && invokeai-web</code>
+            <button class="copy-btn" onclick="copyCmd(document.getElementById('cmd-invoke').textContent)">📋</button>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <a href="https://github.com/invoke-ai/InvokeAI" target="_blank" class="btn btn-primary">⬇️ Install</a>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">🍎</div>
+          <h3>Draw Things</h3>
+          <p>Native macOS/iOS app — optimized for Apple Silicon, Metal GPU acceleration.</p>
+          <div class="platforms">
+            <span class="platform-tag">🍎 macOS</span>
+            <span class="platform-tag">📱 iOS</span>
+          </div>
+          <div class="cmd-box">
+            <code>Available on Mac App Store — FREE</code>
+            <button class="copy-btn" onclick="copyCmd('https://apps.apple.com/app/draw-things-ai-generation/id6444050820')">📋 Link</button>
+          </div>
+        </div>
+
+      </div>
+
+      <br><br>
+
+      <!-- LLM Runtimes -->
+      <div class="section-header">
+        <h2>🧠 LLM Runtimes (Text Generation)</h2>
+        <p>Run large language models locally — chat, code, reasoning, all offline</p>
+      </div>
+
+      <div class="tools-grid" id="llmTools">
+
+        <div class="tool-card">
+          <div class="tool-icon">🦙</div>
+          <h3>Ollama</h3>
+          <p>Simplest way to run LLMs locally. One command to download and run any model. Built-in API server.</p>
+          <div class="platforms">
+            <span class="platform-tag">🐧 Linux</span>
+            <span class="platform-tag">🍎 macOS</span>
+            <span class="platform-tag">🪟 Windows</span>
+          </div>
+          <div class="cmd-box">
+            <code id="cmd-ollama">curl -fsSL https://ollama.com/install.sh | sh && ollama pull llama3.1</code>
+            <button class="copy-btn" onclick="copyCmd(document.getElementById('cmd-ollama').textContent)">📋</button>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <a href="https://ollama.com" target="_blank" class="btn btn-primary">⬇️ Install</a>
+            <a href="https://ollama.com/library" target="_blank" class="btn btn-secondary">📚 Models</a>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">⚡</div>
+          <h3>vLLM</h3>
+          <p>High-throughput LLM serving engine — fastest inference, PagedAttention, continuous batching.</p>
+          <div class="platforms">
+            <span class="platform-tag">🐧 Linux</span>
+            <span class="platform-tag">🍎 macOS</span>
+          </div>
+          <div class="cmd-box">
+            <code id="cmd-vllm">pip install vllm && vllm serve meta-llama/Llama-3.1-8B-Instruct</code>
+            <button class="copy-btn" onclick="copyCmd(document.getElementById('cmd-vllm').textContent)">📋</button>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <a href="https://github.com/vllm-project/vllm" target="_blank" class="btn btn-primary">⬇️ Install</a>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">🔧</div>
+          <h3>llama.cpp</h3>
+          <p>CPU/GPU inference for GGUF models — runs on ANY hardware, even without GPU.</p>
+          <div class="platforms">
+            <span class="platform-tag">🐧 Linux</span>
+            <span class="platform-tag">🍎 macOS</span>
+            <span class="platform-tag">🪟 Windows</span>
+          </div>
+          <div class="cmd-box">
+            <code id="cmd-llamacpp">git clone https://github.com/ggerganov/llama.cpp && cd llama.cpp && make -j</code>
+            <button class="copy-btn" onclick="copyCmd(document.getElementById('cmd-llamacpp').textContent)">📋</button>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <a href="https://github.com/ggerganov/llama.cpp" target="_blank" class="btn btn-primary">⬇️ Install</a>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">🖥️</div>
+          <h3>LM Studio</h3>
+          <p>Beautiful desktop GUI — discover, download, and run LLMs with zero config. ChatGPT-like interface.</p>
+          <div class="platforms">
+            <span class="platform-tag">🐧 Linux</span>
+            <span class="platform-tag">🍎 macOS</span>
+            <span class="platform-tag">🪟 Windows</span>
+          </div>
+          <div class="cmd-box">
+            <code>Download from lmstudio.ai — FREE for personal use</code>
+            <button class="copy-btn" onclick="copyCmd('https://lmstudio.ai')">📋 Link</button>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <a href="https://lmstudio.ai" target="_blank" class="btn btn-primary">⬇️ Download</a>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">💬</div>
+          <h3>Jan</h3>
+          <p>Open-source ChatGPT alternative — runs 100% offline, clean UI, plugin system.</p>
+          <div class="platforms">
+            <span class="platform-tag">🐧 Linux</span>
+            <span class="platform-tag">🍎 macOS</span>
+            <span class="platform-tag">🪟 Windows</span>
+          </div>
+          <div class="cmd-box">
+            <code>Download from jan.ai — FREE & open source</code>
+            <button class="copy-btn" onclick="copyCmd('https://jan.ai')">📋 Link</button>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <a href="https://jan.ai" target="_blank" class="btn btn-primary">⬇️ Download</a>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">🍏</div>
+          <h3>MLX LM (Apple Silicon)</h3>
+          <p>Apple's ML framework — optimized for M1/M2/M3 chips, unified memory for large models.</p>
+          <div class="platforms">
+            <span class="platform-tag">🍎 macOS (Apple Silicon)</span>
+          </div>
+          <div class="cmd-box">
+            <code id="cmd-mlx">pip install mlx-lm && mlx_lm.generate --model mlx-community/Llama-3.1-8B-Instruct-4bit</code>
+            <button class="copy-btn" onclick="copyCmd(document.getElementById('cmd-mlx').textContent)">📋</button>
+          </div>
+        </div>
+
+      </div>
+
+      <br><br>
+
+      <!-- Server Setup -->
+      <div class="section-header">
+        <h2>🖥️ 100TB Server Setup Guide</h2>
+        <p>Complete guide to set up your servers for the ultimate AI model library</p>
+      </div>
+
+      <div style="background:var(--bg-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:30px">
+        <h3 style="color:var(--gold);margin-bottom:16px">Step 1: System Preparation</h3>
+        <div class="cmd-box" style="margin-bottom:12px">
+          <code>sudo apt update && sudo apt install -y git git-lfs python3 python3-pip nvidia-driver-535 nvidia-cuda-toolkit</code>
+          <button class="copy-btn" onclick="copyCmd(this.previousElementSibling.textContent)">📋</button>
+        </div>
+        <div class="cmd-box" style="margin-bottom:12px">
+          <code>git lfs install</code>
+          <button class="copy-btn" onclick="copyCmd('git lfs install')">📋</button>
+        </div>
+
+        <h3 style="color:var(--gold);margin-bottom:16px;margin-top:24px">Step 2: Create Model Storage</h3>
+        <div class="cmd-box" style="margin-bottom:12px">
+          <code>sudo mkdir -p /mnt/100tb/models/{foundation,loras,characters,editing,llms} && sudo chown -R $USER:$USER /mnt/100tb/models</code>
+          <button class="copy-btn" onclick="copyCmd(this.previousElementSibling.textContent)">📋</button>
+        </div>
+
+        <h3 style="color:var(--gold);margin-bottom:16px;margin-top:24px">Step 3: Install AI Runtimes</h3>
+        <div class="cmd-box" style="margin-bottom:12px">
+          <code>pip install torch torchvision diffusers transformers accelerate safetensors huggingface_hub vllm invokeai</code>
+          <button class="copy-btn" onclick="copyCmd(this.previousElementSibling.textContent)">📋</button>
+        </div>
+        <div class="cmd-box" style="margin-bottom:12px">
+          <code>curl -fsSL https://ollama.com/install.sh | sh</code>
+          <button class="copy-btn" onclick="copyCmd('curl -fsSL https://ollama.com/install.sh | sh')">📋</button>
+        </div>
+        <div class="cmd-box" style="margin-bottom:12px">
+          <code>git clone https://github.com/comfyanonymous/ComfyUI /opt/comfyui && cd /opt/comfyui && pip install -r requirements.txt</code>
+          <button class="copy-btn" onclick="copyCmd(this.previousElementSibling.textContent)">📋</button>
+        </div>
+
+        <h3 style="color:var(--gold);margin-bottom:16px;margin-top:24px">Step 4: Download All Models (No Login!)</h3>
+        <div class="cmd-box" style="margin-bottom:12px">
+          <code>cd /mnt/100tb/models/foundation && git clone https://huggingface.co/black-forest-labs/FLUX.1-dev && git clone https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0</code>
+          <button class="copy-btn" onclick="copyCmd(this.previousElementSibling.textContent)">📋</button>
+        </div>
+
+        <p style="color:var(--text-secondary);margin-top:16px">💡 <strong>Pro tip:</strong> Visit the <a href="models.html" style="color:var(--gold)">AI Models Hub</a> and click "Copy Bulk Script" to get ALL 60+ model download commands at once!</p>
+      </div>
+
+      <br>
+
+      <!-- Hardware Requirements -->
+      <div class="section-header">
+        <h2>💻 Hardware Requirements</h2>
+        <p>What you need for different model sizes</p>
+      </div>
+
+      <div class="tools-grid">
+        <div class="tool-card" style="border-color:var(--success)">
+          <div class="tool-icon">🟢</div>
+          <h3>Entry Level</h3>
+          <p><strong>GPU:</strong> 8GB VRAM (RTX 3060/4060)<br>
+          <strong>RAM:</strong> 16GB<br>
+          <strong>Storage:</strong> 500GB SSD</p>
+          <p style="color:var(--success)">✅ Runs: SDXL, small LoRAs, 7B LLMs, Ollama</p>
+        </div>
+        <div class="tool-card" style="border-color:var(--gold)">
+          <div class="tool-icon">🟡</div>
+          <h3>Mid Range</h3>
+          <p><strong>GPU:</strong> 16-24GB VRAM (RTX 4080/4090)<br>
+          <strong>RAM:</strong> 32-64GB<br>
+          <strong>Storage:</strong> 2TB NVMe</p>
+          <p style="color:var(--gold)">✅ Runs: FLUX.1, SD3, all LoRAs, 30B LLMs</p>
+        </div>
+        <div class="tool-card" style="border-color:var(--accent)">
+          <div class="tool-icon">🔴</div>
+          <h3>Power User / Server</h3>
+          <p><strong>GPU:</strong> 48-80GB VRAM (A100/H100)<br>
+          <strong>RAM:</strong> 128GB+<br>
+          <strong>Storage:</strong> 100TB (your setup!)</p>
+          <p style="color:var(--accent)">✅ Runs: EVERYTHING. All models, all sizes, concurrent serving.</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    function copyCmd(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event?.target;
+        if (btn) {
+          const orig = btn.textContent;
+          btn.textContent = '✅ Copied!';
+          setTimeout(() => btn.textContent = orig, 1500);
+        }
+      });
+    }
+
+    // Platform detection
+    let currentOS = 'linux';
+    function detectOS() {
+      const ua = navigator.userAgent || navigator.platform || '';
+      if (ua.includes('Win')) return 'windows';
+      if (ua.includes('Mac')) return 'mac';
+      return 'linux';
+    }
+    function setOS(os) {
+      currentOS = os;
+      document.getElementById('detectedOS').textContent =
+        os === 'linux' ? '🐧 Linux/Ubuntu' : os === 'mac' ? '🍎 macOS' : '🪟 Windows';
+      ['linux','mac','windows'].forEach(o => {
+        const btn = document.getElementById('btn-'+o.replace('windows','win'));
+        if(btn) btn.className = o === os ? 'btn btn-primary' : 'btn btn-secondary';
+      });
+    }
+    setOS(detectOS());
+  </script>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 AI Models</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="about.html">👑 About</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="unreal-copilot.html">🎮 UE5 CoPilot</a>
+      <a href="https://github.com/DJSPEEDYGA/nextjs-commerce" target="_blank">⭐ GitHub</a>
+      <a href="https://github.com/DJSPEEDYGA/nextjs-commerce/releases" target="_blank">📦 Releases</a>
+    </div>
+    <p>🐐 Ms Money Penny Store v1.3.0 — Built with ❤️ by <a href="https://lifeimitatesart.org" target="_blank">Life Imitates Art Inc.</a></p>
+    <p style="margin-top:8px;font-size:0.8rem;color:var(--text-muted);">Powered by NVIDIA AI Stack • Lightning AI • HuggingFace • OpenClaw • Electron</p>
+  </footer>
+
+</body>
+</html>

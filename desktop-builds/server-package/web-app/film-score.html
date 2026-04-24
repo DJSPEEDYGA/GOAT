@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎬 GOAT Film & Score — Video Scoring Studio</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<link rel="icon" type="image/png" href="img/goat-hero-icon.png">
+<style>
+  .fs-wrap { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  .video-box {
+    background: rgba(20,20,20,0.9);
+    border: 1px solid rgba(193,18,31,0.3);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .video-drop {
+    border: 2px dashed rgba(193,18,31,0.5);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    background: rgba(10,10,10,0.5);
+  }
+  .video-drop:hover, .video-drop.over {
+    border-color: var(--goat-red-bright);
+    background: rgba(193,18,31,0.1);
+  }
+  video {
+    width: 100%;
+    max-height: 480px;
+    background: black;
+    border-radius: 10px;
+    display: block;
+  }
+  .tc-display {
+    font-family: monospace;
+    font-size: 32px;
+    color: var(--goat-gold);
+    text-align: center;
+    padding: 10px;
+    background: var(--goat-black);
+    border-radius: 8px;
+    margin: 10px 0;
+    letter-spacing: 2px;
+  }
+  .cue-row {
+    display: grid;
+    grid-template-columns: 80px 100px 1fr 1fr 1fr 80px;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(30,30,30,0.8);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    align-items: center;
+  }
+  .cue-row.header {
+    font-weight: 700;
+    color: var(--goat-gold);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 1px;
+    background: rgba(10,10,10,0.6);
+  }
+  .cue-row input {
+    padding: 6px 8px;
+    background: var(--goat-black);
+    color: var(--goat-cream);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    font-size: 13px;
+    width: 100%;
+  }
+  .preset-library {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .preset-item {
+    padding: 12px;
+    background: var(--goat-gray);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 700;
+    font-size: 13px;
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.2s;
+  }
+  .preset-item:hover {
+    border-color: var(--goat-red-bright);
+    background: rgba(193,18,31,0.2);
+  }
+  .preset-item .emoji { font-size: 24px; display: block; margin-bottom: 4px; }
+</style>
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-icon">
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms Money Penny">
+    <span>Ms Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+
+<nav class="goat-nav">
+  <a href="index.html" class="goat-nav-brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT">
+    <span>FILM & SCORE</span>
+  </a>
+  <div class="goat-nav-links">
+    <a href="powerhouse.html">🐐 Hub</a>
+    <a href="studio.html">🎛️ Studio</a>
+    <a href="mastering.html">💎 Master</a>
+    <a href="vocal-studio.html">🎤 Vocals</a>
+    <a href="ai-producer.html">🤖 AI</a>
+    <a href="sync-catalog.html">🎬 Sync</a>
+    <a href="film-score.html" class="active">🎥 Score</a>
+    <a href="plugins.html">🔌 Plugins</a>
+  </div>
+</nav>
+
+<div class="fs-wrap">
+  <section class="goat-hero" style="padding: 30px 0;">
+    <h1 style="font-size: 44px; margin: 0 0 8px;">🎬 FILM & SCORE STUDIO</h1>
+    <p class="subtitle">Score to picture · Video sync · Cue sheets · Hit-point markers</p>
+  </section>
+
+  <div class="video-box">
+    <h3 style="margin:0 0 14px; color: var(--goat-gold);">📽️ Video Player</h3>
+    <div class="video-drop" id="videoDrop">
+      <div style="font-size: 48px; margin-bottom: 8px;">🎥</div>
+      <p style="margin: 0 0 4px;"><strong>Drop a video file here</strong> (MP4, MOV, WebM)</p>
+      <p class="muted" style="margin: 0; font-size: 12px;">Or click to browse — score to picture with timecode sync</p>
+      <input type="file" id="videoInput" accept="video/*" style="display:none;">
+    </div>
+    <video id="videoEl" controls style="display:none;"></video>
+    <div class="tc-display" id="tcDisplay">00:00:00:00</div>
+    <div class="flex flex-wrap" style="gap: 10px;">
+      <button class="goat-btn" onclick="markHitPoint()">📍 Mark Hit Point</button>
+      <button class="goat-btn outline" onclick="addCue()">➕ Add Cue</button>
+      <button class="goat-btn ghost" onclick="exportCues()">💾 Export Cue Sheet</button>
+      <button class="goat-btn ghost" onclick="importCues()">📂 Import Cue Sheet</button>
+    </div>
+  </div>
+
+  <div class="video-box">
+    <h3 style="margin:0 0 14px; color: var(--goat-gold);">📋 Cue Sheet</h3>
+    <div class="cue-row header">
+      <div>Cue #</div>
+      <div>Timecode</div>
+      <div>Scene</div>
+      <div>Music Style</div>
+      <div>Notes</div>
+      <div>Action</div>
+    </div>
+    <div id="cueList"></div>
+  </div>
+
+  <div class="video-box">
+    <h3 style="margin:0 0 14px; color: var(--goat-gold);">🎼 Orchestral Preset Library</h3>
+    <p class="muted" style="margin:0 0 12px;">EastWest / ComposerCloud / Spitfire-inspired orchestral textures. Click to add to current cue.</p>
+    <div class="preset-library">
+      <div class="preset-item"><span class="emoji">🎻</span>Strings Swell</div>
+      <div class="preset-item"><span class="emoji">🎺</span>Horn Stab</div>
+      <div class="preset-item"><span class="emoji">🥁</span>Taiko Hit</div>
+      <div class="preset-item"><span class="emoji">🔔</span>Bell Motif</div>
+      <div class="preset-item"><span class="emoji">🎹</span>Piano Arpeggio</div>
+      <div class="preset-item"><span class="emoji">🎼</span>Full Orchestra</div>
+      <div class="preset-item"><span class="emoji">🌫️</span>Dark Drone</div>
+      <div class="preset-item"><span class="emoji">💥</span>Impact / Braam</div>
+      <div class="preset-item"><span class="emoji">🌊</span>Ambient Pad</div>
+      <div class="preset-item"><span class="emoji">🎶</span>Choir "Ah"</div>
+      <div class="preset-item"><span class="emoji">🧨</span>Cinematic Riser</div>
+      <div class="preset-item"><span class="emoji">⏰</span>Ticking Clock</div>
+      <div class="preset-item"><span class="emoji">🎸</span>Distorted Guitar</div>
+      <div class="preset-item"><span class="emoji">🔇</span>Tense Silence</div>
+      <div class="preset-item"><span class="emoji">🎷</span>Solo Saxophone</div>
+      <div class="preset-item"><span class="emoji">🥢</span>Percussion Build</div>
+    </div>
+  </div>
+
+  <div class="video-box">
+    <h3 style="margin:0 0 14px; color: var(--goat-gold);">🔗 Connect to Studio DAW</h3>
+    <p class="muted">Export this cue sheet and video timing to the <a href="studio.html" style="color:var(--goat-gold);">Studio DAW</a> for multi-track scoring with all your VST plugins and sync catalog.</p>
+    <div class="flex flex-wrap mt-2" style="gap: 10px;">
+      <button class="goat-btn" onclick="exportToStudio()">🎛️ Send Cues to Studio DAW</button>
+      <a href="sync-catalog.html" class="goat-btn outline">🎬 Browse Sync Catalog</a>
+      <a href="ai-producer.html" class="goat-btn ghost">🤖 AI Generate Music for Cues</a>
+    </div>
+  </div>
+</div>
+
+<footer class="goat-footer">
+  <p>🎬 <strong>GOAT FILM & SCORE</strong> — Score to picture like Hans Zimmer on a budget.</p>
+</footer>
+
+<script>
+let CUES = [];
+const videoEl = document.getElementById('videoEl');
+const videoDrop = document.getElementById('videoDrop');
+const videoInput = document.getElementById('videoInput');
+const tcDisplay = document.getElementById('tcDisplay');
+
+videoDrop.addEventListener('click', () => videoInput.click());
+videoDrop.addEventListener('dragover', e => { e.preventDefault(); videoDrop.classList.add('over'); });
+videoDrop.addEventListener('dragleave', () => videoDrop.classList.remove('over'));
+videoDrop.addEventListener('drop', e => {
+  e.preventDefault();
+  videoDrop.classList.remove('over');
+  loadVideo(e.dataTransfer.files[0]);
+});
+videoInput.addEventListener('change', e => loadVideo(e.target.files[0]));
+
+function loadVideo(file) {
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  videoEl.src = url;
+  videoEl.style.display = 'block';
+  videoDrop.style.display = 'none';
+  videoEl.addEventListener('timeupdate', updateTC);
+}
+
+function updateTC() {
+  const t = videoEl.currentTime;
+  const h = Math.floor(t / 3600);
+  const m = Math.floor((t % 3600) / 60);
+  const s = Math.floor(t % 60);
+  const f = Math.floor((t % 1) * 24); // 24fps
+  tcDisplay.textContent =
+    String(h).padStart(2, '0') + ':' +
+    String(m).padStart(2, '0') + ':' +
+    String(s).padStart(2, '0') + ':' +
+    String(f).padStart(2, '0');
+}
+
+function markHitPoint() {
+  if (!videoEl.src) { alert('Load a video first'); return; }
+  const tc = tcDisplay.textContent;
+  CUES.push({
+    num: CUES.length + 1,
+    tc,
+    scene: 'Hit Point',
+    style: 'Impact',
+    notes: 'Sync marker @ ' + tc
+  });
+  renderCues();
+}
+
+function addCue() {
+  const tc = videoEl.src ? tcDisplay.textContent : '00:00:00:00';
+  CUES.push({
+    num: CUES.length + 1,
+    tc,
+    scene: '',
+    style: '',
+    notes: ''
+  });
+  renderCues();
+}
+
+function renderCues() {
+  const container = document.getElementById('cueList');
+  container.innerHTML = CUES.map((c, i) => `
+    <div class="cue-row">
+      <div style="font-weight:700; color: var(--goat-gold);">#${c.num}</div>
+      <input value="${c.tc}" onchange="updateCue(${i}, 'tc', this.value)">
+      <input value="${c.scene}" placeholder="Scene description" onchange="updateCue(${i}, 'scene', this.value)">
+      <input value="${c.style}" placeholder="Music style" onchange="updateCue(${i}, 'style', this.value)">
+      <input value="${c.notes}" placeholder="Notes" onchange="updateCue(${i}, 'notes', this.value)">
+      <button class="goat-btn ghost" style="padding:4px 8px; font-size:11px;" onclick="deleteCue(${i})">🗑️</button>
+    </div>
+  `).join('');
+}
+
+function updateCue(i, key, val) { CUES[i][key] = val; }
+function deleteCue(i) { CUES.splice(i, 1); CUES.forEach((c, j) => c.num = j + 1); renderCues(); }
+
+function exportCues() {
+  const headers = 'Cue #,Timecode,Scene,Music Style,Notes\n';
+  const rows = CUES.map(c => `${c.num},"${c.tc}","${c.scene}","${c.style}","${c.notes}"`).join('\n');
+  const blob = new Blob([headers + rows], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'GOAT_CueSheet_' + Date.now() + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importCues() {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.csv,.json';
+  inp.onchange = async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const txt = await f.text();
+    if (f.name.endsWith('.json')) {
+      CUES = JSON.parse(txt);
+    } else {
+      const lines = txt.trim().split('\n').slice(1);
+      CUES = lines.map((line, i) => {
+        const parts = line.match(/("[^"]*"|[^,]+)/g).map(s => s.replace(/^"|"$/g, ''));
+        return { num: i+1, tc: parts[1]||'', scene: parts[2]||'', style: parts[3]||'', notes: parts[4]||'' };
+      });
+    }
+    renderCues();
+  };
+  inp.click();
+}
+
+function exportToStudio() {
+  localStorage.setItem('goatFilmCues', JSON.stringify(CUES));
+  alert('✅ Cue sheet saved! Now open Studio DAW and use "Import Cues" to load them as markers.');
+}
+
+// Initial: add 3 example cues
+CUES = [
+  { num:1, tc:'00:00:00:00', scene:'Opening — City establishing shot', style:'Cinematic / Ambient', notes:'Slow build' },
+  { num:2, tc:'00:01:30:00', scene:'Main character reveal', style:'Hip-Hop / Hero Theme', notes:'Enter main theme' },
+  { num:3, tc:'00:03:45:00', scene:'Chase scene begins', style:'Trap / High Intensity', notes:'140 BPM, heavy 808s' }
+];
+renderCues();
+</script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>
