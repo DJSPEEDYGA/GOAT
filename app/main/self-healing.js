@@ -229,7 +229,7 @@ class SelfHealingSystem extends EventEmitter {
   async checkAPIService() {
     try {
       // Check if API server is running
-      const response = await fetch('http://localhost:5001/health', {
+      const response = await fetch('http://localhost:5500/api/health', {
         timeout: 5000
       });
       
