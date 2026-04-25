@@ -7,7 +7,7 @@
 # Usage:
 #   sudo bash ONE-COMMAND-FREE-AI.sh
 # OR remote:
-#   curl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/GOAT-Royalty-App/main/ONE-COMMAND-FREE-AI.sh | sudo bash
+#   curl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/nextjs-commerce/main/ONE-COMMAND-FREE-AI.sh | sudo bash
 # ============================================================================
 
 set -e
