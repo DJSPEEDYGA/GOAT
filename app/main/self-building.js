@@ -22,7 +22,7 @@ class SelfBuildingSystem {
       // GitHub Configuration
       github: {
         owner: config.github?.owner || 'DJSPEEDYGA',
-        repo: config.github?.repo || 'GOAT-Royalty-App',
+        repo: config.github?.repo || 'nextjs-commerce',
         branch: config.github?.branch || 'main',
         token: config.github?.token || process.env.GITHUB_TOKEN
       },
