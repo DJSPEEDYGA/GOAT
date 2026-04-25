@@ -130,8 +130,8 @@
       <div class="divider"></div>
       
       <h3 style="color:#22c55e">🤖 AI Model Scripts</h3>
-      <div class="category" onclick="window.location.href='download_models_windows.bat'" style="color:#22c55e">🖥️ Windows Download Script</div>
-      <div class="category" onclick="window.location.href='download_ollama_models.sh'" style="color:#22c55e">🐧 Linux/Mac Download Script</div>
+      <div class="category" onclick="downloadFile('download_models_windows.bat')" style="color:#22c55e">🖥️ Windows Download Script</div>
+      <div class="category" onclick="downloadFile('download_ollama_models.sh')" style="color:#22c55e">🐧 Linux/Mac Download Script</div>
       <div class="category" style="color:rgba(34,197,94,0.7);font-size:11px">⚠️ Requires 100GB+ space</div>
 
       <div class="divider"></div>
@@ -530,7 +530,7 @@
       }
     } catch (e) { }
     copyCmd('ollama pull ' + tag);
-    alert('📋 Copied `ollama pull ' + tag + '` to clipboard.\n\nIf Ollama is installed on your server, paste in terminal to download.\n\nInstall Ollama first: curl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/GOAT-Royalty-App/main/ONE-COMMAND-FREE-AI.sh | sudo bash');
+    alert('📋 Copied `ollama pull ' + tag + '` to clipboard.\n\nIf Ollama is installed on your server, paste in terminal to download.\n\nInstall Ollama first: curl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/nextjs-commerce/main/ONE-COMMAND-FREE-AI.sh | sudo bash');
   }
 
   function chatWithModel(tag, name) {
@@ -625,6 +625,15 @@
   // ══════════════════════════════════════════════════════════════════
   // UTILITY FUNCTIONS
   // ══════════════════════════════════════════════════════════════════
+
+     function downloadFile(filename) {
+       const link = document.createElement('a');
+       link.href = filename;
+       link.download = filename;
+       document.body.appendChild(link);
+       link.click();
+       document.body.removeChild(link);
+     }
 
   function copyCmd(text) {
     navigator.clipboard.writeText(text).then(() => {
@@ -731,11 +740,11 @@
 
     // Fallback: copy the 1-liner
     copyFreeAIOneLiner();
-    alert('📋 The 1-line installer was copied!\n\nPaste this in your server SSH terminal:\n\ncurl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/GOAT-Royalty-App/main/ONE-COMMAND-FREE-AI.sh | sudo bash\n\nIt will:\n1. Mount your external drive\n2. Install Ollama\n3. Download all 29 models\n4. Save to /mnt/ai-storage/ollama');
+    alert('📋 The 1-line installer was copied!\n\nPaste this in your server SSH terminal:\n\ncurl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/nextjs-commerce/main/ONE-COMMAND-FREE-AI.sh | sudo bash\n\nIt will:\n1. Mount your external drive\n2. Install Ollama\n3. Download all 29 models\n4. Save to /mnt/ai-storage/ollama');
   }
 
   function copyFreeAIOneLiner() {
-    const cmd = 'curl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/GOAT-Royalty-App/main/ONE-COMMAND-FREE-AI.sh | sudo bash';
+    const cmd = 'curl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/nextjs-commerce/main/ONE-COMMAND-FREE-AI.sh | sudo bash';
     copyCmd(cmd);
   }
 
@@ -754,7 +763,7 @@
     info += '💻 Runs on CPU or GPU\n';
     info += '📡 OpenAI-compatible API on port 11434\n\n';
     info += '▶️ Install everything with one command:\n';
-    info += 'curl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/GOAT-Royalty-App/main/ONE-COMMAND-FREE-AI.sh | sudo bash';
+    info += 'curl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/nextjs-commerce/main/ONE-COMMAND-FREE-AI.sh | sudo bash';
     alert(info);
   }
 
