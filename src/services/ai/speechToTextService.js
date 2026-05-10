@@ -8,7 +8,7 @@ class SpeechToTextService {
         this.recognition = null;
         this.isListening = false;
         this.transcription = '';
-        this interimResults = [];
+        this.interimResults = [];
         this.finalResults = [];
         this.supportedLanguages = new Map();
         this.defaultSettings = {

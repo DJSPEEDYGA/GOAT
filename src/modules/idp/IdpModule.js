@@ -159,7 +159,7 @@ class IdpModule extends EventEmitter {
 
       // For PDFs and DOCX, we'd integrate proper libraries
       // For now, return a placeholder
-      return await this.callOllama Extraction(
+      return await this.callOllama(
         'Help me understand this is a contract file. What file format is this?',
         { temperature: 0.3 }
       );

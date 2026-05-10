@@ -122,7 +122,7 @@ fi
 osascript << 'APPLESCRIPT'
 tell application "Terminal"
     activate
-    do script "clear && echo '🚀 Super LLM - 215 LLMs in One' && echo '' && node &quot;$HOME/.super-llm/super-llm.js&quot;"
+    do script "clear && echo '🚀 Super LLM - 215 LLMs in One' && echo '' && node \"$HOME/.super-llm/super-llm.js\""
 end tell
 APPLESCRIPT
 LAUNCHER
