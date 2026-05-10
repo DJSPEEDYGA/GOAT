@@ -6,31 +6,41 @@
  * Env: NEXT_PUBLIC_TIKAPI_KEY=your_api_key
  */
 
-import TikAPI from 'tikapi';
+const TIKAPI_BASE_URL = 'https://api.tikapi.io';
 
-let api: ReturnType<typeof TikAPI> | null = null;
-
-/**
- * Initialize the TikAPI client with an API key
- */
-export const initTikAPI = (apiKey: string) => {
-  api = TikAPI(apiKey);
-  return api;
+const getApiKey = () => {
+  const apiKey = process.env.NEXT_PUBLIC_TIKAPI_KEY;
+  if (!apiKey) {
+    throw new Error('TikAPI not initialized — set NEXT_PUBLIC_TIKAPI_KEY in your .env.local');
+  }
+  return apiKey;
 };
 
-/**
- * Get the current TikAPI instance (initializes from env if needed)
- */
-const getAPI = () => {
-  if (!api) {
-    const key = process.env.NEXT_PUBLIC_TIKAPI_KEY;
-    if (key) {
-      api = TikAPI(key);
-    } else {
-      throw new Error('TikAPI not initialized — set NEXT_PUBLIC_TIKAPI_KEY in your .env.local');
+const tikapiGet = async <T>(
+  path: string,
+  queryParams: Record<string, string | number | undefined> = {}
+): Promise<T> => {
+  const apiKey = getApiKey();
+  const url = new URL(`${TIKAPI_BASE_URL}${path}`);
+  for (const [key, value] of Object.entries(queryParams)) {
+    if (value !== undefined && value !== '') {
+      url.searchParams.set(key, String(value));
     }
   }
-  return api;
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: { 'X-API-KEY': apiKey },
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    throw new Error(
+      `TikAPI request failed (${response.status})${body ? `: ${body.slice(0, 200)}` : ''}`
+    );
+  }
+
+  return (await response.json()) as T;
 };
 
 /**
@@ -38,6 +48,7 @@ const getAPI = () => {
  */
 export interface TikTokProfile {
   id: string;
+  secUid?: string;
   username: string;
   nickname: string;
   followers: number;
@@ -70,12 +81,12 @@ export interface TikTokVideo {
  * Fetch a TikTok user's public profile by username
  */
 export const getUserProfile = async (username: string): Promise<TikTokProfile> => {
-  const tikapi = getAPI();
   try {
-    const response = await tikapi.public.profile({ username });
-    const userInfo = response.json.userInfo;
+    const response = await tikapiGet<any>('/public/check', { username });
+    const userInfo = response.userInfo;
     return {
       id: userInfo.user.id,
+      secUid: userInfo.user.secUid,
       username: userInfo.user.uniqueId,
       nickname: userInfo.user.nickname,
       followers: userInfo.stats.followerCount,
@@ -97,10 +108,13 @@ export const getUserProfile = async (username: string): Promise<TikTokProfile> =
  * Fetch a user's recent videos (posts)
  */
 export const getUserVideos = async (username: string, count: number = 10): Promise<TikTokVideo[]> => {
-  const tikapi = getAPI();
   try {
-    const response = await tikapi.public.posts({ username, count });
-    const items = response.json.itemList || [];
+    const profile = await getUserProfile(username);
+    if (!profile.secUid) {
+      throw new Error('TikAPI profile response missing secUid');
+    }
+    const response = await tikapiGet<any>('/public/posts', { secUid: profile.secUid, count });
+    const items = response.itemList || [];
     return items.map((item: any) => ({
       id: item.id,
       description: item.desc || '',
@@ -125,10 +139,27 @@ export const getUserVideos = async (username: string, count: number = 10): Promi
  * Search TikTok by hashtag
  */
 export const searchByHashtag = async (hashtag: string, count: number = 10): Promise<TikTokVideo[]> => {
-  const tikapi = getAPI();
   try {
-    const response = await tikapi.public.hashtag({ name: hashtag, count });
-    const items = response.json.itemList || [];
+    const discover = await tikapiGet<any>('/public/discover/hashtag', { keyword: hashtag, count: 10 });
+    const candidates: any[] =
+      discover?.challengeInfoList ||
+      discover?.challengeList ||
+      discover?.challenges ||
+      discover?.challengeListStruct?.challengeInfoList ||
+      [];
+    const first = Array.isArray(candidates) ? candidates[0] : null;
+    const hashtagId =
+      first?.challenge?.id ??
+      first?.challengeInfo?.challenge?.id ??
+      first?.challengeInfo?.challenge?.id ??
+      first?.id;
+
+    if (!hashtagId) {
+      throw new Error('Hashtag not found');
+    }
+
+    const response = await tikapiGet<any>('/public/hashtag', { id: hashtagId, count });
+    const items = response?.itemStruct?.itemList || [];
     return items.map((item: any) => ({
       id: item.id,
       description: item.desc || '',
@@ -153,10 +184,9 @@ export const searchByHashtag = async (hashtag: string, count: number = 10): Prom
  * Get trending videos
  */
 export const getTrending = async (count: number = 10): Promise<TikTokVideo[]> => {
-  const tikapi = getAPI();
   try {
-    const response = await tikapi.public.explore({ count });
-    const items = response.json.itemList || [];
+    const response = await tikapiGet<any>('/public/explore', { count });
+    const items = response.itemList || [];
     return items.map((item: any) => ({
       id: item.id,
       description: item.desc || '',
