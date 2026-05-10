@@ -515,20 +515,20 @@ log_step "Updating shell configuration..."
 SHELL_UPDATED=false
 
 for rc in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
-    if [[ -f "$rc" ]] && ! grep -q "SUPER_LLM_HOME" "$rc"; then
-        {
-            echo ""
-            echo "# Super LLM Configuration"
-            echo "export SUPER_LLM_HOME=&quot;$INSTALL_DIR&quot;"
-            echo "export PATH=&quot;\$SUPER_LLM_HOME:\$PATH&quot;"
-            if [[ -f "$CONFIG_DIR/.env" ]]; then
-                echo "source &quot;$CONFIG_DIR/.env&quot; 2>/dev/null || true"
-            fi
-        } >> "$rc"
-        SHELL_UPDATED=true
-        log_success "Added Super LLM to $rc"
-    fi
-done
+	    if [[ -f "$rc" ]] && ! grep -q "SUPER_LLM_HOME" "$rc"; then
+	        {
+	            echo ""
+	            echo "# Super LLM Configuration"
+	            echo "export SUPER_LLM_HOME=\"$INSTALL_DIR\""
+	            echo "export PATH=\"\\$SUPER_LLM_HOME:\\$PATH\""
+	            if [[ -f "$CONFIG_DIR/.env" ]]; then
+	                echo "source \"$CONFIG_DIR/.env\" 2>/dev/null || true"
+	            fi
+	        } >> "$rc"
+	        SHELL_UPDATED=true
+	        log_success "Added Super LLM to $rc"
+	    fi
+	done
 
 # --- Installation Summary ---
 echo ""
@@ -547,13 +547,13 @@ echo "  1. Add your NVIDIA Build API key:"
 echo "     export NVIDIA_BUILD_API_KEY=your-api-key"
 echo ""
 echo "  2. Run Super LLM:"
-if [[ "$SHELL_UPDATED" == true ]]; then
-    echo "     source ~/.bashrc  # or restart your terminal"
-fi
-echo "     super-llm &quot;Explain quantum computing&quot;"
-echo ""
-echo "  Or run interactively:"
-echo "     super-llm"
+	if [[ "$SHELL_UPDATED" == true ]]; then
+	    echo "     source ~/.bashrc  # or restart your terminal"
+	fi
+	echo "     super-llm \"Explain quantum computing\""
+	echo ""
+ 	echo "  Or run interactively:"
+ 	echo "     super-llm"
 echo ""
 echo "  Documentation: https://github.com/DJSPEEDYGA/super-llm"
 echo "═══════════════════════════════════════════════════════════════"

@@ -82,10 +82,10 @@ echo "🔐 Phase 2: Authentication Tests"
 echo "=========================================="
 
 # Test registration endpoint
-run_test "Registration endpoint exists" "curl -f -s -X POST $API_BASE/auth/register -H 'Content-Type: application/json' -d '{&quot;name&quot;:&quot;Test&quot;,&quot;email&quot;:&quot;test@test.com&quot;,&quot;password&quot;:&quot;test123&quot;}'"
+run_test "Registration endpoint exists" "curl -f -s -X POST $API_BASE/auth/register -H 'Content-Type: application/json' -d '{\"name\":\"Test\",\"email\":\"test@test.com\",\"password\":\"test123\"}'"
 
 # Test login endpoint
-run_test "Login endpoint exists" "curl -f -s -X POST $API_BASE/auth/login -H 'Content-Type: application/json' -d '{&quot;email&quot;:&quot;test@test.com&quot;,&quot;password&quot;:&quot;test123&quot;}'"
+run_test "Login endpoint exists" "curl -f -s -X POST $API_BASE/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"test@test.com\",\"password\":\"test123\"}'"
 
 # Test protected endpoint
 run_test "Protected endpoint requires auth" "curl -s -X GET $API_BASE/artists | grep -q 'Unauthorized'"
@@ -98,7 +98,7 @@ echo "=========================================="
 run_test "Artists list endpoint" "curl -f -s $API_BASE/artists"
 
 # Test artist creation
-run_test "Artist creation endpoint" "curl -f -s -X POST $API_BASE/artists -H 'Content-Type: application/json' -d '{&quot;name&quot;:&quot;Test Artist&quot;,&quot;email&quot;:&quot;artist@test.com&quot;}'"
+run_test "Artist creation endpoint" "curl -f -s -X POST $API_BASE/artists -H 'Content-Type: application/json' -d '{\"name\":\"Test Artist\",\"email\":\"artist@test.com\"}'"
 
 echo ""
 echo "💰 Phase 4: Royalty Management Tests"
@@ -108,7 +108,7 @@ echo "=========================================="
 run_test "Royalties list endpoint" "curl -f -s $API_BASE/royalties"
 
 # Test royalty creation
-run_test "Royalty creation endpoint" "curl -f -s -X POST $API_BASE/royalties -H 'Content-Type: application/json' -d '{&quot;amount&quot;:1000,&quot;artistId&quot;:&quot;test-id&quot;}'"
+run_test "Royalty creation endpoint" "curl -f -s -X POST $API_BASE/royalties -H 'Content-Type: application/json' -d '{\"amount\":1000,\"artistId\":\"test-id\"}'"
 
 echo ""
 echo "💳 Phase 5: Payment Processing Tests"
@@ -118,7 +118,7 @@ echo "=========================================="
 run_test "Payments list endpoint" "curl -f -s $API_BASE/payments"
 
 # Test payment creation
-run_test "Payment creation endpoint" "curl -f -s -X POST $API_BASE/payments -H 'Content-Type: application/json' -d '{&quot;amount&quot;:500,&quot;artistId&quot;:&quot;test-id&quot;,&quot;method&quot;:&quot;bank_transfer&quot;}'"
+run_test "Payment creation endpoint" "curl -f -s -X POST $API_BASE/payments -H 'Content-Type: application/json' -d '{\"amount\":500,\"artistId\":\"test-id\",\"method\":\"bank_transfer\"}'"
 
 echo ""
 echo "📈 Phase 6: Reporting Tests"
@@ -128,7 +128,7 @@ echo "=========================================="
 run_test "Reports dashboard endpoint" "curl -f -s $API_BASE/reports/dashboard"
 
 # Test report generation
-run_test "Report generation endpoint" "curl -f -s -X POST $API_BASE/reports/generate -H 'Content-Type: application/json' -d '{&quot;reportType&quot;:&quot;earnings&quot;,&quot;format&quot;:&quot;json&quot;}'"
+run_test "Report generation endpoint" "curl -f -s -X POST $API_BASE/reports/generate -H 'Content-Type: application/json' -d '{\"reportType\":\"earnings\",\"format\":\"json\"}'"
 
 echo ""
 echo "🤖 Phase 7: Autonomous Agent Tests"
@@ -138,7 +138,7 @@ echo "=========================================="
 run_test "Agent capabilities endpoint" "curl -f -s $API_BASE/agent/capabilities"
 
 # Test agent execution
-run_test "Agent execute endpoint" "curl -f -s -X POST $API_BASE/agent/execute -H 'Content-Type: application/json' -d '{&quot;task&quot;:&quot;Test task&quot;}'"
+run_test "Agent execute endpoint" "curl -f -s -X POST $API_BASE/agent/execute -H 'Content-Type: application/json' -d '{\"task\":\"Test task\"}'"
 
 echo ""
 echo "🌐 Phase 8: Hostinger Integration Tests"
@@ -155,10 +155,10 @@ echo "💬 Phase 9: AI Chat Integration Tests"
 echo "=========================================="
 
 # Test chat endpoint
-run_test "AI chat endpoint" "curl -f -s -X POST $API_BASE/chat -H 'Content-Type: application/json' -d '{&quot;message&quot;:&quot;Hello&quot;}'"
+run_test "AI chat endpoint" "curl -f -s -X POST $API_BASE/chat -H 'Content-Type: application/json' -d '{\"message\":\"Hello\"}'"
 
 # Test streaming endpoint
-run_test "AI chat stream endpoint" "curl -f -s -X POST $API_BASE/chat/stream -H 'Content-Type: application/json' -d '{&quot;message&quot;:&quot;Hello&quot;}'"
+run_test "AI chat stream endpoint" "curl -f -s -X POST $API_BASE/chat/stream -H 'Content-Type: application/json' -d '{\"message\":\"Hello\"}'"
 
 echo ""
 echo "🎬 Phase 10: Video & Media Tests"
