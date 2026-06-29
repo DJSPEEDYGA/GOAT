@@ -10,12 +10,12 @@ Every hook is wrapped so a RASP error can **never** take down the proxy — if t
 
 ---
 
-## 0. Copy the folder
-Put the whole `rasp/` folder **inside the Oscar directory**, next to
-`chat_server.py`:
+## 0. Copy the folder — OSCAR drive only
+Oscar lives on the **OSCAR drive** (not FKD1). Put the whole `rasp/` folder
+**inside the Oscar directory on the OSCAR drive**, next to `chat_server.py`:
 
 ```
-.../Master-Oscar/.../oscar/
+/Volumes/OSCAR/.../oscar/        (OSCAR drive — keep all Oscar files here)
     chat_server.py
     rasp/            <-- copy this folder here
         rasp.py
