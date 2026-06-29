@@ -1,0 +1,58 @@
+name: Deploy to Production Server
+
+on:
+  push:
+    branches:
+      - feature/add-new-studio-pages
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy to server
+        run: |
+          # Deploy web-app files
+          rsync -avz -e "ssh -i ~/.ssh/deploy_key" \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude '.next' \
+            web-app/ \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.WEB_ROOT }}/
+          
+          # Set permissions
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+            "sudo chown -R www-data:www-data ${{ secrets.WEB_ROOT }} && \
+             sudo chmod -R 755 ${{ secrets.WEB_ROOT }}"
+          
+          # Restart nginx
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+            "sudo systemctl restart nginx"
+      
+      - name: Verify deployment
+        run: |
+          # Test key pages
+          curl -f http://${{ secrets.SERVER_IP }}:8080/ || exit 1
+          curl -f http://${{ secrets.SERVER_IP }}:8080/ai-models-download.html || exit 1
+          curl -f http://${{ secrets.SERVER_IP }}:8080/download_models_windows.bat || exit 1
+      
+      - name: Notify deployment
+        if: success()
+        run: |
+          echo "Deployment successful!"
+          echo "Server: ${{ secrets.SERVER_IP }}:8080"
+          echo "Time: $(date)"

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💱 Token Swap | GOAT Royalty</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <link rel="stylesheet" href="css/goat-brand.css">
+    <style>
+        :root {
+            --bg: #040608; --panel: #0d1117; --panel2: #161b22;
+            --gold: #d4a03c; --gold2: #f0c040; --gold3: #ffd700;
+            --red: #c1121f; --green: #3fb950; --blue: #58a6ff;
+            --ink: #f0ece4; --dim: #8b949e; --line: #21262d;
+            --glow: rgba(212,160,60,.25);
+        }
+        body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .swap-container { max-width: 600px; margin: 0 auto; padding: 120px 20px 40px; width: 100%; }
+        .swap-header { text-align: center; margin-bottom: 32px; }
+        .swap-header h1 { font-size: 32px; font-weight: 700; color: var(--gold); margin: 0 0 8px 0; }
+        .swap-header span { font-size: 14px; color: var(--dim); }
+        
+        .swap-card { background: var(--panel); border: 1px solid var(--line); border-radius: 24px; padding: 24px; position: relative; }
+        .swap-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--gold), var(--gold3)); }
+        
+        .swap-section { background: var(--panel2); border: 1px solid var(--line); border-radius: 16px; padding: 20px; transition: all .2s; }
+        .swap-section:focus-within { border-color: var(--gold3); }
+        
+        .swap-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .swap-label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
+        .swap-balance { font-size: 12px; color: var(--dim); }
+        .swap-balance span { color: var(--ink); cursor: pointer; }
+        .swap-balance span:hover { color: var(--gold3); }
+        
+        .swap-input-group { display: flex; gap: 12px; }
+        .swap-input { flex: 1; background: transparent; border: none; font-size: 32px; font-weight: 700; color: var(--ink); outline: none; width: 100%; }
+        .swap-input::placeholder { color: var(--dim); }
+        
+        .token-selector { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px 16px; cursor: pointer; transition: all .2s; min-width: 140px; }
+        .token-selector:hover { border-color: var(--gold); }
+        .token-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+        .btc-icon { background: rgba(247,147,26,.2); color: #f7931a; }
+        .eth-icon { background: rgba(98,126,234,.2); color: #627eea; }
+        .sol-icon { background: rgba(20,241,149,.2); color: #14f195; }
+        .usdc-icon { background: rgba(51,85,255,.2); color: #3355ff; }
+        .usdt-icon { background: rgba(38,161,123,.2); color: #26a17b; }
+        
+        .token-symbol { font-size: 14px; font-weight: 600; }
+        .token-chevron { font-size: 10px; color: var(--dim); }
+        
+        .swap-arrow { display: flex; justify-content: center; margin: -12px; position: relative; z-index: 10; }
+        .swap-arrow-btn { width: 40px; height: 40px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .swap-arrow-btn:hover { border-color: var(--gold); background: var(--panel2); transform: rotate(180deg); }
+        
+        .swap-details { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
+        .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+        .detail-label { font-size: 12px; color: var(--dim); }
+        .detail-value { font-size: 12px; font-weight: 600; color: var(--ink); }
+        .detail-value.highlight { color: var(--gold3); }
+        .detail-value.alert { color: var(--red); }
+        
+        .slippage-selector { display: flex; gap: 4px; margin-top: 8px; }
+        .slippage-btn { padding: 4px 12px; background: var(--panel2); border: 1px solid var(--line); color: var(--dim); border-radius: 6px; font-size: 11px; cursor: pointer; transition: all .2s; }
+        .slippage-btn:hover { border-color: var(--gold); color: var(--ink); }
+        .slippage-btn.active { border-color: var(--gold3); background: rgba(212,160,60,.1); color: var(--gold3); }
+        .slippage-input { width: 60px; padding: 4px 8px; background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; font-size: 11px; color: var(--ink); text-align: center; }
+        
+        .swap-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--gold) 0%, var(--gold3) 100%); color: #000; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all .2s; margin-top: 20px; }
+        .swap-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(212,160,60,.3); }
+        .swap-btn:disabled { background: var(--panel2); color: var(--dim); cursor: not-allowed; transform: none; }
+        
+        .price-chart { height: 200px; background: linear-gradient(180deg, rgba(212,160,60,.05) 0%, transparent 100%); border-radius: 12px; margin-top: 24px; position: relative; overflow: hidden; }
+        .chart-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        
+        .recent-swaps { margin-top: 24px; }
+        .recent-swaps h3 { font-size: 14px; font-weight: 600; color: var(--gold); margin: 0 0 12px 0; }
+        
+        .swap-history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--panel2); border-radius: 8px; margin-bottom: 8px; }
+        .swap-history-time { font-size: 11px; color: var(--dim); }
+        .swap-history-amounts { font-size: 13px; font-weight: 600; color: var(--ink); }
+        .swap-history-status { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+        .status-completed { background: rgba(63,185,80,.15); color: var(--green); }
+        .status-pending { background: rgba(212,160,60,.15); color: var(--gold2); }
+        
+        .token-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.8); display: none; align-items: flex-end; z-index: 1000; }
+        .token-modal.active { display: flex; }
+        .token-modal-content { background: var(--panel); border-radius: 20px 20px 0 0; padding: 24px; width: 100%; max-width: 600px; margin: 0 auto; max-height: 70vh; overflow-y: auto; }
+        .token-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .token-modal-title { font-size: 16px; font-weight: 700; color: var(--ink); }
+        .token-modal-close { background: none; border: none; font-size: 24px; color: var(--dim); cursor: pointer; }
+        
+        .token-list { display: flex; flex-direction: column; gap: 8px; }
+        .token-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--panel2); border-radius: 12px; cursor: pointer; transition: all .2s; }
+        .token-item:hover { background: var(--line); }
+        
+        @media (max-width: 640px) {
+            .swap-container { padding: 80px 20px 40px; }
+            .swap-input { font-size: 24px; }
+            .token-selector { min-width: 120px; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<nav class="goat-nav">
+    <div class="goat-nav-logo">
+        <span class="crown">👑</span>
+        <span>GOAT Royalty</span>
+    </div>
+    <div class="goat-nav-links">
+        <a href="index.html" class="goat-nav-link">Dashboard</a>
+        <a href="goat-crypto-wallet.html" class="goat-nav-link">Wallet</a>
+        <a href="goat-token-swap.html" class="goat-nav-link active">Swap</a>
+        <a href="goat-bank.html" class="goat-nav-link">Bank</a>
+    </div>
+</nav>
+
+<main class="swap-container">
+    <div class="swap-header">
+        <h1>💱 Token Swap</h1>
+        <span>Exchange tokens across chains • Best rates • Low slippage</span>
+    </div>
+    
+    <div class="swap-card">
+        <div class="swap-section">
+            <div class="swap-header-row">
+                <div class="swap-label">You Pay</div>
+                <div class="swap-balance">Balance: <span onclick="setMax('from')">2.456789 BTC</span></div>
+            </div>
+            <div class="swap-input-group">
+                <input type="text" class="swap-input" placeholder="0.00" id="fromAmount" oninput="calculateSwap()">
+                <div class="token-selector" onclick="openTokenModal('from')">
+                    <div class="token-icon btc-icon">₿</div>
+                    <div class="token-symbol">BTC</div>
+                    <div class="token-chevron">▼</div>
+                </div>
+            </div>
+            <div style="margin-top: 8px; font-size: 12px; color: var(--dim);">$<span id="fromUSD">0.00</span></div>
+        </div>
+        
+        <div class="swap-arrow">
+            <button class="swap-arrow-btn" onclick="swapTokens()">⇅</button>
+        </div>
+        
+        <div class="swap-section">
+            <div class="swap-header-row">
+                <div class="swap-label">You Receive</div>
+                <div class="swap-balance">Balance: <span>45.6789 ETH</span></div>
+            </div>
+            <div class="swap-input-group">
+                <input type="text" class="swap-input" placeholder="0.00" id="toAmount" readonly>
+                <div class="token-selector" onclick="openTokenModal('to')">
+                    <div class="token-icon eth-icon">Ξ</div>
+                    <div class="token-symbol">ETH</div>
+                    <div class="token-chevron">▼</div>
+                </div>
+            </div>
+            <div style="margin-top: 8px; font-size: 12px; color: var(--dim);">$<span id="toUSD">0.00</span></div>
+        </div>
+        
+        <div class="swap-details">
+            <div class="detail-row">
+                <div class="detail-label">Price</div>
+                <div class="detail-value">1 BTC = <span id="priceRate">19.5652</span> ETH</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Minimum Received</div>
+                <div class="detail-value highlight"><span id="minReceived">0.00</span> ETH</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Price Impact</div>
+                <div class="detail-value" id="priceImpact">< 0.1%</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Network Fee</div>
+                <div class="detail-value">~$12.50</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Slippage Tolerance</div>
+                <div class="slippage-selector">
+                    <button class="slippage-btn" onclick="setSlippage(0.5)">0.5%</button>
+                    <button class="slippage-btn active" onclick="setSlippage(1)">1%</button>
+                    <button class="slippage-btn" onclick="setSlippage(3)">3%</button>
+                    <input type="text" class="slippage-input" placeholder="Custom" id="customSlippage">
+                </div>
+            </div>
+        </div>
+        
+        <button class="swap-btn" id="swapBtn" onclick="executeSwap()" disabled>Enter Amount</button>
+    </div>
+    
+    <div class="price-chart">
+        <canvas id="priceChart" class="chart-canvas"></canvas>
+    </div>
+    
+    <div class="recent-swaps">
+        <h3>📜 Recent Swaps</h3>
+        <div id="swapHistory">
+            <!-- History items generated by JS -->
+        </div>
+    </div>
+</main>
+
+<div class="token-modal" id="tokenModal">
+    <div class="token-modal-content">
+        <div class="token-modal-header">
+            <div class="token-modal-title">Select Token</div>
+            <button class="token-modal-close" onclick="closeTokenModal()">×</button>
+        </div>
+        <div class="token-list" id="tokenList">
+            <!-- Tokens generated by JS -->
+        </div>
+    </div>
+</div>
+
+<script>
+// Token data
+const tokens = [
+    { symbol: 'BTC', name: 'Bitcoin', icon: '₿', iconClass: 'btc-icon', price: 67500, balance: 2.456789 },
+    { symbol: 'ETH', name: 'Ethereum', icon: 'Ξ', iconClass: 'eth-icon', price: 3450, balance: 45.6789 },
+    { symbol: 'SOL', name: 'Solana', icon: '◎', iconClass: 'sol-icon', price: 145.67, balance: 12500.00 },
+    { symbol: 'USDC', name: 'USD Coin', icon: '$', iconClass: 'usdc-icon', price: 1.00, balance: 100000.00 },
+    { symbol: 'USDT', name: 'Tether', icon: '₮', iconClass: 'usdt-icon', price: 1.00, balance: 50000.00 }
+];
+
+// Swap state
+let fromToken = tokens[0];
+let toToken = tokens[1];
+let slippage = 1;
+let currentSelector = 'from';
+
+// Historical swaps
+const swapHistory = [
+    { from: { amount: 0.5, symbol: 'BTC' }, to: { amount: 9.78, symbol: 'ETH' }, time: '2 hours ago', status: 'completed' },
+    { from: { amount: 500, symbol: 'SOL' }, to: { amount: 35000, symbol: 'USDC' }, time: '1 day ago', status: 'completed' },
+    { from: { amount: 10000, symbol: 'USDT' }, to: { amount: 68.78, symbol: 'ETH' }, time: '3 days ago', status: 'completed' }
+];
+
+// Calculate swap
+function calculateSwap() {
+    const fromAmount = parseFloat(document.getElementById('fromAmount').value) || 0;
+    const fromUSD = fromAmount * fromToken.price;
+    const toAmount = fromUSD / toToken.price;
+    const toUSD = toAmount * toToken.price;
+    const minReceived = toAmount * (1 - slippage / 100);
+    const priceRate = fromToken.price / toToken.price;
+    
+    document.getElementById('fromUSD').textContent = fromUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('toAmount').textContent = toAmount.toLocaleString(undefined, {maximumFractionDigits: 8});
+    document.getElementById('toUSD').textContent = toUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('minReceived').textContent = minReceived.toLocaleString(undefined, {maximumFractionDigits: 8});
+    document.getElementById('priceRate').textContent = priceRate.toFixed(4);
+    
+    const swapBtn = document.getElementById('swapBtn');
+    if (fromAmount > 0 && fromAmount <= fromToken.balance) {
+        swapBtn.disabled = false;
+        swapBtn.textContent = `Swap ${fromToken.symbol} → ${toToken.symbol}`;
+    } else {
+        swapBtn.disabled = true;
+        swapBtn.textContent = fromAmount > fromToken.balance ? 'Insufficient Balance' : 'Enter Amount';
+    }
+}
+
+// Swap tokens
+function swapTokens() {
+    [fromToken, toToken] = [toToken, fromToken];
+    document.querySelectorAll('.token-selector')[0].innerHTML = `
+        <div class="token-icon ${fromToken.iconClass}">${fromToken.icon}</div>
+        <div class="token-symbol">${fromToken.symbol}</div>
+        <div class="token-chevron">▼</div>
+    `;
+    document.querySelectorAll('.token-selector')[1].innerHTML = `
+        <div class="token-icon ${toToken.iconClass}">${toToken.icon}</div>
+        <div class="token-symbol">${toToken.symbol}</div>
+        <div class="token-chevron">▼</div>
+    `;
+    calculateSwap();
+}
+
+// Set max
+function setMax(type) {
+    if (type === 'from') {
+        document.getElementById('fromAmount').value = fromToken.balance;
+        calculateSwap();
+    }
+}
+
+// Set slippage
+function setSlippage(value) {
+    slippage = value;
+    document.querySelectorAll('.slippage-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', [0.5, 1, 3][i] === value);
+    });
+    calculateSwap();
+}
+
+// Execute swap
+function executeSwap() {
+    const fromAmount = parseFloat(document.getElementById('fromAmount').value);
+    alert(`Swapping ${fromAmount} ${fromToken.symbol} → ${document.getElementById('toAmount').value} ${toToken.symbol}`);
+}
+
+// Open token modal
+function openTokenModal(type) {
+    currentSelector = type;
+    const modal = document.getElementById('tokenModal');
+    const list = document.getElementById('tokenList');
+    
+    list.innerHTML = tokens.map(token => `
+        <div class="token-item" onclick="selectToken('${token.symbol}')">
+            <div class="token-icon ${token.iconClass}">${token.icon}</div>
+            <div>
+                <div style="font-size: 14px; font-weight: 600; color: var(--ink);">${token.name}</div>
+                <div style="font-size: 12px; color: var(--dim);">${token.symbol}</div>
+            </div>
+            <div style="text-align: right; margin-left: auto;">
+                <div style="font-size: 14px; font-weight: 600; color: var(--ink);">${token.balance.toLocaleString()}</div>
+                <div style="font-size: 12px; color: var(--dim);">${token.symbol}</div>
+            </div>
+        </div>
+    `).join('');
+    
+    modal.classList.add('active');
+}
+
+// Close token modal
+function closeTokenModal() {
+    document.getElementById('tokenModal').classList.remove('active');
+}
+
+// Select token
+function selectToken(symbol) {
+    const token = tokens.find(t => t.symbol === symbol);
+    if (currentSelector === 'from') {
+        fromToken = token;
+        document.querySelectorAll('.token-selector')[0].innerHTML = `
+            <div class="token-icon ${token.iconClass}">${token.icon}</div>
+            <div class="token-symbol">${token.symbol}</div>
+            <div class="token-chevron">▼</div>
+        `;
+    } else {
+        toToken = token;
+        document.querySelectorAll('.token-selector')[1].innerHTML = `
+            <div class="token-icon ${token.iconClass}">${token.icon}</div>
+            <div class="token-symbol">${token.symbol}</div>
+            <div class="token-chevron">▼</div>
+        `;
+    }
+    closeTokenModal();
+    calculateSwap();
+}
+
+// Render swap history
+function renderHistory() {
+    const list = document.getElementById('swapHistory');
+    list.innerHTML = swapHistory.map(swap => `
+        <div class="swap-history-item">
+            <div class="swap-history-amounts">${swap.from.amount} ${swap.from.symbol} → ${swap.to.amount} ${swap.to.symbol}</div>
+            <div>
+                <div class="swap-history-status status-${swap.status}">${swap.status}</div>
+                <div class="swap-history-time">${swap.time}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Draw price chart
+function drawChart() {
+    const canvas = document.getElementById('priceChart');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    
+    const prices = [];
+    for (let i = 0; i < 50; i++) {
+        prices.push(19 + Math.sin(i * 0.2) * 0.5 + Math.random() * 0.3);
+    }
+    
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const range = max - min || 1;
+    
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, 'rgba(212, 160, 60, 0.3)');
+    grad.addColorStop(1, 'rgba(212, 160, 60, 0)');
+    
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height);
+    
+    prices.forEach((price, i) => {
+        const x = (i / (prices.length - 1)) * canvas.width;
+        const y = canvas.height - ((price - min) / range) * canvas.height * 0.8 - 10;
+        ctx.lineTo(x, y);
+    });
+    
+    ctx.lineTo(canvas.width, canvas.height);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+    
+    ctx.strokeStyle = '#d4a03c';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    prices.forEach((price, i) => {
+        const x = (i / (prices.length - 1)) * canvas.width;
+        const y = canvas.height - ((price - min) / range) * canvas.height * 0.8 - 10;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+}
+
+// Initialize
+renderHistory();
+drawChart();
+</script>
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⛏️ Crypto Mining | GOAT Royalty</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <link rel="stylesheet" href="css/goat-brand.css">
+    <style>
+        :root {
+            --bg: #040608; --panel: #0d1117; --panel2: #161b22;
+            --gold: #d4a03c; --gold2: #f0c040; --gold3: #ffd700;
+            --red: #c1121f; --green: #3fb950; --blue: #58a6ff;
+            --ink: #f0ece4; --dim: #8b949e; --line: #21262d;
+            --glow: rgba(212,160,60,.25);
+        }
+        body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .mining-dashboard { max-width: 1400px; margin: 0 auto; padding: 80px 20px 40px; width: 100%; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .dashboard-title h1 { font-size: 28px; font-weight: 700; color: var(--gold); margin: 0; }
+        .dashboard-title span { font-size: 14px; color: var(--dim); }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+        .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .stat-value { font-size: 32px; font-weight: 700; color: var(--gold3); }
+        .stat-change { font-size: 12px; color: var(--green); margin-top: 4px; }
+        
+        .mining-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        
+        .miner-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+        .miner-header { padding: 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+        .miner-info { display: flex; align-items: center; gap: 16px; }
+        .miner-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; }
+        .btc-icon { background: rgba(247,147,26,.2); color: #f7931a; }
+        .eth-icon { background: rgba(98,126,234,.2); color: #627eea; }
+        .xmr-icon { background: rgba(242,104,34,.2); color: #f26822; }
+        .ltc-icon { background: rgba(245,150,50,.2); color: #f59632; }
+        .doge-icon { background: rgba(214,149,65,.2); color: #d69541; }
+        
+        .miner-name { font-size: 16px; font-weight: 700; color: var(--ink); }
+        .miner-algo { font-size: 12px; color: var(--dim); }
+        
+        .miner-toggle { position: relative; width: 50px; height: 26px; background: var(--panel2); border-radius: 13px; cursor: pointer; transition: all .3s; }
+        .miner-toggle.active { background: var(--green); }
+        .miner-toggle::after { content: ''; position: absolute; width: 22px; height: 22px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: all .3s; }
+        .miner-toggle.active::after { left: 26px; }
+        
+        .miner-body { padding: 20px; }
+        
+        .mining-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+        .mining-row:last-child { border-bottom: none; }
+        .row-label { font-size: 12px; color: var(--dim); }
+        .row-value { font-size: 14px; font-weight: 600; color: var(--ink); }
+        
+        .hashrate-display { font-size: 36px; font-weight: 700; color: var(--gold3); text-align: center; padding: 24px; background: linear-gradient(135deg, rgba(212,160,60,.1) 0%, transparent 100%); border-radius: 12px; margin-bottom: 16px; }
+        .hashrate-unit { font-size: 14px; color: var(--dim); font-weight: 400; }
+        
+        .pool-selector { display: flex; gap: 8px; margin-bottom: 16px; }
+        .pool-btn { padding: 8px 16px; border: 1px solid var(--line); background: var(--panel2); color: var(--dim); border-radius: 8px; font-size: 12px; cursor: pointer; transition: all .2s; }
+        .pool-btn:hover { border-color: var(--gold); color: var(--ink); }
+        .pool-btn.active { border-color: var(--gold3); background: rgba(212,160,60,.1); color: var(--gold3); }
+        
+        .earnings-chart { height: 150px; background: linear-gradient(180deg, rgba(212,160,60,.1) 0%, transparent 100%); border-radius: 8px; position: relative; overflow: hidden; }
+        .earnings-bar { position: absolute; bottom: 0; width: 100%; background: linear-gradient(180deg, var(--gold3) 0%, var(--gold) 100%); transition: height .5s ease; }
+        
+        .progress-bar { height: 6px; background: var(--panel2); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--green); transition: width .3s; }
+        
+        .gpu-section { margin-top: 24px; }
+        .gpu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .gpu-header h3 { font-size: 16px; font-weight: 600; color: var(--gold); margin: 0; }
+        
+        .gpu-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .gpu-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .gpu-name { font-size: 14px; font-weight: 600; color: var(--ink); }
+        .gpu-type { font-size: 10px; color: var(--dim); text-transform: uppercase; }
+        
+        @keyframes glow { 0%, 100% { box-shadow: 0 0 5px rgba(212,160,60,.5); } 50% { box-shadow: 0 0 20px rgba(212,160,60,.8); } }
+        .active-miner { animation: glow 2s infinite; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<nav class="goat-nav">
+    <div class="goat-nav-logo">
+        <span class="crown">👑</span>
+        <span>GOAT Royalty</span>
+    </div>
+    <div class="goat-nav-links">
+        <a href="index.html" class="goat-nav-link">Dashboard</a>
+        <a href="goat-crypto-wallet.html" class="goat-nav-link">Wallet</a>
+        <a href="goat-crypto-mining.html" class="goat-nav-link active">Mining</a>
+        <a href="goat-bank.html" class="goat-nav-link">Bank</a>
+    </div>
+</nav>
+
+<main class="mining-dashboard">
+    <div class="dashboard-header">
+        <div class="dashboard-title">
+            <h1>⛏️ Crypto Mining</h1>
+            <span>CPU • GPU • Cloud Mining • Multi-Pool Support</span>
+        </div>
+        <button style="padding: 10px 20px; background: var(--green); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="startAllMiners()">Start All</button>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Hashrate</div>
+            <div class="stat-value"><span id="totalHashrate">245.6</span> TH/s</div>
+            <div class="stat-change">▲ 12% this week</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Earnings (24h)</div>
+            <div class="stat-value">$<span id="totalEarnings">1,847.32</span></div>
+            <div class="stat-change">▲ $127.50 vs yesterday</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Active Miners</div>
+            <div class="stat-value"><span id="activeMiners">3</span>/5</div>
+            <div class="stat-change">All systems optimal</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Power Cost</div>
+            <div class="stat-value">$<span id="powerCost">342.18</span>/day</div>
+            <div class="stat-change">18% efficiency</div>
+        </div>
+    </div>
+    
+    <div class="mining-grid" id="miningGrid">
+        <!-- Miner cards will be generated here -->
+    </div>
+    
+    <div class="gpu-section">
+        <div class="gpu-header">
+            <h3>🖥️ GPU Resources</h3>
+            <span style="font-size: 12px; color: var(--dim);">NVIDIA RTX 3090 SLI Configured</span>
+        </div>
+        <div id="gpuList">
+            <!-- GPU cards will be generated here -->
+        </div>
+    </div>
+</main>
+
+<script>
+// Mining data (from backend: crypto-mining.js)
+const miners = [
+    {
+        id: 'bitcoin',
+        name: 'Bitcoin',
+        symbol: 'BTC',
+        algorithm: 'SHA-256',
+        icon: '₿',
+        iconClass: 'btc-icon',
+        active: true,
+        hashrate: 125.5,
+        hashrateUnit: 'TH/s',
+        difficulty: 72.01,
+        blockReward: 3.125,
+        pool: 'F2Pool',
+        pools: ['F2Pool', 'AntPool', 'Slush Pool'],
+        power: 450,
+        earnings24h: 847.32,
+        totalMined: 0.00245678,
+        priceUSD: 67500
+    },
+    {
+        id: 'ethereum',
+        name: 'Ethereum',
+        symbol: 'ETH',
+        algorithm: 'Ethash',
+        icon: 'Ξ',
+        iconClass: 'eth-icon',
+        active: true,
+        hashrate: 750.5,
+        hashrateUnit: 'MH/s',
+        difficulty: 12.5,
+        blockReward: 2.0,
+        pool: 'Ethermine',
+        pools: ['Ethermine', 'F2Pool', 'Nanopool'],
+        power: 320,
+        earnings24h: 654.18,
+        totalMined: 0.189345,
+        priceUSD: 3450
+    },
+    {
+        id: 'monero',
+        name: 'Monero',
+        symbol: 'XMR',
+        algorithm: 'RandomX',
+        icon: 'ɱ',
+        iconClass: 'xmr-icon',
+        active: true,
+        hashrate: 25400,
+        hashrateUnit: 'H/s',
+        difficulty: 450,
+        blockReward: 0.6,
+        pool: 'MineXMR',
+        pools: ['MineXMR', 'NanoPool'],
+        power: 180,
+        earnings24h: 345.82,
+        totalMined: 2.756,
+        priceUSD: 125
+    },
+    {
+        id: 'litecoin',
+        name: 'Litecoin',
+        symbol: 'LTC',
+        algorithm: 'Scrypt',
+        icon: 'Ł',
+        iconClass: 'ltc-icon',
+        active: false,
+        hashrate: 1250,
+        hashrateUnit: 'MH/s',
+        difficulty: 15.8,
+        blockReward: 12.5,
+        pool: 'LitecoinPool',
+        pools: ['LitecoinPool', 'F2Pool'],
+        power: 220,
+        earnings24h: 0,
+        totalMined: 0,
+        priceUSD: 72.50
+    },
+    {
+        id: 'dogecoin',
+        name: 'Dogecoin',
+        symbol: 'DOGE',
+        algorithm: 'Scrypt',
+        icon: 'Ð',
+        iconClass: 'doge-icon',
+        active: false,
+        hashrate: 1250,
+        hashrateUnit: 'MH/s',
+        difficulty: 2.45,
+        blockReward: 10000,
+        pool: 'F2Pool',
+        pools: ['F2Pool', 'Multipool'],
+        power: 220,
+        earnings24h: 0,
+        totalMined: 0,
+        priceUSD: 0.125
+    }
+];
+
+// GPU resources
+const gpus = [
+    { id: 'gpu1', name: 'NVIDIA GeForce RTX 3090', type: 'CUDA', vram: '24GB', utilization: 98, temperature: 68, clockSpeed: 1.725 },
+    { id: 'gpu2', name: 'NVIDIA GeForce RTX 3090', type: 'CUDA', vram: '24GB', utilization: 97, temperature: 65, clockSpeed: 1.708 }
+];
+
+// Render mining cards
+function renderMiners() {
+    const grid = document.getElementById('miningGrid');
+    grid.innerHTML = miners.map(miner => `
+        <div class="miner-card ${miner.active ? 'active-miner' : ''}" id="miner-${miner.id}">
+            <div class="miner-header">
+                <div class="miner-info">
+                    <div class="miner-icon ${miner.iconClass}">${miner.icon}</div>
+                    <div>
+                        <div class="miner-name">${miner.name}</div>
+                        <div class="miner-algo">${miner.algorithm} • ${miner.pool}</div>
+                    </div>
+                </div>
+                <div class="miner-toggle ${miner.active ? 'active' : ''}" onclick="toggleMiner('${miner.id}')"></div>
+            </div>
+            <div class="miner-body">
+                <div class="hashrate-display">
+                    <span id="hashrate-${miner.id}">${miner.hashrate.toLocaleString()}</span>
+                    <span class="hashrate-unit">${miner.hashrateUnit}</span>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <div style="font-size: 10px; color: var(--dim); margin-bottom: 4px;">Mining Pool</div>
+                    <div class="pool-selector">
+                        ${miner.pools.map(pool => `
+                            <button class="pool-btn ${pool === miner.pool ? 'active' : ''}" onclick="selectPool('${miner.id}', '${pool}')">${pool}</button>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="mining-row">
+                    <div class="row-label">Difficulty</div>
+                    <div class="row-value">${miner.difficulty.toLocaleString()}</div>
+                </div>
+                <div class="mining-row">
+                    <div class="row-label">Block Reward</div>
+                    <div class="row-value">${miner.blockReward.toLocaleString()} ${miner.symbol}</div>
+                </div>
+                <div class="mining-row">
+                    <div class="row-label">Power Usage</div>
+                    <div class="row-value">${miner.power}W</div>
+                </div>
+                <div class="mining-row">
+                    <div class="row-label">Earnings (24h)</div>
+                    <div class="row-value" style="color: var(--green);">$${miner.earnings24h.toLocaleString()}</div>
+                </div>
+                <div class="mining-row">
+                    <div class="row-label">Total Mined</div>
+                    <div class="row-value">${miner.totalMined.toLocaleString(undefined, {maximumFractionDigits: 8})} ${miner.symbol} ($${(miner.totalMined * miner.priceUSD).toLocaleString(undefined, {maximumFractionDigits: 2})})</div>
+                </div>
+                <div class="mining-row">
+                    <div class="row-label">Pool Share</div>
+                    <div class="row-value">
+                        <div class="progress-bar" style="width: 100px; height: 4px;">
+                            <div class="progress-fill" style="width: ${Math.random() * 100}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    updateStats();
+}
+
+// Render GPU cards
+function renderGPUs() {
+    const list = document.getElementById('gpuList');
+    list.innerHTML = gpus.map(gpu => `
+        <div class="gpu-card">
+            <div class="gpu-info">
+                <div>
+                    <div class="gpu-name">${gpu.name}</div>
+                    <div class="gpu-type">${gpu.type} • ${gpu.vram}</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 14px; font-weight: 700; color: ${gpu.utilization > 90 ? 'var(--green)' : 'var(--ink)'}">${gpu.utilization}%</div>
+                    <div style="font-size: 10px; color: var(--dim);">${gpu.temperature}°C</div>
+                </div>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--dim); margin-bottom: 4px;">
+                    <span>Utilization</span>
+                    <span>${gpu.utilization}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${gpu.utilization}%; background: ${gpu.utilization > 90 ? 'var(--green)' : 'var(--gold)'}"></div>
+                </div>
+            </div>
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--dim); margin-bottom: 4px;">
+                    <span>Clock Speed</span>
+                    <span>${gpu.clockSpeed} GHz</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${(gpu.clockSpeed / 1.8) * 100}%; background: var(--blue)"></div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Toggle miner
+function toggleMiner(id) {
+    const miner = miners.find(m => m.id === id);
+    miner.active = !miner.active;
+    renderMiners();
+    updateStats();
+}
+
+// Select pool
+function selectPool(minerId, pool) {
+    const miner = miners.find(m => m.id === minerId);
+    miner.pool = pool;
+    renderMiners();
+}
+
+// Start all miners
+function startAllMiners() {
+    miners.forEach(miner => miner.active = true);
+    renderMiners();
+    updateStats();
+}
+
+// Update stats
+function updateStats() {
+    const activeMiners = miners.filter(m => m.active);
+    const totalHashrate = activeMiners.reduce((sum, m) => sum + m.hashrate, 0);
+    const totalEarnings = activeMiners.reduce((sum, m) => sum + m.earnings24h, 0);
+    const powerCost = activeMiners.reduce((sum, m) => sum + (m.power * 0.031), 0);
+    
+    document.getElementById('totalHashrate').textContent = totalHashrate.toLocaleString(undefined, {maximumFractionDigits: 1});
+    document.getElementById('totalEarnings').textContent = totalEarnings.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('activeMiners').textContent = activeMiners.length;
+    document.getElementById('powerCost').textContent = powerCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+// Simulate live updates
+function simulateMining() {
+    setInterval(() => {
+        miners.forEach(miner => {
+            if (miner.active) {
+                miner.hashrate = miner.hashrate * (1 + (Math.random() - 0.5) * 0.02);
+                miner.totalMined += (miner.hashrate / miner.difficulty) * 0.00001;
+                
+                const hashrateEl = document.getElementById(`hashrate-${miner.id}`);
+                if (hashrateEl) {
+                    hashrateEl.textContent = miner.hashrate.toLocaleString(undefined, {maximumFractionDigits: 1});
+                }
+            }
+        });
+        updateStats();
+    }, 3000);
+}
+
+// Initialize
+renderMiners();
+renderGPUs();
+simulateMining();
+</script>
+</body>
+</html>

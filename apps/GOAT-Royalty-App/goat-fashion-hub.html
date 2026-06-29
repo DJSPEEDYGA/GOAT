@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐐 GOAT Fashion Hub — World-Class Fashion & Style Platform</title>
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<style>
+:root {
+  --bg:#040608; --panel:#0d1117; --panel2:#161b22;
+  --gold:#d4a03c; --gold2:#f0c040; --gold3:#ffd700;
+  --red:#c1121f; --red2:#e63946;
+  --ink:#f0ece4; --dim:#8b949e; --line:#21262d;
+  --ok:#3fb950; --warn:#d29922; --info:#58a6ff;
+  --purple:#a78bfa; --pink:#f472b6; --orange:#fb923c;
+  --glow:rgba(212,160,60,.25);
+  --fashion-pink:rgba(244,114,182,.15);
+  --fashion-purple:rgba(167,139,250,.15);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;overflow-x:hidden;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(4,6,8,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);padding:0 24px;height:64px;display:flex;align-items:center;gap:16px;}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo span{font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-links{display:flex;gap:4px;margin-left:20px;flex:1;overflow-x:auto;}
+.nav-links a{padding:6px 12px;border-radius:6px;text-decoration:none;color:var(--dim);font-size:13px;transition:all .2s;white-space:nowrap;}
+.nav-links a:hover{color:var(--ink);background:var(--panel2);}
+.nav-links a.active{color:var(--gold);}
+.nav-right{display:flex;gap:8px;margin-left:auto;}
+.nav-btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;border:none;white-space:nowrap;}
+.nav-btn.ghost{background:transparent;border:1px solid var(--line);color:var(--dim);}
+.nav-btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;}
+.nav-btn.pink{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;}
+
+/* HERO */
+.fashion-hero{min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 20px 60px;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:
+  radial-gradient(ellipse 70% 50% at 20% 50%,rgba(244,114,182,.12) 0%,transparent 60%),
+  radial-gradient(ellipse 70% 50% at 80% 50%,rgba(167,139,250,.12) 0%,transparent 60%),
+  radial-gradient(ellipse 50% 40% at 50% 0%,rgba(212,160,60,.08) 0%,transparent 60%);
+  pointer-events:none;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:60px 60px;opacity:.2;pointer-events:none;}
+
+/* Animated runway lights */
+.runway{position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--pink),var(--purple),var(--gold),transparent);animation:runway 3s ease-in-out infinite;}
+@keyframes runway{0%,100%{opacity:.3;}50%{opacity:1;}}
+
+.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(244,114,182,.1);border:1px solid rgba(244,114,182,.3);border-radius:20px;font-size:13px;color:var(--pink);margin-bottom:24px;}
+.badge .dot{width:8px;height:8px;border-radius:50%;background:var(--pink);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+.fashion-hero h1{font-size:clamp(40px,7vw,80px);font-weight:900;line-height:1.05;letter-spacing:-2px;margin-bottom:16px;}
+.fashion-hero h1 .line1{display:block;color:var(--ink);}
+.fashion-hero h1 .line2{display:block;background:linear-gradient(135deg,var(--pink),var(--purple),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero-sub{font-size:clamp(15px,2vw,20px);color:var(--dim);max-width:640px;line-height:1.6;margin-bottom:40px;}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:60px;}
+.btn-hero{padding:14px 32px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;text-decoration:none;border:none;transition:all .2s;}
+.btn-hero.primary{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;box-shadow:0 0 40px rgba(244,114,182,.3);}
+.btn-hero.primary:hover{transform:translateY(-2px);box-shadow:0 8px 50px rgba(244,114,182,.5);}
+.btn-hero.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;}
+.btn-hero.secondary{background:var(--panel2);border:1px solid var(--line);color:var(--ink);}
+.btn-hero.secondary:hover{border-color:var(--pink);color:var(--pink);}
+
+.hero-stats{display:flex;gap:40px;flex-wrap:wrap;justify-content:center;}
+.hstat{text-align:center;}
+.hstat .num{font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--pink),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hstat .lbl{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;}
+
+/* MARQUEE */
+.marquee-wrap{padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap;background:rgba(244,114,182,.03);}
+.marquee{display:inline-flex;animation:marquee 40s linear infinite;}
+.marquee span{padding:0 32px;font-size:13px;color:var(--dim);}
+.marquee span b{color:var(--pink);}
+@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* SECTIONS */
+section{padding:80px 20px;max-width:1400px;margin:0 auto;}
+.sec-label{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--pink);margin-bottom:12px;}
+.sec-title{font-size:clamp(28px,4vw,44px);font-weight:800;margin-bottom:16px;letter-spacing:-1px;}
+.sec-sub{color:var(--dim);font-size:17px;max-width:600px;line-height:1.6;margin-bottom:48px;}
+
+/* TOOL GRID */
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.tool-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;text-decoration:none;color:var(--ink);transition:all .2s;position:relative;overflow:hidden;cursor:pointer;}
+.tool-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(255,255,255,.02));pointer-events:none;}
+.tool-card:hover{border-color:var(--pink);transform:translateY(-3px);box-shadow:0 12px 40px rgba(244,114,182,.15);}
+.tool-card .icon{font-size:32px;margin-bottom:14px;}
+.tool-card h3{font-size:18px;font-weight:700;margin-bottom:8px;}
+.tool-card p{font-size:13px;color:var(--dim);line-height:1.6;}
+.tool-card .tag{display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;margin-top:12px;}
+.tag-pink{background:rgba(244,114,182,.2);color:var(--pink);}
+.tag-purple{background:rgba(167,139,250,.2);color:var(--purple);}
+.tag-gold{background:rgba(212,160,60,.15);color:var(--gold);}
+.tag-green{background:rgba(63,185,80,.15);color:var(--ok);}
+.tag-orange{background:rgba(251,146,60,.2);color:var(--orange);}
+.tool-card.featured{border-color:rgba(244,114,182,.4);background:linear-gradient(135deg,rgba(244,114,182,.05),var(--panel));}
+.tool-card.wide{grid-column:span 2;}
+.tool-card.ultra{grid-column:span 3;}
+@media(max-width:900px){.tool-card.wide,.tool-card.ultra{grid-column:span 1;}}
+
+/* WARDROBE PREVIEW */
+.wardrobe-preview{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:24px;}
+.wardrobe-item{background:var(--panel2);border-radius:12px;padding:16px;text-align:center;border:1px solid var(--line);transition:all .2s;cursor:pointer;}
+.wardrobe-item:hover{border-color:var(--pink);transform:scale(1.03);}
+.wardrobe-item .wi-icon{font-size:2.5rem;margin-bottom:8px;display:block;}
+.wardrobe-item .wi-name{font-size:12px;font-weight:600;color:var(--ink);}
+.wardrobe-item .wi-brand{font-size:11px;color:var(--dim);}
+.wardrobe-item .wi-price{font-size:13px;font-weight:700;color:var(--gold);margin-top:4px;}
+
+/* AI CHAT BOX */
+.ai-chat-widget{background:var(--panel);border:1px solid var(--line);border-radius:20px;overflow:hidden;max-width:600px;}
+.chat-header{background:linear-gradient(135deg,var(--pink),var(--purple));padding:16px 20px;display:flex;align-items:center;gap:12px;}
+.chat-avatar{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+.chat-info h4{color:#fff;font-weight:700;}
+.chat-info p{color:rgba(255,255,255,.8);font-size:12px;}
+.chat-messages{padding:20px;height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.chat-msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;}
+.chat-msg.ai{background:var(--panel2);color:var(--ink);border-top-left-radius:4px;align-self:flex-start;}
+.chat-msg.user{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border-top-right-radius:4px;align-self:flex-end;}
+.chat-input{display:flex;gap:8px;padding:16px;border-top:1px solid var(--line);}
+.chat-input input{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--ink);font-size:14px;}
+.chat-input input:focus{outline:none;border-color:var(--pink);}
+.chat-send{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border:none;border-radius:8px;padding:10px 16px;cursor:pointer;font-weight:600;transition:all .2s;}
+.chat-send:hover{transform:scale(1.05);}
+
+/* 3D STUDIO PREVIEW */
+.studio-3d{background:var(--panel);border:1px solid var(--line);border-radius:20px;overflow:hidden;}
+.studio-header{background:linear-gradient(135deg,rgba(167,139,250,.2),rgba(244,114,182,.2));padding:20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+.studio-header h3{font-size:1.2rem;font-weight:700;}
+.studio-canvas{height:400px;background:linear-gradient(135deg,#0a0010,#100020,#0a0010);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.canvas-scene{position:absolute;inset:0;}
+.mannequin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:8rem;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translate(-50%,-50%) translateY(0);}50%{transform:translate(-50%,-50%) translateY(-20px);}}
+.canvas-effects{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(167,139,250,.3) 0%,transparent 60%);}
+.orbit-ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:300px;height:300px;border:1px solid rgba(244,114,182,.3);border-radius:50%;animation:orbit 8s linear infinite;}
+.orbit-ring:nth-child(2){width:200px;height:200px;border-color:rgba(167,139,250,.3);animation-duration:6s;animation-direction:reverse;}
+@keyframes orbit{from{transform:translate(-50%,-50%) rotateX(75deg) rotateZ(0);}to{transform:translate(-50%,-50%) rotateX(75deg) rotateZ(360deg);}}
+.studio-controls{padding:16px;display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);}
+.ctrl-btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;transition:all .2s;}
+.ctrl-btn:hover{border-color:var(--purple);color:var(--purple);}
+.ctrl-btn.active{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border-color:transparent;}
+
+/* TREND BOARD */
+.trend-board{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.trend-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .2s;}
+.trend-card:hover{transform:translateY(-4px);border-color:var(--pink);}
+.trend-image{height:200px;display:flex;align-items:center;justify-content:center;font-size:4rem;position:relative;}
+.trend-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));padding:12px;}
+.trend-label{color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+.trend-info{padding:16px;}
+.trend-title{font-weight:700;margin-bottom:4px;}
+.trend-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);}
+.trend-hot{color:var(--pink);font-weight:700;}
+
+/* CELEBRITY VIP */
+.vip-section{background:linear-gradient(135deg,rgba(212,160,60,.05),rgba(244,114,182,.05));border:1px solid rgba(212,160,60,.2);border-radius:20px;padding:40px;}
+.vip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:24px;}
+.vip-card{background:var(--panel);border-radius:16px;padding:20px;text-align:center;border:1px solid var(--line);transition:all .3s;cursor:pointer;}
+.vip-card:hover{border-color:var(--gold);transform:scale(1.03);box-shadow:0 8px 30px rgba(212,160,60,.2);}
+.vip-avatar{width:70px;height:70px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:2rem;border:2px solid var(--gold);}
+.vip-name{font-weight:700;font-size:14px;margin-bottom:4px;}
+.vip-role{color:var(--dim);font-size:12px;}
+.vip-status{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;color:var(--ok);}
+.vip-status .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);}
+
+/* SHOPPING CART */
+.cart-float{position:fixed;bottom:24px;right:24px;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border:none;border-radius:50px;padding:14px 20px;display:flex;align-items:center;gap:8px;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(244,114,182,.4);transition:all .3s;z-index:200;text-decoration:none;}
+.cart-float:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(244,114,182,.5);}
+.cart-count{background:var(--gold);color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+
+/* STATS STRIP */
+.stats-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:40px 0;}
+.sstat{background:var(--panel);padding:28px 20px;text-align:center;}
+.sstat .n{font-size:32px;font-weight:900;background:linear-gradient(135deg,var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sstat .l{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+
+/* SPLIT LAYOUT */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+@media(max-width:900px){.split{grid-template-columns:1fr;}}
+
+/* SNEAKER SECTION */
+.sneaker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+.sneaker-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .2s;}
+.sneaker-card:hover{transform:translateY(-4px);border-color:var(--orange);box-shadow:0 12px 30px rgba(251,146,60,.2);}
+.sneaker-img{height:180px;display:flex;align-items:center;justify-content:center;font-size:5rem;background:linear-gradient(135deg,var(--panel2),var(--panel));}
+.sneaker-info{padding:16px;}
+.sneaker-brand{font-size:11px;color:var(--orange);font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+.sneaker-name{font-size:15px;font-weight:700;margin:4px 0;}
+.sneaker-price{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
+.sneaker-retail{color:var(--dim);font-size:12px;}
+.sneaker-resale{color:var(--ok);font-size:15px;font-weight:700;}
+
+/* NFT PREVIEW */
+.nft-strip{display:flex;gap:12px;overflow-x:auto;padding:8px 0;}
+.nft-strip::-webkit-scrollbar{height:4px;}
+.nft-strip::-webkit-scrollbar-thumb{background:var(--pink);border-radius:2px;}
+.nft-card{flex:0 0 180px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s;}
+.nft-card:hover{border-color:var(--purple);transform:scale(1.03);}
+.nft-img{height:150px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;background:linear-gradient(135deg,rgba(167,139,250,.2),rgba(244,114,182,.2));}
+.nft-info{padding:10px 12px;}
+.nft-name{font-size:12px;font-weight:700;}
+.nft-price{font-size:13px;color:var(--purple);font-weight:700;margin-top:4px;}
+
+/* BOTTOM NAV (mobile) */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--line);padding:8px 0;z-index:100;}
+.bottom-nav-items{display:flex;justify-content:space-around;}
+.bnav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;text-decoration:none;color:var(--dim);font-size:10px;}
+.bnav-item.active{color:var(--pink);}
+.bnav-item span:first-child{font-size:20px;}
+@media(max-width:768px){.bottom-nav{display:block;}}
+
+/* TOAST */
+.toast{position:fixed;top:80px;right:20px;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;padding:12px 20px;border-radius:12px;font-weight:600;font-size:14px;z-index:999;transform:translateX(200%);transition:transform .3s;}
+.toast.show{transform:translateX(0);}
+
+@media(max-width:768px){
+  .wardrobe-preview{grid-template-columns:repeat(2,1fr);}
+  .trend-board{grid-template-columns:1fr;}
+  .sneaker-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<div class="toast" id="toast">✅ Added to wardrobe!</div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="index.html">
+    <span>🐐 GOAT Fashion</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="goat-fashion-hub.html" class="active">Fashion</a>
+    <a href="goat-3d-studio.html">3D Studio</a>
+    <a href="goat-celebrity-lounge.html">VIP Lounge</a>
+    <a href="studio.html">Music Studio</a>
+    <a href="agents-brain.html">AI Agents</a>
+    <a href="goat-wardrobe.html">Wardrobe</a>
+    <a href="goat-bank.html">Banking</a>
+    <a href="goat-dating.html">Connect</a>
+  </div>
+  <div class="nav-right">
+    <a href="goat-celebrity-lounge.html" class="nav-btn gold">👑 VIP Access</a>
+    <a href="goat-3d-studio.html" class="nav-btn pink">🎨 3D Studio</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="fashion-hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="runway"></div>
+  
+  <div class="badge">
+    <span class="dot"></span>
+    Powered by GOAT AI — World's #1 Fashion Platform
+  </div>
+  
+  <h1>
+    <span class="line1">The World's Most</span>
+    <span class="line2">Powerful Fashion Hub</span>
+  </h1>
+  
+  <p class="hero-sub">Where music, fashion, 3D animation, and AI collide. Create outfits, launch brands, track sneaker markets, and collaborate with celebrities — all in one place.</p>
+  
+  <div class="hero-cta">
+    <a href="goat-3d-studio.html" class="btn-hero primary">🎨 Open 3D Studio</a>
+    <a href="goat-style-ai.html" class="btn-hero gold">🤖 AI Stylist</a>
+    <a href="goat-celebrity-lounge.html" class="btn-hero secondary">👑 VIP Lounge</a>
+  </div>
+  
+  <div class="hero-stats">
+    <div class="hstat"><div class="num">500K+</div><div class="lbl">Fashion Items</div></div>
+    <div class="hstat"><div class="num">12K+</div><div class="lbl">Sneaker Styles</div></div>
+    <div class="hstat"><div class="num">2,500+</div><div class="lbl">Designers</div></div>
+    <div class="hstat"><div class="num">4K</div><div class="lbl">3D Resolution</div></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee">
+    <span>👟 <b>Jordan 1 Retro High OG</b> — Resale $620</span>
+    <span>👗 <b>Balenciaga SS25</b> — New Collection</span>
+    <span>💎 <b>Louis Vuitton x Supreme</b> — NFT Drop</span>
+    <span>🔥 <b>Off-White Arrows</b> — Limited Release</span>
+    <span>⌚ <b>AP Royal Oak</b> — Celebrity Spotted</span>
+    <span>👕 <b>GOAT x Travis Scott</b> — Exclusive Collab</span>
+    <span>🧢 <b>Corteiz</b> — Sold Out in 2 mins</span>
+    <span>🏆 <b>Dior Homme</b> — Award Winner</span>
+    <span>🎨 <b>GOAT 3D Studio</b> — Create your look now</span>
+    <span>💰 <b>Yeezy 350 V2</b> — +340% ROI</span>
+    <span>👟 <b>Jordan 1 Retro High OG</b> — Resale $620</span>
+    <span>👗 <b>Balenciaga SS25</b> — New Collection</span>
+    <span>💎 <b>Louis Vuitton x Supreme</b> — NFT Drop</span>
+    <span>🔥 <b>Off-White Arrows</b> — Limited Release</span>
+    <span>⌚ <b>AP Royal Oak</b> — Celebrity Spotted</span>
+    <span>👕 <b>GOAT x Travis Scott</b> — Exclusive Collab</span>
+  </div>
+</div>
+
+<!-- STATS -->
+<section>
+  <div class="stats-strip">
+    <div class="sstat"><div class="n">$4.2B</div><div class="l">Market Tracked</div></div>
+    <div class="sstat"><div class="n">98K</div><div class="l">Active Users</div></div>
+    <div class="sstat"><div class="n">12K</div><div class="l">Sneaker Styles</div></div>
+    <div class="sstat"><div class="n">500+</div><div class="l">Celebrity Members</div></div>
+    <div class="sstat"><div class="n">4K</div><div class="l">3D Resolution</div></div>
+    <div class="sstat"><div class="n">99.9%</div><div class="l">Uptime</div></div>
+  </div>
+</section>
+
+<!-- MAIN TOOLS -->
+<section>
+  <div class="sec-label">All Tools</div>
+  <h2 class="sec-title">Everything Fashion & Entertainment</h2>
+  <p class="sec-sub">Every tool a celebrity, trendsetter, or fashion professional needs — all in one powerful platform.</p>
+  
+  <div class="tool-grid">
+    <!-- 3D Studio -->
+    <a href="goat-3d-studio.html" class="tool-card featured wide">
+      <div class="icon">🎨</div>
+      <h3>3D Fashion Studio — Marvel Quality</h3>
+      <p>Create photorealistic 4K fashion renders, virtual try-ons, runway simulations, and Marvel-style animations. Powered by Sora 2 AI engine — the world's most advanced fashion 3D tool.</p>
+      <span class="tag tag-purple">🚀 FLAGSHIP TOOL</span>
+      <span class="tag tag-pink">4K RESOLUTION</span>
+      <span class="tag tag-gold">SORA 2 ENGINE</span>
+    </a>
+    
+    <!-- AI Stylist -->
+    <a href="goat-style-ai.html" class="tool-card featured">
+      <div class="icon">🤖</div>
+      <h3>AI Style Assistant</h3>
+      <p>GPT-4 powered personal stylist that learns your taste, suggests outfits, analyzes trends, and creates complete looks from your wardrobe.</p>
+      <span class="tag tag-purple">AI POWERED</span>
+    </a>
+    
+    <!-- Virtual Wardrobe -->
+    <a href="goat-wardrobe.html" class="tool-card">
+      <div class="icon">👔</div>
+      <h3>Virtual Wardrobe</h3>
+      <p>Organize your entire fashion collection digitally. Track wear counts, valuations, and create outfit combinations.</p>
+      <span class="tag tag-pink">ORGANIZER</span>
+    </a>
+    
+    <!-- Sneaker Market -->
+    <a href="#sneakers" class="tool-card featured">
+      <div class="icon">👟</div>
+      <h3>Sneaker Market Intelligence</h3>
+      <p>Real-time resale prices, release calendars, authentication tools, and investment tracking for the world's hottest sneakers.</p>
+      <span class="tag tag-orange">MARKET DATA</span>
+    </a>
+    
+    <!-- Fashion Discovery -->
+    <a href="goat-fashion.html" class="tool-card">
+      <div class="icon">✨</div>
+      <h3>Fashion Discovery</h3>
+      <p>Browse 500K+ items from 2,500 designers worldwide. Curated collections, trending pieces, and exclusive drops.</p>
+      <span class="tag tag-pink">DISCOVERY</span>
+    </a>
+    
+    <!-- Celebrity Lounge -->
+    <a href="goat-celebrity-lounge.html" class="tool-card featured">
+      <div class="icon">👑</div>
+      <h3>Celebrity VIP Lounge</h3>
+      <p>Exclusive space for celebrities and VIPs. Private styling sessions, brand partnerships, and premium collaborations with full privacy.</p>
+      <span class="tag tag-gold">VIP EXCLUSIVE</span>
+    </a>
+    
+    <!-- NFT Fashion -->
+    <a href="goat-nft-studio.html" class="tool-card">
+      <div class="icon">🎭</div>
+      <h3>Fashion NFT Studio</h3>
+      <p>Create, mint, and sell exclusive digital fashion NFTs. Launch your own limited edition collections and earn royalties forever.</p>
+      <span class="tag tag-purple">WEB3</span>
+    </a>
+    
+    <!-- Brand Builder -->
+    <a href="#brand" class="tool-card">
+      <div class="icon">🏷️</div>
+      <h3>Brand Builder</h3>
+      <p>Launch your own fashion brand with AI-generated logos, lookbooks, marketing materials, and e-commerce storefront.</p>
+      <span class="tag tag-gold">BUSINESS</span>
+    </a>
+    
+    <!-- Trend Analysis -->
+    <a href="#trends" class="tool-card">
+      <div class="icon">📊</div>
+      <h3>Global Trend Analyzer</h3>
+      <p>AI-powered trend forecasting from runways, social media, street style, and celebrity sightings worldwide.</p>
+      <span class="tag tag-pink">ANALYTICS</span>
+    </a>
+    
+    <!-- Virtual Try-On -->
+    <a href="goat-3d-studio.html" class="tool-card">
+      <div class="icon">👤</div>
+      <h3>Virtual Try-On</h3>
+      <p>See how any outfit looks on your avatar in real-time 3D. AI-powered body scanning and photorealistic rendering.</p>
+      <span class="tag tag-purple">AR/3D</span>
+    </a>
+    
+    <!-- Collab Studio -->
+    <a href="#collab" class="tool-card">
+      <div class="icon">🤝</div>
+      <h3>Celebrity Collab Studio</h3>
+      <p>Connect with fashion designers, photographers, stylists, and other celebrities for exclusive collaborations and brand deals.</p>
+      <span class="tag tag-gold">NETWORK</span>
+    </a>
+    
+    <!-- Video Generator -->
+    <a href="goat-ai-video.html" class="tool-card">
+      <div class="icon">🎬</div>
+      <h3>AI Fashion Video</h3>
+      <p>Generate stunning fashion videos, lookbooks, and runway shows with Sora 2 AI. Hollywood-quality production in minutes.</p>
+      <span class="tag tag-purple">SORA 2</span>
+    </a>
+  </div>
+</section>
+
+<!-- WARDROBE PREVIEW -->
+<section>
+  <div class="sec-label">My Collection</div>
+  <h2 class="sec-title">Your Digital Wardrobe</h2>
+  <p class="sec-sub">$247 items tracked • $58,400 total value • 89% utilization rate</p>
+  
+  <div class="wardrobe-preview">
+    <div class="wardrobe-item" onclick="showToast('👕 Gucci GG Shirt added to outfit!')">
+      <span class="wi-icon">👕</span>
+      <div class="wi-name">GG Monogram Shirt</div>
+      <div class="wi-brand">GUCCI</div>
+      <div class="wi-price">$1,450</div>
+    </div>
+    <div class="wardrobe-item" onclick="showToast('🧥 Balmain Jacket added to outfit!')">
+      <span class="wi-icon">🧥</span>
+      <div class="wi-name">Leather Biker Jacket</div>
+      <div class="wi-brand">BALMAIN</div>
+      <div class="wi-price">$4,890</div>
+    </div>
+    <div class="wardrobe-item" onclick="showToast('👟 Jordan 1 added to outfit!')">
+      <span class="wi-icon">👟</span>
+      <div class="wi-name">Air Jordan 1 Retro</div>
+      <div class="wi-brand">NIKE</div>
+      <div class="wi-price">$520</div>
+    </div>
+    <div class="wardrobe-item" onclick="showToast('👜 Hermès Birkin added!')">
+      <span class="wi-icon">👜</span>
+      <div class="wi-name">Birkin 25</div>
+      <div class="wi-brand">HERMÈS</div>
+      <div class="wi-price">$28,900</div>
+    </div>
+    <div class="wardrobe-item" onclick="showToast('👖 Prada Trousers added!')">
+      <span class="wi-icon">👖</span>
+      <div class="wi-name">Pleated Trousers</div>
+      <div class="wi-brand">PRADA</div>
+      <div class="wi-price">$1,280</div>
+    </div>
+    <div class="wardrobe-item" onclick="showToast('⌚ Rolex added!')">
+      <span class="wi-icon">⌚</span>
+      <div class="wi-name">Submariner</div>
+      <div class="wi-brand">ROLEX</div>
+      <div class="wi-price">$12,400</div>
+    </div>
+    <div class="wardrobe-item" onclick="showToast('💍 VVS Chain added!')">
+      <span class="wi-icon">💍</span>
+      <div class="wi-name">VVS Cuban Link</div>
+      <div class="wi-brand">CUSTOM</div>
+      <div class="wi-price">$45,000</div>
+    </div>
+    <div class="wardrobe-item" onclick="showToast('🧢 Dior Cap added!')">
+      <span class="wi-icon">🧢</span>
+      <div class="wi-name">Oblique Cap</div>
+      <div class="wi-brand">DIOR</div>
+      <div class="wi-price">$420</div>
+    </div>
+  </div>
+  
+  <div style="text-align:center;margin-top:24px;">
+    <a href="goat-wardrobe.html" class="btn-hero primary" style="display:inline-block;">View Full Wardrobe (247 items) →</a>
+  </div>
+</section>
+
+<!-- 3D STUDIO PREVIEW -->
+<section>
+  <div class="sec-label">3D Studio</div>
+  <h2 class="sec-title">Marvel-Quality Fashion Animation</h2>
+  <p class="sec-sub">Create stunning 4K fashion renders and runway simulations powered by Sora 2 AI engine.</p>
+  
+  <div class="split">
+    <div class="studio-3d">
+      <div class="studio-header">
+        <h3>🎨 Live 3D Viewport</h3>
+        <div style="display:flex;gap:8px;">
+          <span style="width:12px;height:12px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
+          <span style="width:12px;height:12px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
+          <span style="width:12px;height:12px;border-radius:50%;background:#10b981;display:inline-block;"></span>
+        </div>
+      </div>
+      <div class="studio-canvas" id="canvas3d">
+        <div class="canvas-effects"></div>
+        <div class="canvas-scene">
+          <div class="orbit-ring"></div>
+          <div class="orbit-ring"></div>
+        </div>
+        <div class="mannequin" id="mannequin">🧍</div>
+      </div>
+      <div class="studio-controls">
+        <button class="ctrl-btn active" onclick="setLook('casual')">Casual</button>
+        <button class="ctrl-btn" onclick="setLook('luxury')">Luxury</button>
+        <button class="ctrl-btn" onclick="setLook('streetwear')">Streetwear</button>
+        <button class="ctrl-btn" onclick="setLook('formal')">Formal</button>
+        <button class="ctrl-btn" onclick="setLook('athletic')">Athletic</button>
+        <button class="ctrl-btn" onclick="toggleAnimation()">▶ Animate</button>
+        <button class="ctrl-btn" onclick="export3D()">⬇ Export 4K</button>
+      </div>
+    </div>
+    
+    <div>
+      <div class="tool-grid" style="grid-template-columns:1fr;">
+        <div class="tool-card" onclick="openTool('runway')">
+          <div class="icon">👠</div>
+          <h3>Runway Simulator</h3>
+          <p>Create professional runway shows with lighting, music, and model animations.</p>
+          <span class="tag tag-purple">SIMULATION</span>
+        </div>
+        <div class="tool-card" onclick="openTool('avatar')">
+          <div class="icon">🧬</div>
+          <h3>Avatar Creator</h3>
+          <p>Build your perfect digital twin with AI body scanning and customization tools.</p>
+          <span class="tag tag-pink">AI POWERED</span>
+        </div>
+        <div class="tool-card" onclick="openTool('sora')">
+          <div class="icon">🎬</div>
+          <h3>Sora 2 Video Engine</h3>
+          <p>Generate photorealistic fashion videos from text descriptions in 4K quality.</p>
+          <span class="tag tag-gold">SORA 2</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRENDING -->
+<section id="trends">
+  <div class="sec-label">What's Hot</div>
+  <h2 class="sec-title">Global Fashion Trends</h2>
+  <p class="sec-sub">Real-time trend data from 180+ countries, 50M+ social posts analyzed daily.</p>
+  
+  <div class="trend-board">
+    <div class="trend-card">
+      <div class="trend-image" style="background:linear-gradient(135deg,#1a0030,#300060);">
+        🔥
+        <div class="trend-overlay"><div class="trend-label">#1 Trending</div></div>
+      </div>
+      <div class="trend-info">
+        <div class="trend-title">Oversized Luxury Streetwear</div>
+        <div class="trend-meta"><span class="trend-hot">+847% this week</span><span>Global</span></div>
+      </div>
+    </div>
+    <div class="trend-card">
+      <div class="trend-image" style="background:linear-gradient(135deg,#001a20,#003040);">
+        💎
+        <div class="trend-overlay"><div class="trend-label">#2 Trending</div></div>
+      </div>
+      <div class="trend-info">
+        <div class="trend-title">Statement Jewelry & Chains</div>
+        <div class="trend-meta"><span class="trend-hot">+623% this week</span><span>Music Scene</span></div>
+      </div>
+    </div>
+    <div class="trend-card">
+      <div class="trend-image" style="background:linear-gradient(135deg,#1a1000,#302000);">
+        👟
+        <div class="trend-overlay"><div class="trend-label">#3 Trending</div></div>
+      </div>
+      <div class="trend-info">
+        <div class="trend-title">Vintage Nike & Jordan</div>
+        <div class="trend-meta"><span class="trend-hot">+512% this week</span><span>Sneaker Culture</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SNEAKERS -->
+<section id="sneakers">
+  <div class="sec-label">Sneaker Intelligence</div>
+  <h2 class="sec-title">Market Prices — Live Data</h2>
+  <p class="sec-sub">Real-time resale prices, authentication, and investment tracking for the hottest kicks.</p>
+  
+  <div class="sneaker-grid">
+    <div class="sneaker-card">
+      <div class="sneaker-img">👟</div>
+      <div class="sneaker-info">
+        <div class="sneaker-brand">NIKE / JORDAN</div>
+        <div class="sneaker-name">Air Jordan 1 High OG "Bred"</div>
+        <div class="sneaker-price">
+          <span class="sneaker-retail">Retail: $180</span>
+          <span class="sneaker-resale">$1,240 ↑</span>
+        </div>
+      </div>
+    </div>
+    <div class="sneaker-card">
+      <div class="sneaker-img">👟</div>
+      <div class="sneaker-info">
+        <div class="sneaker-brand">ADIDAS</div>
+        <div class="sneaker-name">Yeezy 350 V2 "Zebra"</div>
+        <div class="sneaker-price">
+          <span class="sneaker-retail">Retail: $220</span>
+          <span class="sneaker-resale">$850 ↑</span>
+        </div>
+      </div>
+    </div>
+    <div class="sneaker-card">
+      <div class="sneaker-img">👟</div>
+      <div class="sneaker-info">
+        <div class="sneaker-brand">NIKE</div>
+        <div class="sneaker-name">Travis Scott x Air Max 1</div>
+        <div class="sneaker-price">
+          <span class="sneaker-retail">Retail: $160</span>
+          <span class="sneaker-resale">$2,100 ↑</span>
+        </div>
+      </div>
+    </div>
+    <div class="sneaker-card">
+      <div class="sneaker-img">👟</div>
+      <div class="sneaker-info">
+        <div class="sneaker-brand">NEW BALANCE</div>
+        <div class="sneaker-name">990v6 "Made in USA"</div>
+        <div class="sneaker-price">
+          <span class="sneaker-retail">Retail: $200</span>
+          <span class="sneaker-resale">$420 ↑</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI STYLIST + NFT -->
+<section>
+  <div class="split">
+    <!-- AI Chat -->
+    <div>
+      <div class="sec-label">AI Powered</div>
+      <h2 class="sec-title" style="font-size:28px;">Your Personal AI Stylist</h2>
+      <p class="sec-sub" style="font-size:15px;margin-bottom:20px;">Chat with your AI stylist 24/7. Get personalized outfit suggestions, trend advice, and shopping recommendations.</p>
+      
+      <div class="ai-chat-widget">
+        <div class="chat-header">
+          <div class="chat-avatar">🤖</div>
+          <div class="chat-info">
+            <h4>GOAT Style AI</h4>
+            <p>● Online — Analyzing your wardrobe...</p>
+          </div>
+        </div>
+        <div class="chat-messages" id="chatMsgs">
+          <div class="chat-msg ai">Hey! I've analyzed your wardrobe of 247 items. Based on today's weather and your upcoming event, I recommend your Gucci GG shirt with Prada trousers and Jordan 1 Retros. 🔥</div>
+          <div class="chat-msg user">What about for a red carpet event?</div>
+          <div class="chat-msg ai">For the red carpet, I'd go with your Balmain leather jacket as the statement piece, paired with Versace Medusa accessories and your Alexander McQueen shoes. Add the VVS Cuban Link for that GOAT-level drip! 💎👑</div>
+        </div>
+        <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="Ask your AI stylist..." />
+          <button class="chat-send" onclick="sendChat()">Send</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- NFT -->
+    <div>
+      <div class="sec-label">Web3 Fashion</div>
+      <h2 class="sec-title" style="font-size:28px;">Fashion NFT Marketplace</h2>
+      <p class="sec-sub" style="font-size:15px;margin-bottom:20px;">Create and sell exclusive digital fashion pieces. Earn royalties on every resale forever.</p>
+      
+      <div class="nft-strip">
+        <div class="nft-card">
+          <div class="nft-img">🧥</div>
+          <div class="nft-info">
+            <div class="nft-name">GOAT Drip #001</div>
+            <div class="nft-price">2.4 ETH</div>
+          </div>
+        </div>
+        <div class="nft-card">
+          <div class="nft-img">👟</div>
+          <div class="nft-info">
+            <div class="nft-name">Cyber Jordan #042</div>
+            <div class="nft-price">1.8 ETH</div>
+          </div>
+        </div>
+        <div class="nft-card">
+          <div class="nft-img">💎</div>
+          <div class="nft-info">
+            <div class="nft-name">Diamond Chain #007</div>
+            <div class="nft-price">5.2 ETH</div>
+          </div>
+        </div>
+        <div class="nft-card">
+          <div class="nft-img">👑</div>
+          <div class="nft-info">
+            <div class="nft-name">Royal Crown #001</div>
+            <div class="nft-price">12.0 ETH</div>
+          </div>
+        </div>
+        <div class="nft-card">
+          <div class="nft-img">🎭</div>
+          <div class="nft-info">
+            <div class="nft-name">GOAT Mask #003</div>
+            <div class="nft-price">3.6 ETH</div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="margin-top:20px;">
+        <a href="goat-nft-studio.html" class="btn-hero primary" style="display:inline-block;margin-right:12px;">Create NFT</a>
+        <a href="goat-crypto-wallet.html" class="btn-hero secondary" style="display:inline-block;">My Wallet</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VIP CELEBRITY SECTION -->
+<section>
+  <div class="vip-section">
+    <div class="sec-label">VIP Access</div>
+    <h2 class="sec-title">Celebrity Members</h2>
+    <p class="sec-sub">A safe, private space for celebrities to manage their image, collaborate, and make money. End-to-end encrypted. Zero data selling.</p>
+    
+    <div class="vip-grid">
+      <div class="vip-card">
+        <div class="vip-avatar" style="background:linear-gradient(135deg,#ffd700,#ff6b00);">🎤</div>
+        <div class="vip-name">DJ Speedy</div>
+        <div class="vip-role">Founder & Artist</div>
+        <div class="vip-status"><span class="dot"></span> Active Now</div>
+      </div>
+      <div class="vip-card">
+        <div class="vip-avatar" style="background:linear-gradient(135deg,#f472b6,#a78bfa);">🎵</div>
+        <div class="vip-name">Artist Member</div>
+        <div class="vip-role">Music Executive</div>
+        <div class="vip-status"><span class="dot"></span> Active Now</div>
+      </div>
+      <div class="vip-card">
+        <div class="vip-avatar" style="background:linear-gradient(135deg,#10b981,#059669);">🎬</div>
+        <div class="vip-name">Film Director</div>
+        <div class="vip-role">Entertainment</div>
+        <div class="vip-status"><span class="dot"></span> Active Now</div>
+      </div>
+      <div class="vip-card">
+        <div class="vip-avatar" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">👟</div>
+        <div class="vip-name">Sneaker Brand</div>
+        <div class="vip-role">Fashion Partner</div>
+        <div class="vip-status"><span class="dot"></span> Active Now</div>
+      </div>
+      <div class="vip-card" style="border:2px dashed rgba(212,160,60,.4);background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;">
+        <div style="font-size:2rem;margin-bottom:8px;">+</div>
+        <div style="font-weight:700;font-size:14px;">Invite Celebrity</div>
+        <div style="color:var(--dim);font-size:12px;margin-top:4px;">Private & Secure</div>
+      </div>
+    </div>
+    
+    <div style="margin-top:24px;text-align:center;">
+      <a href="goat-celebrity-lounge.html" class="btn-hero gold" style="display:inline-block;">Enter VIP Lounge →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FLOATING CART -->
+<a href="goat-wardrobe.html" class="cart-float">
+  🛒 My Wardrobe <span class="cart-count">247</span>
+</a>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="bottom-nav-items">
+    <a href="index.html" class="bnav-item"><span>🏠</span><span>Home</span></a>
+    <a href="goat-fashion-hub.html" class="bnav-item active"><span>👗</span><span>Fashion</span></a>
+    <a href="goat-3d-studio.html" class="bnav-item"><span>🎨</span><span>3D Studio</span></a>
+    <a href="agents-brain.html" class="bnav-item"><span>🤖</span><span>AI</span></a>
+    <a href="goat-celebrity-lounge.html" class="bnav-item"><span>👑</span><span>VIP</span></a>
+  </div>
+</div>
+
+<script>
+// Toast notification
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// 3D Studio controls
+const looks = {
+  casual: '🧍',
+  luxury: '🤵',
+  streetwear: '😎',
+  formal: '👔',
+  athletic: '🏃'
+};
+
+function setLook(type) {
+  document.getElementById('mannequin').textContent = looks[type] || '🧍';
+  document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  showToast(`✅ Style set to ${type}!`);
+}
+
+let animating = false;
+function toggleAnimation() {
+  animating = !animating;
+  const m = document.getElementById('mannequin');
+  m.style.animation = animating ? 'none' : 'float 3s ease-in-out infinite';
+  if (animating) {
+    let rot = 0;
+    const interval = setInterval(() => {
+      if (!animating) { clearInterval(interval); m.style.transform = 'translate(-50%, -50%)'; return; }
+      rot += 5;
+      m.style.transform = `translate(-50%, -50%) rotateY(${rot}deg)`;
+    }, 50);
+  }
+  event.target.textContent = animating ? '⏹ Stop' : '▶ Animate';
+}
+
+function export3D() {
+  showToast('⬇ Exporting 4K render... Ready in 30s!');
+}
+
+function openTool(tool) {
+  const msgs = {
+    runway: '👠 Runway Simulator launching...',
+    avatar: '🧬 Avatar Creator loading...',
+    sora: '🎬 Sora 2 Engine initializing...'
+  };
+  showToast(msgs[tool] || '🚀 Loading...');
+}
+
+// AI Chat
+const aiResponses = [
+  "Based on your style profile, I'd recommend going bold! Your Balmain jacket with the Versace accessories is a power move. 💪",
+  "The streetwear trend is HUGE right now. Try your Off-White pieces with the Corteiz accessories for maximum impact. 🔥",
+  "For investment purposes, I'd watch the New Balance and ASICS market — both are seeing 300%+ ROI on vintage models. 📈",
+  "Your wardrobe score is 94/100 — one of the highest I've seen! You could earn $15K+ by reselling your least-worn pieces. 💰",
+  "The AI trend forecasting shows monochromatic luxury looks will dominate next season. Perfect timing to expand your neutral collection. ✨"
+];
+let aiIdx = 0;
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msgs = document.getElementById('chatMsgs');
+  const msg = input.value.trim();
+  if (!msg) return;
+  
+  // Add user message
+  const userDiv = document.createElement('div');
+  userDiv.className = 'chat-msg user';
+  userDiv.textContent = msg;
+  msgs.appendChild(userDiv);
+  input.value = '';
+  
+  // Add AI response after delay
+  setTimeout(() => {
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'chat-msg ai';
+    aiDiv.textContent = aiResponses[aiIdx % aiResponses.length];
+    aiIdx++;
+    msgs.appendChild(aiDiv);
+    msgs.scrollTop = msgs.scrollHeight;
+  }, 800);
+  
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+document.getElementById('chatInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') sendChat();
+});
+
+// Live price animation
+function animatePrices() {
+  document.querySelectorAll('.sneaker-resale').forEach(el => {
+    const base = parseFloat(el.textContent.replace('$','').replace(',','').replace(' ↑','').replace(' ↓',''));
+    const change = (Math.random() - 0.4) * 20;
+    const newPrice = Math.max(base + change, base * 0.9);
+    const arrow = change > 0 ? ' ↑' : ' ↓';
+    el.textContent = '$' + newPrice.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + arrow;
+    el.style.color = change > 0 ? 'var(--ok)' : 'var(--red2)';
+  });
+}
+setInterval(animatePrices, 3000);
+</script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+name: 🐐 Build GOAT Royalty App Binaries
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'goat-intel-server/**'
+      - 'web-app/**'
+      - 'installers/**'
+      - '.github/workflows/build-binaries.yml'
+  workflow_dispatch:
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════
+  #  BUILD: macOS .app bundle
+  # ═══════════════════════════════════════════════════════════════
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller flask flask-cors requests yt-dlp python-dotenv
+
+      - name: Build macOS .app
+        run: |
+          cd goat-intel-server
+          pyinstaller --onefile --name GOAT-Intel-Server \
+            --add-data "local_keys.json:." \
+            --hidden-import flask_cors \
+            --hidden-import yt_dlp \
+            goat_intel.py || true
+
+      - name: Package macOS app
+        run: |
+          mkdir -p dist-pkg/GOAT-Royalty-App.app/Contents/{MacOS,Resources}
+          cp -r web-app dist-pkg/GOAT-Royalty-App.app/Contents/Resources/
+          cp -r goat-intel-server dist-pkg/GOAT-Royalty-App.app/Contents/Resources/
+          cp goat-intel-server/dist/GOAT-Intel-Server dist-pkg/GOAT-Royalty-App.app/Contents/MacOS/ 2>/dev/null || true
+          cat > dist-pkg/GOAT-Royalty-App.app/Contents/Info.plist <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key><string>GOAT Royalty App</string>
+            <key>CFBundleDisplayName</key><string>🐐 GOAT Royalty App</string>
+            <key>CFBundleIdentifier</key><string>ai.goat.royaltyapp</string>
+            <key>CFBundleVersion</key><string>3.0</string>
+            <key>CFBundleExecutable</key><string>launch.sh</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+          </dict>
+          </plist>
+          EOF
+          cat > dist-pkg/GOAT-Royalty-App.app/Contents/MacOS/launch.sh <<'EOF'
+          #!/usr/bin/env bash
+          cd "$(dirname "$0")/../Resources"
+          ./goat-intel-server/GOAT-Intel-Server &
+          cd web-app && python3 -m http.server 8090 &
+          sleep 2
+          open http://localhost:8090/powerhouse.html
+          wait
+          EOF
+          chmod +x dist-pkg/GOAT-Royalty-App.app/Contents/MacOS/launch.sh
+          cd dist-pkg && zip -r ../GOAT-Royalty-App-macOS.zip GOAT-Royalty-App.app
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GOAT-Royalty-App-macOS
+          path: GOAT-Royalty-App-macOS.zip
+
+  # ═══════════════════════════════════════════════════════════════
+  #  BUILD: Windows .exe
+  # ═══════════════════════════════════════════════════════════════
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyinstaller flask flask-cors requests yt-dlp python-dotenv
+
+      - name: Build Windows .exe
+        run: |
+          cd goat-intel-server
+          pyinstaller --onefile --name GOAT-Intel-Server --hidden-import flask_cors --hidden-import yt_dlp goat_intel.py
+
+      - name: Package Windows zip
+        shell: pwsh
+        run: |
+          $pkgDir = "dist-pkg\GOAT-Royalty-App"
+          New-Item -ItemType Directory -Force -Path $pkgDir | Out-Null
+          Copy-Item -Recurse web-app $pkgDir\web-app
+          Copy-Item -Recurse goat-intel-server $pkgDir\goat-intel-server -Exclude build,dist,__pycache__
+          Copy-Item goat-intel-server\dist\GOAT-Intel-Server.exe $pkgDir\
+          @"
+          @echo off
+          title 🐐 GOAT Royalty App
+          cd /d "%~dp0"
+          start /B GOAT-Intel-Server.exe
+          start /B cmd /c "cd web-app && python -m http.server 8090"
+          timeout /t 3 /nobreak >nul
+          start http://localhost:8090/powerhouse.html
+          echo GOAT Royalty App is running. Close this window to stop.
+          pause
+          "@ | Out-File -Encoding ASCII -FilePath "$pkgDir\Start GOAT Royalty App.bat"
+          Compress-Archive -Path $pkgDir -DestinationPath GOAT-Royalty-App-Windows.zip -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GOAT-Royalty-App-Windows
+          path: GOAT-Royalty-App-Windows.zip
+
+  # ═══════════════════════════════════════════════════════════════
+  #  BUILD: Linux tarball
+  # ═══════════════════════════════════════════════════════════════
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyinstaller flask flask-cors requests yt-dlp python-dotenv
+
+      - name: Build Linux binary
+        run: |
+          cd goat-intel-server
+          pyinstaller --onefile --name goat-intel-server --hidden-import flask_cors --hidden-import yt_dlp goat_intel.py
+
+      - name: Package Linux tarball
+        run: |
+          mkdir -p dist-pkg/GOAT-Royalty-App
+          cp -r web-app dist-pkg/GOAT-Royalty-App/
+          cp -r goat-intel-server dist-pkg/GOAT-Royalty-App/
+          cp goat-intel-server/dist/goat-intel-server dist-pkg/GOAT-Royalty-App/
+          cat > dist-pkg/GOAT-Royalty-App/start-goat.sh <<'EOF'
+          #!/usr/bin/env bash
+          cd "$(dirname "$0")"
+          ./goat-intel-server &
+          cd web-app && python3 -m http.server 8090 &
+          sleep 2
+          xdg-open http://localhost:8090/powerhouse.html 2>/dev/null &
+          wait
+          EOF
+          chmod +x dist-pkg/GOAT-Royalty-App/start-goat.sh dist-pkg/GOAT-Royalty-App/goat-intel-server
+          cd dist-pkg && tar -czf ../GOAT-Royalty-App-Linux.tar.gz GOAT-Royalty-App
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GOAT-Royalty-App-Linux
+          path: GOAT-Royalty-App-Linux.tar.gz
+
+  # ═══════════════════════════════════════════════════════════════
+  #  RELEASE: auto-create GitHub Release with binaries attached
+  # ═══════════════════════════════════════════════════════════════
+  release:
+    needs: [build-macos, build-windows, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: 🐐 GOAT Royalty App — Build ${{ github.run_number }}
+          body: |
+            ## 🐐 GOAT Royalty App — Latest Build
+
+            **Owner:** DJ Speedy (Harvey L. Miller Jr.) + Waka Flocka Flame
+
+            ### 📥 Downloads
+            - 🍎 **macOS:** `GOAT-Royalty-App-macOS.zip`
+            - 🪟 **Windows:** `GOAT-Royalty-App-Windows.zip`
+            - 🐧 **Linux:** `GOAT-Royalty-App-Linux.tar.gz`
+
+            ### 🚀 Features in this build
+            - 🧠 GOAT AI Brain (Ollama / NVIDIA / Gemini — no OpenAI)
+            - 🤖 11 Specialist Agents + Autopilot with tool calling
+            - 🔗 Network = Net Worth dashboard
+            - 🎧 Spotify real-time analytics
+            - 📧 Fan database (local + Supabase cloud sync)
+            - ⚙️ Settings UI for all API keys
+            - 📱 PWA — install on iPhone/Android as a real app
+
+            ### Install
+            Just extract the archive, run `start-goat.sh` / `Start GOAT Royalty App.bat`, and open the app.
+          files: |
+            ./artifacts/**/*.zip
+            ./artifacts/**/*.tar.gz
+          draft: false
+          prerelease: false

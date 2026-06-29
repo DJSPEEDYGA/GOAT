@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0a">
+<title>🧠 GOAT Brain — Touch AI</title>
+<link rel="stylesheet" href="css/goat-touch.css">
+<script src="js/goat-touch.js" defer></script>
+<style>
+  .agent-strip {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 10px;
+  }
+  .agent-pill {
+    flex-shrink: 0;
+    min-width: 120px;
+    padding: 14px 16px;
+    background: var(--gradient-dark);
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    scroll-snap-align: start;
+    transition: all 0.15s;
+  }
+  .agent-pill:active { transform: scale(0.94); }
+  .agent-pill.active {
+    border-color: var(--goat-gold);
+    box-shadow: var(--shadow-glow-gold);
+    background: linear-gradient(145deg, #2a2a1a, #1a1a0a);
+  }
+  .agent-pill .emoji { font-size: 32px; }
+  .agent-pill .name { font-size: 11px; font-weight: 900; color: var(--goat-cream); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .main-area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: calc(100vh - 64px - 84px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    padding: calc(64px + env(safe-area-inset-top)) 12px calc(84px + env(safe-area-inset-bottom)) 12px;
+  }
+
+  .chat-feed { flex: 1; min-height: 0; }
+
+  .quick-prompts {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  .quick-chip {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    background: rgba(255,215,0,0.08);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 20px;
+    color: var(--goat-gold);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .quick-chip:active { background: rgba(255,215,0,0.2); }
+
+  .welcome {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--goat-silver);
+  }
+  .welcome .emoji { font-size: 56px; margin-bottom: 10px; }
+  .welcome h2 { color: var(--goat-gold); margin-bottom: 8px; }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="touch-mode">
+
+<header class="t-topbar">
+  <button class="t-btn" onclick="history.back()" style="min-width:auto;min-height:44px;padding:8px 12px;">←</button>
+  <div class="brand"><span class="emoji">🧠</span><span id="currentAgentName">AI BRAIN</span></div>
+  <span class="spacer"></span>
+  <span class="chip on" id="engineChip">⚪</span>
+  <button class="t-btn" onclick="clearChat()" style="min-width:auto;min-height:44px;padding:8px 12px;">🗑️</button>
+</header>
+
+<main class="main-area">
+
+  <!-- AGENT SELECTOR STRIP -->
+  <div class="agent-strip" id="agentStrip">
+    <!-- populated by JS -->
+  </div>
+
+  <!-- CHAT FEED -->
+  <div class="chat-feed" id="chatFeed">
+    <div class="welcome">
+      <div class="emoji" id="welcomeEmoji">👑</div>
+      <h2 id="welcomeTitle">Ms. Moneypenny</h2>
+      <p id="welcomeDesc">Marketing strategist for DJ Speedy & Waka Flocka. Tap the mic or type to talk. Swipe left on agents above to switch personas.</p>
+    </div>
+  </div>
+
+  <!-- QUICK PROMPTS -->
+  <div class="quick-prompts" id="quickPrompts"></div>
+
+  <!-- INPUT BAR -->
+  <div class="chat-input-bar">
+    <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎤</button>
+    <input class="chat-input" id="chatInput" placeholder="Type or tap mic…" autocomplete="off">
+    <button class="t-btn primary" onclick="sendMsg()" style="min-width:64px;min-height:48px;padding:10px 16px;font-size:18px;">▶</button>
+  </div>
+
+</main>
+
+<nav class="t-tabbar">
+  <a class="t-tab" href="touch-hub.html"><span class="ic">🏠</span><span class="lb">Hub</span></a>
+  <a class="t-tab active" href="touch-brain.html"><span class="ic">🧠</span><span class="lb">AI</span></a>
+  <a class="t-tab" href="touch-pads.html"><span class="ic">🎹</span><span class="lb">Pads</span></a>
+  <a class="t-tab" href="touch-mixer.html"><span class="ic">🎚️</span><span class="lb">Mix</span></a>
+  <a class="t-tab" href="touch-deck.html"><span class="ic">🎛️</span><span class="lb">Deck</span></a>
+  <a class="t-tab" href="autopilot.html"><span class="ic">🚀</span><span class="lb">Auto</span></a>
+</nav>
+
+<script>
+const AGENTS = [
+  { id:'moneypenny', emoji:'👑', name:'Moneypenny',  desc:'Marketing + branding strategist',
+    prompts:['Write a fire launch tweet','Create 3 promo captions','Plan a 7-day rollout'] },
+  { id:'codex',      emoji:'💻', name:'Codex',       desc:'Senior full-stack developer',
+    prompts:['Debug my Flask server','Build a React hook','Explain this error'] },
+  { id:'legal',      emoji:'⚖️', name:'Legal Eagle',  desc:'Entertainment lawyer',
+    prompts:['Review my producer agreement','Split sheet template','Copyright basics'] },
+  { id:'producer',   emoji:'🎹', name:'Producer',    desc:'Beat-making coach',
+    prompts:['Suggest a trap chord progression','Kick and 808 tips','Mix bus chain'] },
+  { id:'ar',         emoji:'🎯', name:'A&R Scout',    desc:'Talent scout + trend hunter',
+    prompts:['Trending on TikTok right now','Artists to watch in ATL','Hot genre shifts this month'] },
+  { id:'business',   emoji:'📊', name:'CFO Brain',   desc:'Royalty + business finance',
+    prompts:['Read my royalty statement','Project 12-month revenue','Tax strategies'] },
+  { id:'fashion',    emoji:'👗', name:'Stylist',     desc:'Fashion + visual brand',
+    prompts:['Red carpet outfit ideas','Album cover direction','Music video wardrobe'] },
+  { id:'researcher', emoji:'🔬', name:'Deep Research', desc:'Deep research analyst',
+    prompts:['Compare Spotify vs Apple Music payouts','Research my audience demographics','Competitor analysis'] },
+  { id:'writer',     emoji:'✍️', name:'Lyricist',    desc:'Songwriter + hook writer',
+    prompts:['Write a hook about money and loyalty','8-bar verse template','Rhyme scheme ideas'] },
+  { id:'autonomous', emoji:'🚀', name:'Autopilot',   desc:'Real tool-calling agent',
+    prompts:['Look up DJ Speedy on iTunes','Scrape latest Waka Flocka TikToks','Generate a campaign'] },
+  { id:'private',    emoji:'🔐', name:'Vault',       desc:'Local-only private agent',
+    prompts:['Personal notes','Strategy session (private)','Brainstorming space'] },
+];
+
+let currentAgent = AGENTS[0];
+const messages = [];
+
+// Build agent strip
+const strip = document.getElementById('agentStrip');
+AGENTS.forEach(a => {
+  const el = document.createElement('div');
+  el.className = 'agent-pill';
+  el.dataset.id = a.id;
+  el.innerHTML = `<div class="emoji">${a.emoji}</div><div class="name">${a.name}</div>`;
+  el.addEventListener('click', () => selectAgent(a.id));
+  strip.appendChild(el);
+});
+
+function selectAgent(id) {
+  currentAgent = AGENTS.find(a => a.id === id) || AGENTS[0];
+  document.querySelectorAll('.agent-pill').forEach(p => p.classList.toggle('active', p.dataset.id === id));
+  document.getElementById('currentAgentName').textContent = currentAgent.name.toUpperCase();
+  document.getElementById('welcomeEmoji').textContent = currentAgent.emoji;
+  document.getElementById('welcomeTitle').textContent = currentAgent.name;
+  document.getElementById('welcomeDesc').textContent = currentAgent.desc;
+  renderQuickPrompts();
+  GoatTouch.haptic('medium');
+}
+selectAgent('moneypenny');
+
+function renderQuickPrompts() {
+  const box = document.getElementById('quickPrompts');
+  box.innerHTML = '';
+  currentAgent.prompts.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'quick-chip';
+    el.textContent = p;
+    el.addEventListener('click', () => {
+      document.getElementById('chatInput').value = p;
+      sendMsg();
+    });
+    box.appendChild(el);
+  });
+}
+
+function addMsg(who, text) {
+  const feed = document.getElementById('chatFeed');
+  // Remove welcome on first message
+  const welcome = feed.querySelector('.welcome');
+  if (welcome) welcome.remove();
+  const el = document.createElement('div');
+  el.className = 'chat-msg ' + who;
+  el.textContent = text;
+  feed.appendChild(el);
+  feed.scrollTop = feed.scrollHeight;
+  messages.push({ who, text });
+}
+
+function clearChat() {
+  const feed = document.getElementById('chatFeed');
+  feed.innerHTML = `<div class="welcome">
+    <div class="emoji">${currentAgent.emoji}</div>
+    <h2>${currentAgent.name}</h2>
+    <p>${currentAgent.desc}</p>
+  </div>`;
+  messages.length = 0;
+  GoatTouch.haptic('medium');
+}
+
+async function sendMsg() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addMsg('user', text);
+  GoatTouch.haptic('light');
+
+  const thinking = document.createElement('div');
+  thinking.className = 'chat-msg ai';
+  thinking.innerHTML = '<em style="color:#ffd700;">⏳ Thinking…</em>';
+  document.getElementById('chatFeed').appendChild(thinking);
+  document.getElementById('chatFeed').scrollTop = 999999;
+
+  const res = await GoatTouch.brainChat(text, currentAgent.id);
+  thinking.remove();
+
+  const reply = res.reply || res.error || '⚠️ No response from Brain.';
+  addMsg('ai', reply);
+
+  // Speak the response if voice mode was used
+  if (voiceMode) {
+    GoatTouch.speak(reply.slice(0, 400));
+  }
+}
+
+// Enter key
+document.getElementById('chatInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+});
+
+// Microphone
+let voiceMode = false;
+function toggleMic() {
+  const btn = document.getElementById('micBtn');
+  if (btn.classList.contains('listening')) {
+    GoatTouch.stopListen();
+    btn.classList.remove('listening');
+    return;
+  }
+  btn.classList.add('listening');
+  voiceMode = true;
+  GoatTouch.listen({
+    onStart: () => GoatTouch.haptic('double'),
+    onResult: text => {
+      document.getElementById('chatInput').value = text;
+      sendMsg();
+    },
+    onEnd: () => btn.classList.remove('listening'),
+    onError: err => {
+      btn.classList.remove('listening');
+      addMsg('ai', '⚠️ Voice input error: ' + (err.message || err.error || err));
+    }
+  });
+}
+
+// Brain status
+(async function(){
+  await GoatTouch.detectApi();
+  const s = await GoatTouch.brainStatus();
+  const chip = document.getElementById('engineChip');
+  if (s && s.ok !== false) {
+    const e = [];
+    if (s.ollama?.available) e.push('🦙');
+    if (s.nvidia?.configured) e.push('⚡');
+    if (s.gemini?.configured) e.push('💎');
+    chip.textContent = '🟢 ' + (e.join(' ') || 'Brain');
+  } else {
+    chip.textContent = '🔴 Off';
+    chip.classList.remove('on');
+  }
+})();
+</script>
+</body>
+</html>

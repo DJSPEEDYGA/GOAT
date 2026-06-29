@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📥 Downloads - GOAT Royalty App</title>
+  <link rel="icon" href="favicon.ico">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #FFD700;
+      --secondary: #1a1a2e;
+      --accent: #e94560;
+      --dark: #0f0f23;
+      --light: #ffffff;
+      --glass: rgba(255, 255, 255, 0.1);
+      --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --win: #0078d4;
+      --mac: #555555;
+      --linux: #f37623;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--dark);
+      color: var(--light);
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(233, 69, 96, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
+    }
+    
+    /* Navigation */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(15, 15, 35, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    
+    .logo img { height: 40px; }
+    
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .nav-links a {
+      color: var(--light);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    
+    .nav-links a:hover, .nav-links a.active {
+      background: var(--glass);
+      color: var(--primary);
+    }
+    
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: linear-gradient(180deg, rgba(102, 126, 234, 0.2) 0%, transparent 100%);
+    }
+    
+    .hero h1 {
+      font-size: 3rem;
+      background: linear-gradient(135deg, var(--primary), #fff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    
+    .hero p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .version-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: var(--dark);
+      padding: 0.5rem 1.5rem;
+      border-radius: 20px;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+    
+    /* Download Grid */
+    .download-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .section-title {
+      font-size: 1.8rem;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    
+    .os-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    
+    .os-card {
+      background: var(--glass);
+      border-radius: 20px;
+      padding: 2rem;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .os-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+    }
+    
+    .os-card.windows { border-left: 4px solid var(--win); }
+    .os-card.macos { border-left: 4px solid var(--mac); }
+    .os-card.linux { border-left: 4px solid var(--linux); }
+    
+    .os-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .os-icon {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      background: var(--glass);
+      border-radius: 12px;
+    }
+    
+    .os-info h3 {
+      font-size: 1.5rem;
+      color: var(--light);
+    }
+    
+    .os-info p {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+    }
+    
+    .download-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 1rem;
+      background: var(--primary);
+      color: var(--dark);
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+    
+    .download-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+    }
+    
+    .download-btn.portable {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--light);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+    }
+    
+    .download-btn.portable:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .download-btn.installed {
+      background: #28a745;
+      color: white;
+    }
+    
+    .arch-options {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    
+    .arch-btn {
+      flex: 1;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 8px;
+      color: var(--light);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      text-align: center;
+    }
+    
+    .arch-btn:hover {
+      background: rgba(255, 215, 0, 0.1);
+      border-color: var(--primary);
+    }
+    
+    .file-info {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.85rem;
+    }
+    
+    .file-info:last-child {
+      border-bottom: none;
+    }
+    
+    .file-info .label {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .file-info .value {
+      color: var(--light);
+    }
+    
+    /* Success Message */
+    .download-success {
+      display: none;
+      background: #28a745;
+      color: white;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+      text-align: center;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Features Section */
+    .features-section {
+      background: var(--glass);
+      border-radius: 20px;
+      padding: 2rem;
+      margin: 2rem auto;
+      max-width: 1200px;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .feature-card {
+      text-align: center;
+      padding: 1.5rem;
+    }
+    
+    .feature-card .icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .feature-card h4 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .feature-card p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9rem;
+    }
+    
+    /* Requirements */
+    .requirements {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+    
+    .req-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .req-card {
+      background: var(--glass);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+    
+    .req-card h4 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+    
+    .req-card ul {
+      list-style: none;
+    }
+    
+    .req-card li {
+      padding: 0.5rem 0;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .req-card li:last-child {
+      border-bottom: none;
+    }
+    
+    /* Build Script Section */
+    .build-section {
+      max-width: 1200px;
+      margin: 3rem auto;
+      padding: 0 2rem;
+    }
+    
+    .code-block {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
+      padding: 1.5rem;
+      overflow-x: auto;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.85rem;
+      color: #00ff00;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    
+    .copy-btn {
+      float: right;
+      padding: 0.5rem 1rem;
+      background: var(--primary);
+      color: var(--dark);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+    }
+    
+    /* Launcher Section */
+    .launcher-section {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+    
+    .launcher-card {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(233, 69, 96, 0.2));
+      border-radius: 20px;
+      padding: 2rem;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      text-align: center;
+    }
+    
+    .launcher-card h3 {
+      color: var(--primary);
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .launcher-card p {
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 1.5rem;
+    }
+    
+    .launcher-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .launcher-btn {
+      padding: 1rem 2rem;
+      background: var(--glass);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 12px;
+      color: var(--light);
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .launcher-btn:hover {
+      background: var(--primary);
+      color: var(--dark);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .top-nav { flex-direction: column; gap: 1rem; }
+      .nav-links { justify-content: center; }
+      .hero h1 { font-size: 2rem; }
+      .os-grid { grid-template-columns: 1fr; }
+      .arch-options { flex-direction: column; }
+      .launcher-buttons { flex-direction: column; }
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <nav class="top-nav">
+    <a href="index.html" class="logo">
+      <img src="goat-logo.png" alt="GOAT">
+      <span>GOAT Royalty App</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 AI Models</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html" class="active">📥 Downloads</a>
+      <a href="about.html">👑 About</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="resources.html">📖 Resources</a>
+      <a href="usb-ai.html">⚡ USB AI</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h1>📥 Download GOAT Royalty App</h1>
+    <p>One-click installers for all operating systems. Your complete music catalog and royalty management system, now available as a native desktop application.</p>
+    <div class="version-badge">Version 2.0.0 • 5,954+ Catalog Entries</div>
+  </section>
+
+  <!-- FREE AI Installer Section -->
+  <div style="max-width: 1200px; margin: 2rem auto; padding: 0 2rem;">
+    <div style="background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(0,0,0,0.5)); border-radius: 24px; padding: 2.5rem; border: 2px solid #10b981;">
+      <h2 style="font-size: 2rem; color: #10b981; margin-bottom: 0.5rem; text-align:center;">🔓 FREE AI Server Installer</h2>
+      <p style="color: #a7f3d0; text-align:center; font-size: 1.1rem; margin-bottom: 1.5rem;">
+        <strong>29 Uncensored LLMs • No API Key • No Login • Saves to Your External Drive</strong><br>
+        Install the complete local AI stack on any Linux server in one command.
+      </p>
+
+      <div style="background:#000;border-radius:12px;padding:20px;margin:20px 0;position:relative;font-family:monospace;font-size:14px;overflow-x:auto;">
+        <span style="position:absolute;top:10px;right:10px;">
+          <button onclick="copyInstaller()" style="background:#10b981;color:#000;border:none;padding:6px 16px;border-radius:6px;font-weight:700;cursor:pointer">📋 Copy</button>
+        </span>
+        <div style="color:#6ee7b7;margin-bottom:8px"># Paste this into your server SSH terminal:</div>
+        <div id="installerCmd" style="color:#10b981;word-break:break-all;padding-right:80px;">curl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/GOAT-Royalty-App/main/ONE-COMMAND-FREE-AI.sh | sudo bash</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:1.5rem;color:#a7f3d0;font-size:13px">
+        <div>✅ 29 local models</div>
+        <div>🔞 6 uncensored</div>
+        <div>💾 Saves to 10TB drive</div>
+        <div>🚫 No API key</div>
+        <div>🚫 No login</div>
+        <div>📡 OpenAI API compat</div>
+        <div>💻 CPU or GPU</div>
+        <div>⏱️ ~1-3 hr to download all</div>
+      </div>
+
+      <div style="margin-top:1.5rem;text-align:center">
+        <a href="https://github.com/DJSPEEDYGA/GOAT-Royalty-App/blob/main/ONE-COMMAND-FREE-AI.sh" target="_blank" style="color:#10b981;text-decoration:underline;font-size:13px">📄 View script on GitHub</a>
+        &nbsp;•&nbsp;
+        <a href="models.html" style="color:#10b981;text-decoration:underline;font-size:13px">🔓 See all 29 models</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function copyInstaller() {
+      const cmd = document.getElementById('installerCmd').textContent.trim();
+      navigator.clipboard.writeText(cmd).then(() => {
+        alert('📋 Installer command copied!\n\nPaste in your server terminal.');
+      });
+    }
+  </script>
+
+  <!-- All-in-One Download Section -->
+  <div class="all-in-one-section" style="max-width: 1200px; margin: 2rem auto; padding: 0 2rem;">
+    <div class="all-in-one-card" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(233, 69, 96, 0.3)); border-radius: 24px; padding: 2.5rem; border: 2px solid #FFD700; text-align: center;">
+      <h2 style="font-size: 2rem; color: #FFD700; margin-bottom: 1rem;">🎯 ALL-IN-ONE DOWNLOAD</h2>
+      <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem; margin-bottom: 1.5rem;">
+        <strong>One download includes ALL operating systems!</strong><br>
+        Windows, macOS, and Linux installers bundled together.
+      </p>
+      <a href="https://github.com/DJSPEEDYGA/nextjs-commerce/releases/tag/v2.0.0" class="download-btn" style="max-width: 400px; margin: 0 auto 1rem; font-size: 1.2rem; padding: 1.2rem;" target="_blank">
+        ⬇️ Download All Platforms from GitHub
+      </a>
+      <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+        Contains: Windows EXE + Portable • Linux AppImage + DEB • macOS ZIP
+      </p>
+      <p style="color: #FFD700; font-size: 0.85rem; margin-top: 0.5rem;">
+        🔗 Direct GitHub Release: All OS installers in one place
+      </p>
+    </div>
+  </div>
+
+  <div class="download-section">
+    <h2 class="section-title">🖥️ Or Choose Your Platform</h2>
+    
+    <div class="os-grid">
+      <!-- Windows -->
+      <div class="os-card windows">
+        <div class="os-header">
+          <div class="os-icon">🪟</div>
+          <div class="os-info">
+            <h3>Windows</h3>
+            <p>Windows 10/11 (64-bit)</p>
+          </div>
+        </div>
+        
+        <a href="https://github.com/DJSPEEDYGA/nextjs-commerce/releases/download/v2.0.0/Super-GOAT-Royalty-2.0.0-Setup.exe" class="download-btn" download>
+          ⬇️ Download Installer (EXE)
+        </a>
+        
+        <a href="https://github.com/DJSPEEDYGA/nextjs-commerce/releases/download/v2.0.0/Super-GOAT-Royalty-2.0.0-Portable.exe" class="download-btn portable" download>
+          📦 Download Portable (No Install)
+        </a>
+        
+        <div class="file-info">
+          <span class="label">Setup File Size:</span>
+          <span class="value">78 MB</span>
+        </div>
+        <div class="file-info">
+          <span class="label">Portable File Size:</span>
+          <span class="value">77 MB</span>
+        </div>
+        <div class="file-info">
+          <span class="label">Requirements:</span>
+          <span class="value">Windows 10+</span>
+        </div>
+        
+        <div class="download-success" id="win-success">
+          ✅ Download started! Check your downloads folder.
+        </div>
+      </div>
+      
+      <!-- macOS -->
+      <div class="os-card macos">
+        <div class="os-header">
+          <div class="os-icon">🍎</div>
+          <div class="os-info">
+            <h3>macOS</h3>
+            <p>macOS 10.15+ (Intel & Apple Silicon)</p>
+          </div>
+        </div>
+        
+        <a href="https://github.com/DJSPEEDYGA/nextjs-commerce/releases/download/v2.0.0/Super-GOAT-Royalty-2.0.0.zip" class="download-btn" download>
+          ⬇️ Download ZIP (Universal)
+        </a>
+        
+        <a href="downloads/README-macOS.txt" class="download-btn portable" download>
+          📖 Read Installation Guide
+        </a>
+        
+        <a href="downloads/GOAT-Royalty-App-macOS.sh" class="download-btn portable" download>
+          📜 Download Launcher Script
+        </a>
+        
+        <div class="file-info">
+          <span class="label">ZIP File Size:</span>
+          <span class="value">93 MB</span>
+        </div>
+        <div class="file-info">
+          <span class="label">Requirements:</span>
+          <span class="value">macOS 10.15+</span>
+        </div>
+        
+        <!-- macOS Instructions -->
+        <div class="macos-instructions" style="margin-top: 1rem; padding: 1rem; background: rgba(255, 215, 0, 0.1); border-radius: 8px; font-size: 0.85rem;">
+          <p style="color: #FFD700; font-weight: bold; margin-bottom: 0.5rem;">⚠️ macOS Security Note:</p>
+          <p style="color: rgba(255,255,255,0.8); margin-bottom: 0.5rem;">If you see "cannot be opened" error:</p>
+          <ol style="color: rgba(255,255,255,0.7); padding-left: 1.2rem; margin: 0;">
+            <li>Right-click (Control+Click) the app</li>
+            <li>Select "Open" from menu</li>
+            <li>Click "Open" when prompted</li>
+          </ol>
+          <p style="color: rgba(255,255,255,0.6); margin-top: 0.5rem; font-size: 0.8rem;">Or run in Terminal: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">xattr -cr /Applications/Super\ GOAT\ Royalty.app</code></p>
+        </div>
+        
+        <div class="download-success" id="mac-success">
+          ✅ Download started! Check your downloads folder.
+        </div>
+      </div>
+      
+      <!-- Linux -->
+      <div class="os-card linux">
+        <div class="os-header">
+          <div class="os-icon">🐧</div>
+          <div class="os-info">
+            <h3>Linux</h3>
+            <p>Ubuntu, Debian, Fedora, Arch & more</p>
+          </div>
+        </div>
+        
+        <a href="https://github.com/DJSPEEDYGA/nextjs-commerce/releases/download/v2.0.0/Super-GOAT-Royalty-2.0.0.AppImage" class="download-btn" download>
+          ⬇️ Download AppImage (Universal)
+        </a>
+        
+        <a href="https://github.com/DJSPEEDYGA/nextjs-commerce/releases/download/v2.0.0/Super-GOAT-Royalty-2.0.0.deb" class="download-btn portable" download>
+          📦 Download DEB Package
+        </a>
+        
+        <a href="downloads/GOAT-Royalty-App-Linux.sh" class="download-btn portable" download>
+          📜 Download Launcher Script
+        </a>
+        
+        <div class="file-info">
+          <span class="label">AppImage Size:</span>
+          <span class="value">108 MB</span>
+        </div>
+        <div class="file-info">
+          <span class="label">DEB Size:</span>
+          <span class="value">74 MB</span>
+        </div>
+        <div class="file-info">
+          <span class="label">Requirements:</span>
+          <span class="value">glibc 2.28+</span>
+        </div>
+        
+        <div class="download-success" id="linux-success">
+          ✅ Download started! Check your downloads folder.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Launcher Scripts Section -->
+  <div class="launcher-section">
+    <div class="launcher-card">
+      <h3>🚀 Portable Launcher Scripts</h3>
+      <p>Download these launcher scripts to run GOAT Royalty App directly without installation. Works with any operating system!</p>
+      <div class="launcher-buttons">
+        <a href="downloads/GOAT-Royalty-App-Windows.bat" class="launcher-btn" download>
+          🪟 Windows (.bat)
+        </a>
+        <a href="downloads/GOAT-Royalty-App-macOS.sh" class="launcher-btn" download>
+          🍎 macOS (.sh)
+        </a>
+        <a href="downloads/GOAT-Royalty-App-Linux.sh" class="launcher-btn" download>
+          🐧 Linux (.sh)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="features-section">
+    <h2 class="section-title">✨ One-Click Install Features</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="icon">🚀</div>
+        <h4>Instant Launch</h4>
+        <p>Launch GOAT Royalty App directly from your desktop with one click</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">💾</div>
+        <h4>Offline Access</h4>
+        <p>Access your catalog data offline with local data caching</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔐</div>
+        <h4>Secure & Private</h4>
+        <p>Local installation keeps your data secure on your machine</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">⚡</div>
+        <h4>Native Performance</h4>
+        <p>Built with Electron for fast, native performance</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔄</div>
+        <h4>Auto Updates</h4>
+        <p>Automatic updates keep your app current</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🌐</div>
+        <h4>Cross-Platform</h4>
+        <p>Same experience across Windows, Mac, and Linux</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="requirements">
+    <h2 class="section-title">📋 System Requirements</h2>
+    <div class="req-grid">
+      <div class="req-card">
+        <h4>🪟 Windows</h4>
+        <ul>
+          <li>Windows 10 or later (64-bit recommended)</li>
+          <li>4 GB RAM minimum</li>
+          <li>500 MB free disk space</li>
+          <li>Internet connection for initial setup</li>
+        </ul>
+      </div>
+      <div class="req-card">
+        <h4>🍎 macOS</h4>
+        <ul>
+          <li>macOS 10.15 (Catalina) or later</li>
+          <li>4 GB RAM minimum</li>
+          <li>500 MB free disk space</li>
+          <li>Intel or Apple Silicon (M1/M2/M3)</li>
+        </ul>
+      </div>
+      <div class="req-card">
+        <h4>🐧 Linux</h4>
+        <ul>
+          <li>Ubuntu 18.04+, Debian 10+, or equivalent</li>
+          <li>4 GB RAM minimum</li>
+          <li>500 MB free disk space</li>
+          <li>glibc 2.28 or later</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="build-section">
+    <h2 class="section-title">🔧 Build From Source</h2>
+    <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">Want to build it yourself? Run these commands:</p>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode()">Copy</button>
+# Clone and build for all platforms
+git clone https://github.com/DJSPEEDYGA/goat-royalty-app.git
+cd goat-royalty-app/desktop
+npm install
+npm run build:all
+
+# Or build for specific platform
+npm run build:win    # Windows (EXE, Portable)
+npm run build:mac    # macOS (DMG, ZIP)
+npm run build:linux  # Linux (AppImage, DEB, RPM)
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>© 2025 Harvey L. Miller Jr. (DJ Speedy) - GOAT Systems</p>
+    <p>BRICK SQUAD MONOPOLY PUBLISHING • Fastassman Publishing Inc.</p>
+  </div>
+
+  <script>
+    // Track downloads and show success message
+    document.querySelectorAll('.download-btn, .launcher-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        console.log('Starting download:', href);
+        
+        // Find parent card and show success message
+        const card = this.closest('.os-card');
+        if (card) {
+          const successDiv = card.querySelector('.download-success');
+          if (successDiv) {
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+              successDiv.style.display = 'none';
+            }, 5000);
+          }
+        }
+      });
+    });
+    
+    function copyCode() {
+      const code = `# Clone and build for all platforms
+git clone https://github.com/DJSPEEDYGA/goat-royalty-app.git
+cd goat-royalty-app/desktop
+npm install
+npm run build:all`;
+      
+      navigator.clipboard.writeText(code).then(() => {
+        alert('Build commands copied to clipboard!');
+      });
+    }
+    
+    // Detect OS and highlight
+    window.onload = function() {
+      const platform = navigator.platform.toLowerCase();
+      if (platform.includes('win')) {
+        document.querySelector('.os-card.windows').style.borderColor = 'var(--primary)';
+        document.querySelector('.os-card.windows').style.boxShadow = '0 0 30px rgba(255, 215, 0, 0.3)';
+      } else if (platform.includes('mac')) {
+        document.querySelector('.os-card.macos').style.borderColor = 'var(--primary)';
+        document.querySelector('.os-card.macos').style.boxShadow = '0 0 30px rgba(255, 215, 0, 0.3)';
+      } else if (platform.includes('linux')) {
+        document.querySelector('.os-card.linux').style.borderColor = 'var(--primary)';
+        document.querySelector('.os-card.linux').style.boxShadow = '0 0 30px rgba(255, 215, 0, 0.3)';
+      }
+    };
+  </script>
+</body>
+</html>

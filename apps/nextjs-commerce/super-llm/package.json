@@ -1,0 +1,75 @@
+{
+  "name": "super-llm",
+  "version": "1.0.0",
+  "description": "AI system combining 215 LLMs with intelligent routing, fallback, and response aggregation",
+  "main": "core/SuperLLM.js",
+  "bin": {
+    "super-llm": "./super-llm.js"
+  },
+  "scripts": {
+    "start": "node super-llm.js",
+    "test": "jest",
+    "build:windows": "pkg . --targets node18-win-x64 --output dist/super-llm-windows.exe",
+    "build:macos": "pkg . --targets node18-macos-x64,node18-macos-arm64 --output dist/super-llm-macos",
+    "build:linux": "pkg . --targets node18-linux-x64,node18-linux-arm64 --output dist/super-llm-linux",
+    "build:all": "npm run build:windows && npm run build:macos && npm run build:linux",
+    "build:portable": "node scripts/build-portable.js",
+    "build:exe": "npm run build:windows && node scripts/create-installer.js",
+    "build:dmg": "bash install/build-dmg.sh",
+    "install:global": "npm install -g .",
+    "uninstall:global": "npm uninstall -g super-llm"
+  },
+  "keywords": [
+    "ai",
+    "llm",
+    "nvidia",
+    "gpt-4",
+    "claude",
+    "gemini",
+    "llama",
+    "mistral",
+    "qwen",
+    "artificial-intelligence",
+    "machine-learning",
+    "natural-language",
+    "chatbot",
+    "code-generation"
+  ],
+  "author": "DJSPEEDYGA",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DJSPEEDYGA/GOAT-Royalty-App.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DJSPEEDYGA/GOAT-Royalty-App/issues"
+  },
+  "homepage": "https://github.com/DJSPEEDYGA/GOAT-Royalty-App#readme",
+  "dependencies": {
+    "commander": "^12.0.0",
+    "chalk": "^4.1.2",
+    "ora": "^5.4.1",
+    "inquirer": "^8.2.6",
+    "node-fetch": "^2.7.0",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "pkg": "^5.8.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "core/",
+    "super-llm.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "pkg": {
+    "assets": [
+      "core/**/*"
+    ],
+    "outputPath": "dist"
+  }
+}

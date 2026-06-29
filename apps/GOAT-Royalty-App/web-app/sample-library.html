@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📦 GOAT Sample Library</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<link rel="icon" type="image/png" href="img/goat-hero-icon.png">
+<style>
+  .lib-wrap { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  .pack-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .pack {
+    background: linear-gradient(145deg, rgba(30,30,30,0.95), rgba(15,15,15,0.95));
+    border: 1px solid rgba(193,18,31,0.3);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .pack:hover {
+    border-color: var(--goat-red-bright);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(193,18,31,0.3);
+  }
+  .pack .cover {
+    height: 180px;
+    background: var(--gradient-power);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+  }
+  .pack .info { padding: 16px; }
+  .pack h3 { margin: 0 0 6px; color: var(--goat-cream); font-size: 16px; }
+  .pack .meta { color: var(--goat-silver); font-size: 12px; margin-bottom: 10px; }
+  .pack .price { color: var(--goat-gold); font-weight: 900; font-size: 18px; }
+  .category-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 16px;
+    background: rgba(20,20,20,0.9);
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+  .cat-chip {
+    padding: 10px 16px;
+    background: var(--goat-gray);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--goat-cream);
+    font-weight: 700;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .cat-chip:hover { background: rgba(193,18,31,0.3); }
+  .cat-chip.active { background: var(--gradient-power); color: white; box-shadow: var(--shadow-glow-red); }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-icon">
+
+<nav class="goat-nav">
+  <a href="index.html" class="goat-nav-brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT">
+    <span>SAMPLE LIBRARY</span>
+  </a>
+  <div class="goat-nav-links">
+    <a href="powerhouse.html">🐐 Hub</a>
+    <a href="studio.html">🎛️ Studio</a>
+    <a href="ssl-mixer.html">🎚️ Mixer</a>
+    <a href="mastering.html">💎 Master</a>
+    <a href="vocal-studio.html">🎤 Vocals</a>
+    <a href="ai-producer.html">🤖 AI</a>
+    <a href="sample-library.html" class="active">📦 Samples</a>
+    <a href="plugins.html">🔌 Plugins</a>
+  </div>
+</nav>
+
+<div class="lib-wrap">
+  <section class="goat-hero" style="padding: 30px 0;">
+    <h1 style="font-size: 44px; margin: 0 0 8px;">📦 GOAT SAMPLE LIBRARY</h1>
+    <p class="subtitle">Drums · 808s · Loops · Melodies · Vocal Chops · All Royalty-Free</p>
+  </section>
+
+  <div class="category-chips">
+    <div class="cat-chip active" data-cat="all">ALL</div>
+    <div class="cat-chip" data-cat="drums">🥁 Drums</div>
+    <div class="cat-chip" data-cat="808">🔊 808s</div>
+    <div class="cat-chip" data-cat="loops">🔄 Loops</div>
+    <div class="cat-chip" data-cat="melody">🎹 Melodies</div>
+    <div class="cat-chip" data-cat="vocal">🎤 Vocal Chops</div>
+    <div class="cat-chip" data-cat="fx">✨ FX</div>
+    <div class="cat-chip" data-cat="kits">📀 Drum Kits</div>
+    <div class="cat-chip" data-cat="presets">🎛️ Presets</div>
+    <div class="cat-chip" data-cat="construction">🏗️ Construction Kits</div>
+  </div>
+
+  <div class="pack-grid" id="packGrid"></div>
+</div>
+
+<footer class="goat-footer">
+  <p>📦 <strong>GOAT SAMPLES</strong> — Made by producers, for producers.</p>
+</footer>
+
+<script>
+const PACKS = [
+  { id:'p1', cat:'drums', emoji:'🥁', title:'GOAT Drum Kit Vol. 1', meta:'200 drum samples · 24-bit WAV', price:'$39', tag:'trap/hiphop' },
+  { id:'p2', cat:'808', emoji:'🔊', title:'BrickSquad 808 Pack', meta:'75 808s · tuned · WAV + MIDI', price:'$29', tag:'bass' },
+  { id:'p3', cat:'loops', emoji:'🔄', title:'Waka Trap Loops', meta:'50 loops · 140 BPM · all keys', price:'$49', tag:'trap' },
+  { id:'p4', cat:'melody', emoji:'🎹', title:'Dark Trap Melodies', meta:'30 melodies · WAV + MIDI', price:'$35', tag:'dark' },
+  { id:'p5', cat:'vocal', emoji:'🎤', title:'GOAT Vocal Chops', meta:'120 chops · dry + wet', price:'$39', tag:'r&b' },
+  { id:'p6', cat:'fx', emoji:'✨', title:'Cinematic FX Pack', meta:'80 risers, impacts, whooshes', price:'$45', tag:'cinematic' },
+  { id:'p7', cat:'kits', emoji:'📀', title:'Speedy Signature Kit', meta:'500+ samples, multi-genre', price:'$99', tag:'bundle' },
+  { id:'p8', cat:'presets', emoji:'🎛️', title:'Serum Trap Presets', meta:'60 Serum presets + MIDI', price:'$25', tag:'serum' },
+  { id:'p9', cat:'construction', emoji:'🏗️', title:'Construction Kit Vol. 1', meta:'10 full beats with stems', price:'$59', tag:'stems' },
+  { id:'p10', cat:'drums', emoji:'🥁', title:'Hip-Hop Essentials', meta:'150 drums · 90s + modern', price:'$35', tag:'hiphop' },
+  { id:'p11', cat:'808', emoji:'🔊', title:'Atlanta 808s', meta:'50 ATL-style 808s', price:'$25', tag:'atl' },
+  { id:'p12', cat:'loops', emoji:'🔄', title:'R&B Groove Loops', meta:'40 loops · soulful · 70-90 BPM', price:'$39', tag:'r&b' },
+  { id:'p13', cat:'melody', emoji:'🎹', title:'Flute & Bell Melodies', meta:'25 flute/bell melodies', price:'$29', tag:'melodic' },
+  { id:'p14', cat:'vocal', emoji:'🎤', title:'Female Hook Pack', meta:'60 wet vocal hooks', price:'$45', tag:'female' },
+  { id:'p15', cat:'fx', emoji:'✨', title:'Trap FX Essentials', meta:'100 risers/downs/glitches', price:'$29', tag:'trap-fx' },
+  { id:'p16', cat:'kits', emoji:'📀', title:'Dirty South Kit', meta:'400+ samples', price:'$75', tag:'south' },
+  { id:'p17', cat:'presets', emoji:'🎛️', title:'Massive Bass Presets', meta:'50 NI Massive presets', price:'$20', tag:'massive' },
+  { id:'p18', cat:'construction', emoji:'🏗️', title:'Drill Construction Kit', meta:'8 drill beats with stems', price:'$49', tag:'drill' }
+];
+
+const grid = document.getElementById('packGrid');
+function render(cat = 'all') {
+  const filtered = cat === 'all' ? PACKS : PACKS.filter(p => p.cat === cat);
+  grid.innerHTML = filtered.map(p => `
+    <div class="pack" onclick="buy('${p.id}')">
+      <div class="cover">${p.emoji}</div>
+      <div class="info">
+        <h3>${p.title}</h3>
+        <div class="meta">${p.meta}</div>
+        <div class="flex" style="justify-content: space-between; align-items: center;">
+          <span class="price">${p.price}</span>
+          <span class="goat-badge hot">${p.tag.toUpperCase()}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.querySelectorAll('.cat-chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.cat-chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    render(c.dataset.cat);
+  });
+});
+
+function buy(id) {
+  const p = PACKS.find(x => x.id === id);
+  alert(`🛒 "${p.title}" added to cart!\n\nPrice: ${p.price}\nCheckout on plugins.html`);
+  // Merge with plugins cart
+  try {
+    const cart = JSON.parse(localStorage.getItem('goatCart') || '[]');
+    cart.push({ type:'sample', id, name: p.title, price: parseFloat(p.price.replace('$','')) });
+    localStorage.setItem('goatCart', JSON.stringify(cart));
+  } catch(e){}
+}
+
+render();
+</script>
+</body>
+</html>
