@@ -654,7 +654,12 @@ async function loadChats() {
   if (!IS_SERVED) return;
   try {
     const r = await fetch('/api/chats');
-    if (r.ok) allChats = await r.json();
+    if (r.ok) {
+      const data = await r.json();
+      allChats = Array.isArray(data) ? data : [];
+      // Normalize legacy/hand-edited entries so the UI never crashes on bad data
+      allChats.forEach(c => { if (!Array.isArray(c.messages)) c.messages = []; });
+    }
   } catch {}
 }
 function saveChats() {
@@ -691,6 +696,7 @@ function switchChat(id) {
   activeChatId = id;
   const chat = getChat(id);
   if (!chat) return;
+  if (!Array.isArray(chat.messages)) chat.messages = [];
   document.getElementById('sys-ta').value = chat.systemPrompt || '';
   const box = document.getElementById('chat-box');
   box.innerHTML = '';
