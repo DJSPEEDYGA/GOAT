@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💕 GOAT Dating | GOAT Royalty</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <style>
+        :root {
+            --bg: #040608; --panel: #0d1117; --panel2: #161b22;
+            --gold: #d4a03c; --gold2: #f0c040; --gold3: #ffd700;
+            --pink: #ec4899; --pink2: #f472b6; --pink3: #fbcfe8;
+            --red: #c1121f; --green: #3fb950; --blue: #58a6ff;
+            --ink: #f0ece4; --dim: #8b949e; --line: #21262d;
+            --glow: rgba(212,160,60,.25);
+        }
+        body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .dating-dashboard { max-width: 1400px; margin: 0 auto; padding: 80px 20px 40px; width: 100%; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .dashboard-title h1 { font-size: 28px; font-weight: 700; color: var(--pink); margin: 0 0 4px; }
+        .dashboard-title span { font-size: 14px; color: var(--dim); }
+        
+        /* Stats Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+        .stat-icon { font-size: 28px; margin-bottom: 8px; }
+        .stat-value { font-size: 24px; font-weight: 700; color: var(--pink3); margin-bottom: 4px; }
+        .stat-label { font-size: 13px; color: var(--dim); }
+        
+        /* Profile Cards Grid */
+        .profile-section { margin-bottom: 24px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .section-title { font-size: 18px; font-weight: 600; color: var(--gold3); }
+        
+        .profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .profile-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; transition: all .2s; cursor: pointer; position: relative; }
+        .profile-card:hover { border-color: var(--pink); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(236,72,153,.15); }
+        
+        .profile-image { width: 100%; height: 320px; background: linear-gradient(135deg, var(--pink), var(--pink2), var(--pink3)); display: flex; align-items: center; justify-content: center; font-size: 80px; position: relative; }
+        .verify-badge { position: absolute; top: 12px; right: 12px; background: rgba(63,185,80,.9); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #fff; }
+        .online-status { position: absolute; top: 12px; left: 12px; background: var(--green); padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; color: #fff; }
+        
+        .profile-info { padding: 16px; }
+        .profile-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .profile-name { font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+        .profile-age { font-size: 14px; color: var(--dim); }
+        .profile-location { font-size: 13px; color: var(--dim); margin-bottom: 12px; display: flex; align-items: center; gap: 4px; }
+        
+        .profile-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+        .tag { padding: 4px 10px; background: var(--panel2); border-radius: 15px; font-size: 11px; color: var(--dim); }
+        .tag.music { background: rgba(212,160,60,.15); color: var(--gold3); }
+        .tag.creative { background: rgba(88,166,255,.15); color: var(--blue); }
+        .tag.verified { background: rgba(63,185,80,.15); color: var(--green); }
+        
+        .match-score { background: linear-gradient(135deg, var(--pink), var(--pink2)); padding: 8px 12px; border-radius: 8px; text-align: center; font-size: 14px; font-weight: 700; color: #fff; }
+        
+        /* Action Buttons */
+        .profile-actions { display: flex; gap: 8px; padding: 16px; border-top: 1px solid var(--line); }
+        .action-btn { flex: 1; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; }
+        .btn-pass { background: var(--panel2); border: 1px solid var(--line); color: var(--dim); }
+        .btn-pass:hover { border-color: var(--red); color: var(--red); }
+        .btn-super { background: rgba(212,160,60,.15); border: 1px solid var(--gold); color: var(--gold3); }
+        .btn-super:hover { background: rgba(212,160,60,.25); }
+        .btn-like { background: var(--pink); border: none; color: #fff; }
+        .btn-like:hover { background: var(--pink2); transform: scale(1.05); }
+        
+        /* Filters */
+        .filters-bar { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 24px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+        .filter-chip { padding: 8px 16px; border: 1px solid var(--line); background: var(--panel2); border-radius: 20px; font-size: 13px; cursor: pointer; transition: all .2s; }
+        .filter-chip:hover { border-color: var(--pink); }
+        .filter-chip.active { border-color: var(--pink); background: rgba(236,72,153,.15); color: var(--pink3); }
+        
+        /* Premium Banner */
+        .premium-banner { background: linear-gradient(135deg, var(--gold), var(--gold3)); border-radius: 12px; padding: 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 20px; }
+        .premium-icon { font-size: 48px; }
+        .premium-text h3 { font-size: 20px; font-weight: 700; color: #040608; margin: 0 0 4px; }
+        .premium-text p { font-size: 14px; color: rgba(0,0,0,.7); margin: 0; }
+        .premium-btn { padding: 12px 24px; background: #040608; color: var(--gold3); border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; }
+        .premium-btn:hover { transform: scale(1.05); }
+        
+        /* Quick Match Stack */
+        .quick-match-section { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+        .match-stack { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 12px; }
+        .stack-card { flex-shrink: 0; width: 200px; height: 280px; background: linear-gradient(135deg, var(--pink), var(--pink2)); border-radius: 12px; display: flex; flex-direction: column; justify-content: flex-end; padding: 16px; cursor: pointer; transition: all .2s; }
+        .stack-card:hover { transform: scale(1.05); }
+        .stack-name { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+        .stack-match { font-size: 13px; color: rgba(255,255,255,.9); background: rgba(0,0,0,.3); padding: 4px 8px; border-radius: 10px; display: inline-block; }
+        
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .profile-grid { grid-template-columns: 1fr; }
+            .filters-bar { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-emoji">🐐</span>
+            <span class="brand-name">GOAT Royalty</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="goat-dating.html" class="nav-link active">Dating</a>
+            <a href="goat-match.html" class="nav-link">Matches</a>
+            <a href="goat-dating-chat.html" class="nav-link">Chat</a>
+            <a href="settings.html" class="nav-link">Settings</a>
+        </div>
+    </nav>
+
+    <div class="dating-dashboard">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>💕 Dating</h1>
+                <span>Discover your perfect match</span>
+            </div>
+            <button class="search-btn" style="padding: 12px 24px;">✨ Upgrade to Premium</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value">2,847</div>
+                <div class="stat-label">Total Matches</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💬</div>
+                <div class="stat-value">47</div>
+                <div class="stat-label">Active Conversations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value">156</div>
+                <div class="stat-label">Super Likes Sent</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👁️</div>
+                <div class="stat-value">1,234</div>
+                <div class="stat-label">Profile Views</div>
+            </div>
+        </div>
+
+        <!-- Premium Banner -->
+        <div class="premium-banner">
+            <div class="premium-icon">💎</div>
+            <div class="premium-text">
+                <h3>GOAT Premium</h3>
+                <p>Unlock unlimited likes, see who likes you, and get priority matching</p>
+            </div>
+            <button class="premium-btn">Upgrade Now</button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <span style="color: var(--dim); font-size: 13px;">Filter by:</span>
+            <div class="filter-chip active">All</div>
+            <div class="filter-chip">Nearby</div>
+            <div class="filter-chip">Online Now</div>
+            <div class="filter-chip">New</div>
+            <div class="filter-chip">Verified</div>
+            <div class="filter-chip">Music Industry</div>
+            <div class="filter-chip">Creative</div>
+            <div class="filter-chip">Athletes</div>
+        </div>
+
+        <!-- Quick Match Stack -->
+        <div class="section-header" style="margin-top: 24px;">
+            <div class="section-title">⚡ Quick Matches</div>
+            <a href="#" style="color: var(--pink3); font-size: 13px; font-weight: 600; text-decoration: none;">View All →</a>
+        </div>
+        
+        <div class="quick-match-section">
+            <div class="match-stack">
+                <div class="stack-card" onclick="viewProfile('quick1')">
+                    <div class="stack-name">Ariana</div>
+                    <div class="stack-match">95% Match</div>
+                </div>
+                <div class="stack-card" onclick="viewProfile('quick2')">
+                    <div class="stack-name">Drake</div>
+                    <div class="stack-match">92% Match</div>
+                </div>
+                <div class="stack-card" onclick="viewProfile('quick3')">
+                    <div class="stack-name">Taylor</div>
+                    <div class="stack-match">89% Match</div>
+                </div>
+                <div class="stack-card" onclick="viewProfile('quick4')">
+                    <div class="stack-name">Kendrick</div>
+                    <div class="stack-match">87% Match</div>
+                </div>
+                <div class="stack-card" onclick="viewProfile('quick5')">
+                    <div class="stack-name">Adele</div>
+                    <div class="stack-match">85% Match</div>
+                </div>
+                <div class="stack-card" onclick="viewProfile('quick6')">
+                    <div class="stack-name">Post Malone</div>
+                    <div class="stack-match">83% Match</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Discover Section -->
+        <div class="profile-section">
+            <div class="section-header">
+                <div class="section-title">🔍 Discover</div>
+                <span style="color: var(--dim); font-size: 13px;">Showing 8 of 2,847 profiles</span>
+            </div>
+
+            <div class="profile-grid">
+                <!-- Profile 1 -->
+                <div class="profile-card">
+                    <div class="profile-image" style="background: linear-gradient(135deg, #ec4899, #f472b6);">
+                        <span class="verify-badge">✓ VERIFIED</span>
+                        <span class="online-status">ONLINE</span>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-header">
+                            <div>
+                                <div class="profile-name">Sarah Johnson</div>
+                                <div class="profile-age">26 • Los Angeles, CA</div>
+                            </div>
+                            <div class="match-score">95%</div>
+                        </div>
+                        <div class="profile-location">📍 3.2 miles away</div>
+                        <div class="profile-tags">
+                            <span class="tag music">🎵 Pop Singer</span>
+                            <span class="tag creative">🎨 Songwriter</span>
+                            <span class="tag verified">✓ Verified Artist</span>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="action-btn btn-pass">✕</button>
+                        <button class="action-btn btn-super">⭐ Super</button>
+                        <button class="action-btn btn-like">💜 Like</button>
+                    </div>
+                </div>
+
+                <!-- Profile 2 -->
+                <div class="profile-card">
+                    <div class="profile-image" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
+                        <span class="verify-badge">✓ VERIFIED</span>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-header">
+                            <div>
+                                <div class="profile-name">Michael Chen</div>
+                                <div class="profile-age">28 • San Francisco, CA</div>
+                            </div>
+                            <div class="match-score">92%</div>
+                        </div>
+                        <div class="profile-location">📍 380 miles away</div>
+                        <div class="profile-tags">
+                            <span class="tag music">🎹 Producer</span>
+                            <span class="tag creative">🎵 DJ</span>
+                            <span class="tag verified">✓ Verified</span>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="action-btn btn-pass">✕</button>
+                        <button class="action-btn btn-super">⭐ Super</button>
+                        <button class="action-btn btn-like">💜 Like</button>
+                    </div>
+                </div>
+
+                <!-- Profile 3 -->
+                <div class="profile-card">
+                    <div class="profile-image" style="background: linear-gradient(135deg, #06b6d4, #22d3ee);">
+                        <span class="online-status">ONLINE</span>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-header">
+                            <div>
+                                <div class="profile-name">Emma Davis</div>
+                                <div class="profile-age">25 • New York, NY</div>
+                            </div>
+                            <div class="match-score">89%</div>
+                        </div>
+                        <div class="profile-location">📍 2,790 miles away</div>
+                        <div class="profile-tags">
+                            <span class="tag music">🎤 R&B Singer</span>
+                            <span class="tag creative">✍️ Lyricist</span>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="action-btn btn-pass">✕</button>
+                        <button class="action-btn btn-super">⭐ Super</button>
+                        <button class="action-btn btn-like">💜 Like</button>
+                    </div>
+                </div>
+
+                <!-- Profile 4 -->
+                <div class="profile-card">
+                    <div class="profile-image" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);">
+                        <span class="verify-badge">✓ VERIFIED</span>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-header">
+                            <div>
+                                <div class="profile-name">James Wilson</div>
+                                <div class="profile-age">30 • Atlanta, GA</div>
+                            </div>
+                            <div class="match-score">87%</div>
+                        </div>
+                        <div class="profile-location">📍 2,380 miles away</div>
+                        <div class="profile-tags">
+                            <span class="tag music">🎸 Guitarist</span>
+                            <span class="tag creative">🎵 Composer</span>
+                            <span class="tag verified">✓ Session Pro</span>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="action-btn btn-pass">✕</button>
+                        <button class="action-btn btn-super">⭐ Super</button>
+                        <button class="action-btn btn-like">💜 Like</button>
+                    </div>
+                </div>
+
+                <!-- Profile 5 -->
+                <div class="profile-card">
+                    <div class="profile-image" style="background: linear-gradient(135deg, #ef4444, #f87171);">
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-header">
+                            <div>
+                                <div class="profile-name">Olivia Martinez</div>
+                                <div class="profile-age">27 • Miami, FL</div>
+                            </div>
+                            <div class="match-score">85%</div>
+                        </div>
+                        <div class="profile-location">📍 2,730 miles away</div>
+                        <div class="profile-tags">
+                            <span class="tag music">🎵 Latin Pop</span>
+                            <span class="tag creative">🎤 Vocalist</span>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="action-btn btn-pass">✕</button>
+                        <button class="action-btn btn-super">⭐ Super</button>
+                        <button class="action-btn btn-like">💜 Like</button>
+                    </div>
+                </div>
+
+                <!-- Profile 6 -->
+                <div class="profile-card">
+                    <div class="profile-image" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                        <span class="verify-badge">✓ VERIFIED</span>
+                        <span class="online-status">ONLINE</span>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-header">
+                            <div>
+                                <div class="profile-name">David Lee</div>
+                                <div class="profile-age">29 • Seattle, WA</div>
+                            </div>
+                            <div class="match-score">84%</div>
+                        </div>
+                        <div class="profile-location">📍 1,130 miles away</div>
+                        <div class="profile-tags">
+                            <span class="tag music">🎹 Hip Hop</span>
+                            <span class="tag creative">🎧 Beat Maker</span>
+                            <span class="tag verified">✓ Verified</span>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="action-btn btn-pass">✕</button>
+                        <button class="action-btn btn-super">⭐ Super</button>
+                        <button class="action-btn btn-like">💜 Like</button>
+                    </div>
+                </div>
+
+                <!-- Profile 7 -->
+                <div class="profile-card">
+                    <div class="profile-image" style="background: linear-gradient(135deg, #6366f1, #818cf8);">
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-header">
+                            <div>
+                                <div class="profile-name">Rachel Kim</div>
+                                <div class="profile-age">24 • Chicago, IL</div>
+                            </div>
+                            <div class="match-score">83%</div>
+                        </div>
+                        <div class="profile-location">📍 2,015 miles away</div>
+                        <div class="profile-tags">
+                            <span class="tag music">🎤 Indie Pop</span>
+                            <span class="tag creative">🎹 Keyboardist</span>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="action-btn btn-pass">✕</button>
+                        <button class="action-btn btn-super">⭐ Super</button>
+                        <button class="action-btn btn-like">💜 Like</button>
+                    </div>
+                </div>
+
+                <!-- Profile 8 -->
+                <div class="profile-card">
+                    <div class="profile-image" style="background: linear-gradient(135deg, #d4a03c, #f0c040);">
+                        <span class="verify-badge">✓ VERIFIED</span>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-header">
+                            <div>
+                                <div class="profile-name">Marcus Thompson</div>
+                                <div class="profile-age">31 • Nashville, TN</div>
+                            </div>
+                            <div class="match-score">82%</div>
+                        </div>
+                        <div class="profile-location">📍 1,950 miles away</div>
+                        <div class="profile-tags">
+                            <span class="tag music">🎸 Country</span>
+                            <span class="tag creative">✍️ Songwriter</span>
+                            <span class="tag verified">✓ Grammy Winner</span>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="action-btn btn-pass">✕</button>
+                        <button class="action-btn btn-super">⭐ Super</button>
+                        <button class="action-btn btn-like">💜 Like</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function viewProfile(profileId) {
+            alert(`Viewing profile: ${profileId}`);
+        }
+
+        // Filter functionality
+        const filterChips = document.querySelectorAll('.filter-chip');
+        filterChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                filterChips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                // Filter logic would go here
+            });
+        });
+    </script>
+</body>
+</html>

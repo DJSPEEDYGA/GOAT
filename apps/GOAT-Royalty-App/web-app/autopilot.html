@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🤖 Autopilot — Autonomous AI Agent · GOAT Royalty App</title>
+<style>
+:root { --bg:#0a0e17; --card:#121826; --border:#1e2535; --text:#e4e4e7; --muted:#8b92a7; --gold:#FFD700; --cyan:#00E5FF; --green:#10b981; --hot:#FF3D00; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; line-height:1.6; }
+.container { max-width:1200px; margin:0 auto; padding:32px 24px; }
+.topbar { display:flex; align-items:center; gap:12px; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.brand { font-size:20px; font-weight:900; background:linear-gradient(90deg,var(--gold),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.navlinks { margin-left:auto; display:flex; gap:6px; flex-wrap:wrap; }
+.navlinks a { padding:6px 10px; background:#1a2035; border:1px solid var(--border); border-radius:6px; color:var(--text); text-decoration:none; font-size:12px; }
+
+.hero { background:linear-gradient(135deg,#3a0f1a 0%,#1a0f3a 100%); border:1px solid var(--hot); border-radius:16px; padding:32px; margin-bottom:24px; }
+.hero h1 { font-size:clamp(28px,4vw,42px); background:linear-gradient(90deg,var(--gold),var(--hot)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; font-weight:900; }
+.hero p { color:#d4d4d8; font-size:15px; max-width:700px; }
+
+.layout { display:grid; grid-template-columns:1fr 340px; gap:24px; }
+@media (max-width:900px) { .layout { grid-template-columns:1fr; } }
+
+.main-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; }
+.main-card h2 { color:var(--gold); font-size:22px; margin-bottom:14px; }
+
+.goal-input { display:flex; gap:10px; margin-bottom:20px; }
+.goal-input textarea { flex:1; padding:14px; background:#0a0e17; border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; resize:vertical; min-height:70px; font-family:inherit; }
+.goal-input textarea:focus { outline:none; border-color:var(--hot); }
+.goal-input button { padding:14px 22px; background:linear-gradient(90deg,var(--gold),var(--hot)); color:#000; border:none; border-radius:10px; font-weight:900; cursor:pointer; font-size:15px; align-self:flex-start; }
+.goal-input button:hover { filter:brightness(1.15); }
+.goal-input button:disabled { opacity:0.5; cursor:not-allowed; }
+
+.examples { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+.ex { padding:6px 14px; background:#1a2035; border:1px solid var(--border); border-radius:14px; font-size:12px; cursor:pointer; color:var(--cyan); }
+.ex:hover { background:var(--cyan); color:#000; border-color:var(--cyan); }
+
+.transcript { background:#0a0e17; border:1px solid var(--border); border-radius:10px; padding:16px; min-height:360px; max-height:600px; overflow-y:auto; font-size:13px; }
+.entry { margin-bottom:14px; padding:12px 14px; border-radius:8px; border-left:4px solid var(--border); }
+.entry.plan { border-left-color:var(--cyan); background:rgba(0,229,255,0.05); }
+.entry.tool_results { border-left-color:var(--gold); background:rgba(255,215,0,0.05); }
+.entry.thinking { border-left-color:var(--muted); background:rgba(139,146,167,0.05); }
+.entry.final { border-left-color:var(--green); background:rgba(16,185,129,0.08); border:1px solid var(--green); }
+.entry .label { display:inline-block; font-size:10px; text-transform:uppercase; letter-spacing:1px; padding:2px 8px; border-radius:10px; background:#1a2035; margin-bottom:8px; font-weight:700; }
+.entry.plan .label { color:var(--cyan); }
+.entry.tool_results .label { color:var(--gold); }
+.entry.final .label { color:var(--green); background:rgba(16,185,129,0.15); }
+.entry .text { white-space:pre-wrap; word-wrap:break-word; line-height:1.5; }
+.entry .tool-result { padding:8px 10px; background:#1a2035; border-radius:6px; margin-top:6px; font-family:monospace; font-size:12px; }
+.entry .tool-result .ok { color:var(--green); }
+.entry .tool-result .err { color:#ef4444; }
+
+.sidebar .info-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:16px; }
+.sidebar h3 { color:var(--gold); font-size:15px; margin-bottom:10px; }
+.sidebar ul { list-style:none; font-size:12px; color:#c4c4c8; }
+.sidebar li { padding:6px 0; border-bottom:1px solid var(--border); }
+.sidebar li:last-child { border-bottom:none; }
+.sidebar li code { color:var(--cyan); font-family:monospace; font-size:11px; }
+
+.status-bar { display:flex; align-items:center; gap:10px; padding:10px 14px; background:#1a2035; border-radius:8px; margin-bottom:16px; font-size:13px; }
+.status-bar.idle { color:var(--muted); }
+.status-bar.running { color:var(--cyan); }
+.status-bar.done { color:var(--green); }
+.pulse { width:10px; height:10px; border-radius:50%; background:currentColor; animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="topbar">
+    <div class="brand">🤖 Autopilot</div>
+    <div class="navlinks">
+      <a href="powerhouse.html">Powerhouse</a>
+      <a href="agents-brain.html">AI Brain</a>
+      <a href="settings.html">Settings</a>
+      <a href="moneypenny.html">Moneypenny</a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>🤖 Autopilot — The Autonomous Agent</h1>
+    <p>Give Autopilot a goal. It will <strong>plan the steps</strong>, <strong>call real tools</strong>, and <strong>execute autonomously</strong>. Watch it think, act, and report back. This is the GOAT of AI — not just a chat, but a real assistant that gets shit done.</p>
+  </div>
+
+  <div class="layout">
+
+    <div class="main-card">
+      <h2>🎯 Give Autopilot a Goal</h2>
+
+      <div class="goal-input">
+        <textarea id="goalInput" placeholder="e.g. Look up Waka Flocka on iTunes, then check DJ Speedy's TikTok stats, then generate a campaign email about their new collab."></textarea>
+        <button id="runBtn" onclick="runAutopilot()">🚀 Run</button>
+      </div>
+
+      <div class="examples">
+        <span class="ex" onclick="setGoal('Look up DJ Speedy on iTunes and tell me what I need to know.')">🔍 Look up DJ Speedy on iTunes</span>
+        <span class="ex" onclick="setGoal('Get the current fan database stats.')">📊 Fan DB stats</span>
+        <span class="ex" onclick="setGoal('Scrape @wakaflocka TikTok and summarize his momentum.')">🎵 Analyze Waka TikTok</span>
+        <span class="ex" onclick="setGoal('Search YouTube for the top 5 Waka Flocka tracks and report views.')">📺 Top Waka YouTube tracks</span>
+        <span class="ex" onclick="setGoal('Generate an email campaign for a new DJ Speedy + Waka Flocka collaboration single.')">✉️ Generate campaign email</span>
+        <span class="ex" onclick="setGoal('Create a smart link with slug new-heat pointing to a Spotify album URL.')">🔗 Create smart link</span>
+      </div>
+
+      <div id="statusBar" class="status-bar idle">
+        <span>⏸</span><span>Ready. Give Autopilot a goal above.</span>
+      </div>
+
+      <h3 style="margin-bottom:10px;color:var(--cyan);">📜 Transcript</h3>
+      <div class="transcript" id="transcript">
+        <p style="color:var(--muted);text-align:center;padding:40px;">
+          👋 Type a goal and hit Run. Autopilot will think, call tools, and execute them live in front of you.
+        </p>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="info-card">
+        <h3>🛠️ Available Tools</h3>
+        <ul id="toolsList">
+          <li><small>Loading...</small></li>
+        </ul>
+      </div>
+
+      <div class="info-card">
+        <h3>💡 How it Works</h3>
+        <ul>
+          <li>1. You give it a goal</li>
+          <li>2. The Brain plans the steps</li>
+          <li>3. Parses <code>TOOL: name(args)</code> calls</li>
+          <li>4. Executes each tool on real data</li>
+          <li>5. Feeds results back to brain</li>
+          <li>6. Gives a final summary</li>
+        </ul>
+      </div>
+
+      <div class="info-card">
+        <h3>🎨 Build Your Own Tool</h3>
+        <p style="font-size:12px;color:var(--muted);">
+          Edit <code>goat-intel-server/goat_agents.py</code>, add a function + register it in <code>TOOLS</code>. Autopilot picks it up instantly.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://localhost:5500'
+  : 'https://010dy.app.super.myninja.ai';
+
+function setGoal(g){ document.getElementById('goalInput').value = g; }
+
+function setStatus(cls, txt){
+  const s = document.getElementById('statusBar');
+  s.className = 'status-bar ' + cls;
+  s.innerHTML = `<span class="pulse"></span><span>${txt}</span>`;
+}
+
+async function loadTools(){
+  try {
+    const r = await fetch(API + '/autopilot/tools');
+    const d = await r.json();
+    const ul = document.getElementById('toolsList');
+    ul.innerHTML = '';
+    d.tools.forEach(t => {
+      const li = document.createElement('li');
+      li.innerHTML = `<code>${t.name}(${t.args.join(',')})</code><br><small>${t.desc}</small>`;
+      ul.appendChild(li);
+    });
+  } catch(e){
+    document.getElementById('toolsList').innerHTML = '<li><small style="color:#ef4444;">⚠️ Cannot reach Intel server on port 5500</small></li>';
+  }
+}
+
+function renderEntry(e){
+  const div = document.createElement('div');
+  div.className = 'entry ' + e.type;
+
+  let label = e.type.replace('_',' ');
+  if (e.type === 'plan') label = '🧠 PLAN';
+  else if (e.type === 'tool_results') label = '⚙️ TOOL RESULTS (step '+e.step+')';
+  else if (e.type === 'thinking') label = '💭 THINKING';
+  else if (e.type === 'final') label = '✅ FINAL SUMMARY';
+
+  let content = `<div class="label">${label}</div>`;
+
+  if (e.type === 'tool_results'){
+    content += `<div class="text">Ran ${e.results.length} tool(s):</div>`;
+    e.results.forEach(r => {
+      const ok = r.ok ? '<span class="ok">✅</span>' : '<span class="err">❌</span>';
+      content += `<div class="tool-result">${ok} <strong>${r.tool}</strong>(${JSON.stringify(r.kwargs||{})})<br>→ ${r.summary||''}</div>`;
+    });
+  } else {
+    content += `<div class="text">${escapeHtml(e.text||'')}</div>`;
+    if (e.engine) content += `<div style="margin-top:8px;font-size:10px;color:var(--muted);">⚡ Engine: ${e.engine}</div>`;
+  }
+
+  div.innerHTML = content;
+  return div;
+}
+
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+async function runAutopilot(){
+  const goal = document.getElementById('goalInput').value.trim();
+  if (!goal) return;
+
+  const btn = document.getElementById('runBtn');
+  const tr = document.getElementById('transcript');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+  tr.innerHTML = '';
+  setStatus('running', 'Autopilot is working... (planning, calling tools, executing)');
+
+  try {
+    const r = await fetch(API + '/autopilot/run', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ goal, max_steps: 5 })
+    });
+    const d = await r.json();
+
+    if (d.ok){
+      d.transcript.forEach(e => tr.appendChild(renderEntry(e)));
+      setStatus('done', `✅ Done in ${d.steps_taken} step(s). Engine: ${d.engine_used}`);
+    } else {
+      tr.innerHTML = `<div class="entry"><div class="label">❌ Error</div><div class="text">${d.error||'Unknown error'}</div></div>`;
+      setStatus('idle', '❌ Autopilot failed');
+    }
+  } catch (e) {
+    tr.innerHTML = `<div class="entry"><div class="label">❌ Network Error</div><div class="text">${e.message}</div></div>`;
+    setStatus('idle', '❌ Connection error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🚀 Run';
+}
+
+loadTools();
+
+// Enter key runs autopilot (Ctrl+Enter for newline)
+document.getElementById('goalInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey){
+    e.preventDefault();
+    runAutopilot();
+  }
+});
+</script>
+</body>
+</html>

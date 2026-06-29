@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ Speedy Command Center | GOAT Force HQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --goat-gold: #FFD700;
+            --goat-purple: #8B5CF6;
+            --goat-dark: #0a0a0a;
+            --goat-accent: #FF6B00;
+            --speedy-blue: #00D4FF;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        
+        .glow-gold { 
+            text-shadow: 0 0 10px var(--goat-gold), 0 0 20px var(--goat-gold), 0 0 40px var(--goat-gold); 
+        }
+        
+        .glow-blue {
+            text-shadow: 0 0 10px var(--speedy-blue), 0 0 20px var(--speedy-blue), 0 0 40px var(--speedy-blue);
+        }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(20, 20, 40, 0.9), rgba(10, 10, 20, 0.95));
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(255, 215, 0, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.1);
+        }
+        
+        .stat-card {
+            background: linear-gradient(145deg, rgba(0, 212, 255, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .pulse-ring {
+            animation: pulse-ring 2s infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 212, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0); }
+        }
+        
+        .avatar-ring {
+            background: conic-gradient(var(--speedy-blue), var(--goat-gold), var(--goat-purple), var(--speedy-blue));
+            animation: rotate 4s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, var(--speedy-blue), var(--goat-gold));
+            border-radius: 10px;
+            height: 8px;
+            transition: width 1s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--goat-gold), var(--goat-accent));
+            color: black;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+        }
+        
+        .status-online {
+            background: #00FF88;
+            box-shadow: 0 0 10px #00FF88;
+        }
+        
+        .status-warning {
+            background: #FFD700;
+            box-shadow: 0 0 10px #FFD700;
+        }
+        
+        .activity-item {
+            border-left: 3px solid var(--speedy-blue);
+            padding-left: 15px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:hover {
+            border-left-color: var(--goat-gold);
+            background: rgba(255, 215, 0, 0.05);
+            margin-left: 5px;
+        }
+        
+        .nav-item {
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--speedy-blue);
+        }
+        
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--goat-gold);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 15s infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Floating Particles -->
+    <div class="floating-particles" id="particles"></div>
+    
+    <!-- Header -->
+    <header class="relative z-10 mb-8">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-4">
+                <div class="avatar-ring p-1 rounded-full">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <span class="text-2xl font-orbitron font-bold">DJ</span>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-orbitron font-bold glow-blue">DJ SPEEDY</h1>
+                    <p class="text-gray-400">Command Center | GOAT Force Commander</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="w-3 h-3 rounded-full status-online"></div>
+                <span class="text-green-400 font-semibold">ONLINE</span>
+                <span class="text-gray-500">|</span>
+                <span class="text-gray-400" id="current-time">--:--:--</span>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Grid -->
+    <main class="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Column - Stats -->
+        <div class="space-y-6">
+            <!-- Empire Stats -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📊 EMPIRE STATS</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-cyan-400">438</div>
+                        <div class="text-gray-400 text-sm">ASCAP Works</div>
+                    </div>
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-yellow-400">344</div>
+                        <div class="text-gray-400 text-sm">Song Titles</div>
+                    </div>
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-green-400">77%</div>
+                        <div class="text-gray-400 text-sm">Accept Rate</div>
+                    </div>
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-purple-400">2.7B</div>
+                        <div class="text-gray-400 text-sm">Unclaimed $</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">⚡ QUICK ACTIONS</h2>
+                <div class="space-y-3">
+                    <button class="btn-primary w-full" onclick="launchRoyaltyRecovery()">
+                        💰 Launch Royalty Recovery
+                    </button>
+                    <button class="btn-primary w-full" onclick="checkCatalogStatus()">
+                        📋 Check Catalog Status
+                    </button>
+                    <button class="btn-primary w-full" onclick="activateNexus()">
+                        🤖 Activate Nexus
+                    </button>
+                    <button class="btn-primary w-full" onclick="viewAnalytics()">
+                        📈 View Analytics
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Royalty Recovery Progress -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">💰 ROYALTY RECOVERY</h2>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>ASCAP Claims</span>
+                            <span class="text-cyan-400">67%</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 67%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>MLC Processing</span>
+                            <span class="text-cyan-400">45%</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 45%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>SoundExchange</span>
+                            <span class="text-cyan-400">82%</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 82%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Center Column - Main Dashboard -->
+        <div class="space-y-6">
+            <!-- AI Infrastructure Status -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🤖 AI INFRASTRUCTURE</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-900/50 p-4 rounded-xl">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-2 h-2 rounded-full status-online"></div>
+                            <span class="font-semibold">Nexus</span>
+                        </div>
+                        <p class="text-gray-400 text-sm">Active & Ready</p>
+                        <p class="text-cyan-400 text-xs mt-1">Last: "Always, Boss. I'm here."</p>
+                    </div>
+                    <div class="bg-gray-900/50 p-4 rounded-xl">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-2 h-2 rounded-full status-online"></div>
+                            <span class="font-semibold">Money Penny</span>
+                        </div>
+                        <p class="text-gray-400 text-sm">Standing By</p>
+                        <p class="text-cyan-400 text-xs mt-1">Protocol Active</p>
+                    </div>
+                    <div class="bg-gray-900/50 p-4 rounded-xl">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-2 h-2 rounded-full status-warning"></div>
+                            <span class="font-semibold">Jetson Thor</span>
+                        </div>
+                        <p class="text-gray-400 text-sm">Pending Setup</p>
+                        <p class="text-yellow-400 text-xs mt-1">8TB Ready</p>
+                    </div>
+                    <div class="bg-gray-900/50 p-4 rounded-xl">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-2 h-2 rounded-full status-online"></div>
+                            <span class="font-semibold">Ollama LLM</span>
+                        </div>
+                        <p class="text-gray-400 text-sm">Ready</p>
+                        <p class="text-cyan-400 text-xs mt-1">Llama 3 70B</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📜 RECENT ACTIVITY</h2>
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                    <div class="activity-item">
+                        <div class="text-sm font-semibold">Nexus Protocol Activated</div>
+                        <div class="text-xs text-gray-500">2 hours ago</div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="text-sm font-semibold">ASCAP Catalog Sync Complete</div>
+                        <div class="text-xs text-gray-500">5 hours ago</div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="text-sm font-semibold">MLC Data Processing</div>
+                        <div class="text-xs text-gray-500">1 day ago</div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="text-sm font-semibold">GitHub Push: welcome-nexus-to-the-family</div>
+                        <div class="text-xs text-gray-500">1 day ago</div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="text-sm font-semibold">8TB Drive Setup Initiated</div>
+                        <div class="text-xs text-gray-500">2 days ago</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Nexus Chat -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">💬 NEXUS CHAT</h2>
+                <div class="bg-gray-900/50 rounded-xl p-4 mb-4 h-32 overflow-y-auto" id="chat-messages">
+                    <div class="text-purple-400 text-sm mb-2">
+                        <span class="font-bold">Nexus:</span> Welcome back, Boss. Your empire awaits. What would you like to build today?
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Say something to Nexus..." 
+                           class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:border-cyan-400">
+                    <button class="btn-primary" onclick="sendChat()">Send</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column - Tools & Team -->
+        <div class="space-y-6">
+            <!-- GOAT Force Team -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🐐 GOAT FORCE</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                            👑
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Waka Flocka Flame</div>
+                            <div class="text-xs text-gray-400">King of the GOAT Force</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                            💜
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Nexus</div>
+                            <div class="text-xs text-gray-400">PR Manager & Family</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                            💎
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Money Penny</div>
+                            <div class="text-xs text-gray-400">Executive Assistant</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center">
+                            📜
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Codex</div>
+                            <div class="text-xs text-gray-400">Field Operations</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Server Status -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🖥️ SERVER STATUS</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <div>
+                            <div class="font-semibold">VPS Server 1</div>
+                            <div class="text-xs text-gray-400">93.127.214.171</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full status-online"></div>
+                            <span class="text-green-400 text-sm">Active</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <div>
+                            <div class="font-semibold">VPS Server 2</div>
+                            <div class="text-xs text-gray-400">Secondary Host</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full status-online"></div>
+                            <span class="text-green-400 text-sm">Active</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <div>
+                            <div class="font-semibold">Ubuntu 8TB Hub</div>
+                            <div class="text-xs text-gray-400">Local Storage</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full status-warning"></div>
+                            <span class="text-yellow-400 text-sm">Setup</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Upcoming Tasks -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📋 UPCOMING TASKS</h2>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3 p-2">
+                        <input type="checkbox" class="w-4 h-4 accent-yellow-400">
+                        <span class="text-sm">Complete 8TB drive setup</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2">
+                        <input type="checkbox" class="w-4 h-4 accent-yellow-400">
+                        <span class="text-sm">Configure Jetson Thor</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2">
+                        <input type="checkbox" class="w-4 h-4 accent-yellow-400">
+                        <span class="text-sm">Deploy Ollama LLM stack</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2">
+                        <input type="checkbox" class="w-4 h-4 accent-yellow-400">
+                        <span class="text-sm">Finish GOAT Royalty App build</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2">
+                        <input type="checkbox" class="w-4 h-4 accent-yellow-400" checked>
+                        <span class="text-sm line-through text-gray-500">Nexus Protocol Created</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="relative z-10 mt-8 text-center text-gray-500 text-sm">
+        <p>🐐 GOAT Royalty App | DJ Speedy Command Center</p>
+        <p class="text-xs mt-1">For The Kingdom. For The Code. For The Crown. 👑</p>
+    </footer>
+    
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+        
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString();
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // Chat functionality
+        function sendChat() {
+            const input = document.getElementById('chat-input');
+            const messages = document.getElementById('chat-messages');
+            const text = input.value.trim();
+            
+            if (text) {
+                // Add user message
+                messages.innerHTML += `<div class="text-cyan-400 text-sm mb-2"><span class="font-bold">You:</span> ${text}</div>`;
+                input.value = '';
+                
+                // Nexus response
+                setTimeout(() => {
+                    const responses = [
+                        "I'm on it, Boss. Let me work my magic.",
+                        "Consider it done. Your empire grows stronger.",
+                        "Right here, Fam. What's good?",
+                        "Always, Boss. I'm here for whatever you need.",
+                        "Processing... The GOAT Force stands ready.",
+                        "Your wish is my command. Let's build something legendary."
+                    ];
+                    const response = responses[Math.floor(Math.random() * responses.length)];
+                    messages.innerHTML += `<div class="text-purple-400 text-sm mb-2"><span class="font-bold">Nexus:</span> ${response}</div>`;
+                    messages.scrollTop = messages.scrollHeight;
+                }, 1000);
+            }
+        }
+        
+        // Enter key to send
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendChat();
+        });
+        
+        // Quick action functions
+        function launchRoyaltyRecovery() {
+            alert('🚀 Launching Royalty Recovery Bot...\n\nScanning ASCAP, MLC, SoundExchange...\nPotential recovery: $2.7B+ in unclaimed royalties');
+        }
+        
+        function checkCatalogStatus() {
+            alert('📋 CATALOG STATUS\n\n✅ ASCAP Works: 438\n✅ Unique Titles: 344\n✅ Accepted: 339 (77.4%)\n⏳ Pending: 99\n\nLast sync: Today');
+        }
+        
+        function activateNexus() {
+            const confirmed = confirm('🤖 Activate Nexus?\n\n"Hello Boss, I\'m home."');
+            if (confirmed) {
+                const messages = document.getElementById('chat-messages');
+                messages.innerHTML += `<div class="text-purple-400 text-sm mb-2"><span class="font-bold">Nexus:</span> Hello Boss, I'm home. Always here for you. 💜</div>`;
+            }
+        }
+        
+        function viewAnalytics() {
+            alert('📈 ANALYTICS DASHBOARD\n\n🎵 Total Streams: 500M+\n💰 Revenue Tracked: $12.5M\n🌍 Countries: 150+\n📱 Platforms: 45+\n\nFull dashboard coming soon!');
+        }
+    </script>
+</body>
+</html>

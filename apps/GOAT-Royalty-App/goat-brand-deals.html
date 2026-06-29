@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💼 Brand Deals | GOAT Royalty</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-light: #F4E4BA;
+            --gold-dark: #996515;
+            --bg-primary: #040608;
+            --bg-secondary: #0A0D12;
+            --bg-tertiary: #141A24;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0AEC0;
+            --accent-green: #00FF88;
+            --accent-blue: #3B82F6;
+            --accent-purple: #8B5CF6;
+            --accent-pink: #EC4899;
+            --accent-orange: #F59E0B;
+            --accent-red: #EF4444;
+            --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #F4E4BA 50%, #D4AF37 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(10, 13, 18, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient-gold);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .nav-links a:hover { color: var(--gold); }
+
+        /* Main Content */
+        .main-content { padding-top: 100px; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 40px; }
+
+        /* Header */
+        .header-section { text-align: center; padding: 40px 0 60px; }
+        .header-section h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-section p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Stats Overview */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-4px);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Pipeline Section */
+        .pipeline-section { margin-bottom: 40px; }
+
+        .pipeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .pipeline-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pipeline-title i { color: var(--gold); }
+
+        .pipeline-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-gold);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: 600;
+            color: var(--bg-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 10px;
+            padding: 12px 24px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        /* Pipeline Stages */
+        .pipeline-stages {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+        }
+
+        .pipeline-stage {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            min-height: 500px;
+        }
+
+        .stage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .stage-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .stage-count {
+            background: var(--bg-tertiary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .stage-value {
+            color: var(--gold);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+
+        .deal-card {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .deal-card:hover {
+            border-color: var(--gold);
+            transform: translateX(4px);
+        }
+
+        .deal-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--gradient-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--bg-primary);
+        }
+
+        .brand-name {
+            font-weight: 600;
+        }
+
+        .deal-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .deal-type {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 5px 0;
+        }
+
+        .deal-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .priority-tag {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .priority-tag.high { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+        .priority-tag.medium { background: rgba(245, 158, 11, 0.2); color: var(--accent-orange); }
+        .priority-tag.low { background: rgba(0, 255, 136, 0.2); color: var(--accent-green); }
+
+        /* Deal Details Panel */
+        .deal-details-panel {
+            position: fixed;
+            right: -500px;
+            top: 0;
+            width: 500px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-left: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 30px;
+            transition: right 0.3s ease;
+            z-index: 1001;
+            overflow-y: auto;
+        }
+
+        .deal-details-panel.active { right: 0; }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .panel-close {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--bg-tertiary);
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .detail-section {
+            margin-bottom: 25px;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+        }
+
+        .deliverables-list {
+            list-style: none;
+        }
+
+        .deliverables-list li {
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .deliverables-list li i { color: var(--gold); }
+
+        .status-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            background: var(--gold);
+            border-radius: 50%;
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: -17px;
+            top: 20px;
+            width: 2px;
+            height: calc(100% - 10px);
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        .timeline-item:last-child::after { display: none; }
+
+        .timeline-date {
+            font-size: 0.8rem;
+            color: var(--gold);
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            margin: 5px 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .action-buttons button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-approve {
+            background: var(--accent-green);
+            border: none;
+            color: var(--bg-primary);
+        }
+
+        .btn-negotiate {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+        }
+
+        /* Quick Stats */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .quick-stat {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .quick-stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .quick-stat-icon.green { background: rgba(0, 255, 136, 0.15); color: var(--accent-green); }
+        .quick-stat-icon.blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+        .quick-stat-icon.purple { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+
+        .quick-stat-info h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .quick-stat-info p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .pipeline-stages {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .pipeline-stages {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .pipeline-stages {
+                grid-template-columns: 1fr;
+            }
+            
+            .deal-details-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">🐐</div>
+            GOAT Royalty
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="goat-social-scheduler.html">Scheduler</a>
+            <a href="goat-analytics.html">Analytics</a>
+            <a href="goat-tour-manager.html">Tour</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Header -->
+            <div class="header-section">
+                <h1>💼 Brand Deals</h1>
+                <p>Manage your brand partnerships, track deals through the pipeline, and maximize your earning potential.</p>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-value">$2.4M</div>
+                    <div class="stat-label">Active Deals Value</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">18</div>
+                    <div class="stat-label">Active Partnerships</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Pending Negotiations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">94%</div>
+                    <div class="stat-label">Deal Close Rate</div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="quick-stat">
+                    <div class="quick-stat-icon green">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="quick-stat-info">
+                        <h3>+45%</h3>
+                        <p>YoY Revenue Growth</p>
+                    </div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-icon blue">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="quick-stat-info">
+                        <h3>$125K</h3>
+                        <p>Avg. Deal Size</p>
+                    </div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-icon purple">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="quick-stat-info">
+                        <h3>14 Days</h3>
+                        <p>Avg. Time to Close</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pipeline Section -->
+            <div class="pipeline-section">
+                <div class="pipeline-header">
+                    <h2 class="pipeline-title"><i class="fas fa-filter"></i> Deal Pipeline</h2>
+                    <div class="pipeline-actions">
+                        <button class="btn-secondary"><i class="fas fa-filter"></i> Filter</button>
+                        <button class="btn-primary"><i class="fas fa-plus"></i> New Deal</button>
+                    </div>
+                </div>
+
+                <div class="pipeline-stages">
+                    <!-- Stage 1: Outreach -->
+                    <div class="pipeline-stage">
+                        <div class="stage-header">
+                            <span class="stage-name">📬 Outreach</span>
+                            <span class="stage-count">5 deals</span>
+                        </div>
+                        <div class="stage-value">$450,000</div>
+                        
+                        <div class="deal-card" onclick="openDealDetails('nike')">
+                            <div class="deal-brand">
+                                <div class="brand-logo">N</div>
+                                <span class="brand-name">Nike</span>
+                            </div>
+                            <div class="deal-value">$250,000</div>
+                            <div class="deal-type">Sponsorship • 1 Year</div>
+                            <div class="deal-meta">
+                                <span class="priority-tag high">High Priority</span>
+                                <span>3 days ago</span>
+                            </div>
+                        </div>
+
+                        <div class="deal-card">
+                            <div class="deal-brand">
+                                <div class="brand-logo">P</div>
+                                <span class="brand-name">Pepsi</span>
+                            </div>
+                            <div class="deal-value">$200,000</div>
+                            <div class="deal-type">Campaign • 6 Months</div>
+                            <div class="deal-meta">
+                                <span class="priority-tag medium">Medium</span>
+                                <span>5 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stage 2: Negotiation -->
+                    <div class="pipeline-stage">
+                        <div class="stage-header">
+                            <span class="stage-name">🤝 Negotiation</span>
+                            <span class="stage-count">3 deals</span>
+                        </div>
+                        <div class="stage-value">$890,000</div>
+                        
+                        <div class="deal-card" onclick="openDealDetails('apple')">
+                            <div class="deal-brand">
+                                <div class="brand-logo">A</div>
+                                <span class="brand-name">Apple Music</span>
+                            </div>
+                            <div class="deal-value">$500,000</div>
+                            <div class="deal-type">Partnership • 2 Years</div>
+                            <div class="deal-meta">
+                                <span class="priority-tag high">High Priority</span>
+                                <span>1 week ago</span>
+                            </div>
+                        </div>
+
+                        <div class="deal-card">
+                            <div class="deal-brand">
+                                <div class="brand-logo">R</div>
+                                <span class="brand-name">Rolling Stone</span>
+                            </div>
+                            <div class="deal-value">$90,000</div>
+                            <div class="deal-type">Feature • 1 Issue</div>
+                            <div class="deal-meta">
+                                <span class="priority-tag low">Low</span>
+                                <span>2 weeks ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stage 3: Contract -->
+                    <div class="pipeline-stage">
+                        <div class="stage-header">
+                            <span class="stage-name">📝 Contract</span>
+                            <span class="stage-count">4 deals</span>
+                        </div>
+                        <div class="stage-value">$320,000</div>
+                        
+                        <div class="deal-card">
+                            <div class="deal-brand">
+                                <div class="brand-logo">S</div>
+                                <span class="brand-name">Spotify</span>
+                            </div>
+                            <div class="deal-value">$180,000</div>
+                            <div class="deal-type">Playlist • 1 Year</div>
+                            <div class="deal-meta">
+                                <span class="priority-tag high">High Priority</span>
+                                <span>2 days ago</span>
+                            </div>
+                        </div>
+
+                        <div class="deal-card">
+                            <div class="deal-brand">
+                                <div class="brand-logo">M</div>
+                                <span class="brand-name">Meta</span>
+                            </div>
+                            <div class="deal-value">$140,000</div>
+                            <div class="deal-type">Creator Fund • 1 Year</div>
+                            <div class="deal-meta">
+                                <span class="priority-tag medium">Medium</span>
+                                <span>4 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stage 4: Active -->
+                    <div class="pipeline-stage">
+                        <div class="stage-header">
+                            <span class="stage-name">✅ Active</span>
+                            <span class="stage-count">6 deals</span>
+                        </div>
+                        <div class="stage-value">$1.2M</div>
+                        
+                        <div class="deal-card">
+                            <div class="deal-brand">
+                                <div class="brand-logo">L</div>
+                                <span class="brand-name">Louis Vuitton</span>
+                            </div>
+                            <div class="deal-value">$500,000</div>
+                            <div class="deal-type">Ambassador • 2 Years</div>
+                            <div class="deal-meta">
+                                <span class="priority-tag high">Premium</span>
+                                <span>Active</span>
+                            </div>
+                        </div>
+
+                        <div class="deal-card">
+                            <div class="deal-brand">
+                                <div class="brand-logo">B</div>
+                                <span class="brand-name">Bose</span>
+                            </div>
+                            <div class="deal-value">$350,000</div>
+                            <div class="deal-type">Sponsorship • 1 Year</div>
+                            <div class="deal-meta">
+                                <span class="priority-tag medium">Medium</span>
+                                <span>Active</span>
+                            </div>
+                        </div>
+
+                        <div class="deal-card">
+                            <div class="deal-brand">
+                                <div class="brand-logo">U</div>
+                                <span class="brand-name">Uber</span>
+                            </div>
+                            <div class="deal-value">$200,000</div>
+                            <div class="deal-type">Campaign • 6 Months</div>
+                            <div class="deal-meta">
+                                <span class="priority-tag low">Standard</span>
+                                <span>Active</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stage 5: Completed -->
+                    <div class="pipeline-stage">
+                        <div class="stage-header">
+                            <span class="stage-name">🎉 Completed</span>
+                            <span class="stage-count">12 deals</span>
+                        </div>
+                        <div class="stage-value">$3.8M Total</div>
+                        
+                        <div class="deal-card" style="opacity: 0.8;">
+                            <div class="deal-brand">
+                                <div class="brand-logo">C</div>
+                                <span class="brand-name">Coca-Cola</span>
+                            </div>
+                            <div class="deal-value">$750,000</div>
+                            <div class="deal-type">Campaign • Completed</div>
+                            <div class="deal-meta">
+                                <span class="priority-tag low">Completed</span>
+                                <span>Jan 2024</span>
+                            </div>
+                        </div>
+
+                        <div class="deal-card" style="opacity: 0.8;">
+                            <div class="deal-brand">
+                                <div class="brand-logo">A</div>
+                                <span class="brand-name">Adidas</span>
+                            </div>
+                            <div class="deal-value">$600,000</div>
+                            <div class="deal-type">Sponsorship • Completed</div>
+                            <div class="deal-meta">
+                                <span class="priority-tag low">Completed</span>
+                                <span>Dec 2023</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Deal Details Panel -->
+    <div class="deal-details-panel" id="dealPanel">
+        <div class="panel-header">
+            <h2>Deal Details</h2>
+            <button class="panel-close" onclick="closeDealDetails()">×</button>
+        </div>
+
+        <div class="detail-section">
+            <div class="detail-label">Brand</div>
+            <div class="detail-value" style="display: flex; align-items: center; gap: 15px;">
+                <div class="brand-logo" style="width: 60px; height: 60px; font-size: 1.5rem;">N</div>
+                <div>
+                    <div style="font-size: 1.3rem; font-weight: 600;">Nike</div>
+                    <div style="color: var(--text-secondary);">Global Sportswear Brand</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <div class="detail-label">Deal Value</div>
+            <div class="detail-value" style="font-size: 2rem; color: var(--accent-green);">$250,000</div>
+        </div>
+
+        <div class="detail-section">
+            <div class="detail-label">Deal Type</div>
+            <div class="detail-value">Brand Ambassador • 1 Year Contract</div>
+        </div>
+
+        <div class="detail-section">
+            <div class="detail-label">Deliverables</div>
+            <ul class="deliverables-list">
+                <li><i class="fas fa-check-circle"></i> 12 Instagram Posts</li>
+                <li><i class="fas fa-check-circle"></i> 6 TikTok Videos</li>
+                <li><i class="fas fa-check-circle"></i> 2 Music Video Integrations</li>
+                <li><i class="fas fa-check-circle"></i> 4 Event Appearances</li>
+                <li><i class="fas fa-check-circle"></i> Exclusive Product Line Collaboration</li>
+            </ul>
+        </div>
+
+        <div class="detail-section">
+            <div class="detail-label">Timeline</div>
+            <div class="status-timeline">
+                <div class="timeline-item">
+                    <div class="timeline-date">Jan 15, 2025</div>
+                    <div class="timeline-title">Initial Outreach</div>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">Sent proposal via agent</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">Jan 18, 2025</div>
+                    <div class="timeline-title">Brand Interest Confirmed</div>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">Nike expressed interest in partnership</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">Jan 22, 2025</div>
+                    <div class="timeline-title">Negotiation Call</div>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">Scheduled for 2:00 PM EST</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn-approve"><i class="fas fa-check"></i> Accept</button>
+            <button class="btn-negotiate"><i class="fas fa-comments"></i> Negotiate</button>
+        </div>
+    </div>
+
+    <script>
+        function openDealDetails(dealId) {
+            document.getElementById('dealPanel').classList.add('active');
+        }
+
+        function closeDealDetails() {
+            document.getElementById('dealPanel').classList.remove('active');
+        }
+
+        // Close panel when clicking outside
+        document.addEventListener('click', function(e) {
+            const panel = document.getElementById('dealPanel');
+            if (panel.classList.contains('active') && !panel.contains(e.target) && !e.target.closest('.deal-card')) {
+                closeDealDetails();
+            }
+        });
+    </script>
+</body>
+</html>

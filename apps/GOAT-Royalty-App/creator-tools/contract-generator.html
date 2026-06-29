@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Generator | GOAT Royalty App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --goat-gold: #FFD700;
+            --goat-purple: #8B5CF6;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        .glow-gold { text-shadow: 0 0 10px var(--goat-gold), 0 0 20px var(--goat-gold); }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(20, 20, 40, 0.9), rgba(10, 10, 20, 0.95));
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .input-field {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--goat-gold);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--goat-gold), #FF6B00);
+            color: black;
+            font-weight: 700;
+            padding: 14px 28px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(255, 215, 0, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(139, 92, 246, 0.3);
+        }
+        
+        .contract-type {
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .contract-type:hover {
+            border-color: rgba(255, 215, 0, 0.5);
+            background: rgba(255, 215, 0, 0.05);
+        }
+        
+        .contract-type.selected {
+            border-color: var(--goat-gold);
+            background: rgba(255, 215, 0, 0.1);
+        }
+        
+        .preview-document {
+            background: white;
+            color: black;
+            padding: 40px;
+            border-radius: 12px;
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        @media print {
+            body { background: white; }
+            .no-print { display: none; }
+            .preview-document { box-shadow: none; max-height: none; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Header -->
+    <header class="mb-8 no-print">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 to-yellow-500 flex items-center justify-center">
+                <span class="text-2xl">📜</span>
+            </div>
+            <div>
+                <h1 class="text-3xl md:text-4xl font-orbitron font-bold glow-gold">CONTRACT GENERATOR</h1>
+                <p class="text-gray-400">Create professional music industry contracts</p>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Contract Type Selection -->
+        <div class="space-y-6 no-print">
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📋 SELECT CONTRACT TYPE</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="contract-type selected" onclick="selectContractType(this, 'management')" data-type="management">
+                        <div class="text-xl mb-2">👔</div>
+                        <div class="font-bold">Management Agreement</div>
+                        <div class="text-xs text-gray-400">Artist-Manager relationship</div>
+                    </div>
+                    <div class="contract-type" onclick="selectContractType(this, 'production')" data-type="production">
+                        <div class="text-xl mb-2">🎛️</div>
+                        <div class="font-bold">Production Agreement</div>
+                        <div class="text-xs text-gray-400">Producer-Artist deal</div>
+                    </div>
+                    <div class="contract-type" onclick="selectContractType(this, 'label')" data-type="label">
+                        <div class="text-xl mb-2">💿</div>
+                        <div class="font-bold">Label Agreement</div>
+                        <div class="text-xs text-gray-400">Record deal contract</div>
+                    </div>
+                    <div class="contract-type" onclick="selectContractType(this, 'publishing')" data-type="publishing">
+                        <div class="text-xl mb-2">📝</div>
+                        <div class="font-bold">Publishing Deal</div>
+                        <div class="text-xs text-gray-400">Music publishing agreement</div>
+                    </div>
+                    <div class="contract-type" onclick="selectContractType(this, 'feature')" data-type="feature">
+                        <div class="text-xl mb-2">🎤</div>
+                        <div class="font-bold">Feature Agreement</div>
+                        <div class="text-xs text-gray-400">Guest artist feature</div>
+                    </div>
+                    <div class="contract-type" onclick="selectContractType(this, 'sync')" data-type="sync">
+                        <div class="text-xl mb-2">🎬</div>
+                        <div class="font-bold">Sync License</div>
+                        <div class="text-xs text-gray-400">Film/TV placement</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contract Details -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">✏️ CONTRACT DETAILS</h2>
+                <div class="space-y-4" id="contract-fields">
+                    <!-- Dynamic fields based on contract type -->
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex gap-4">
+                <button class="btn-primary flex-1" onclick="generateContract()">
+                    📜 GENERATE CONTRACT
+                </button>
+                <button class="btn-secondary" onclick="printContract()">
+                    🖨️ PRINT
+                </button>
+                <button class="btn-secondary" onclick="downloadPDF()">
+                    📥 DOWNLOAD
+                </button>
+            </div>
+        </div>
+        
+        <!-- Preview -->
+        <div class="card p-6">
+            <h2 class="font-orbitron text-xl mb-4 glow-gold no-print">👁️ CONTRACT PREVIEW</h2>
+            <div class="preview-document" id="contract-preview">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="font-size: 22px; font-weight: bold; margin-bottom: 10px;">CONTRACT PREVIEW</h1>
+                    <p style="color: #666;">Select a contract type and fill in the details</p>
+                </div>
+                <hr style="margin: 20px 0;">
+                <p style="color: #999; text-align: center; font-style: italic;">
+                    Your generated contract will appear here...
+                </p>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="mt-8 text-center text-gray-500 text-sm no-print">
+        <p>🐐 GOAT Royalty App | Contract Generator</p>
+        <p class="text-xs mt-1">⚠️ These templates are for reference only. Consult a lawyer for legal advice.</p>
+    </footer>
+    
+    <script>
+        let currentContractType = 'management';
+        
+        const contractFields = {
+            management: [
+                { id: 'artist-name', label: 'Artist Name', type: 'text', placeholder: 'Legal name / Stage name' },
+                { id: 'manager-name', label: 'Manager Name', type: 'text', placeholder: 'Manager/Legal representative' },
+                { id: 'manager-company', label: 'Management Company', type: 'text', placeholder: 'Company name (if applicable)' },
+                { id: 'term-length', label: 'Term Length', type: 'text', placeholder: 'e.g., 2 years' },
+                { id: 'commission', label: 'Commission %', type: 'number', placeholder: 'e.g., 15' },
+                { id: 'territory', label: 'Territory', type: 'text', placeholder: 'e.g., Worldwide' }
+            ],
+            production: [
+                { id: 'artist-name', label: 'Artist Name', type: 'text', placeholder: 'Artist legal name' },
+                { id: 'producer-name', label: 'Producer Name', type: 'text', placeholder: 'Producer legal name' },
+                { id: 'song-title', label: 'Song Title', type: 'text', placeholder: 'Song being produced' },
+                { id: 'producer-split', label: 'Producer Split %', type: 'number', placeholder: 'e.g., 3-5%' },
+                { id: 'advance', label: 'Advance Amount ($)', type: 'number', placeholder: 'e.g., 5000' },
+                { id: 'delivery-date', label: 'Delivery Date', type: 'date' }
+            ],
+            label: [
+                { id: 'artist-name', label: 'Artist Name', type: 'text', placeholder: 'Artist legal name' },
+                { id: 'label-name', label: 'Label Name', type: 'text', placeholder: 'Record label' },
+                { id: 'album-title', label: 'Project Title', type: 'text', placeholder: 'Album/EP name' },
+                { id: 'term-length', label: 'Term (Albums)', type: 'number', placeholder: 'e.g., 3' },
+                { id: 'royalty-rate', label: 'Royalty Rate %', type: 'number', placeholder: 'e.g., 15' },
+                { id: 'advance', label: 'Advance Amount ($)', type: 'number', placeholder: 'e.g., 50000' }
+            ],
+            publishing: [
+                { id: 'songwriter-name', label: 'Songwriter Name', type: 'text', placeholder: 'Legal name' },
+                { id: 'publisher-name', label: 'Publisher Name', type: 'text', placeholder: 'Publishing company' },
+                { id: 'catalog', label: 'Catalog (Songs)', type: 'text', placeholder: 'Existing or new works' },
+                { id: 'split', label: 'Publishing Split %', type: 'number', placeholder: 'e.g., 50/50' },
+                { id: 'term-length', label: 'Term Length', type: 'text', placeholder: 'e.g., 3 years' },
+                { id: 'advance', label: 'Advance Amount ($)', type: 'number', placeholder: 'e.g., 25000' }
+            ],
+            feature: [
+                { id: 'main-artist', label: 'Main Artist', type: 'text', placeholder: 'Primary artist name' },
+                { id: 'featured-artist', label: 'Featured Artist', type: 'text', placeholder: 'Guest artist name' },
+                { id: 'song-title', label: 'Song Title', type: 'text', placeholder: 'Song name' },
+                { id: 'feature-fee', label: 'Feature Fee ($)', type: 'number', placeholder: 'e.g., 10000' },
+                { id: 'royalty-split', label: 'Royalty Split %', type: 'number', placeholder: 'e.g., 5' },
+                { id: 'delivery-date', label: 'Delivery Date', type: 'date' }
+            ],
+            sync: [
+                { id: 'licensor', label: 'Licensor (Rights Holder)', type: 'text', placeholder: 'Who owns the music' },
+                { id: 'licensee', label: 'Licensee', type: 'text', placeholder: 'Who will use the music' },
+                { id: 'song-title', label: 'Song Title', type: 'text', placeholder: 'Song to be licensed' },
+                { id: 'production-name', label: 'Production Name', type: 'text', placeholder: 'Film/Show/Ad name' },
+                { id: 'sync-fee', label: 'Sync Fee ($)', type: 'number', placeholder: 'e.g., 15000' },
+                { id: 'term-length', label: 'License Term', type: 'text', placeholder: 'e.g., 5 years' },
+                { id: 'territory', label: 'Territory', type: 'text', placeholder: 'e.g., Worldwide' }
+            ]
+        };
+        
+        const contractTemplates = {
+            management: (data) => `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">ARTIST MANAGEMENT AGREEMENT</h1>
+                </div>
+                
+                <p><strong>This Agreement</strong> is made effective as of _________________, by and between:</p>
+                
+                <p><strong>ARTIST:</strong> ${data['artist-name'] || '[Artist Name]'}<br>
+                <strong>MANAGER:</strong> ${data['manager-name'] || '[Manager Name]'}${data['manager-company'] ? ` of ${data['manager-company']}` : ''}</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">1. ENGAGEMENT</h2>
+                <p>Artist hereby engages Manager as Artist's exclusive personal manager for the Territory of ${data['territory'] || 'Worldwide'} for a period of ${data['term-length'] || '[Term]'} (the "Term").</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">2. MANAGER'S DUTIES</h2>
+                <p>Manager shall use reasonable efforts to promote and develop Artist's career in the entertainment industry, including but not limited to: securing recording agreements, booking performances, negotiating contracts, and advising on career decisions.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">3. COMPENSATION</h2>
+                <p>In consideration for Manager's services, Artist shall pay Manager a commission of ${data['commission'] || '[X]'}% of Artist's Gross Income during the Term and Commission Period as defined herein.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">4. TERM</h2>
+                <p>The Term shall commence on the date first written above and shall continue for ${data['term-length'] || '[Term Length]'}, unless earlier terminated pursuant to the terms herein.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">5. INDEMNIFICATION</h2>
+                <p>Each party shall indemnify and hold harmless the other from any claims arising from their breach of this Agreement.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">SIGNATURES</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 30px;">
+                    <div>
+                        <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 40px;"></div>
+                        <p style="font-size: 12px; margin: 0;">${data['artist-name'] || 'Artist'}</p>
+                        <p style="font-size: 11px; color: #666;">Date: _____________</p>
+                    </div>
+                    <div>
+                        <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 40px;"></div>
+                        <p style="font-size: 12px; margin: 0;">${data['manager-name'] || 'Manager'}</p>
+                        <p style="font-size: 11px; color: #666;">Date: _____________</p>
+                    </div>
+                </div>
+            `,
+            production: (data) => `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">PRODUCTION AGREEMENT</h1>
+                </div>
+                
+                <p><strong>This Production Agreement</strong> is entered into on _________________, by and between:</p>
+                
+                <p><strong>ARTIST:</strong> ${data['artist-name'] || '[Artist Name]'}<br>
+                <strong>PRODUCER:</strong> ${data['producer-name'] || '[Producer Name]'}</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">1. SERVICES</h2>
+                <p>Producer agrees to produce the sound recording(s) for the composition entitled "${data['song-title'] || '[Song Title]'}" (the "Master(s)").</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">2. COMPENSATION</h2>
+                <p>For Producer's services, Artist shall pay Producer an advance of $${data['advance'] || '[Amount]'}, plus a producer royalty of ${data['producer-split'] || '[X]'}% of the Retail Price of records sold.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">3. DELIVERY</h2>
+                <p>Producer shall deliver the completed Master(s) on or before ${data['delivery-date'] || '[Date]'}.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">4. CREDIT</h2>
+                <p>Producer shall receive credit on all copies of the Master(s) as follows: "Produced by ${data['producer-name'] || '[Producer Name]' }".</p>
+                
+                <div style="margin-top: 40px;">
+                    <p><strong>SIGNATURES:</strong></p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px;">
+                        <div>
+                            <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 40px;"></div>
+                            <p style="font-size: 12px; margin: 0;">${data['artist-name'] || 'Artist'}</p>
+                        </div>
+                        <div>
+                            <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 40px;"></div>
+                            <p style="font-size: 12px; margin: 0;">${data['producer-name'] || 'Producer'}</p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            label: (data) => `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">RECORDING AGREEMENT</h1>
+                </div>
+                
+                <p><strong>This Recording Agreement</strong> is made effective as of _________________, by and between:</p>
+                
+                <p><strong>ARTIST:</strong> ${data['artist-name'] || '[Artist Name]'}<br>
+                <strong>LABEL:</strong> ${data['label-name'] || '[Label Name]'}</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">1. RECORDING SERVICES</h2>
+                <p>Artist agrees to render recording services exclusively to Label for the project entitled "${data['album-title'] || '[Project Title]'}" for a term of ${data['term-length'] || '[X]'} album(s).</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">2. ROYALTY</h2>
+                <p>Label shall pay Artist a royalty of ${data['royalty-rate'] || '[X]'}% of the suggested retail list price for records sold, subject to standard industry deductions.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">3. ADVANCE</h2>
+                <p>Label shall advance to Artist the sum of $${data['advance'] || '[Amount]'}, recoupable from Artist's royalties.</p>
+                
+                <div style="margin-top: 40px;">
+                    <p><strong>SIGNATURES:</strong></p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px;">
+                        <div>
+                            <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 40px;"></div>
+                            <p style="font-size: 12px; margin: 0;">${data['artist-name'] || 'Artist'}</p>
+                        </div>
+                        <div>
+                            <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 40px;"></div>
+                            <p style="font-size: 12px; margin: 0;">${data['label-name'] || 'Label Representative'}</p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            publishing: (data) => `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">MUSIC PUBLISHING AGREEMENT</h1>
+                </div>
+                
+                <p><strong>This Publishing Agreement</strong> is made effective as of _________________, by and between:</p>
+                
+                <p><strong>SONGWRITER:</strong> ${data['songwriter-name'] || '[Songwriter Name]'}<br>
+                <strong>PUBLISHER:</strong> ${data['publisher-name'] || '[Publisher Name]'}</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">1. WORKS</h2>
+                <p>Publisher agrees to publish and administer the musical compositions listed in Schedule A, including: ${data['catalog'] || '[Catalog/Works]'}.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">2. SPLIT</h2>
+                <p>The parties agree to a ${data['split'] || '50/50'}% split of all publishing income.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">3. TERM</h2>
+                <p>This Agreement shall continue for a period of ${data['term-length'] || '[Term]'}.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">4. ADVANCE</h2>
+                <p>Publisher shall advance to Songwriter the sum of $${data['advance'] || '[Amount]'}, recoupable from Songwriter's share of income.</p>
+                
+                <div style="margin-top: 40px;">
+                    <p><strong>SIGNATURES:</strong></p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px;">
+                        <div>
+                            <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 40px;"></div>
+                            <p style="font-size: 12px; margin: 0;">${data['songwriter-name'] || 'Songwriter'}</p>
+                        </div>
+                        <div>
+                            <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 40px;"></div>
+                            <p style="font-size: 12px; margin: 0;">${data['publisher-name'] || 'Publisher Representative'}</p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            feature: (data) => `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">FEATURED ARTIST AGREEMENT</h1>
+                </div>
+                
+                <p><strong>This Featured Artist Agreement</strong> is made effective as of _________________, by and between:</p>
+                
+                <p><strong>MAIN ARTIST:</strong> ${data['main-artist'] || '[Main Artist]'}<br>
+                <strong>FEATURED ARTIST:</strong> ${data['featured-artist'] || '[Featured Artist]'}</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">1. SONG</h2>
+                <p>Featured Artist agrees to perform on the recording entitled "${data['song-title'] || '[Song Title]'}" (the "Recording").</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">2. COMPENSATION</h2>
+                <p>Main Artist shall pay Featured Artist a fee of $${data['feature-fee'] || '[Amount]'} for the performance. Additionally, Featured Artist shall receive ${data['royalty-split'] || '[X]'}% of royalties generated from the Recording.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">3. DELIVERY</h2>
+                <p>Featured Artist shall deliver the performance on or before ${data['delivery-date'] || '[Date]'}.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">4. CREDIT</h2>
+                <p>Featured Artist shall receive credit as "Featuring ${data['featured-artist'] || '[Featured Artist]'}" on all releases.</p>
+                
+                <div style="margin-top: 40px;">
+                    <p><strong>SIGNATURES:</strong></p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px;">
+                        <div>
+                            <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 40px;"></div>
+                            <p style="font-size: 12px; margin: 0;">${data['main-artist'] || 'Main Artist'}</p>
+                        </div>
+                        <div>
+                            <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 40px;"></div>
+                            <p style="font-size: 12px; margin: 0;">${data['featured-artist'] || 'Featured Artist'}</p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            sync: (data) => `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">SYNCHRONIZATION LICENSE AGREEMENT</h1>
+                </div>
+                
+                <p><strong>This Sync License</strong> is made effective as of _________________, by and between:</p>
+                
+                <p><strong>LICENSOR:</strong> ${data['licensor'] || '[Rights Holder]'}<br>
+                <strong>LICENSEE:</strong> ${data['licensee'] || '[Licensee]'}</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">1. GRANT OF RIGHTS</h2>
+                <p>Licensor grants to Licensee the non-exclusive right to synchronize the musical composition "${data['song-title'] || '[Song Title]'}" with the visual production entitled "${data['production-name'] || '[Production Name]'}".</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">2. TERRITORY & TERM</h2>
+                <p>This license is granted for the territory of ${data['territory'] || 'Worldwide'} for a period of ${data['term-length'] || '[Term]'}.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">3. FEE</h2>
+                <p>Licensee shall pay Licensor a sync fee of $${data['sync-fee'] || '[Amount]'} for the rights granted herein.</p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 25px 0 15px;">4. CREDIT</h2>
+                <p>Licensee shall include appropriate credit for the use of the composition in the production credits.</p>
+                
+                <div style="margin-top: 40px;">
+                    <p><strong>SIGNATURES:</strong></p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px;">
+                        <div>
+                            <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 40px;"></div>
+                            <p style="font-size: 12px; margin: 0;">${data['licensor'] || 'Licensor'}</p>
+                        </div>
+                        <div>
+                            <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 40px;"></div>
+                            <p style="font-size: 12px; margin: 0;">${data['licensee'] || 'Licensee'}</p>
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+        
+        function selectContractType(element, type) {
+            document.querySelectorAll('.contract-type').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            currentContractType = type;
+            renderFields();
+        }
+        
+        function renderFields() {
+            const container = document.getElementById('contract-fields');
+            const fields = contractFields[currentContractType] || [];
+            
+            container.innerHTML = fields.map(field => `
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">${field.label}</label>
+                    <input type="${field.type}" id="${field.id}" class="input-field" 
+                           placeholder="${field.placeholder || ''}">
+                </div>
+            `).join('');
+        }
+        
+        function generateContract() {
+            const fields = contractFields[currentContractType] || [];
+            const data = {};
+            
+            fields.forEach(field => {
+                data[field.id] = document.getElementById(field.id)?.value || '';
+            });
+            
+            const template = contractTemplates[currentContractType];
+            if (template) {
+                document.getElementById('contract-preview').innerHTML = template(data);
+            }
+        }
+        
+        function printContract() {
+            window.print();
+        }
+        
+        function downloadPDF() {
+            alert('📄 PDF Download\n\nIn the full app, this will generate a downloadable PDF. For now, use Print → Save as PDF.');
+        }
+        
+        // Initialize
+        renderFields();
+    </script>
+</body>
+</html>

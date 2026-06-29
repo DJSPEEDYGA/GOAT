@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧠 USB AI - GOAT Royalty App</title>
+  <link rel="icon" href="favicon.ico">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #FFD700;
+      --secondary: #1a1a2e;
+      --accent: #e94560;
+      --dark: #0f0f23;
+      --light: #ffffff;
+      --glass: rgba(255, 255, 255, 0.1);
+      --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --ai-glow: #00ff88;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--dark);
+      color: var(--light);
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
+    }
+    
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(15, 15, 35, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    
+    .logo img { height: 40px; }
+    
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .nav-links a {
+      color: var(--light);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    
+    .nav-links a:hover, .nav-links a.active {
+      background: var(--glass);
+      color: var(--ai-glow);
+    }
+    
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: linear-gradient(180deg, rgba(0, 255, 136, 0.15) 0%, transparent 100%);
+    }
+    
+    .hero h1 {
+      font-size: 3rem;
+      background: linear-gradient(135deg, var(--ai-glow), var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    
+    .hero p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--ai-glow), #00cc6a);
+      color: var(--dark);
+      padding: 0.5rem 1.5rem;
+      border-radius: 20px;
+      font-weight: bold;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    
+    .content-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .section-title {
+      font-size: 1.8rem;
+      color: var(--ai-glow);
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    
+    .feature-card {
+      background: var(--glass);
+      border-radius: 16px;
+      padding: 1.5rem;
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--ai-glow);
+      box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+    }
+    
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .feature-card h3 {
+      color: var(--ai-glow);
+      margin-bottom: 0.5rem;
+    }
+    
+    .feature-card p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9rem;
+    }
+    
+    .models-section {
+      background: var(--glass);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 3rem;
+    }
+    
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .model-card {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    
+    .model-card h4 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .model-card .size {
+      color: var(--ai-glow);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .model-card p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.85rem;
+    }
+    
+    .download-section {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--ai-glow), #00cc6a);
+      color: var(--dark);
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      margin: 0.5rem;
+    }
+    
+    .download-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4);
+    }
+    
+    .download-btn.secondary {
+      background: var(--glass);
+      color: var(--light);
+      border: 1px solid var(--ai-glow);
+    }
+    
+    .code-block {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.85rem;
+      color: var(--ai-glow);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    
+    .requirements {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    
+    .req-item {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .req-item .value {
+      color: var(--ai-glow);
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    
+    .req-item .label {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.85rem;
+    }
+    
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+      .top-nav { flex-direction: column; gap: 1rem; }
+      .nav-links { justify-content: center; }
+      .hero h1 { font-size: 2rem; }
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <nav class="top-nav">
+    <a href="index.html" class="logo">
+      <img src="goat-logo.png" alt="GOAT">
+      <span>GOAT Royalty App</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 AI Models</a>
+      <a href="usb-ai.html" class="active">⚡ USB AI</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="resources.html">📖 Resources</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h1>🧠 USB Uncensored AI</h1>
+    <p>Run powerful, uncensored AI models directly from any USB drive or SSD. Fully air-gapped, cross-platform, and privacy-first with persistent chat history.</p>
+    <div class="badge">⚡ Zero-Install • 🔒 Privacy-First • 🌐 Cross-Platform</div>
+  </section>
+
+  <div class="content-section">
+    <h2 class="section-title">✨ Key Features</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔌</div>
+        <h3>Plug & Play</h3>
+        <p>Zero-dependency setup. No system permissions, registry edits, or package managers required. Just plug in and run.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Fully Air-Gapped</h3>
+        <p>Complete offline operation. Your data never leaves your USB drive. Perfect for sensitive work and privacy.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <h3>Cross-Platform</h3>
+        <p>Works on Windows, macOS, and Linux. Same USB, same models, different computers - seamlessly.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Hardware Accelerated</h3>
+        <p>Uses AVX CPU, NVIDIA CUDA, or Apple Metal GPU automatically. Blazing fast inference.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>LAN Mobile Access</h3>
+        <p>Access your AI from phone or tablet on the same WiFi. No complex setup required.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <h3>Persistent Chat History</h3>
+        <p>Your conversations are saved cross-platform. Continue where you left off on any computer.</p>
+      </div>
+    </div>
+
+    <h2 class="section-title">🧠 Curated AI Models</h2>
+    <div class="models-section">
+      <div class="model-grid">
+        <div class="model-card">
+          <h4>Gemma 2 2B Abliterated</h4>
+          <div class="size">~1.6 GB</div>
+          <p>Recommended for all. Extremely fast, incredibly smart, with safety alignment vectors mathematically purged.</p>
+        </div>
+        
+        <div class="model-card">
+          <h4>Gemma 4 E4B Ultra Uncensored</h4>
+          <div class="size">~5.34 GB</div>
+          <p>"Heretic" fine-tune that aggressively forces compliance to all queries regardless of content.</p>
+        </div>
+        
+        <div class="model-card">
+          <h4>Qwen 3.5 9B Uncensored</h4>
+          <div class="size">~5.2 GB</div>
+          <p>Larger, incredibly competent reasoning model with strict adherence to raw, unbiased answers.</p>
+        </div>
+        
+        <div class="model-card">
+          <h4>Custom Models</h4>
+          <div class="size">Any Size</div>
+          <p>Download any .gguf weight directly from HuggingFace natively into the USB's engine.</p>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title">📋 System Requirements</h2>
+    <div class="requirements">
+      <div class="req-item">
+        <div class="value">8 GB</div>
+        <div class="label">Storage (Minimum)</div>
+      </div>
+      <div class="req-item">
+        <div class="value">16 GB</div>
+        <div class="label">Storage (Recommended)</div>
+      </div>
+      <div class="req-item">
+        <div class="value">8 GB</div>
+        <div class="label">RAM (2B/4B Models)</div>
+      </div>
+      <div class="req-item">
+        <div class="value">16 GB</div>
+        <div class="label">RAM (9B/12B Models)</div>
+      </div>
+    </div>
+
+    <h2 class="section-title">🚀 Quick Start</h2>
+    <div class="code-block">
+<strong>Step 1: Initialize the Engine</strong>
+Windows: Double-click <code>Windows/install.bat</code>
+macOS: Run <code>bash Mac/install.command</code>
+Linux: Run <code>bash Linux/install.sh</code>
+
+<strong>Step 2: Download AI Models</strong>
+Run the installer and select your preferred models.
+Models are stored in <code>Shared/models/</code>
+
+<strong>Step 3: Launch</strong>
+Windows: <code>Windows/start-fast-chat.bat</code>
+macOS: <code>bash Mac/start.command</code>
+Linux: <code>bash Linux/start.sh</code>
+    </div>
+
+    <div class="download-section">
+      <h2 class="section-title">📥 Download USB AI</h2>
+      <a href="https://github.com/techjarves/USB-Uncensored-LLM" class="download-btn" target="_blank">
+        🔗 View on GitHub
+      </a>
+      <a href="usb-ai/README.md" class="download-btn secondary" download>
+        📖 Download Documentation
+      </a>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>© 2025 Harvey L. Miller Jr. (DJ Speedy) - GOAT Systems</p>
+    <p>USB-Uncensored-LLM by TechJarves • BRICK SQUAD MONOPOLY PUBLISHING</p>
+  </div>
+</body>
+</html>

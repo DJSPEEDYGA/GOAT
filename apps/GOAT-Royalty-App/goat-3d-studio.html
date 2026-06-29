@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎨 GOAT 3D Studio — Marvel-Quality Fashion Animation</title>
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<style>
+:root {
+  --bg:#020408; --panel:#080d14; --panel2:#0f1620;
+  --gold:#d4a03c; --gold2:#f0c040;
+  --red2:#e63946; --ink:#f0ece4; --dim:#8b949e; --line:#1a2030;
+  --ok:#3fb950; --info:#58a6ff;
+  --purple:#a78bfa; --pink:#f472b6; --cyan:#22d3ee; --orange:#fb923c;
+  --glow-purple:rgba(167,139,250,.3);
+  --glow-pink:rgba(244,114,182,.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;flex-direction:column;}
+
+/* TOP BAR */
+.topbar{height:52px;background:rgba(8,13,20,.98);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0;z-index:100;}
+.topbar-logo{font-size:16px;font-weight:800;background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;}
+.topbar-menu{display:flex;gap:2px;}
+.tmenu-item{padding:5px 12px;border-radius:6px;font-size:13px;color:var(--dim);cursor:pointer;transition:all .2s;border:none;background:transparent;}
+.tmenu-item:hover{background:var(--panel2);color:var(--ink);}
+.topbar-actions{display:flex;gap:8px;margin-left:auto;}
+.tbar-btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+.tbar-btn.ghost{background:transparent;border:1px solid var(--line);color:var(--dim);}
+.tbar-btn.ghost:hover{border-color:var(--purple);color:var(--purple);}
+.tbar-btn.primary{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;}
+.tbar-btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;}
+.fps-badge{background:rgba(63,185,80,.15);color:var(--ok);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.quality-badge{background:rgba(167,139,250,.15);color:var(--purple);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+
+/* MAIN LAYOUT */
+.studio-layout{display:flex;flex:1;overflow:hidden;}
+
+/* LEFT PANEL */
+.left-panel{width:220px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;}
+.panel-section{border-bottom:1px solid var(--line);padding:12px;}
+.panel-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--dim);margin-bottom:10px;font-weight:600;}
+.asset-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all .2s;border:1px solid transparent;}
+.asset-item:hover{background:var(--panel2);border-color:var(--line);}
+.asset-item.active{background:rgba(167,139,250,.1);border-color:var(--purple);}
+.asset-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.asset-name{font-size:13px;font-weight:500;}
+.asset-type{font-size:10px;color:var(--dim);}
+
+/* CENTER VIEWPORT */
+.center-viewport{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.viewport-header{height:36px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 12px;gap:8px;}
+.viewport-tab{padding:4px 12px;border-radius:4px;font-size:12px;cursor:pointer;color:var(--dim);transition:all .2s;}
+.viewport-tab.active{background:var(--panel2);color:var(--ink);}
+.viewport{flex:1;background:var(--bg);position:relative;overflow:hidden;}
+.viewport canvas{position:absolute;inset:0;width:100%;height:100%;}
+
+/* 3D Scene */
+.scene-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(167,139,250,.15) 0%,transparent 60%),radial-gradient(ellipse at 50% 0%,rgba(244,114,182,.08) 0%,transparent 50%),#020408;}
+.grid-floor{position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(transparent,rgba(167,139,250,.05));border-top:1px solid rgba(167,139,250,.2);}
+.grid-lines-h{position:absolute;bottom:0;left:0;right:0;height:40%;}
+.grid-lines-v{position:absolute;bottom:0;left:0;right:0;height:40%;}
+
+/* Stage lights */
+.stage-light{position:absolute;top:0;width:2px;height:60%;transform-origin:top center;opacity:.6;}
+.stage-light::after{content:'';position:absolute;top:0;left:-30px;right:-30px;bottom:0;background:inherit;opacity:.15;filter:blur(15px);}
+.light-1{left:20%;background:linear-gradient(var(--purple),transparent);}
+.light-2{left:50%;background:linear-gradient(var(--pink),transparent);}
+.light-3{left:80%;background:linear-gradient(var(--cyan),transparent);}
+
+/* Main character */
+.stage-character{position:absolute;bottom:35%;left:50%;transform:translateX(-50%);text-align:center;}
+.character-model{font-size:100px;line-height:1;filter:drop-shadow(0 0 30px rgba(167,139,250,.5));animation:characterFloat 4s ease-in-out infinite;}
+@keyframes characterFloat{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-15px) scale(1.02);}}
+.character-glow{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);width:150px;height:30px;background:radial-gradient(ellipse,rgba(167,139,250,.4) 0%,transparent 70%);filter:blur(8px);}
+
+/* Orbit effects */
+.orbit-container{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);width:350px;height:350px;pointer-events:none;}
+.orbit{position:absolute;inset:0;border:1px solid;border-radius:50%;animation:orbitSpin linear infinite;}
+.orbit-1{border-color:rgba(167,139,250,.25);animation-duration:12s;}
+.orbit-2{inset:40px;border-color:rgba(244,114,182,.25);animation-duration:8s;animation-direction:reverse;}
+.orbit-3{inset:80px;border-color:rgba(34,211,238,.2);animation-duration:15s;}
+@keyframes orbitSpin{from{transform:rotateX(75deg) rotateZ(0);}to{transform:rotateX(75deg) rotateZ(360deg);}}
+
+/* Particles */
+.particle{position:absolute;border-radius:50%;animation:particleFly linear infinite;pointer-events:none;}
+@keyframes particleFly{0%{opacity:0;transform:translateY(0) scale(0);}20%{opacity:1;}80%{opacity:.5;}100%{opacity:0;transform:translateY(-200px) scale(1.5);}}
+
+/* Viewport overlay UI */
+.viewport-overlay{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:8px;}
+.vo-badge{background:rgba(0,0,0,.7);backdrop-filter:blur(10px);border:1px solid var(--line);padding:5px 10px;border-radius:6px;font-size:11px;color:var(--dim);}
+.vo-badge b{color:var(--ink);}
+.render-indicator{position:absolute;top:12px;right:12px;background:rgba(63,185,80,.15);border:1px solid rgba(63,185,80,.3);backdrop-filter:blur(10px);padding:6px 12px;border-radius:8px;font-size:12px;color:var(--ok);display:flex;align-items:center;gap:6px;}
+.render-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* Timeline */
+.timeline{height:80px;background:var(--panel);border-top:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0;}
+.timeline-header{height:32px;display:flex;align-items:center;padding:0 12px;gap:8px;border-bottom:1px solid var(--line);}
+.timeline-btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);width:26px;height:26px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;}
+.timeline-btn:hover{border-color:var(--purple);}
+.timeline-btn.play{background:linear-gradient(135deg,var(--purple),var(--pink));border:none;}
+.timeline-track{flex:1;padding:4px 12px;display:flex;gap:2px;align-items:center;}
+.track-lane{flex:1;height:20px;background:var(--panel2);border-radius:4px;border:1px solid var(--line);position:relative;overflow:hidden;}
+.track-clip{position:absolute;top:2px;bottom:2px;background:linear-gradient(135deg,rgba(167,139,250,.6),rgba(244,114,182,.6));border-radius:3px;cursor:pointer;}
+.timeline-time{font-size:11px;color:var(--dim);white-space:nowrap;margin-right:8px;}
+
+/* RIGHT PANEL */
+.right-panel{width:260px;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;}
+.prop-group{border-bottom:1px solid var(--line);padding:12px;}
+.prop-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--dim);margin-bottom:10px;font-weight:600;}
+.prop-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.prop-label{font-size:12px;color:var(--dim);}
+.prop-val{font-size:12px;color:var(--ink);font-weight:600;}
+.prop-slider{width:100%;height:4px;-webkit-appearance:none;background:var(--panel2);border-radius:2px;margin-top:4px;}
+.prop-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--purple);cursor:pointer;}
+.color-row{display:flex;gap:6px;margin-top:8px;}
+.color-swatch{width:24px;height:24px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all .2s;}
+.color-swatch:hover,.color-swatch.active{border-color:#fff;transform:scale(1.15);}
+.prop-select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:6px 10px;border-radius:6px;font-size:12px;margin-top:4px;}
+.prop-btn{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:8px;border-radius:8px;cursor:pointer;font-size:12px;transition:all .2s;margin-top:6px;}
+.prop-btn:hover{border-color:var(--purple);color:var(--purple);}
+.prop-btn.accent{background:linear-gradient(135deg,var(--purple),var(--pink));border:none;color:#fff;font-weight:600;}
+.prop-btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;color:#000;font-weight:700;}
+
+/* Sora AI Panel */
+.sora-panel{border-bottom:1px solid var(--line);padding:12px;}
+.sora-title{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.sora-title h4{font-size:13px;font-weight:700;}
+.sora-badge{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;}
+.sora-input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:8px 10px;border-radius:8px;font-size:12px;resize:none;height:70px;font-family:inherit;}
+.sora-input:focus{outline:none;border-color:var(--purple);}
+.sora-prompts{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0;}
+.sora-prompt{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);color:var(--purple);padding:3px 8px;border-radius:12px;font-size:10px;cursor:pointer;transition:all .2s;}
+.sora-prompt:hover{background:rgba(167,139,250,.2);}
+
+/* Render output preview */
+.render-preview{background:var(--panel2);border-radius:8px;padding:12px;text-align:center;margin-top:8px;}
+.render-img{width:100%;height:120px;background:linear-gradient(135deg,rgba(167,139,250,.2),rgba(244,114,182,.2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin-bottom:8px;}
+.render-meta{font-size:11px;color:var(--dim);}
+
+/* Progress bar */
+.progress-bar{background:var(--panel2);border-radius:4px;height:4px;margin-top:8px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--pink));border-radius:4px;transition:width 0.5s;width:0%;}
+
+/* Status bar */
+.statusbar{height:24px;background:rgba(167,139,250,.08);border-top:1px solid var(--line);display:flex;align-items:center;padding:0 12px;gap:20px;flex-shrink:0;}
+.sb-item{font-size:10px;color:var(--dim);display:flex;align-items:center;gap:4px;}
+.sb-item b{color:var(--ink);}
+
+/* Mobile overlay - tools */
+@media(max-width:1024px){
+  .left-panel,.right-panel{display:none;}
+  .studio-layout{position:relative;}
+}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a href="index.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
+    <span style="font-size:18px;">🐐</span>
+  </a>
+  <div class="topbar-logo">GOAT 3D Fashion Studio</div>
+  <div class="topbar-menu">
+    <button class="tmenu-item" onclick="menuAction('file')">File</button>
+    <button class="tmenu-item" onclick="menuAction('edit')">Edit</button>
+    <button class="tmenu-item" onclick="menuAction('model')">Model</button>
+    <button class="tmenu-item" onclick="menuAction('texture')">Texture</button>
+    <button class="tmenu-item" onclick="menuAction('light')">Lighting</button>
+    <button class="tmenu-item" onclick="menuAction('animate')">Animate</button>
+    <button class="tmenu-item" onclick="menuAction('render')">Render</button>
+    <button class="tmenu-item" onclick="menuAction('export')">Export</button>
+  </div>
+  <div class="topbar-actions">
+    <span class="fps-badge" id="fpsBadge">60 FPS</span>
+    <span class="quality-badge" id="qualBadge">4K Ultra</span>
+    <button class="tbar-btn ghost" onclick="showHelp()">Help</button>
+    <button class="tbar-btn gold" onclick="renderScene()">⚡ Render</button>
+    <button class="tbar-btn primary" onclick="exportScene()">⬇ Export 4K</button>
+  </div>
+</div>
+
+<!-- MAIN STUDIO LAYOUT -->
+<div class="studio-layout">
+  
+  <!-- LEFT: ASSETS PANEL -->
+  <div class="left-panel">
+    <div class="panel-section">
+      <div class="panel-title">Scene Objects</div>
+      <div class="asset-item active" onclick="selectAsset(this,'character')">
+        <div class="asset-icon" style="background:rgba(167,139,250,.2);">🧍</div>
+        <div><div class="asset-name">Character</div><div class="asset-type">Model</div></div>
+      </div>
+      <div class="asset-item" onclick="selectAsset(this,'outfit')">
+        <div class="asset-icon" style="background:rgba(244,114,182,.2);">👗</div>
+        <div><div class="asset-name">Outfit Layer</div><div class="asset-type">Clothing</div></div>
+      </div>
+      <div class="asset-item" onclick="selectAsset(this,'shoes')">
+        <div class="asset-icon" style="background:rgba(251,146,60,.2);">👟</div>
+        <div><div class="asset-name">Sneakers</div><div class="asset-type">Footwear</div></div>
+      </div>
+      <div class="asset-item" onclick="selectAsset(this,'accessories')">
+        <div class="asset-icon" style="background:rgba(212,160,60,.2);">💎</div>
+        <div><div class="asset-name">Accessories</div><div class="asset-type">Jewelry</div></div>
+      </div>
+      <div class="asset-item" onclick="selectAsset(this,'background')">
+        <div class="asset-icon" style="background:rgba(34,211,238,.2);">🌆</div>
+        <div><div class="asset-name">Background</div><div class="asset-type">Environment</div></div>
+      </div>
+      <div class="asset-item" onclick="selectAsset(this,'light1')">
+        <div class="asset-icon" style="background:rgba(255,255,255,.1);">💡</div>
+        <div><div class="asset-name">Key Light</div><div class="asset-type">Lighting</div></div>
+      </div>
+      <div class="asset-item" onclick="selectAsset(this,'camera')">
+        <div class="asset-icon" style="background:rgba(88,166,255,.2);">📷</div>
+        <div><div class="asset-name">Camera 01</div><div class="asset-type">Camera</div></div>
+      </div>
+    </div>
+    
+    <div class="panel-section">
+      <div class="panel-title">Outfit Presets</div>
+      <div class="asset-item" onclick="setOutfit('luxury')">
+        <div class="asset-icon" style="background:rgba(212,160,60,.2);">🤵</div>
+        <div><div class="asset-name">Luxury Formal</div><div class="asset-type">Preset</div></div>
+      </div>
+      <div class="asset-item" onclick="setOutfit('streetwear')">
+        <div class="asset-icon" style="background:rgba(244,114,182,.2);">🧢</div>
+        <div><div class="asset-name">Streetwear</div><div class="asset-type">Preset</div></div>
+      </div>
+      <div class="asset-item" onclick="setOutfit('runway')">
+        <div class="asset-icon" style="background:rgba(167,139,250,.2);">👠</div>
+        <div><div class="asset-name">Runway</div><div class="asset-type">Preset</div></div>
+      </div>
+      <div class="asset-item" onclick="setOutfit('goat')">
+        <div class="asset-icon" style="background:rgba(63,185,80,.2);">🐐</div>
+        <div><div class="asset-name">GOAT Signature</div><div class="asset-type">Exclusive</div></div>
+      </div>
+      <div class="asset-item" onclick="setOutfit('marvel')">
+        <div class="asset-icon" style="background:rgba(230,57,70,.2);">🦸</div>
+        <div><div class="asset-name">Marvel Hero</div><div class="asset-type">Special</div></div>
+      </div>
+    </div>
+    
+    <div class="panel-section">
+      <div class="panel-title">Environments</div>
+      <div class="asset-item" onclick="setEnv('paris')">
+        <div class="asset-icon" style="background:rgba(255,200,100,.1);">🗼</div>
+        <div><div class="asset-name">Paris Runway</div><div class="asset-type">Scene</div></div>
+      </div>
+      <div class="asset-item" onclick="setEnv('nyc')">
+        <div class="asset-icon" style="background:rgba(100,150,255,.1);">🏙️</div>
+        <div><div class="asset-name">NYC Streets</div><div class="asset-type">Scene</div></div>
+      </div>
+      <div class="asset-item" onclick="setEnv('studio')">
+        <div class="asset-icon" style="background:rgba(255,255,255,.05);">📸</div>
+        <div><div class="asset-name">Photo Studio</div><div class="asset-type">Scene</div></div>
+      </div>
+      <div class="asset-item" onclick="setEnv('space')">
+        <div class="asset-icon" style="background:rgba(50,20,100,.3);">🌌</div>
+        <div><div class="asset-name">Cosmic Stage</div><div class="asset-type">Fantasy</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER: 3D VIEWPORT -->
+  <div class="center-viewport">
+    <div class="viewport-header">
+      <span class="viewport-tab active" onclick="setView(this,'perspective')">Perspective</span>
+      <span class="viewport-tab" onclick="setView(this,'front')">Front</span>
+      <span class="viewport-tab" onclick="setView(this,'side')">Side</span>
+      <span class="viewport-tab" onclick="setView(this,'top')">Top</span>
+      <span class="viewport-tab" onclick="setView(this,'camera')">Camera</span>
+      <span style="margin-left:auto;font-size:11px;color:var(--dim);" id="viewInfo">Perspective • Wireframe Off</span>
+    </div>
+    
+    <div class="viewport" id="mainViewport">
+      <!-- Scene background -->
+      <div class="scene-bg" id="sceneBg"></div>
+      
+      <!-- Grid floor -->
+      <div class="grid-floor"></div>
+      
+      <!-- Stage lights -->
+      <div class="stage-light light-1" id="light1"></div>
+      <div class="stage-light light-2" id="light2"></div>
+      <div class="stage-light light-3" id="light3"></div>
+      
+      <!-- Orbit effects -->
+      <div class="orbit-container">
+        <div class="orbit orbit-1"></div>
+        <div class="orbit orbit-2"></div>
+        <div class="orbit orbit-3"></div>
+      </div>
+      
+      <!-- Main character -->
+      <div class="stage-character">
+        <div class="character-model" id="mainCharacter">🧍</div>
+        <div class="character-glow"></div>
+      </div>
+      
+      <!-- Viewport overlay info -->
+      <div class="viewport-overlay">
+        <div class="vo-badge">Scene: <b id="sceneName">Default</b></div>
+        <div class="vo-badge">Outfit: <b id="outfitName">Base Model</b></div>
+        <div class="vo-badge">Polys: <b>2.4M</b></div>
+      </div>
+      
+      <!-- Render status -->
+      <div class="render-indicator" id="renderIndicator" style="display:none;">
+        <div class="render-dot"></div>
+        Rendering...
+      </div>
+      
+      <!-- Canvas for WebGL -->
+      <canvas id="glCanvas"></canvas>
+    </div>
+    
+    <!-- TIMELINE -->
+    <div class="timeline">
+      <div class="timeline-header">
+        <div class="timeline-time" id="timecode">00:00:00</div>
+        <button class="timeline-btn" onclick="skipStart()">⏮</button>
+        <button class="timeline-btn" onclick="prevFrame()">⏪</button>
+        <button class="timeline-btn play" id="playBtn" onclick="togglePlay()">▶</button>
+        <button class="timeline-btn" onclick="nextFrame()">⏩</button>
+        <button class="timeline-btn" onclick="skipEnd()">⏭</button>
+        <button class="timeline-btn" onclick="toggleRecord()">⏺</button>
+        <div style="margin-left:8px;font-size:11px;color:var(--dim);">Frame: <b id="frameNum" style="color:var(--ink);">001</b> / 240</div>
+        <div style="margin-left:auto;font-size:11px;color:var(--dim);">24fps • 10s</div>
+      </div>
+      <div class="timeline-track">
+        <div style="width:60px;font-size:10px;color:var(--dim);flex-shrink:0;">Character</div>
+        <div class="track-lane">
+          <div class="track-clip" style="left:5%;width:80%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: PROPERTIES PANEL -->
+  <div class="right-panel">
+    <!-- Sora 2 AI -->
+    <div class="sora-panel">
+      <div class="sora-title">
+        <h4>Sora 2 AI Engine</h4>
+        <span class="sora-badge">LIVE</span>
+      </div>
+      <textarea class="sora-input" id="soraPrompt" placeholder="Describe your fashion video... e.g. 'Luxury streetwear model walking Paris runway in 4K cinematic style'"></textarea>
+      <div class="sora-prompts">
+        <span class="sora-prompt" onclick="setPrompt('Paris runway')">Paris Runway</span>
+        <span class="sora-prompt" onclick="setPrompt('NYC streetwear')">NYC Streets</span>
+        <span class="sora-prompt" onclick="setPrompt('luxury editorial')">Editorial</span>
+        <span class="sora-prompt" onclick="setPrompt('sneaker campaign')">Sneakers</span>
+        <span class="sora-prompt" onclick="setPrompt('Marvel fashion hero')">Marvel Style</span>
+      </div>
+      <button class="prop-btn accent" onclick="generateSora()">🎬 Generate with Sora 2</button>
+      <div class="render-preview" id="soraPreview" style="display:none;">
+        <div class="render-img" id="soraImg">🎬</div>
+        <div class="render-meta" id="soraMeta">4K • 10s • H.264</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <!-- Character Properties -->
+    <div class="prop-group" id="propPanel">
+      <div class="prop-title">Character Properties</div>
+      <div class="prop-row">
+        <span class="prop-label">Height</span>
+        <span class="prop-val">5'11"</span>
+      </div>
+      <input type="range" class="prop-slider" min="0" max="100" value="70" oninput="updateProp('height',this.value)">
+      
+      <div class="prop-row" style="margin-top:10px;">
+        <span class="prop-label">Build</span>
+        <span class="prop-val" id="buildVal">Athletic</span>
+      </div>
+      <input type="range" class="prop-slider" min="0" max="100" value="60" oninput="updateProp('build',this.value)">
+      
+      <div class="prop-row" style="margin-top:10px;">
+        <span class="prop-label">Skin Tone</span>
+      </div>
+      <div class="color-row">
+        <div class="color-swatch" style="background:#FDDBB4;" onclick="setSkin(this,'Light')"></div>
+        <div class="color-swatch" style="background:#D4956A;" onclick="setSkin(this,'Medium')"></div>
+        <div class="color-swatch active" style="background:#A0522D;" onclick="setSkin(this,'Tan')"></div>
+        <div class="color-swatch" style="background:#6B3A2A;" onclick="setSkin(this,'Brown')"></div>
+        <div class="color-swatch" style="background:#3B1F0F;" onclick="setSkin(this,'Dark')"></div>
+      </div>
+    </div>
+
+    <!-- Outfit Properties -->
+    <div class="prop-group">
+      <div class="prop-title">Outfit Settings</div>
+      <select class="prop-select" onchange="changeOutfit(this.value)">
+        <option>Base Model</option>
+        <option>Luxury Formal</option>
+        <option>Streetwear</option>
+        <option>Runway Couture</option>
+        <option>GOAT Signature</option>
+        <option>Marvel Hero</option>
+        <option>Sneakerhead</option>
+        <option>Business Casual</option>
+      </select>
+      
+      <div class="prop-row" style="margin-top:10px;">
+        <span class="prop-label">Fabric Shine</span>
+        <span class="prop-val" id="shineVal">50%</span>
+      </div>
+      <input type="range" class="prop-slider" min="0" max="100" value="50" oninput="document.getElementById('shineVal').textContent=this.value+'%'">
+      
+      <div class="prop-row" style="margin-top:8px;">
+        <span class="prop-label">Color</span>
+      </div>
+      <div class="color-row">
+        <div class="color-swatch active" style="background:#1a1a2e;" onclick="setColor(this,'Midnight')"></div>
+        <div class="color-swatch" style="background:#d4a03c;" onclick="setColor(this,'Gold')"></div>
+        <div class="color-swatch" style="background:#c1121f;" onclick="setColor(this,'Red')"></div>
+        <div class="color-swatch" style="background:#a78bfa;" onclick="setColor(this,'Purple')"></div>
+        <div class="color-swatch" style="background:#f0ece4;" onclick="setColor(this,'White')"></div>
+        <div class="color-swatch" style="background:#10b981;" onclick="setColor(this,'Green')"></div>
+      </div>
+    </div>
+
+    <!-- Lighting -->
+    <div class="prop-group">
+      <div class="prop-title">Stage Lighting</div>
+      <div class="prop-row">
+        <span class="prop-label">Intensity</span>
+        <span class="prop-val" id="lightVal">80%</span>
+      </div>
+      <input type="range" class="prop-slider" min="0" max="100" value="80" oninput="document.getElementById('lightVal').textContent=this.value+'%'; updateLight(this.value)">
+      
+      <select class="prop-select" onchange="setLightMode(this.value)" style="margin-top:8px;">
+        <option>Studio Soft</option>
+        <option>Golden Hour</option>
+        <option>Neon City</option>
+        <option>Spotlight</option>
+        <option>Cosmic Purple</option>
+        <option>Red Carpet</option>
+        <option>Strobe Effect</option>
+      </select>
+    </div>
+
+    <!-- Camera -->
+    <div class="prop-group">
+      <div class="prop-title">Camera</div>
+      <select class="prop-select" onchange="setCamera(this.value)">
+        <option>Auto Orbit</option>
+        <option>Front Portrait</option>
+        <option>3/4 Angle</option>
+        <option>Full Body</option>
+        <option>Close Up</option>
+        <option>Dynamic Fly</option>
+        <option>Runway Walk</option>
+      </select>
+      
+      <div class="prop-row" style="margin-top:10px;">
+        <span class="prop-label">Focal Length</span>
+        <span class="prop-val" id="focalVal">85mm</span>
+      </div>
+      <input type="range" class="prop-slider" min="24" max="200" value="85" oninput="document.getElementById('focalVal').textContent=this.value+'mm'">
+    </div>
+
+    <!-- Export -->
+    <div class="prop-group">
+      <div class="prop-title">Export</div>
+      <select class="prop-select">
+        <option>4K Ultra HD (3840×2160)</option>
+        <option>2K QHD (2560×1440)</option>
+        <option>1080p Full HD</option>
+        <option>Instagram Square</option>
+        <option>TikTok Vertical</option>
+        <option>Twitter Banner</option>
+      </select>
+      <button class="prop-btn" onclick="exportScene()">⬇ Export Image</button>
+      <button class="prop-btn" onclick="exportVideo()">🎬 Export Video</button>
+      <button class="prop-btn accent" onclick="shareToGoat()">🐐 Share to GOAT</button>
+      <button class="prop-btn gold" onclick="mintNFT()">💎 Mint as NFT</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+  <div class="sb-item">🟢 <b>Ready</b></div>
+  <div class="sb-item">Scene: <b id="sbScene">Default Studio</b></div>
+  <div class="sb-item">Objects: <b>7</b></div>
+  <div class="sb-item">Memory: <b>2.4 GB</b></div>
+  <div class="sb-item">GPU: <b>RTX 4090</b></div>
+  <div class="sb-item" style="margin-left:auto;">Sora 2: <b style="color:var(--ok);">Connected</b></div>
+</div>
+
+<script>
+// Toast
+function toast(msg,color='var(--purple)'){
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;top:64px;right:16px;background:${color};color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:all .3s;`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},3000);
+}
+
+// Asset selection
+function selectAsset(el, name) {
+  document.querySelectorAll('.asset-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  toast(`Selected: ${name}`);
+}
+
+// Outfit presets
+const outfitEmojis = {
+  luxury:'🤵', streetwear:'😎', runway:'🧖', goat:'🐐‍⬛', marvel:'🦸', sneakerhead:'👟'
+};
+function setOutfit(type) {
+  const char = document.getElementById('mainCharacter');
+  char.textContent = outfitEmojis[type] || '🧍';
+  document.getElementById('outfitName').textContent = type.charAt(0).toUpperCase()+type.slice(1);
+  toast(`✅ Outfit set: ${type}`);
+}
+
+// Environment
+const envColors = {
+  paris:'linear-gradient(135deg,#1a1020,#301020)',
+  nyc:'linear-gradient(135deg,#0a1020,#101530)',
+  studio:'linear-gradient(135deg,#0a0a0a,#1a1a1a)',
+  space:'linear-gradient(135deg,#000010,#100030)'
+};
+const envEmojis = {paris:'🗼',nyc:'🏙️',studio:'📸',space:'🌌'};
+function setEnv(env) {
+  document.getElementById('sceneBg').style.background = envColors[env];
+  document.getElementById('sceneName').textContent = env.charAt(0).toUpperCase()+env.slice(1);
+  document.getElementById('sbScene').textContent = env.charAt(0).toUpperCase()+env.slice(1)+' Studio';
+  toast(`🌍 Environment: ${env}`);
+}
+
+// View tabs
+function setView(el, view) {
+  document.querySelectorAll('.viewport-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('viewInfo').textContent = view.charAt(0).toUpperCase()+view.slice(1)+' • Wireframe Off';
+  toast(`📷 View: ${view}`);
+}
+
+// Playback
+let playing = false;
+let frame = 1;
+let playInterval;
+
+function togglePlay() {
+  playing = !playing;
+  const btn = document.getElementById('playBtn');
+  btn.textContent = playing ? '⏸' : '▶';
+  if (playing) {
+    playInterval = setInterval(() => {
+      frame = (frame % 240) + 1;
+      document.getElementById('frameNum').textContent = String(frame).padStart(3,'0');
+      const sec = Math.floor(frame/24);
+      const fr = frame % 24;
+      document.getElementById('timecode').textContent = `00:00:${String(sec).padStart(2,'0')}`;
+      // Animate character rotation
+      const char = document.getElementById('mainCharacter');
+      char.style.transform = `rotateY(${frame*3}deg)`;
+    }, 1000/24);
+  } else {
+    clearInterval(playInterval);
+    document.getElementById('mainCharacter').style.transform = '';
+  }
+}
+
+function skipStart(){frame=1;document.getElementById('frameNum').textContent='001';document.getElementById('timecode').textContent='00:00:00';}
+function skipEnd(){frame=240;document.getElementById('frameNum').textContent='240';}
+function prevFrame(){if(frame>1)frame--;document.getElementById('frameNum').textContent=String(frame).padStart(3,'0');}
+function nextFrame(){if(frame<240)frame++;document.getElementById('frameNum').textContent=String(frame).padStart(3,'0');}
+function toggleRecord(){toast('⏺ Recording started — 4K capture active','#e63946');}
+
+// Properties
+function updateProp(prop, val) {
+  if(prop==='build') {
+    const builds=['Slim','Lean','Athletic','Muscular','Heavy'];
+    document.getElementById('buildVal').textContent = builds[Math.floor(val/25)];
+  }
+}
+
+function setSkin(el, name) {
+  document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  toast(`Skin tone: ${name}`);
+}
+
+function setColor(el, name) {
+  document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  toast(`Color: ${name}`);
+}
+
+function changeOutfit(val) {
+  const map = {
+    'Luxury Formal':'🤵','Streetwear':'😎','Runway Couture':'🧖',
+    'GOAT Signature':'🐐','Marvel Hero':'🦸','Sneakerhead':'👟',
+    'Business Casual':'👔','Base Model':'🧍'
+  };
+  document.getElementById('mainCharacter').textContent = map[val] || '🧍';
+  document.getElementById('outfitName').textContent = val;
+}
+
+function updateLight(val) {
+  const lights = document.querySelectorAll('.stage-light');
+  lights.forEach(l=>l.style.opacity=val/100);
+}
+
+function setLightMode(mode) {
+  const colors = {
+    'Studio Soft':'var(--purple)',
+    'Golden Hour':'#f59e0b',
+    'Neon City':'var(--cyan)',
+    'Spotlight':'#ffffff',
+    'Cosmic Purple':'var(--purple)',
+    'Red Carpet':'var(--red2)',
+    'Strobe Effect':'var(--pink)'
+  };
+  toast(`💡 Lighting: ${mode}`);
+}
+
+function setCamera(mode) { toast(`📷 Camera: ${mode}`); }
+
+// Sora 2
+let rendering = false;
+function setPrompt(p) {
+  document.getElementById('soraPrompt').value = p + ' — photorealistic 4K cinematic fashion video';
+}
+
+function generateSora() {
+  if(rendering) return;
+  rendering = true;
+  const prompt = document.getElementById('soraPrompt').value;
+  if(!prompt.trim()) { toast('⚠️ Enter a prompt first','#d29922'); rendering=false; return; }
+  
+  toast('🎬 Sora 2 generating your video...');
+  document.getElementById('renderIndicator').style.display='flex';
+  
+  let prog = 0;
+  const interval = setInterval(()=>{
+    prog += 2;
+    document.getElementById('progressFill').style.width = prog+'%';
+    if(prog>=100){
+      clearInterval(interval);
+      rendering = false;
+      document.getElementById('renderIndicator').style.display='none';
+      document.getElementById('soraPreview').style.display='block';
+      const emojis = ['🎬','🧥','👟','💎','👑','🦸'];
+      document.getElementById('soraImg').textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      document.getElementById('soraMeta').textContent = '4K UHD • 10s • Sora 2';
+      toast('✅ Video generated! Ready to export.','linear-gradient(135deg,var(--purple),var(--pink))');
+    }
+  },80);
+}
+
+// Render
+function renderScene() {
+  toast('⚡ Rendering scene at 4K...');
+  document.getElementById('renderIndicator').style.display='flex';
+  setTimeout(()=>{
+    document.getElementById('renderIndicator').style.display='none';
+    toast('✅ Render complete!');
+  },2000);
+}
+
+function exportScene() { toast('⬇ Exporting 4K image...'); }
+function exportVideo() { toast('🎬 Exporting video... (Processing)'); }
+function shareToGoat() { toast('🐐 Shared to your GOAT profile!'); }
+function mintNFT() { toast('💎 Opening NFT mint studio...'); }
+function showHelp() { toast('📚 Help docs loading...'); }
+function menuAction(m) { toast(`📁 ${m.charAt(0).toUpperCase()+m.slice(1)} menu`); }
+
+// FPS counter simulation
+let fps = 60;
+setInterval(()=>{
+  fps = 58 + Math.floor(Math.random()*4);
+  document.getElementById('fpsBadge').textContent = fps+' FPS';
+},2000);
+
+// Canvas WebGL (basic)
+const canvas = document.getElementById('glCanvas');
+const ctx = canvas ? canvas.getContext('2d') : null;
+function resizeCanvas(){
+  if(!canvas)return;
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+}
+resizeCanvas();
+window.addEventListener('resize',resizeCanvas);
+
+// Draw grid on canvas
+function drawGrid(){
+  if(!ctx)return;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle='rgba(167,139,250,0.1)';
+  ctx.lineWidth=1;
+  const step=40;
+  for(let x=0;x<canvas.width;x+=step){
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();
+  }
+  for(let y=0;y<canvas.height;y+=step){
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();
+  }
+}
+drawGrid();
+</script>
+</body>
+</html>

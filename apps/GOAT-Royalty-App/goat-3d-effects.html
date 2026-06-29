@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT 3D Effects | Marvel-Quality Visual Effects Studio</title>
+<style>
+  :root{--gold:#d4a03c;--bg:#040608;--panel:#0d1117;--panel2:#131920;--pink:#f472b6;--purple:#a78bfa;--green:#22c55e;--red:#ef4444;--blue:#38bdf8;--text:#e2e8f0;--muted:#64748b;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;overflow-x:hidden;}
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:rgba(4,6,8,.97);border-bottom:1px solid rgba(212,160,60,.25);position:sticky;top:0;z-index:100;}
+  .nav-logo span{font-size:20px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .nav-links a{color:var(--muted);text-decoration:none;padding:5px 12px;border-radius:16px;font-size:12px;transition:.3s;margin:0 2px;}
+  .nav-links a:hover,.nav-links a.active{background:rgba(212,160,60,.12);color:var(--gold);}
+  .btn-sm{padding:7px 18px;border:none;border-radius:16px;font-weight:700;cursor:pointer;font-size:12px;}
+  .btn-gold{background:linear-gradient(135deg,var(--gold),#b8860b);color:#000;}
+  .btn-purple{background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff;}
+
+  /* HERO */
+  .hero{padding:48px 28px 36px;text-align:center;background:radial-gradient(ellipse at 50% 0%,rgba(167,139,250,.15) 0%,transparent 65%);position:relative;overflow:hidden;}
+  .hero-particles{position:absolute;inset:0;pointer-events:none;}
+  .particle{position:absolute;border-radius:50%;animation:floatParticle linear infinite;}
+  @keyframes floatParticle{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-100px) rotate(720deg);opacity:0}}
+  .hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);color:var(--purple);padding:5px 16px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:14px;}
+  .hero h1{font-size:50px;font-weight:900;margin-bottom:10px;line-height:1.1;}
+  .hero h1 span{background:linear-gradient(135deg,var(--purple),var(--pink),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .hero p{color:var(--muted);max-width:580px;margin:0 auto 28px;line-height:1.6;}
+  .hero-stats{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;}
+  .h-stat .val{font-size:28px;font-weight:900;color:var(--gold);}
+  .h-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+
+  /* MAIN LAYOUT */
+  .fx-layout{display:grid;grid-template-columns:280px 1fr 260px;gap:0;height:calc(100vh - 230px);}
+
+  /* LEFT: FX LIBRARY */
+  .fx-library{background:var(--panel);border-right:1px solid rgba(255,255,255,.05);overflow-y:auto;padding:16px;}
+  .lib-search{display:flex;gap:8px;margin-bottom:14px;}
+  .lib-search input{flex:1;background:var(--panel2);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;outline:none;}
+  .lib-cats{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;}
+  .lib-cat{padding:4px 12px;border-radius:12px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.08);color:var(--muted);transition:.3s;}
+  .lib-cat.active,.lib-cat:hover{background:rgba(167,139,250,.15);color:var(--purple);border-color:rgba(167,139,250,.3);}
+  .fx-section-title{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:700;margin:12px 0 8px;}
+  .fx-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;}
+  .fx-item{background:var(--panel2);border-radius:10px;padding:10px;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,.04);transition:.3s;}
+  .fx-item:hover,.fx-item.active{border-color:var(--purple);background:rgba(167,139,250,.07);}
+  .fx-emoji{font-size:26px;margin-bottom:4px;}
+  .fx-name{font-size:10px;font-weight:700;margin-bottom:2px;}
+  .fx-cat{font-size:9px;color:var(--muted);}
+  .fx-badge{font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;margin-top:3px;display:inline-block;}
+  .fb-marvel{background:rgba(239,68,68,.2);color:var(--red);}
+  .fb-ai{background:rgba(167,139,250,.2);color:var(--purple);}
+  .fb-4k{background:rgba(56,189,248,.2);color:var(--blue);}
+  .fb-new{background:rgba(34,197,94,.2);color:var(--green);}
+
+  /* CENTER: 3D VIEWPORT */
+  .fx-viewport{background:#000;position:relative;overflow:hidden;display:flex;flex-direction:column;}
+  .vp-toolbar{background:rgba(13,17,23,.9);border-bottom:1px solid rgba(255,255,255,.05);padding:8px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .vp-tool{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--text);padding:5px 12px;border-radius:7px;font-size:11px;cursor:pointer;transition:.3s;}
+  .vp-tool:hover,.vp-tool.active{background:rgba(167,139,250,.15);border-color:rgba(167,139,250,.3);color:var(--purple);}
+  .vp-sep{width:1px;height:22px;background:rgba(255,255,255,.07);}
+  .canvas-3d{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  canvas#glCanvas{position:absolute;inset:0;width:100%;height:100%;}
+  .canvas-scene{position:relative;z-index:2;pointer-events:none;}
+
+  /* 3D CSS Scene */
+  .scene-3d{width:300px;height:300px;perspective:800px;position:relative;}
+  .orbit-container{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:orbitSpin 12s linear infinite;}
+  @keyframes orbitSpin{from{transform:rotateY(0deg)}to{transform:rotateY(360deg)}}
+  .orbit-ring{position:absolute;inset:10px;border-radius:50%;border:1px solid rgba(167,139,250,.3);transform:rotateX(75deg);box-shadow:0 0 20px rgba(167,139,250,.2);}
+  .orbit-ring-2{position:absolute;inset:30px;border-radius:50%;border:1px solid rgba(212,160,60,.3);transform:rotateX(75deg) rotateZ(60deg);box-shadow:0 0 20px rgba(212,160,60,.2);}
+  .orbit-ring-3{position:absolute;inset:50px;border-radius:50%;border:1px solid rgba(244,114,182,.3);transform:rotateX(75deg) rotateZ(120deg);box-shadow:0 0 20px rgba(244,114,182,.2);}
+  .orbit-dot{position:absolute;width:10px;height:10px;border-radius:50%;top:-5px;left:50%;margin-left:-5px;}
+  .center-figure{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:72px;filter:drop-shadow(0 0 30px rgba(212,160,60,.7));animation:figureFloat 3s ease-in-out infinite;z-index:5;}
+  @keyframes figureFloat{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-58%) scale(1.05)}}
+
+  /* FX Overlays */
+  .fx-overlay{position:absolute;inset:0;pointer-events:none;z-index:3;}
+  .lightning-bolt{position:absolute;font-size:80px;animation:lightningFlash 2s infinite;opacity:0;}
+  @keyframes lightningFlash{0%,90%,100%{opacity:0}91%,95%{opacity:1}96%,99%{opacity:.5}}
+  .particle-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;border-radius:50%;border:2px solid rgba(212,160,60,.4);box-shadow:0 0 40px rgba(212,160,60,.3),inset 0 0 40px rgba(212,160,60,.1);animation:ringPulse 2s ease-in-out infinite;}
+  @keyframes ringPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.6}50%{transform:translate(-50%,-50%) scale(1.2);opacity:1}}
+  .energy-beams{position:absolute;inset:0;}
+  .beam{position:absolute;height:2px;background:linear-gradient(90deg,transparent,var(--purple),transparent);animation:beamSweep 3s linear infinite;opacity:.6;}
+  @keyframes beamSweep{0%{transform:rotate(0deg) scaleX(0);opacity:0}50%{opacity:.6}100%{transform:rotate(360deg) scaleX(2);opacity:0}}
+
+  /* VFX Sparks */
+  .sparks{position:absolute;inset:0;overflow:hidden;}
+  .spark{position:absolute;width:3px;height:3px;border-radius:50%;animation:sparkFly linear infinite;}
+  @keyframes sparkFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
+
+  /* HUD */
+  .vp-hud-tl{position:absolute;top:52px;left:10px;font-size:10px;font-family:monospace;color:rgba(255,255,255,.5);z-index:6;}
+  .vp-hud-tr{position:absolute;top:52px;right:10px;font-size:10px;font-family:monospace;color:rgba(255,255,255,.5);text-align:right;z-index:6;}
+  .vp-hud-br{position:absolute;bottom:10px;right:10px;font-size:10px;font-family:monospace;color:rgba(255,255,255,.4);text-align:right;z-index:6;}
+  .render-quality{background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:12px;font-weight:700;}
+
+  /* RIGHT: PROPERTIES */
+  .fx-props{background:var(--panel);border-left:1px solid rgba(255,255,255,.05);overflow-y:auto;padding:16px;}
+  .prop-section{margin-bottom:18px;}
+  .prop-sec-title{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:700;margin-bottom:10px;}
+  .prop-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+  .prop-name{font-size:11px;color:var(--muted);min-width:75px;}
+  .prop-slider{flex:1;accent-color:var(--purple);height:3px;}
+  .prop-val{font-size:11px;color:var(--purple);min-width:34px;text-align:right;font-weight:600;}
+  .prop-toggle{width:34px;height:18px;border-radius:9px;cursor:pointer;position:relative;flex-shrink:0;}
+  .toggle-on{background:linear-gradient(135deg,var(--purple),#7c3aed);}
+  .toggle-off{background:rgba(255,255,255,.1);}
+  .toggle-thumb{position:absolute;top:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:.3s;}
+  .toggle-on .toggle-thumb{right:2px;}
+  .toggle-off .toggle-thumb{left:2px;}
+
+  /* ACTIVE FX LIST */
+  .active-fx{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+  .afx-item{background:var(--panel2);border-radius:8px;padding:9px 11px;display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.04);}
+  .afx-emoji{font-size:16px;}
+  .afx-name{flex:1;font-size:12px;font-weight:600;}
+  .afx-strength{font-size:11px;color:var(--purple);}
+  .afx-del{font-size:14px;cursor:pointer;color:var(--muted);opacity:.5;transition:.3s;}
+  .afx-del:hover{opacity:1;color:var(--red);}
+
+  /* PRESET BUTTONS */
+  .preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .preset-btn{padding:10px;border-radius:8px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,.06);background:var(--panel2);transition:.3s;}
+  .preset-btn:hover{border-color:var(--gold);color:var(--gold);}
+  .preset-btn.selected{background:rgba(212,160,60,.1);border-color:var(--gold);color:var(--gold);}
+
+  /* RENDER BUTTON */
+  .render-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--purple),var(--pink));border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px;transition:.3s;}
+  .render-btn:hover{opacity:.85;}
+  .render-progress{display:none;margin-top:10px;}
+  .rp-bar{height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;}
+  .rp-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--pink));border-radius:3px;transition:width .3s;}
+  .rp-label{font-size:11px;color:var(--muted);margin-top:5px;text-align:center;}
+
+  @media(max-width:900px){.fx-layout{grid-template-columns:1fr;height:auto;}.fx-library,.fx-props{display:none;}}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="nav-logo"><span>👑 GOAT</span></a>
+  <div class="nav-links">
+    <a href="index.html">Dashboard</a>
+    <a href="goat-3d-effects.html" class="active">3D Effects</a>
+    <a href="goat-3d-studio.html">3D Studio</a>
+    <a href="goat-video-enhanced.html">Video Studio</a>
+    <a href="goat-ai-video.html">AI Video</a>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn-sm btn-purple">🎨 Apply to Scene</button>
+    <button class="btn-sm btn-gold">🎬 Render 4K</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-particles" id="heroParticles"></div>
+  <div style="position:relative;z-index:1">
+    <div class="hero-badge">✨ MARVEL-QUALITY VISUAL EFFECTS</div>
+    <h1>GOAT <span>3D Effects</span> Studio</h1>
+    <p>Hollywood-grade VFX, particle systems, and 3D visual effects — powered by AI and rendered at 4K resolution with real-time preview.</p>
+    <div class="hero-stats">
+      <div class="h-stat"><div class="val">500+</div><div class="lbl">VFX Presets</div></div>
+      <div class="h-stat"><div class="val">4K+</div><div class="lbl">Render Quality</div></div>
+      <div class="h-stat"><div class="val">60fps</div><div class="lbl">Real-Time</div></div>
+      <div class="h-stat"><div class="val">AI</div><div class="lbl">Powered</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FX LAYOUT -->
+<div class="fx-layout">
+
+  <!-- LEFT: FX LIBRARY -->
+  <div class="fx-library">
+    <div class="lib-search">
+      <input placeholder="🔍 Search effects...">
+    </div>
+    <div class="lib-cats">
+      <div class="lib-cat active">All</div>
+      <div class="lib-cat">Marvel</div>
+      <div class="lib-cat">Particles</div>
+      <div class="lib-cat">Light</div>
+      <div class="lib-cat">Glitch</div>
+      <div class="lib-cat">3D</div>
+    </div>
+
+    <div class="fx-section-title">⚡ Marvel-Grade Effects</div>
+    <div class="fx-grid" id="marvelFx"></div>
+
+    <div class="fx-section-title">✨ Particle Systems</div>
+    <div class="fx-grid" id="particleFx"></div>
+
+    <div class="fx-section-title">💡 Light Effects</div>
+    <div class="fx-grid" id="lightFx"></div>
+
+    <div class="fx-section-title">🤖 AI-Powered</div>
+    <div class="fx-grid" id="aiFx"></div>
+  </div>
+
+  <!-- CENTER: 3D VIEWPORT -->
+  <div class="fx-viewport">
+    <div class="vp-toolbar">
+      <button class="vp-tool active">🔄 Orbit</button>
+      <button class="vp-tool">🔍 Zoom</button>
+      <button class="vp-tool">✋ Pan</button>
+      <div class="vp-sep"></div>
+      <button class="vp-tool" onclick="setPreset('marvel')">⚡ Marvel Mode</button>
+      <button class="vp-tool" onclick="setPreset('fashion')">👗 Fashion Mode</button>
+      <button class="vp-tool" onclick="setPreset('street')">🏙 Street Mode</button>
+      <button class="vp-tool" onclick="setPreset('space')">🌌 Space Mode</button>
+      <div class="vp-sep"></div>
+      <button class="vp-tool" style="margin-left:auto" onclick="captureFrame()">📸 Capture</button>
+    </div>
+
+    <div class="canvas-3d" id="canvas3d">
+      <canvas id="glCanvas"></canvas>
+
+      <!-- 3D CSS Scene -->
+      <div class="canvas-scene">
+        <div class="scene-3d">
+          <div class="orbit-container" id="orbitContainer">
+            <div class="orbit-ring"><div class="orbit-dot" style="background:var(--purple)"></div></div>
+            <div class="orbit-ring-2"><div class="orbit-dot" style="background:var(--gold)"></div></div>
+            <div class="orbit-ring-3"><div class="orbit-dot" style="background:var(--pink)"></div></div>
+          </div>
+          <div class="center-figure" id="centerFigure">👑</div>
+        </div>
+      </div>
+
+      <!-- FX Overlays -->
+      <div class="fx-overlay" id="fxOverlay">
+        <div class="particle-ring" id="particleRing"></div>
+        <div class="energy-beams" id="energyBeams"></div>
+        <div class="sparks" id="sparksContainer"></div>
+        <div class="lightning-bolt" style="top:15%;left:10%;font-size:60px;color:rgba(167,139,250,.8)" id="lightning1">⚡</div>
+        <div class="lightning-bolt" style="top:20%;right:12%;font-size:50px;color:rgba(212,160,60,.8);animation-delay:1s" id="lightning2">⚡</div>
+      </div>
+
+      <!-- HUD -->
+      <div class="vp-hud-tl">
+        <div style="color:var(--purple);font-weight:700;font-size:11px">GOAT 3D FX ENGINE</div>
+        <div>Viewport: 3840×2160</div>
+        <div id="polyCount">Polygons: 2.4M</div>
+        <div id="renderFps">GPU FPS: 60</div>
+      </div>
+      <div class="vp-hud-tr">
+        <div class="render-quality">MARVEL QUALITY</div>
+        <div id="activeEffects">Effects: 4 Active</div>
+        <div>Ray Tracing: ON</div>
+        <div>HDR: ON</div>
+      </div>
+      <div class="vp-hud-br">
+        <div>GOAT VFX Studio v4.0</div>
+        <div>Sora 2 + Marvel Engine</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: PROPERTIES -->
+  <div class="fx-props">
+
+    <!-- Active Effects -->
+    <div class="prop-section">
+      <div class="prop-sec-title">Active Effects</div>
+      <div class="active-fx" id="activeFxList"></div>
+    </div>
+
+    <!-- Effect Controls -->
+    <div class="prop-section">
+      <div class="prop-sec-title">Effect Controls</div>
+      <div class="prop-row">
+        <span class="prop-name">Intensity</span>
+        <input type="range" class="prop-slider" min="0" max="100" value="80" oninput="this.nextElementSibling.textContent=this.value+'%'">
+        <span class="prop-val">80%</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-name">Scale</span>
+        <input type="range" class="prop-slider" min="0" max="200" value="100" oninput="this.nextElementSibling.textContent=this.value+'%'">
+        <span class="prop-val">100%</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-name">Speed</span>
+        <input type="range" class="prop-slider" min="0" max="300" value="100" oninput="this.nextElementSibling.textContent=this.value+'%'">
+        <span class="prop-val">100%</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-name">Blur</span>
+        <input type="range" class="prop-slider" min="0" max="100" value="0" oninput="this.nextElementSibling.textContent=this.value">
+        <span class="prop-val">0</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-name">Glow</span>
+        <input type="range" class="prop-slider" min="0" max="100" value="65" oninput="this.nextElementSibling.textContent=this.value+'%'">
+        <span class="prop-val">65%</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-name">Opacity</span>
+        <input type="range" class="prop-slider" min="0" max="100" value="90" oninput="this.nextElementSibling.textContent=this.value+'%'">
+        <span class="prop-val">90%</span>
+      </div>
+    </div>
+
+    <!-- Scene Options -->
+    <div class="prop-section">
+      <div class="prop-sec-title">Scene Options</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div class="prop-row">
+          <span class="prop-name" style="flex:1">Ray Tracing</span>
+          <div class="prop-toggle toggle-on" onclick="this.classList.toggle('toggle-on');this.classList.toggle('toggle-off')"><div class="toggle-thumb"></div></div>
+        </div>
+        <div class="prop-row">
+          <span class="prop-name" style="flex:1">HDR Rendering</span>
+          <div class="prop-toggle toggle-on"><div class="toggle-thumb"></div></div>
+        </div>
+        <div class="prop-row">
+          <span class="prop-name" style="flex:1">Depth of Field</span>
+          <div class="prop-toggle toggle-on"><div class="toggle-thumb"></div></div>
+        </div>
+        <div class="prop-row">
+          <span class="prop-name" style="flex:1">Motion Blur</span>
+          <div class="prop-toggle toggle-off"><div class="toggle-thumb"></div></div>
+        </div>
+        <div class="prop-row">
+          <span class="prop-name" style="flex:1">Lens Flares</span>
+          <div class="prop-toggle toggle-on"><div class="toggle-thumb"></div></div>
+        </div>
+        <div class="prop-row">
+          <span class="prop-name" style="flex:1">Volumetric Fog</span>
+          <div class="prop-toggle toggle-off"><div class="toggle-thumb"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Presets -->
+    <div class="prop-section">
+      <div class="prop-sec-title">Scene Presets</div>
+      <div class="preset-grid">
+        <div class="preset-btn selected" onclick="selectPreset(this,'⚡ Marvel')">⚡ Marvel</div>
+        <div class="preset-btn" onclick="selectPreset(this,'👗 Fashion')">👗 Fashion</div>
+        <div class="preset-btn" onclick="selectPreset(this,'🏙 Street')">🏙 Street</div>
+        <div class="preset-btn" onclick="selectPreset(this,'🌌 Space')">🌌 Space</div>
+        <div class="preset-btn" onclick="selectPreset(this,'🔥 Inferno')">🔥 Inferno</div>
+        <div class="preset-btn" onclick="selectPreset(this,'💎 Diamond')">💎 Diamond</div>
+        <div class="preset-btn" onclick="selectPreset(this,'🌊 Ocean')">🌊 Ocean</div>
+        <div class="preset-btn" onclick="selectPreset(this,'👑 GOAT')">👑 GOAT</div>
+      </div>
+    </div>
+
+    <!-- Render -->
+    <button class="render-btn" onclick="startRender()">🎬 Render 4K Scene</button>
+    <div class="render-progress" id="renderProgress">
+      <div class="rp-bar"><div class="rp-fill" id="rpFill" style="width:0%"></div></div>
+      <div class="rp-label" id="rpLabel">Starting render...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Hero particles
+const hp = document.getElementById('heroParticles');
+for(let i=0;i<20;i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const size = 3+Math.random()*6;
+  const colors = ['var(--purple)','var(--gold)','var(--pink)','var(--blue)'];
+  p.style.cssText = `width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};left:${Math.random()*100}%;animation-duration:${6+Math.random()*10}s;animation-delay:${Math.random()*8}s;filter:blur(1px)`;
+  hp.appendChild(p);
+}
+
+// FX data
+const marvelFx = [
+  {e:'⚡',n:'Lightning Strike',c:'Marvel',b:'fb-marvel'},
+  {e:'🔥',n:'Inferno Blast',c:'Marvel',b:'fb-marvel'},
+  {e:'💥',n:'Shockwave',c:'Marvel',b:'fb-marvel'},
+  {e:'🌀',n:'Vortex Portal',c:'Marvel',b:'fb-marvel'},
+  {e:'❄️',n:'Frost Blast',c:'Marvel',b:'fb-marvel'},
+  {e:'🌪️',n:'Tornado FX',c:'Marvel',b:'fb-marvel'},
+];
+const particleFx = [
+  {e:'✨',n:'Gold Sparks',c:'Particles',b:'fb-4k'},
+  {e:'💫',n:'Star Field',c:'Particles',b:'fb-4k'},
+  {e:'🌟',n:'Nova Burst',c:'Particles',b:'fb-new'},
+  {e:'💨',n:'Smoke Trail',c:'Particles',b:'fb-4k'},
+];
+const lightFx = [
+  {e:'💡',n:'Lens Flare',c:'Light',b:'fb-4k'},
+  {e:'🌅',n:'God Rays',c:'Light',b:'fb-4k'},
+  {e:'🌈',n:'Rainbow Aura',c:'Light',b:'fb-new'},
+  {e:'🔦',n:'Spotlight',c:'Light',b:'fb-4k'},
+];
+const aiFx = [
+  {e:'🤖',n:'AI Style Transfer',c:'AI',b:'fb-ai'},
+  {e:'🧠',n:'Neural Glow',c:'AI',b:'fb-ai'},
+  {e:'🎨',n:'Art Synthesis',c:'AI',b:'fb-ai'},
+  {e:'🪄',n:'Magic Wand AI',c:'AI',b:'fb-ai'},
+];
+
+function renderFxGrid(containerId, data) {
+  const el = document.getElementById(containerId);
+  data.forEach(fx => {
+    const d = document.createElement('div');
+    d.className = 'fx-item';
+    d.innerHTML = `<div class="fx-emoji">${fx.e}</div><div class="fx-name">${fx.n}</div><div class="fx-cat">${fx.c}</div><div class="fx-badge ${fx.b}">${fx.b.replace('fb-','').toUpperCase()}</div>`;
+    d.addEventListener('click', () => { d.classList.toggle('active'); addToActiveList(fx); });
+    el.appendChild(d);
+  });
+}
+renderFxGrid('marvelFx',marvelFx);
+renderFxGrid('particleFx',particleFx);
+renderFxGrid('lightFx',lightFx);
+renderFxGrid('aiFx',aiFx);
+
+// Active effects
+const activeFxData = [
+  {e:'⚡',n:'Lightning Strike',s:'80%'},
+  {e:'✨',n:'Gold Sparks',s:'65%'},
+  {e:'🌀',n:'Orbital Rings',s:'100%'},
+  {e:'💡',n:'Lens Flare',s:'45%'},
+];
+const afxEl = document.getElementById('activeFxList');
+function renderActiveFx(data) {
+  afxEl.innerHTML = '';
+  data.forEach((fx,i) => {
+    afxEl.innerHTML += `
+      <div class="afx-item">
+        <span class="afx-emoji">${fx.e}</span>
+        <span class="afx-name">${fx.n}</span>
+        <span class="afx-strength">${fx.s}</span>
+        <span class="afx-del" onclick="removeActiveFx(${i})">✕</span>
+      </div>`;
+  });
+}
+renderActiveFx(activeFxData);
+
+function removeActiveFx(idx) {
+  activeFxData.splice(idx,1);
+  renderActiveFx(activeFxData);
+  document.getElementById('activeEffects').textContent = 'Effects: '+activeFxData.length+' Active';
+}
+
+function addToActiveList(fx) {
+  if(!activeFxData.find(x=>x.n===fx.n)) {
+    activeFxData.push({e:fx.e,n:fx.n,s:'50%'});
+    renderActiveFx(activeFxData);
+    document.getElementById('activeEffects').textContent = 'Effects: '+activeFxData.length+' Active';
+  }
+}
+
+// Presets
+const presetFigures = {marvel:'⚡',fashion:'👗',street:'🏙',space:'🚀',goat:'👑',inferno:'🔥',diamond:'💎',ocean:'🌊'};
+function setPreset(name) {
+  const fig = presetFigures[name] || '👑';
+  document.getElementById('centerFigure').textContent = fig;
+}
+function selectPreset(el,name) {
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  const key = name.split(' ')[1].toLowerCase();
+  setPreset(key);
+}
+
+// Sparks
+function addSparks() {
+  const sc = document.getElementById('sparksContainer');
+  sc.innerHTML = '';
+  for(let i=0;i<30;i++) {
+    const s = document.createElement('div');
+    s.className = 'spark';
+    const colors = ['var(--gold)','var(--purple)','var(--pink)','#fff'];
+    const dx = (Math.random()-0.5)*200;
+    const dy = (Math.random()-0.5)*200;
+    s.style.cssText = `left:${40+Math.random()*20}%;top:${40+Math.random()*20}%;background:${colors[Math.floor(Math.random()*colors.length)]};--dx:${dx}px;--dy:${dy}px;animation-duration:${0.5+Math.random()*1.5}s;animation-delay:${Math.random()*2}s`;
+    sc.appendChild(s);
+  }
+}
+addSparks();
+setInterval(addSparks, 3000);
+
+// FPS simulation
+setInterval(() => {
+  document.getElementById('renderFps').textContent = 'GPU FPS: '+(58+Math.floor(Math.random()*4));
+  document.getElementById('polyCount').textContent = 'Polygons: '+(2.2+Math.random()*.5).toFixed(1)+'M';
+}, 2000);
+
+// Render
+const renderSteps = ['Initializing ray tracer...','Computing lighting...','Rendering particles...','Applying 4K upscale...','Compositing layers...','Export ready!'];
+function startRender() {
+  const btn = document.querySelector('.render-btn');
+  const prog = document.getElementById('renderProgress');
+  const fill = document.getElementById('rpFill');
+  const lbl = document.getElementById('rpLabel');
+  prog.style.display = 'block';
+  btn.textContent = '⏳ Rendering...';
+  btn.style.opacity = '.7';
+  let step = 0;
+  const int = setInterval(() => {
+    if(step>=renderSteps.length){
+      clearInterval(int);
+      btn.textContent = '✅ Render Complete!';
+      btn.style.background = 'linear-gradient(135deg,var(--green),#16a34a)';
+      btn.style.opacity = '1';
+      setTimeout(()=>{btn.textContent='🎬 Render 4K Scene';btn.style.background='';prog.style.display='none';fill.style.width='0%';},3000);
+      return;
+    }
+    fill.style.width = ((step+1)/renderSteps.length*100)+'%';
+    lbl.textContent = renderSteps[step];
+    step++;
+  },600);
+}
+
+function captureFrame() {
+  alert('📸 Frame captured!\n\nSaved as: GoatFX_Frame_4K.png\n✅ 3840×2160 • HDR • PNG');
+}
+
+// Toolbar tabs
+document.querySelectorAll('.vp-tool').forEach(t => {
+  t.addEventListener('click', function(){
+    if(!this.getAttribute('onclick')) {
+      document.querySelectorAll('.vp-tool:not([onclick])').forEach(x=>x.classList.remove('active'));
+      this.classList.add('active');
+    }
+  });
+});
+document.querySelectorAll('.lib-cat').forEach(c => {
+  c.addEventListener('click',function(){
+    document.querySelectorAll('.lib-cat').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

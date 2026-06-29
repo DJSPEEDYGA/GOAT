@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ms Money Penny — AI Models Hub</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/goat-theme.css">
+  <link rel="stylesheet" href="css/models-manager.css">
+  <style>
+    /* Brand overrides — Ms Money Penny gold/navy theme */
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #0d1b2a;
+      --bg-card: #1b2838;
+      --bg-hover: #1f3044;
+      --accent: #d4a03c;
+      --accent-light: #f0c040;
+      --text-primary: #f5f0e8;
+      --text-secondary: #b8b0a0;
+      --text-muted: #6a6050;
+      --border: #2a3a4a;
+      --success: #2ecc71;
+      --warning: #f39c12;
+      --info: #5dade2;
+      --gradient-start: #d4a03c;
+      --gradient-end: #0d1b2a;
+      --navy: #0f2440;
+      --gold: #d4a03c;
+      --gold-light: #f0c040;
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="models-page">
+
+  <!-- GOAT Background -->
+  <div class="goat-bg"></div>
+  <div class="goat-bg-overlay"></div>
+
+  <!-- ═══ Top Navigation ═══ -->
+  <nav class="top-nav">
+    <a href="index.html" class="logo">
+      <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+      <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+      <img src="logo.png" alt="Ms Money Penny">
+      <span>Ms Money Penny</span>
+      <span class="crown-badge">👑 GOAT</span>
+    </a>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html" class="active">🧠 AI Models</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="about.html">👑 About</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="index.html#store">🛒 Store</a>
+    </div>
+  </nav>
+
+  <!-- ═══ Hero Section ═══ -->
+  <div class="hero">
+    <h1>🧠 AI Models Hub</h1>
+    <p class="subtitle">2.7M+ models from HuggingFace — NO logins, NO API keys. Download directly to your servers.</p>
+    <div class="stats">
+      <div class="stat"><div class="number">50,021</div><div class="label">Total Models</div></div>
+      <div class="stat"><div class="number">60+</div><div class="label">Curated</div></div>
+      <div class="stat"><div class="number">14</div><div class="label">Lightning AI</div></div>
+      <div class="stat"><div class="number">100%</div><div class="label">Free & Offline</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ Filter Bar ═══ -->
+  <div class="filter-bar">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search models by name, style, task...">
+    </div>
+    <button class="filter-btn active" data-filter="all">All <span class="count">(60+)</span></button>
+    <button class="filter-btn" data-filter="text-to-image">Text-to-Image</button>
+    <button class="filter-btn" data-filter="image-to-image">Image-to-Image</button>
+    <button class="filter-btn" data-filter="lora-style">LoRA Styles</button>
+    <button class="filter-btn" data-filter="character">Characters</button>
+    <button class="filter-btn" data-filter="foundation">Foundation</button>
+    <button class="filter-btn" data-filter="lightning">⚡ Lightning AI</button>
+  </div>
+
+  <!-- ═══ Content ═══ -->
+  <div class="content">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h3>Categories</h3>
+      <div class="category active" data-cat="all">🏠 All Models <span class="badge">60+</span></div>
+      <div class="category" data-cat="foundation">🏛️ Foundation Models <span class="badge">6</span></div>
+      <div class="category" data-cat="lora-style">🎨 Art Style LoRAs <span class="badge">24</span></div>
+      <div class="category" data-cat="character">👤 Character LoRAs <span class="badge">19</span></div>
+      <div class="category" data-cat="text-to-image">🖼️ Text-to-Image <span class="badge">45+</span></div>
+      <div class="category" data-cat="image-to-image">🔄 Image-to-Image <span class="badge">3</span></div>
+      <div class="category" data-cat="video">🎬 Video Generation <span class="badge">1</span></div>
+      <div class="category" data-cat="lightning">⚡ Lightning AI <span class="badge">14</span></div>
+
+      <div class="divider"></div>
+
+      <h3>Base Models</h3>
+      <div class="category" data-cat="flux">🔥 FLUX-based</div>
+      <div class="category" data-cat="sdxl">⚡ SDXL-based</div>
+      <div class="category" data-cat="wan">🌊 Wan-based</div>
+
+      <div class="divider"></div>
+
+      <h3>Platforms</h3>
+      <div class="category" data-cat="comfyui">🎯 ComfyUI</div>
+      <div class="category" data-cat="diffusers">🐍 Diffusers</div>
+      <div class="category" data-cat="a1111">🖌️ Auto1111</div>
+
+      <div class="divider"></div>
+
+      <h3>Quick Actions</h3>
+      <div class="category" onclick="downloadAllFoundation()" style="color:var(--accent)">📥 Download All Foundation</div>
+      <div class="category" onclick="copyBulkScript()" style="color:var(--accent)">📋 Copy Bulk Script</div>
+      <div class="category" onclick="showServerSetup()" style="color:var(--accent)">🖥️ Server Setup Guide</div>
+      
+      <div class="divider"></div>
+      
+      <h3 style="color:#22c55e">🤖 AI Model Scripts</h3>
+      <div class="category" onclick="downloadFile('download_models_windows.bat')" style="color:#22c55e">🖥️ Windows Download Script</div>
+      <div class="category" onclick="downloadFile('download_ollama_models.sh')" style="color:#22c55e">🐧 Linux/Mac Download Script</div>
+      <div class="category" style="color:rgba(34,197,94,0.7);font-size:11px">⚠️ Requires 100GB+ space</div>
+
+      <div class="divider"></div>
+
+      <h3 style="color:#10b981">🔓 FREE AI (No API)</h3>
+      <div class="category" onclick="downloadAllOllama()" style="color:#10b981;font-weight:600">🚀 Download ALL Free (29)</div>
+      <div class="category" onclick="copyFreeAIOneLiner()" style="color:#10b981">📋 Copy 1-Liner</div>
+      <div class="category" onclick="showFreeAIInfo()" style="color:#10b981">ℹ️ Model List</div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- FREE AI (No API) Section -->
+      <div class="section-header" id="section-freeai" style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(0,0,0,0.3));border-left:4px solid #10b981;padding:20px;border-radius:8px;margin-bottom:20px">
+        <h2 style="color:#10b981">🔓 FREE AI — 29 Uncensored Models — NO API, NO LOGIN</h2>
+        <p style="color:#a7f3d0">Same models as NVIDIA NIM but 100% free via Ollama. Uncensored versions included (Dolphin, WizardLM-Uncensored). Works offline. OpenAI-compatible API. Saves to your 10TB external drive.</p>
+        <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn" style="background:#10b981;color:#000;font-weight:700;padding:12px 24px;border-radius:8px;border:none;cursor:pointer;font-size:14px" onclick="downloadAllOllama()">🚀 Download ALL 29 Free Models</button>
+          <button class="btn" style="background:rgba(16,185,129,0.2);color:#10b981;padding:12px 24px;border-radius:8px;border:1px solid #10b981;cursor:pointer;font-size:14px" onclick="copyFreeAIOneLiner()">📋 Copy 1-Line Installer</button>
+          <button class="btn" style="background:rgba(16,185,129,0.2);color:#10b981;padding:12px 24px;border-radius:8px;border:1px solid #10b981;cursor:pointer;font-size:14px" onclick="showFreeAIInfo()">ℹ️ View Model List</button>
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:#6ee7b7">💾 Total: ~400 GB &nbsp;•&nbsp; 🔓 No API Key &nbsp;•&nbsp; 🚫 No Login &nbsp;•&nbsp; 🔞 Uncensored Options &nbsp;•&nbsp; 💻 CPU or GPU</div>
+      </div>
+      <div class="models-grid" id="freeaiGrid" style="margin-bottom:30px"></div>
+
+      <br>
+
+      <!-- Foundation Models Section -->
+      <div class="section-header" id="section-foundation">
+        <h2>🏛️ Foundation Models — Download These First!</h2>
+        <p>Base models required by all LoRAs. NO login needed — direct git clone.</p>
+      </div>
+
+      <div class="models-grid" id="foundationGrid">
+        <!-- Populated by JS -->
+      </div>
+
+      <br><br>
+
+      <!-- Art Style LoRAs -->
+      <div class="section-header" id="section-lora">
+        <h2>🎨 Art Style LoRA Models</h2>
+        <p>Lightweight style adapters — plug into any foundation model for instant artistic styles.</p>
+      </div>
+
+      <div class="models-grid" id="loraGrid">
+        <!-- Populated by JS -->
+      </div>
+
+      <br><br>
+
+      <!-- Character LoRAs -->
+      <div class="section-header" id="section-characters">
+        <h2>👤 Character & Avatar LoRAs</h2>
+        <p>Consistent character generation — same person, different poses and scenes.</p>
+      </div>
+
+      <div class="models-grid" id="characterGrid">
+        <!-- Populated by JS -->
+      </div>
+
+      <br><br>
+
+      <!-- Image Editing -->
+      <div class="section-header" id="section-editing">
+        <h2>🔄 Image Editing & Video Models</h2>
+        <p>Object movers, multi-angle editors, and camera control models.</p>
+      </div>
+
+      <div class="models-grid" id="editingGrid">
+        <!-- Populated by JS -->
+      </div>
+
+      <br><br>
+
+      <!-- Lightning AI -->
+      <div class="section-header" id="section-lightning">
+        <h2>⚡ Lightning AI — Cloud Model APIs</h2>
+        <p>14 models accessible via unified API — OpenAI, Google, NVIDIA and more.</p>
+      </div>
+
+      <div class="models-grid" id="lightningGrid">
+        <!-- Populated by JS -->
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ═══ Download Panel (fixed bottom) ═══ -->
+  <div class="download-panel" id="downloadPanel">
+    <div class="panel-header">
+      <h3>📥 Download Queue</h3>
+      <button class="btn btn-secondary" onclick="togglePanel()">✕ Close</button>
+    </div>
+    <div id="downloadQueue"></div>
+  </div>
+
+  <!-- ═══ JavaScript — Models Data & Interactivity ═══ -->
+  <script>
+  // ══════════════════════════════════════════════════════════════════
+  // MODEL DATABASE — All 60+ models embedded directly in the app
+  // NO LOGIN. NO API KEYS. FULLY OFFLINE CAPABLE.
+  // ══════════════════════════════════════════════════════════════════
+
+  const MODELS = {
+    foundation: [
+      { name: "FLUX.1-dev", repo: "black-forest-labs/FLUX.1-dev", size: "~23GB", task: "Text-to-Image", desc: "Current best — highest quality, excellent prompt adherence. Base for most LoRAs.", likes: "745K", base: "FLUX" },
+      { name: "FLUX.1-schnell", repo: "black-forest-labs/FLUX.1-schnell", size: "~23GB", task: "Text-to-Image", desc: "Fast variant of FLUX — 4-step generation, great for rapid prototyping.", likes: "693K", base: "FLUX" },
+      { name: "FLUX.2-dev", repo: "black-forest-labs/FLUX.2-dev", size: "~25GB", task: "Image-to-Image", desc: "Next-gen FLUX for image editing, inpainting, and style transfer.", likes: "948K", base: "FLUX" },
+      { name: "Stable Diffusion XL 1.0", repo: "stabilityai/stable-diffusion-xl-base-1.0", size: "~6.9GB", task: "Text-to-Image", desc: "Industry standard — massive ecosystem, thousands of LoRAs available.", likes: "2.26M", base: "SDXL" },
+      { name: "Stable Diffusion 3.5 Large", repo: "stabilityai/stable-diffusion-3.5-large", size: "~16GB", task: "Text-to-Image", desc: "Latest SD3 — improved text rendering and composition.", likes: "500K+", base: "SD3" },
+      { name: "Wan2.1-T2I-14B", repo: "Wan-AI/Wan2.1-T2I-14B", size: "~28GB", task: "Text-to-Image", desc: "14B parameter model — excellent for characters and complex scenes.", likes: "200K+", base: "Wan" },
+      { name: "FLUX.2-Klein-9B-KV", repo: "black-forest-labs/FLUX.2-klein-9b-kv", size: "~18GB", task: "Image-to-Image", desc: "FLUX.2 Klein with KV cache — fast editing. 4.21k downloads.", likes: "97", base: "FLUX" },
+      { name: "Z-Image-Turbo", repo: "Tongyi-MAI/Z-Image-Turbo", size: "~8GB", task: "Text-to-Image", desc: "Ultra-fast image generation by Tongyi/Alibaba — 931k downloads, 4,270 likes.", likes: "4.27K", base: "FLUX" },
+      { name: "LTX-2.3", repo: "Lightricks/LTX-2.3", size: "~21GB", task: "Image-to-Video", desc: "Leading open video generation model — 644k downloads, 672 likes.", likes: "672", base: "LTX" },
+      { name: "FireRed Image Edit 1.1", repo: "FireRedTeam/FireRed-Image-Edit-1.1", size: "~10GB", task: "Image-to-Image", desc: "Advanced image editing model — 3.69k downloads, 173 likes.", likes: "173", base: "FLUX" },
+      { name: "BFS Best Face Swap", repo: "Alissonerdx/BFS-Best-Face-Swap", size: "~5GB", task: "Image-to-Image", desc: "Top face swap model — 56.1k downloads, 365 likes.", likes: "365", base: "FLUX" },
+      { name: "GLM-OCR", repo: "zai-org/GLM-OCR", size: "~10GB", task: "Image-to-Text", desc: "State-of-the-art OCR by Zhipu AI — 2.74M downloads!", likes: "1.35K", base: "GLM" },
+      { name: "Fish Audio S2 Pro", repo: "fishaudio/s2-pro", size: "~10GB", task: "Text-to-Speech", desc: "Top TTS model — 5B params, 7k downloads, 631 likes.", likes: "631", base: "TTS" },
+      { name: "Hume TADA-1B", repo: "HumeAI/tada-1b", size: "~4GB", task: "Text-to-Speech", desc: "Emotional speech AI — 36.7k downloads, expressive prosody.", likes: "217", base: "TTS" },
+    ],
+
+    loraStyles: [
+      { name: "Van Gogh Style", repo: "andrbykov/vangogh_style_LoRA", task: "Text-to-Image", likes: 10, base: "FLUX", style: "Impressionist" },
+      { name: "Van Gogh (variant)", repo: "ZayacGde/vangog_style_LoRA", task: "Text-to-Image", likes: 3, base: "FLUX", style: "Impressionist" },
+      { name: "Claude Monet Style", repo: "pils0n/claudemonet_style_LoRA", task: "Text-to-Image", likes: 5, base: "FLUX", style: "Impressionist" },
+      { name: "Vasnetsov Style", repo: "Vafich/avasnetsov_style_LoRA", task: "Text-to-Image", likes: 2, base: "FLUX", style: "Classical" },
+      { name: "Vinogradov", repo: "Alia31566/Vinogradov_LoRA", task: "Text-to-Image", likes: 4, base: "FLUX", style: "Classical" },
+      { name: "Nozhev", repo: "Alia31566/NOZHEV_LoRA", task: "Text-to-Image", likes: 9, base: "FLUX", style: "Classical" },
+      { name: "Delovarya", repo: "Alia31566/Delovarya_LoRA", task: "Text-to-Image", likes: 5, base: "FLUX", style: "Classical" },
+      { name: "Niko Pirosmani", repo: "Alia31566/Niko_Pirosmani_LoRA", task: "Text-to-Image", likes: 2, base: "FLUX", style: "Primitivist" },
+      { name: "Vittorio Reggianini", repo: "Mariiaaaaa/vittorio_reggianini_LoRA", task: "Text-to-Image", likes: 5, base: "FLUX", style: "Realist" },
+      { name: "Kochkina Style", repo: "Cilvia/Kochkina_style_LoRA", task: "Text-to-Image", likes: 2, base: "FLUX", style: "Modern" },
+      { name: "Cherakshin Style", repo: "Cilvia/cherakshin_style_LoRA", task: "Text-to-Image", likes: 5, base: "FLUX", style: "Modern" },
+      { name: "Oliver Takac", repo: "polichwafer/olviertakac_style_LoRA", task: "Text-to-Image", likes: 4, base: "FLUX", style: "Contemporary" },
+      { name: "Fairey Posters", repo: "Zhmak/fairey_posters_style_LoRA", task: "Text-to-Image", likes: 4, base: "FLUX", style: "Poster Art" },
+      { name: "Langreiter Design", repo: "pils0n/langreiter_style_LoRA", task: "Text-to-Image", likes: 3, base: "FLUX", style: "Design" },
+      { name: "Frutiger Design", repo: "pils0n/frutiger_style_LoRA", task: "Text-to-Image", likes: 3, base: "FLUX", style: "Design" },
+      { name: "Rosie Aesthetic", repo: "pils0n/rosie_style_LoRA", task: "Text-to-Image", likes: 3, base: "FLUX", style: "Aesthetic" },
+      { name: "Tequila Sunset", repo: "gvhfyhgif/tekilasuns3t_style_LoRA", task: "Text-to-Image", likes: 6, base: "FLUX", style: "Mood" },
+      { name: "Rosetty", repo: "gvhfyhgif/rosetty_style_LoRA", task: "Text-to-Image", likes: 4, base: "FLUX", style: "Floral" },
+      { name: "Diberkato", repo: "ftyuiolkmnjhg/diberkato_style_LoRA", task: "Text-to-Image", likes: 3, base: "FLUX", style: "Abstract" },
+      { name: "Veiter LoRA", repo: "LippmannAI/veiter-lora-flux", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Fine Art" },
+      { name: "Rock Concert", repo: "neiroia/rockconcert_style_LoRA", task: "Text-to-Image", likes: 5, base: "FLUX", style: "Music" },
+      { name: "Nepirog", repo: "nepirog/nepirog_style_LoRA", task: "Text-to-Image", likes: 7, base: "FLUX", style: "Abstract" },
+      { name: "Film Grain SDXL", repo: "kristian1515/filmgrain-redmond-filmgrain-lora-for-sdxl", task: "Text-to-Image", likes: 6, base: "SDXL", style: "Photography" },
+      { name: "LCM LoRA SDXL", repo: "imbaQ/lcm-lora-sdxl", task: "Text-to-Image", likes: 2, base: "SDXL", style: "Fast Gen" },
+      { name: "Kucho BG Style", repo: "mehmetrook/kucho-bg-style-lora", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Background" },
+      { name: "Soviet Carpets Style", repo: "lissShi/soviet_carpets_style_LoRA", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Retro" },
+      { name: "Monet Style LoRA", repo: "nikmarii/monet_style_LoRA", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Impressionist" },
+      { name: "My Style LoRA", repo: "Alia31566/my_style_LoRA", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Personal" },
+      { name: "Pirosmani Style", repo: "pppiiinnneee/pirosmani_style_LoRA", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Primitivist" },
+      { name: "Scarlett LoRA", repo: "Clandido/scarlett-lora", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Character" },
+      { name: "FLUX Uncensored", repo: "the1ian/Flux-uncensored", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Unrestricted" },
+      { name: "WAN 2.2 LoRA Video", repo: "thatboymentor/WAN2.2LORASforVVideo", task: "Text-to-Image", likes: 0, base: "WAN", style: "Video" },
+      { name: "Z Image Turbo", repo: "thatboymentor/Zimageturbo", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Turbo" },
+      { name: "FLUX-C", repo: "Jaytsh/FLUX-C", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Creative" },
+      { name: "Aurora SDXXL", repo: "NxisZd/auroraSDXXL", task: "Text-to-Image", likes: 0, base: "SDXL", style: "Aurora" },
+      { name: "Leyendecker v2", repo: "treeshark/leyendecker-v2.safetensors", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Illustration" },
+      { name: "Devon Rex Flat", repo: "lissShi/devon_rex_flat_LoRA", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Animal" },
+      { name: "Owl Cat LoRA", repo: "anaastaa/owl_cat_LoRA", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Animal" },
+      { name: "Ton618 Epic Realism", repo: "KleinKrieger/Ton618-Epic-Realism-Flux-LoRA", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Realism" },
+      { name: "Aurora FLUX1", repo: "NxisZd/auroraFLUX1", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Aurora" },
+      { name: "Z-Image Turbo v1.2", repo: "RassolFlex/z-image-turbo-kr1sv1ss_v1.2", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Turbo" },
+      { name: "Flux 2Klein 9B", repo: "thatboymentor/Flux-2klein-9b", task: "Text-to-Image", likes: 0, base: "FLUX", style: "Creative" },
+      { name: "DMU Birds", repo: "AIYangXiao/DMU_Birds", task: "Text-to-Image", likes: 0, base: "SDXL", style: "Nature" },
+      { name: "SDXL Fine-Tuned", repo: "AIYangXiao/SDXL_FT", task: "Text-to-Image", likes: 0, base: "SDXL", style: "General" },
+    ],
+
+    characters: [
+      { name: "Avatar Weights", repo: "alphaduriendur/avatar-weights-01", task: "Text-to-Image", likes: 58, base: "FLUX", desc: "High-quality avatar generation weights" },
+      { name: "Rina AI", repo: "Barlowtech/rina_ai", task: "Text-to-Image", likes: 52, base: "FLUX", desc: "Rina AI character model" },
+      { name: "Lumi Character", repo: "Natasamk/lumi-character-lora", task: "Text-to-Image", likes: 13, base: "FLUX", desc: "Lumi character — consistent generation" },
+      { name: "Katerina TLOD", repo: "1337goose/KaterinaTLOD", task: "Text-to-Image", likes: 10, base: "FLUX", desc: "Katerina character model" },
+      { name: "Ket TLOD", repo: "1337goose/KetTLOD", task: "Text-to-Image", likes: 13, base: "FLUX", desc: "Ket character model" },
+      { name: "Amaya", repo: "Alex2422/Amaya_new", task: "Text-to-Image", likes: 18, base: "FLUX", desc: "Amaya character — updated model" },
+      { name: "Kaia", repo: "Krioklininkas/kaia", task: "Text-to-Image", likes: 15, base: "FLUX", desc: "Kaia character model" },
+      { name: "Lara 21", repo: "globaltraders/lara-21-flux-lora", task: "Text-to-Image", likes: 11, base: "FLUX", desc: "Lara character FLUX LoRA" },
+      { name: "Tessa", repo: "xr669/Tessa", task: "Text-to-Image", likes: 8, base: "FLUX", desc: "Tessa character model" },
+      { name: "Flora VG22", repo: "sololo-xyz/VG22Flora", task: "Text-to-Image", likes: 10, base: "FLUX", desc: "Flora character model" },
+      { name: "Amanda ZIT v2", repo: "sololo-xyz/VG21Amanda_ZITv2", task: "Text-to-Image", likes: 22, base: "FLUX", desc: "Amanda character — v2 improved" },
+      { name: "Rachel 2500", repo: "bigdotdog/rachel2500", task: "Text-to-Image", likes: 15, base: "FLUX", desc: "Rachel character model" },
+      { name: "Cat Tina", repo: "BadRabbit11101/Cat_Tina", task: "Text-to-Image", likes: 3, base: "FLUX", desc: "Cat Tina character" },
+      { name: "Asian Model", repo: "darrenfu/Asian_model", task: "Text-to-Image", likes: 61, base: "FLUX", desc: "Asian aesthetic model" },
+      { name: "Lustly AI", repo: "sneaxnvice/lustly-ai", task: "Text-to-Image", likes: 22, base: "FLUX", desc: "Lustly AI character" },
+      { name: "Realism LoRA", repo: "V1shu69/flux-RealismLora", task: "Text-to-Image", likes: 10, base: "FLUX", desc: "Photorealism enhancement" },
+      { name: "Travel Photography", repo: "Rabornkraken/flux2-xhs-travel-lora", task: "Text-to-Image", likes: 81, base: "FLUX", desc: "XHS-style travel photography" },
+      { name: "Wan2.2 StrangeNames", repo: "Kokosha01/Wan2.2_StrangeNames", task: "Text-to-Image", likes: 412, base: "Wan", desc: "Wan 2.2 variant — extremely popular!" },
+      { name: "OLOID Framework", repo: "XonarLabs/OLOID_Framework", task: "Text-to-Image", likes: 148, base: "FLUX", desc: "OLOID generation framework" },
+      { name: "Miekewan", repo: "Jefke88/Miekewan", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Miekewan character model — 8 downloads" },
+      { name: "Reimature", repo: "yasso223/Reimature", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Reimature character — 25 downloads" },
+      { name: "Sienna", repo: "butterflygirl1234/Sienna", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Sienna character model" },
+      { name: "Jax", repo: "wavolegend/Jax", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Jax character model — 33 downloads" },
+      { name: "Bekka Body FLUX", repo: "forfindingbaddies/bekkabody-flux-lora", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Bekka body LoRA — 12 downloads" },
+      { name: "Bekka Face FLUX", repo: "forfindingbaddies/bekkaface-flux-lora", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Bekka face LoRA — 16 downloads" },
+      { name: "Sherry Birkin RE9", repo: "P0to/Sherry_Birkin_Requiem_Resident_Evil_9_Biohazard_Capcom", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Sherry Birkin from Resident Evil 9 — 14 downloads" },
+      { name: "Lilypichu", repo: "User12902/lilypichu", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Lilypichu character model — 12 downloads" },
+      { name: "Lissa", repo: "mmaks12/Lissa", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Lissa character model — 15 downloads" },
+      { name: "Lennox", repo: "BBLennox/lennox", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Lennox character model — 14 downloads" },
+      { name: "Jason", repo: "dyamibleas/jason", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Jason character model — 15 downloads" },
+      { name: "OHWX Woman FLUX2", repo: "Visual7/ohwx-woman-flux2-lora", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "OHWX Woman FLUX2 LoRA — 8 downloads" },
+      { name: "Smnth v1", repo: "Kakelaka/Smnth_v1_NSFW1", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Smnth v1 character — 82 downloads" },
+      { name: "Mina Sharon Myoi FLUX", repo: "CrimsonZockt/MinaSharonMyoiVerZwei-FLUXLORA", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Mina Sharon Myoi character — TWICE" },
+      { name: "Yoo Jeongyeon FLUX", repo: "CrimsonZockt/YooJeongyeonVerZwei-FLUXLORA", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Yoo Jeongyeon character — TWICE" },
+      { name: "Sana Minatozaki FLUX", repo: "CrimsonZockt/SanaMinatozakiVerZwei-FLUXLORA", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Sana Minatozaki character — TWICE" },
+      { name: "ZIT-01", repo: "maxta336/zit-01", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "ZIT-01 character model — 44 downloads" },
+      { name: "Brainslum Characters", repo: "brainslum/characters", task: "Text-to-Image", likes: 0, base: "FLUX", desc: "Multi-character pack — 14 downloads" },
+    ],
+
+    editing: [
+      { name: "Object Remover v2509 Bbox-v3", repo: "prithivMLmods/QIE-2509-Object-Remover-Bbox-v3", task: "Image-to-Image", likes: 9, desc: "Remove objects using bounding boxes — 632 downloads" },
+      { name: "Object Remover v2511 Bbox-v3", repo: "prithivMLmods/QIE-2511-Object-Remover-Bbox-v3", task: "Image-to-Image", likes: 2, desc: "Updated object remover with bbox control — 28 downloads" },
+      { name: "Anime-to-Photoreal v1.1", repo: "Hyperccino/Qwen-Edit-2511-Anime-to-Photoreal-v1.1", task: "Image-to-Image", likes: 2, desc: "Convert anime images to photorealistic style — 48 downloads" },
+      { name: "Multi-Angle LoRA Editor", repo: "wan-world/Qwen-Image-Edit-2511-Multiple-Angles-LoRA", task: "Image-to-Image", likes: 0, desc: "Edit images from multiple viewing angles — 64 downloads" },
+      { name: "Object Mover v2509", repo: "prithivMLmods/QIE-2509-Object-Mover-Bbox", task: "Image-to-Image", likes: 2, desc: "Move objects using bounding boxes" },
+      { name: "Camera Jib Down", repo: "editedge/LTX-2-19b-LoRA-Camera-Control-Jib-Down", task: "Text-to-Video", likes: 0, desc: "Camera jib down motion control for video" },
+    ],
+
+    lightning: [
+      { name: "GPT OSS 20B", provider: "Lightning AI", input: "⚡0.05", output: "⚡0.20", context: "128K", throughput: "6.43 tok/s", tier: "Economy" },
+      { name: "GPT OSS 120B", provider: "Lightning AI", input: "⚡0.10", output: "⚡0.40", context: "128K", throughput: "177.56 tok/s", tier: "Standard" },
+      { name: "Llama 3.3 70B", provider: "Lightning AI", input: "⚡0.30", output: "⚡0.30", context: "128K", throughput: "60.23 tok/s", tier: "Standard" },
+      { name: "DeepSeek V3.1", provider: "Lightning AI", input: "⚡0.32", output: "⚡1.10", context: "164K", throughput: "90.23 tok/s", tier: "Standard" },
+      { name: "GPT 5 nano", provider: "OpenAI", input: "⚡0.05", output: "⚡0.40", context: "400K", throughput: "107.33 tok/s", tier: "Economy" },
+      { name: "Gemini 2.5 Flash Lite", provider: "Google", input: "⚡0.10", output: "⚡0.40", context: "1M", throughput: "7.61 tok/s", tier: "Economy" },
+      { name: "Nemotron 3 Super 120B", provider: "Lightning AI", input: "⚡1.40", output: "⚡3.00", context: "256K", throughput: "376.15 tok/s", tier: "Premium" },
+      { name: "MiniMax M2.5", provider: "Lightning AI", input: "⚡1.00", output: "⚡4.80", context: "196K", throughput: "108.49 tok/s", tier: "Premium" },
+      { name: "Gemini 3 Flash", provider: "Google", input: "⚡0.50", output: "⚡1.00", context: "1M", throughput: "159.34 tok/s", tier: "Standard" },
+      { name: "GPT 3.5 Turbo", provider: "OpenAI", input: "⚡0.50", output: "⚡1.50", context: "16K", throughput: "88.68 tok/s", tier: "Standard" },
+      { name: "GPT 5 mini", provider: "OpenAI", input: "⚡0.25", output: "⚡2.00", context: "400K", throughput: "3.23 tok/s", tier: "Premium" },
+      { name: "Gemini 2.5 Flash", provider: "Google", input: "⚡0.30", output: "⚡2.50", context: "1M", throughput: "20.31 tok/s", tier: "Standard" },
+      { name: "Kimi K2.5", provider: "Lightning AI", input: "⚡2.32", output: "⚡12.00", context: "256K", throughput: "280.46 tok/s", tier: "Premium" },
+      { name: "GLM-5", provider: "Lightning AI", input: "⚡3.60", output: "⚡12.80", context: "200K", throughput: "54.95 tok/s", tier: "Premium" },
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════════
+  // RENDER FUNCTIONS
+  // ══════════════════════════════════════════════════════════════════
+
+  function createFoundationCard(m) {
+    return `
+      <div class="model-card" data-filter="foundation ${m.base?.toLowerCase() || ''}">
+        <div class="card-header">
+          <div class="model-name">${m.name}</div>
+          <span class="task-badge">${m.task}</span>
+        </div>
+        <div class="model-meta">
+          <span>💾 ${m.size}</span>
+          <span>❤️ ${m.likes}</span>
+          <span>🏗️ ${m.base}</span>
+        </div>
+        <div class="model-desc">${m.desc}</div>
+        <div class="cmd-box">
+          <code>git clone https://huggingface.co/${m.repo}</code>
+          <button class="copy-btn" onclick="copyCmd('git clone https://huggingface.co/${m.repo}')">📋 Copy</button>
+        </div>
+        <div class="card-actions" style="margin-top:10px">
+          <button class="btn btn-primary" onclick="addToQueue('${m.name}','${m.repo}','${m.size}')">📥 Download</button>
+          <a href="https://huggingface.co/${m.repo}" target="_blank" class="btn btn-secondary">🔗 View</a>
+        </div>
+      </div>`;
+  }
+
+  function createLoraCard(m) {
+    return `
+      <div class="model-card" data-filter="lora-style text-to-image ${m.base?.toLowerCase() || ''}">
+        <div class="card-header">
+          <div class="model-name">${m.name}</div>
+          <span class="task-badge">${m.style || m.task}</span>
+        </div>
+        <div class="model-meta">
+          <span>❤️ ${m.likes}</span>
+          <span>🏗️ ${m.base}</span>
+          <span>📦 ~50-200MB</span>
+        </div>
+        <div class="model-desc">LoRA adapter for ${m.style || 'custom'} style on ${m.base} base model.</div>
+        <div class="cmd-box">
+          <code>git clone https://huggingface.co/${m.repo}</code>
+          <button class="copy-btn" onclick="copyCmd('git clone https://huggingface.co/${m.repo}')">📋 Copy</button>
+        </div>
+        <div class="card-actions" style="margin-top:10px">
+          <button class="btn btn-primary" onclick="addToQueue('${m.name}','${m.repo}','~100MB')">📥 Download</button>
+          <a href="https://huggingface.co/${m.repo}" target="_blank" class="btn btn-secondary">🔗 View</a>
+        </div>
+      </div>`;
+  }
+
+  function createCharacterCard(m) {
+    return `
+      <div class="model-card" data-filter="character text-to-image ${m.base?.toLowerCase() || ''}">
+        <div class="card-header">
+          <div class="model-name">${m.name}</div>
+          <span class="task-badge">Character</span>
+        </div>
+        <div class="model-meta">
+          <span>❤️ ${m.likes}</span>
+          <span>🏗️ ${m.base}</span>
+        </div>
+        <div class="model-desc">${m.desc}</div>
+        <div class="cmd-box">
+          <code>git clone https://huggingface.co/${m.repo}</code>
+          <button class="copy-btn" onclick="copyCmd('git clone https://huggingface.co/${m.repo}')">📋 Copy</button>
+        </div>
+        <div class="card-actions" style="margin-top:10px">
+          <button class="btn btn-primary" onclick="addToQueue('${m.name}','${m.repo}','~100MB')">📥 Download</button>
+          <a href="https://huggingface.co/${m.repo}" target="_blank" class="btn btn-secondary">🔗 View</a>
+        </div>
+      </div>`;
+  }
+
+  function createEditingCard(m) {
+    const badgeClass = m.task === 'Image-to-Image' ? 'img2img' : m.task === 'Text-to-Video' ? 'video' : '';
+    return `
+      <div class="model-card" data-filter="image-to-image editing">
+        <div class="card-header">
+          <div class="model-name">${m.name}</div>
+          <span class="task-badge ${badgeClass}">${m.task}</span>
+        </div>
+        <div class="model-meta">
+          <span>❤️ ${m.likes}</span>
+        </div>
+        <div class="model-desc">${m.desc}</div>
+        <div class="cmd-box">
+          <code>git clone https://huggingface.co/${m.repo}</code>
+          <button class="copy-btn" onclick="copyCmd('git clone https://huggingface.co/${m.repo}')">📋 Copy</button>
+        </div>
+        <div class="card-actions" style="margin-top:10px">
+          <button class="btn btn-primary" onclick="addToQueue('${m.name}','${m.repo}','varies')">📥 Download</button>
+          <a href="https://huggingface.co/${m.repo}" target="_blank" class="btn btn-secondary">🔗 View</a>
+        </div>
+      </div>`;
+  }
+
+  function createLightningCard(m) {
+    const tierColor = m.tier === 'Economy' ? '#2ecc71' : m.tier === 'Standard' ? '#3498db' : '#d4a03c';
+    return `
+      <div class="model-card" data-filter="lightning">
+        <div class="card-header">
+          <div class="model-name">${m.name}</div>
+          <span class="task-badge" style="background:${tierColor}22;color:${tierColor}">${m.tier}</span>
+        </div>
+        <div class="model-meta">
+          <span>🏢 ${m.provider}</span>
+          <span>📐 ${m.context}</span>
+          <span>⚡ ${m.throughput}</span>
+        </div>
+        <div class="model-desc">
+          <strong>Input:</strong> ${m.input}/M &nbsp;|&nbsp; <strong>Output:</strong> ${m.output}/M &nbsp;|&nbsp; <strong>Context:</strong> ${m.context}
+        </div>
+        <div class="card-actions" style="margin-top:10px">
+          <a href="https://lightning.ai" target="_blank" class="btn btn-primary">⚡ Lightning AI</a>
+          <button class="btn btn-secondary" onclick="copyCmd('pip install openai && python -c \"from openai import OpenAI; c=OpenAI(base_url=\\\"https://api.lightning.ai/v1\\\")\"')">📋 API Code</button>
+        </div>
+      </div>`;
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // POPULATE GRIDS
+  // ══════════════════════════════════════════════════════════════════
+
+  function createFreeAICard(m) {
+    const accent = m.uncensored ? '#f59e0b' : '#10b981';
+    const bgLight = m.uncensored ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)';
+    const icon = m.uncensored ? '🔞' : '🔓';
+    const tag = m.uncensored ? '<span style="background:#f59e0b;color:#000;padding:2px 6px;border-radius:4px;font-size:9px;margin-left:6px">UNCENSORED</span>' : '';
+    return `
+      <div class="model-card" style="border-left:3px solid ${accent}">
+        <div class="model-header">
+          <div class="model-name" style="color:${accent}">${icon} ${m.name}${tag}</div>
+          <span class="badge-small" style="background:${accent};color:#000">${m.size}</span>
+        </div>
+        <div class="model-desc" style="font-size:12px">
+          ${m.desc}<br>
+          <code style="word-break:break-all;font-size:10px;background:${bgLight};padding:2px 4px;border-radius:3px">ollama pull ${m.tag}</code>
+        </div>
+        <div class="card-actions" style="margin-top:10px">
+          <button class="btn btn-primary" style="background:${accent};color:#000" onclick="downloadSingleOllama('${m.tag}','${m.name}')">📥 Pull</button>
+          <button class="btn btn-secondary" onclick="copyCmd('ollama pull ${m.tag}')">📋 Copy</button>
+          <button class="btn btn-secondary" onclick="chatWithModel('${m.tag}','${m.name}')">💬 Chat</button>
+        </div>
+      </div>`;
+  }
+
+  async function downloadSingleOllama(tag, name) {
+    try {
+      const r = await fetch('/api/ollama/pull', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ name: tag })
+      });
+      if (r.ok) {
+        alert('📥 Pulling ' + name + ' on server...\n\nMonitor with: ollama list\nOr: curl localhost:11434/api/tags');
+        return;
+      }
+    } catch (e) { }
+    copyCmd('ollama pull ' + tag);
+    alert('📋 Copied `ollama pull ' + tag + '` to clipboard.\n\nIf Ollama is installed on your server, paste in terminal to download.\n\nInstall Ollama first: curl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/nextjs-commerce/main/ONE-COMMAND-FREE-AI.sh | sudo bash');
+  }
+
+  function chatWithModel(tag, name) {
+    // Jump to GOAT chat with this model pre-selected
+    const url = '/goat-royalty/?model=' + encodeURIComponent(tag);
+    window.open(url, '_blank');
+  }
+
+  function renderAll() {
+    document.getElementById('foundationGrid').innerHTML = MODELS.foundation.map(createFoundationCard).join('');
+    document.getElementById('loraGrid').innerHTML = MODELS.loraStyles.map(createLoraCard).join('');
+    document.getElementById('characterGrid').innerHTML = MODELS.characters.map(createCharacterCard).join('');
+    document.getElementById('editingGrid').innerHTML = MODELS.editing.map(createEditingCard).join('');
+    document.getElementById('lightningGrid').innerHTML = MODELS.lightning.map(createLightningCard).join('');
+    var ng = document.getElementById('freeaiGrid');
+    if (ng) ng.innerHTML = FREEAI_MODELS.map(createFreeAICard).join('');
+  }
+
+  renderAll();
+
+  // ══════════════════════════════════════════════════════════════════
+  // SEARCH & FILTER
+  // ══════════════════════════════════════════════════════════════════
+
+  document.getElementById('searchInput').addEventListener('input', function(e) {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('.model-card').forEach(card => {
+      const text = card.textContent.toLowerCase();
+      card.style.display = text.includes(q) ? '' : 'none';
+    });
+  });
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      const filter = this.dataset.filter;
+      document.querySelectorAll('.model-card').forEach(card => {
+        if (filter === 'all') {
+          card.style.display = '';
+        } else {
+          card.style.display = card.dataset.filter?.includes(filter) ? '' : 'none';
+        }
+      });
+    });
+  });
+
+  document.querySelectorAll('.sidebar .category[data-cat]').forEach(cat => {
+    cat.addEventListener('click', function() {
+      document.querySelectorAll('.sidebar .category').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      const catFilter = this.dataset.cat;
+      document.querySelectorAll('.model-card').forEach(card => {
+        if (catFilter === 'all') {
+          card.style.display = '';
+        } else {
+          card.style.display = card.dataset.filter?.includes(catFilter) ? '' : 'none';
+        }
+      });
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // DOWNLOAD QUEUE
+  // ══════════════════════════════════════════════════════════════════
+
+  let downloadQueue = [];
+
+  function addToQueue(name, repo, size) {
+    downloadQueue.push({ name, repo, size, status: 'queued' });
+    document.getElementById('downloadPanel').classList.add('active');
+    renderQueue();
+  }
+
+  function renderQueue() {
+    const html = downloadQueue.map((d, i) => `
+      <div class="download-item">
+        <span class="dl-name">${d.name}</span>
+        <span style="color:var(--text-muted);font-size:12px">${d.size}</span>
+        <div class="dl-progress"><div class="bar" style="width:${d.status==='done'?'100':'0'}%"></div></div>
+        <span class="dl-status">${d.status}</span>
+        <button class="btn btn-secondary" style="padding:4px 8px;font-size:11px" onclick="copyCmd('git clone https://huggingface.co/${d.repo}')">📋</button>
+      </div>
+    `).join('');
+    document.getElementById('downloadQueue').innerHTML = html;
+  }
+
+  function togglePanel() {
+    document.getElementById('downloadPanel').classList.toggle('active');
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // UTILITY FUNCTIONS
+  // ══════════════════════════════════════════════════════════════════
+
+     function downloadFile(filename) {
+       const link = document.createElement('a');
+       link.href = filename;
+       link.download = filename;
+       document.body.appendChild(link);
+       link.click();
+       document.body.removeChild(link);
+     }
+
+  function copyCmd(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = event.target;
+      const orig = btn.textContent;
+      btn.textContent = '✅ Copied!';
+      setTimeout(() => btn.textContent = orig, 1500);
+    });
+  }
+
+  function downloadAllFoundation() {
+    const script = MODELS.foundation.map(m => `git clone https://huggingface.co/${m.repo}`).join('\n');
+    copyCmd(script);
+    alert('📋 Copied all foundation model download commands to clipboard!\n\nPaste into your server terminal to download all base models.');
+  }
+
+  function copyBulkScript() {
+    let script = '#!/bin/bash\n# Ms Money Penny — Bulk Model Downloader\n# NO LOGIN REQUIRED\n\nOUTPUT_DIR="/mnt/100tb/huggingface-models"\nmkdir -p "$OUTPUT_DIR"\ncd "$OUTPUT_DIR"\n\necho "⚡ Downloading Foundation Models..."\n';
+    MODELS.foundation.forEach(m => { script += `git clone https://huggingface.co/${m.repo}\n`; });
+    script += '\necho "🎨 Downloading LoRA Style Models..."\n';
+    MODELS.loraStyles.forEach(m => { script += `git clone https://huggingface.co/${m.repo}\n`; });
+    script += '\necho "👤 Downloading Character Models..."\n';
+    MODELS.characters.forEach(m => { script += `git clone https://huggingface.co/${m.repo}\n`; });
+    script += '\necho "🔄 Downloading Editing Models..."\n';
+    MODELS.editing.forEach(m => { script += `git clone https://huggingface.co/${m.repo}\n`; });
+    script += '\necho "✅ All done! Models saved to $OUTPUT_DIR"';
+    copyCmd(script);
+    alert('📋 Complete bulk download script copied!\n\n60+ models — paste into your 100TB server terminal.');
+  }
+
+  function showServerSetup() {
+    alert('🖥️ Server Setup Guide\n\n1. Install Git LFS:\n   sudo apt install git-lfs && git lfs install\n\n2. Create model directory:\n   mkdir -p /mnt/100tb/huggingface-models\n\n3. Click "Copy Bulk Script" and paste into terminal\n\n4. Install runtimes:\n   pip install diffusers torch transformers\n   git clone https://github.com/comfyanonymous/ComfyUI\n\nNo login or API keys needed for any public model!');
+  }
+
+  // ========== FREE AI via OLLAMA (29 MODELS, NO API KEY) ==========
+  const FREEAI_MODELS = [
+    // === UNCENSORED (priority) ===
+    {name:'Llama 2 Uncensored 7B',    tag:'llama2-uncensored:7b',    size:'3.8 GB',  uncensored:true, desc:'No safety filters, general purpose'},
+    {name:'Dolphin Llama 3 8B',       tag:'dolphin-llama3:8b',       size:'4.7 GB',  uncensored:true, desc:'Uncensored fine-tune of Llama 3'},
+    {name:'Dolphin Mistral 7B',       tag:'dolphin-mistral:7b',      size:'4.1 GB',  uncensored:true, desc:'Uncensored Mistral variant'},
+    {name:'Dolphin Mixtral 8x7B',     tag:'dolphin-mixtral:8x7b',    size:'26 GB',   uncensored:true, desc:'GPT-4 class, no filters'},
+    {name:'WizardLM Uncensored 13B',  tag:'wizardlm-uncensored:13b', size:'7.4 GB',  uncensored:true, desc:'Conversational, no filters'},
+    {name:'Llama 2 Uncensored 70B',   tag:'llama2-uncensored:70b',   size:'39 GB',   uncensored:true, desc:'Largest uncensored Llama 2'},
+
+    // === Small/Fast (CPU-friendly) ===
+    {name:'Llama 3.2 1B',             tag:'llama3.2:1b',              size:'1.3 GB',  desc:'Ultra fast, low resource'},
+    {name:'Llama 3.2 3B',             tag:'llama3.2:3b',              size:'2.0 GB',  desc:'Fast, good quality'},
+    {name:'Gemma 2 2B',               tag:'gemma2:2b',                size:'1.6 GB',  desc:'Google\'s smallest Gemma'},
+    {name:'Qwen 2.5 3B',              tag:'qwen2.5:3b',               size:'1.9 GB',  desc:'Alibaba\'s Qwen, multilingual'},
+    {name:'Phi-3 Mini',               tag:'phi3:mini',                size:'2.2 GB',  desc:'Microsoft\'s tiny powerhouse'},
+
+    // === Medium (7-9B sweet spot) ===
+    {name:'Llama 3.1 8B',             tag:'llama3.1:8b',              size:'4.7 GB',  desc:'Meta\'s most popular model'},
+    {name:'Mistral 7B',               tag:'mistral:7b',               size:'4.1 GB',  desc:'FREE here — no NIM login!'},
+    {name:'Qwen 2.5 7B',              tag:'qwen2.5:7b',               size:'4.7 GB',  desc:'Strong multilingual'},
+    {name:'Gemma 2 9B',               tag:'gemma2:9b',                size:'5.4 GB',  desc:'FREE here — no NIM login!'},
+    {name:'DeepSeek R1 7B',           tag:'deepseek-r1:7b',           size:'4.7 GB',  desc:'Reasoning model (like o1)'},
+
+    // === Large (GPU helpful) ===
+    {name:'Mixtral 8x7B MoE',         tag:'mixtral:8x7b',             size:'26 GB',   desc:'FREE here — mixture of experts'},
+    {name:'Llama 3.1 70B',            tag:'llama3.1:70b',             size:'40 GB',   desc:'Flagship open model'},
+    {name:'Qwen 2.5 72B',             tag:'qwen2.5:72b',              size:'41 GB',   desc:'FREE here — competes with GPT-4'},
+    {name:'DeepSeek R1 70B',          tag:'deepseek-r1:70b',          size:'40 GB',   desc:'Reasoning at 70B scale'},
+
+    // === Code ===
+    {name:'StarCoder 2 15B',          tag:'starcoder2:15b',           size:'9 GB',    desc:'FREE here — code generation'},
+    {name:'CodeLlama 34B',            tag:'codellama:34b',            size:'19 GB',   desc:'FREE here — Meta\'s code model'},
+    {name:'DeepSeek Coder 33B',       tag:'deepseek-coder:33b',       size:'19 GB',   desc:'Top code benchmark'},
+    {name:'Qwen 2.5 Coder 32B',       tag:'qwen2.5-coder:32b',        size:'19 GB',   desc:'Latest code specialist'},
+
+    // === Vision ===
+    {name:'LLaVA 7B',                 tag:'llava:7b',                 size:'4.7 GB',  desc:'See images, describe, answer'},
+    {name:'Llama 3.2 Vision 11B',     tag:'llama3.2-vision:11b',      size:'7.9 GB',  desc:'Meta\'s vision model'},
+    {name:'Moondream',                tag:'moondream:1.8b',           size:'1.7 GB',  desc:'Tiny vision model'},
+
+    // === Embeddings (for RAG / catalog search) ===
+    {name:'Nomic Embed',              tag:'nomic-embed-text:latest',  size:'274 MB',  desc:'Embeddings for search/RAG'},
+    {name:'MxBai Embed Large',        tag:'mxbai-embed-large:latest', size:'670 MB',  desc:'Higher quality embeddings'}
+  ];
+
+  async function downloadAllOllama() {
+    const uncensored = FREEAI_MODELS.filter(m => m.uncensored).length;
+    const confirmed = confirm('🔓 Download ALL ' + FREEAI_MODELS.length + ' FREE AI Models?\n\n' +
+      '✅ No API key • No login • No rate limits\n' +
+      '🔞 Includes ' + uncensored + ' UNCENSORED models\n' +
+      '💾 Total size: ~400 GB\n' +
+      '📁 Saves to your 10TB external drive\n\n' +
+      'Continue?');
+    if (!confirmed) return;
+
+    // Try real backend first
+    try {
+      const r = await fetch('/api/ollama/pull-all', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ models: FREEAI_MODELS.map(m => m.tag) })
+      });
+      if (r.ok) {
+        const data = await r.json();
+        alert('✅ Bulk download STARTED!\n\nJob ID: ' + (data.job_id || 'n/a') + '\nDownloading ' + FREEAI_MODELS.length + ' models to /mnt/ai-storage/ollama\n\nMonitor: ollama list');
+        return;
+      }
+    } catch (e) { /* fall through */ }
+
+    // Fallback: copy the 1-liner
+    copyFreeAIOneLiner();
+    alert('📋 The 1-line installer was copied!\n\nPaste this in your server SSH terminal:\n\ncurl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/nextjs-commerce/main/ONE-COMMAND-FREE-AI.sh | sudo bash\n\nIt will:\n1. Mount your external drive\n2. Install Ollama\n3. Download all 29 models\n4. Save to /mnt/ai-storage/ollama');
+  }
+
+  function copyFreeAIOneLiner() {
+    const cmd = 'curl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/nextjs-commerce/main/ONE-COMMAND-FREE-AI.sh | sudo bash';
+    copyCmd(cmd);
+  }
+
+  function showFreeAIInfo() {
+    let info = '🔓 FREE AI — 29 Models, No API Key\n\n';
+    info += '━━━ UNCENSORED ━━━\n';
+    FREEAI_MODELS.filter(m => m.uncensored).forEach(m => {
+      info += '🔞 ' + m.name + ' (' + m.size + ')\n';
+    });
+    info += '\n━━━ STANDARD ━━━\n';
+    FREEAI_MODELS.filter(m => !m.uncensored).forEach(m => {
+      info += '🔓 ' + m.name + ' (' + m.size + ')\n';
+    });
+    info += '\n💾 Total: ~400 GB on your 10TB drive\n';
+    info += '🚫 NO API key • NO login • NO limits\n';
+    info += '💻 Runs on CPU or GPU\n';
+    info += '📡 OpenAI-compatible API on port 11434\n\n';
+    info += '▶️ Install everything with one command:\n';
+    info += 'curl -fsSL https://raw.githubusercontent.com/DJSPEEDYGA/nextjs-commerce/main/ONE-COMMAND-FREE-AI.sh | sudo bash';
+    alert(info);
+  }
+
+  </script>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 AI Models</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="about.html">👑 About</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="unreal-copilot.html">🎮 UE5 CoPilot</a>
+      <a href="https://github.com/DJSPEEDYGA/nextjs-commerce" target="_blank">⭐ GitHub</a>
+      <a href="https://github.com/DJSPEEDYGA/nextjs-commerce/releases" target="_blank">📦 Releases</a>
+    </div>
+    <p>🐐 Ms Money Penny Store v1.3.0 — Built with ❤️ by <a href="https://lifeimitatesart.org" target="_blank">Life Imitates Art Inc.</a></p>
+    <p style="margin-top:8px;font-size:0.8rem;color:var(--text-muted);">Powered by NVIDIA AI Stack • Lightning AI • HuggingFace • OpenClaw • Electron</p>
+  </footer>
+
+</body>
+</html>

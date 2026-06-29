@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>GOAT Plugin Rack — Pro Studio Chain</title>
+<style>
+:root {
+  --bg:#09090f; --bg2:#0d0d18; --bg3:#111120; --bg4:#161628;
+  --panel:#0f0f1c; --border:#252538; --border2:#1e1e32;
+  --gold:#f5a623; --gold2:#ffcc44; --red:#ff3355; --green:#00ff88;
+  --blue:#0099ff; --purple:#9933ff; --cyan:#00ffdd; --orange:#ff6600;
+  --text:#dde0f0; --text2:#7878a0; --text3:#4a4a70;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+.topbar{display:flex;align-items:center;gap:10px;padding:7px 14px;background:var(--panel);border-bottom:1px solid var(--border);height:50px;flex-shrink:0;}
+.logo{font-size:17px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px;}
+.title{font-size:12px;color:var(--text2);font-weight:600;}
+.sep{width:1px;height:26px;background:var(--border);margin:0 3px;}
+.tb-btn{padding:4px 12px;border-radius:5px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:11px;cursor:pointer;transition:all .15s;}
+.tb-btn:hover{border-color:var(--gold);color:var(--gold);}
+.tb-btn.active{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700;}
+.spacer{flex:1;}
+.signal-flow{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text2);}
+.sf-node{padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg3);font-size:10px;font-weight:600;}
+.sf-node.active{border-color:var(--gold);color:var(--gold);}
+.sf-arrow{color:var(--text3);}
+.toolbar{display:flex;align-items:center;gap:8px;padding:6px 14px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+.toolbar select{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:5px;font-size:11px;}
+.rack{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 12px;display:flex;flex-direction:column;gap:6px;}
+.rack::-webkit-scrollbar{width:5px;}
+.rack::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+/* Plugin Strip */
+.plugin{background:var(--panel);border:1px solid var(--border2);border-radius:8px;overflow:hidden;transition:border-color .2s;}
+.plugin:hover{border-color:var(--border);}
+.plugin.expanded .plugin-body{display:flex;}
+.plugin-header{display:flex;align-items:center;gap:10px;padding:7px 12px;cursor:pointer;user-select:none;background:linear-gradient(90deg,var(--bg3),var(--bg2));}
+.plugin-header:hover{background:var(--bg3);}
+.ph-power{width:18px;height:18px;border-radius:50%;border:2px solid var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;transition:.15s;}
+.ph-power.on{border-color:var(--green);color:var(--green);box-shadow:0 0 6px rgba(0,255,136,.3);}
+.ph-drag{color:var(--text3);font-size:14px;cursor:grab;}
+.ph-num{font-size:10px;color:var(--text3);width:16px;text-align:center;}
+.ph-brand{font-size:9px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;width:48px;}
+.ph-name{font-size:13px;font-weight:700;flex:1;}
+.ph-type{font-size:9px;padding:2px 7px;border-radius:3px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.ph-type.eq{background:rgba(245,166,35,.15);color:var(--gold);border:1px solid rgba(245,166,35,.3);}
+.ph-type.comp{background:rgba(0,153,255,.15);color:var(--blue);border:1px solid rgba(0,153,255,.3);}
+.ph-type.reverb{background:rgba(153,51,255,.15);color:var(--purple);border:1px solid rgba(153,51,255,.3);}
+.ph-type.dyn{background:rgba(255,51,85,.15);color:var(--red);border:1px solid rgba(255,51,85,.3);}
+.ph-type.delay{background:rgba(0,255,221,.15);color:var(--cyan);border:1px solid rgba(0,255,221,.3);}
+.ph-type.sat{background:rgba(255,102,0,.15);color:var(--orange);border:1px solid rgba(255,102,0,.3);}
+.ph-type.mod{background:rgba(0,255,136,.15);color:var(--green);border:1px solid rgba(0,255,136,.3);}
+.ph-type.pitch{background:rgba(255,204,68,.15);color:var(--gold2);border:1px solid rgba(255,204,68,.3);}
+.ph-type.util{background:rgba(120,120,160,.15);color:var(--text2);border:1px solid rgba(120,120,160,.3);}
+.gr-bar{flex:1;max-width:80px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;border:1px solid var(--border2);}
+.gr-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--gold),var(--red));border-radius:3px;transition:width .08s;}
+.ph-expand{width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:14px;border-radius:4px;border:1px solid transparent;}
+.ph-expand:hover{border-color:var(--border);color:var(--text);}
+.plugin-body{display:none;padding:12px 14px;border-top:1px solid var(--border2);gap:16px;flex-wrap:wrap;align-items:flex-start;}
+/* Knobs */
+.knob-group{display:flex;gap:10px;flex-wrap:wrap;}
+.knob-item{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.knob{width:40px;height:40px;border-radius:50%;position:relative;cursor:ns-resize;transition:box-shadow .2s;}
+.knob:hover{box-shadow:0 0 0 1px var(--gold);}
+.knob canvas{width:40px;height:40px;display:block;}
+.kn-label{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;text-align:center;}
+.kn-val{font-size:10px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;}
+/* VU Meters */
+.vu-pair{display:flex;flex-direction:column;gap:3px;}
+.vu-row{display:flex;gap:2px;align-items:center;}
+.vu-label{font-size:9px;color:var(--text2);width:12px;}
+.vu-bar{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;border:1px solid var(--border2);min-width:80px;}
+.vu-fill{height:100%;border-radius:4px;transition:width .06s;}
+.vu-fill.l{background:linear-gradient(90deg,var(--green) 0%,var(--green) 70%,var(--gold) 85%,var(--red) 100%);}
+/* Sliders */
+.plugin-slider{display:flex;align-items:center;gap:6px;min-width:120px;}
+.plugin-slider label{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;width:50px;}
+.plugin-slider input[type=range]{flex:1;height:3px;accent-color:var(--gold);cursor:pointer;min-width:80px;}
+.plugin-slider .sv{font-size:9px;font-weight:700;color:var(--gold);width:30px;text-align:right;font-variant-numeric:tabular-nums;}
+/* EQ Canvas */
+.eq-canvas-wrap{flex:1;min-width:200px;}
+/* Preset row */
+.preset-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
+.p-chip{padding:3px 9px;border-radius:4px;border:1px solid var(--border);background:var(--bg3);font-size:10px;cursor:pointer;color:var(--text2);transition:.15s;}
+.p-chip:hover,.p-chip.active{border-color:var(--gold);color:var(--gold);background:rgba(245,166,35,.08);}
+/* Section labels */
+.rack-section{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:2px;text-transform:uppercase;padding:4px 4px 2px;margin-top:4px;}
+/* Master section */
+.master-bar{display:flex;align-items:center;gap:12px;padding:8px 14px;background:var(--panel);border-top:1px solid var(--border);flex-shrink:0;}
+.master-label{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:2px;text-transform:uppercase;white-space:nowrap;}
+.master-meters{display:flex;flex-direction:column;gap:3px;flex:1;max-width:300px;}
+.mm-row{display:flex;gap:4px;align-items:center;}
+.mm-ch{font-size:9px;color:var(--text2);width:10px;}
+.mm-bar{flex:1;height:10px;background:var(--bg3);border-radius:5px;overflow:hidden;}
+.mm-fill{height:100%;background:linear-gradient(90deg,#00ff88,#f5a623 80%,#ff3355);border-radius:5px;transition:width .05s;}
+.mm-db{font-size:9px;color:var(--text2);width:24px;text-align:right;}
+.toggle-sm{width:32px;height:18px;background:var(--bg3);border-radius:9px;cursor:pointer;position:relative;border:1px solid var(--border);transition:.2s;flex-shrink:0;}
+.toggle-sm.on{background:var(--green);border-color:var(--green);}
+.toggle-sm::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:1px;left:1px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.4);}
+.toggle-sm.on::after{left:15px;}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">GOAT</div>
+  <div class="title">Plugin Rack</div>
+  <div class="sep"></div>
+  <div class="signal-flow">
+    <div class="sf-node active">INPUT</div><div class="sf-arrow">→</div>
+    <div class="sf-node active">GATE</div><div class="sf-arrow">→</div>
+    <div class="sf-node active">EQ</div><div class="sf-arrow">→</div>
+    <div class="sf-node active">COMP</div><div class="sf-arrow">→</div>
+    <div class="sf-node active">SAT</div><div class="sf-arrow">→</div>
+    <div class="sf-node active">REVERB</div><div class="sf-arrow">→</div>
+    <div class="sf-node active">MASTER</div>
+  </div>
+  <div class="spacer"></div>
+  <span style="font-size:11px;color:var(--text2);">CPU: <span id="cpuVal" style="color:var(--green)">14%</span></span>
+  <div class="sep"></div>
+  <span style="font-size:11px;color:var(--text2);">Latency: <span style="color:var(--cyan)">6ms</span></span>
+  <div class="sep"></div>
+  <a href="powerhouse.html" style="text-decoration:none;"><button class="tb-btn">Back</button></a>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <span style="font-size:10px;color:var(--text2);letter-spacing:1px;">CHAIN:</span>
+  <select id="chainSelect" style="max-width:200px;" onchange="loadChain(this.value)">
+    <option value="">— Load Chain —</option>
+    <option value="vocal">Vocal Production</option>
+    <option value="drum">Drum Bus</option>
+    <option value="mix">Mix Bus</option>
+    <option value="master">Mastering Chain</option>
+    <option value="guitar">Guitar Processing</option>
+    <option value="bass">Bass Chain</option>
+  </select>
+  <button class="tb-btn" onclick="saveChain()">Save Chain</button>
+  <button class="tb-btn" onclick="resetChain()">Reset</button>
+  <div class="sep"></div>
+  <button class="tb-btn active" onclick="filterPlugins('all',this)">All</button>
+  <button class="tb-btn" onclick="filterPlugins('eq',this)">EQ</button>
+  <button class="tb-btn" onclick="filterPlugins('comp',this)">Comp</button>
+  <button class="tb-btn" onclick="filterPlugins('reverb',this)">Reverb</button>
+  <button class="tb-btn" onclick="filterPlugins('mod',this)">Mod</button>
+  <div class="spacer"></div>
+  <span style="font-size:10px;color:var(--text2);">A/B:</span>
+  <button class="tb-btn active" id="abA" onclick="selectAB('A')">A</button>
+  <button class="tb-btn" id="abB" onclick="selectAB('B')">B</button>
+  <div class="sep"></div>
+  <button class="tb-btn" onclick="bypassAll()">Bypass All</button>
+  <button class="tb-btn" onclick="toggleExpandAll()">Expand All</button>
+</div>
+
+<!-- PLUGIN RACK -->
+<div class="rack" id="rack">
+
+  <div class="rack-section">— Input Stage —</div>
+
+  <!-- 1. Input Gain / Trim -->
+  <div class="plugin expanded" data-type="util" id="plugin-1">
+    <div class="plugin-header" onclick="togglePlugin(1)">
+      <div class="ph-power on" onclick="togglePower(event,1)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">01</span>
+      <span class="ph-brand">GOAT</span>
+      <span class="ph-name">Input Trim + Phase</span>
+      <span class="ph-type util">UTILITY</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-1" style="width:40%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-1-1" data-value="75" data-color="#f5a623"></canvas><div class="kn-label">Gain</div><div class="kn-val" id="kv-1-1" style="color:#f5a623">+0dB</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-1-2" data-value="50" data-color="#00aaff"></canvas><div class="kn-label">Pan</div><div class="kn-val" id="kv-1-2" style="color:#00aaff">C</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-1-3" data-value="0" data-color="#ff3355"></canvas><div class="kn-label">Phase</div><div class="kn-val" id="kv-1-3" style="color:#ff3355">0°</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div style="display:flex;gap:6px;">
+          <div class="toggle-sm on" onclick="this.classList.toggle('on')" title="Polarity"></div><span style="font-size:10px;color:var(--text2);">Polarity</span>
+          <div class="toggle-sm" onclick="this.classList.toggle('on')" title="Mono"></div><span style="font-size:10px;color:var(--text2);">Mono</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:4px;">
+          <div class="toggle-sm" onclick="this.classList.toggle('on')"></div><span style="font-size:10px;color:var(--text2);">L→R</span>
+          <div class="toggle-sm" onclick="this.classList.toggle('on')"></div><span style="font-size:10px;color:var(--text2);">Swap</span>
+        </div>
+      </div>
+      <div class="vu-pair">
+        <div class="vu-row"><span class="vu-label">L</span><div class="vu-bar"><div class="vu-fill l" id="vu-1-l" style="width:55%"></div></div></div>
+        <div class="vu-row"><span class="vu-label">R</span><div class="vu-bar"><div class="vu-fill l" id="vu-1-r" style="width:52%"></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Noise Gate -->
+  <div class="plugin" data-type="dyn" id="plugin-2">
+    <div class="plugin-header" onclick="togglePlugin(2)">
+      <div class="ph-power on" onclick="togglePower(event,2)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">02</span>
+      <span class="ph-brand">SSL</span>
+      <span class="ph-name">G-Series Noise Gate</span>
+      <span class="ph-type dyn">GATE</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-2" style="width:0%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-2-1" data-value="60" data-color="#ff3355"></canvas><div class="kn-label">Threshold</div><div class="kn-val" id="kv-2-1" style="color:#ff3355">-40dB</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-2-2" data-value="30" data-color="#00aaff"></canvas><div class="kn-label">Attack</div><div class="kn-val" id="kv-2-2" style="color:#00aaff">1ms</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-2-3" data-value="50" data-color="#00ff88"></canvas><div class="kn-label">Hold</div><div class="kn-val" id="kv-2-3" style="color:#00ff88">50ms</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-2-4" data-value="60" data-color="#9933ff"></canvas><div class="kn-label">Release</div><div class="kn-val" id="kv-2-4" style="color:#9933ff">100ms</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-2-5" data-value="80" data-color="#f5a623"></canvas><div class="kn-label">Range</div><div class="kn-val" id="kv-2-5" style="color:#f5a623">-40dB</div></div>
+      </div>
+      <div class="preset-row">
+        <div class="p-chip active" onclick="selChip(this)">Tight Vocal</div>
+        <div class="p-chip" onclick="selChip(this)">Snare</div>
+        <div class="p-chip" onclick="selChip(this)">Kick</div>
+        <div class="p-chip" onclick="selChip(this)">Room Mic</div>
+        <div class="p-chip" onclick="selChip(this)">Custom</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rack-section">— EQ Stage —</div>
+
+  <!-- 3. Neve 1073 EQ -->
+  <div class="plugin expanded" data-type="eq" id="plugin-3">
+    <div class="plugin-header" onclick="togglePlugin(3)">
+      <div class="ph-power on" onclick="togglePower(event,3)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">03</span>
+      <span class="ph-brand">NEVE</span>
+      <span class="ph-name">1073 Console EQ</span>
+      <span class="ph-type eq">EQ</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-3" style="width:30%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="eq-canvas-wrap">
+        <canvas id="eq-canvas-3" height="80" style="width:100%;background:var(--bg);border-radius:6px;border:1px solid var(--border2);"></canvas>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px;">
+        <div class="plugin-slider"><label>HF Shelf</label><input type="range" min="-12" max="12" value="3" oninput="this.nextElementSibling.textContent=(this.value>0?'+':'')+this.value+'dB';drawEQ3()"><span class="sv">+3dB</span></div>
+        <div class="plugin-slider"><label>HMF Bell</label><input type="range" min="-12" max="12" value="2" oninput="this.nextElementSibling.textContent=(this.value>0?'+':'')+this.value+'dB';drawEQ3()"><span class="sv">+2dB</span></div>
+        <div class="plugin-slider"><label>LMF Bell</label><input type="range" min="-12" max="12" value="0" oninput="this.nextElementSibling.textContent=(this.value>0?'+':'')+this.value+'dB';drawEQ3()"><span class="sv">0dB</span></div>
+        <div class="plugin-slider"><label>LF Shelf</label><input type="range" min="-12" max="12" value="1" oninput="this.nextElementSibling.textContent=(this.value>0?'+':'')+this.value+'dB';drawEQ3()"><span class="sv">+1dB</span></div>
+        <div class="plugin-slider"><label>HP Filter</label><input type="range" min="20" max="200" value="80" oninput="this.nextElementSibling.textContent=this.value+'Hz';drawEQ3()"><span class="sv">80Hz</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div class="preset-row">
+          <div class="p-chip active" onclick="selChip(this)">Vocal Air</div>
+          <div class="p-chip" onclick="selChip(this)">Warm</div>
+          <div class="p-chip" onclick="selChip(this)">Bright</div>
+          <div class="p-chip" onclick="selChip(this)">Presence</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. API 550A 3-Band -->
+  <div class="plugin" data-type="eq" id="plugin-4">
+    <div class="plugin-header" onclick="togglePlugin(4)">
+      <div class="ph-power on" onclick="togglePower(event,4)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">04</span>
+      <span class="ph-brand">API</span>
+      <span class="ph-name">550A 3-Band EQ</span>
+      <span class="ph-type eq">EQ</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-4" style="width:25%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="eq-canvas-wrap">
+        <canvas id="eq-canvas-4" height="70" style="width:100%;background:var(--bg);border-radius:6px;border:1px solid var(--border2);"></canvas>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:180px;">
+        <div class="plugin-slider"><label>High (10k)</label><input type="range" min="-12" max="12" value="4" oninput="this.nextElementSibling.textContent=(this.value>0?'+':'')+this.value+'dB';drawEQ4()"><span class="sv">+4dB</span></div>
+        <div class="plugin-slider"><label>Mid (2k)</label><input type="range" min="-12" max="12" value="-2" oninput="this.nextElementSibling.textContent=(this.value>0?'+':'')+this.value+'dB';drawEQ4()"><span class="sv">-2dB</span></div>
+        <div class="plugin-slider"><label>Low (200)</label><input type="range" min="-12" max="12" value="2" oninput="this.nextElementSibling.textContent=(this.value>0?'+':'')+this.value+'dB';drawEQ4()"><span class="sv">+2dB</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rack-section">— Compression Stage —</div>
+
+  <!-- 5. 1176 Compressor -->
+  <div class="plugin expanded" data-type="comp" id="plugin-5">
+    <div class="plugin-header" onclick="togglePlugin(5)">
+      <div class="ph-power on" onclick="togglePower(event,5)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">05</span>
+      <span class="ph-brand">UREI</span>
+      <span class="ph-name">1176 FET Compressor</span>
+      <span class="ph-type comp">COMP</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-5" style="width:20%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-5-1" data-value="70" data-color="#0099ff"></canvas><div class="kn-label">Input</div><div class="kn-val" id="kv-5-1" style="color:#0099ff">+4dB</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-5-2" data-value="60" data-color="#0099ff"></canvas><div class="kn-label">Output</div><div class="kn-val" id="kv-5-2" style="color:#0099ff">+0dB</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-5-3" data-value="40" data-color="#ff3355"></canvas><div class="kn-label">Attack</div><div class="kn-val" id="kv-5-3" style="color:#ff3355">4ms</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-5-4" data-value="55" data-color="#00ff88"></canvas><div class="kn-label">Release</div><div class="kn-val" id="kv-5-4" style="color:#00ff88">Auto</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;">Ratio</div>
+        <div style="display:flex;gap:4px;">
+          <button class="p-chip" onclick="selRatio(this,'4:1')">4:1</button>
+          <button class="p-chip active" onclick="selRatio(this,'8:1')">8:1</button>
+          <button class="p-chip" onclick="selRatio(this,'12:1')">12:1</button>
+          <button class="p-chip" onclick="selRatio(this,'20:1')">20:1</button>
+          <button class="p-chip" onclick="selRatio(this,'All')">ALL</button>
+        </div>
+        <div id="grMeter5" style="height:24px;background:var(--bg);border:1px solid var(--border2);border-radius:4px;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;right:0;bottom:0;background:var(--blue);transition:width .08s;width:0%" id="grFill5"></div>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text2);">GR: <span id="grText5">0dB</span></div>
+        </div>
+      </div>
+      <div class="preset-row">
+        <div class="p-chip" onclick="selChip(this)">Vocal Glue</div>
+        <div class="p-chip active" onclick="selChip(this)">Punchy Vox</div>
+        <div class="p-chip" onclick="selChip(this)">Drums</div>
+        <div class="p-chip" onclick="selChip(this)">Bus Glue</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. LA-2A Optical Compressor -->
+  <div class="plugin" data-type="comp" id="plugin-6">
+    <div class="plugin-header" onclick="togglePlugin(6)">
+      <div class="ph-power on" onclick="togglePower(event,6)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">06</span>
+      <span class="ph-brand">TELETRONIX</span>
+      <span class="ph-name">LA-2A Optical Compressor</span>
+      <span class="ph-type comp">COMP</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-6" style="width:15%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-6-1" data-value="65" data-color="#f5a623"></canvas><div class="kn-label">Gain</div><div class="kn-val" id="kv-6-1" style="color:#f5a623">+3dB</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-6-2" data-value="45" data-color="#f5a623"></canvas><div class="kn-label">Peak Red.</div><div class="kn-val" id="kv-6-2" style="color:#f5a623">45%</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px;">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="toggle-sm on" onclick="this.classList.toggle('on')"></div><span style="font-size:10px;color:var(--text2);">Limit mode</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="toggle-sm" onclick="this.classList.toggle('on')"></div><span style="font-size:10px;color:var(--text2);">Sidechain HPF</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. SSL Bus Compressor -->
+  <div class="plugin" data-type="comp" id="plugin-7">
+    <div class="plugin-header" onclick="togglePlugin(7)">
+      <div class="ph-power on" onclick="togglePower(event,7)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">07</span>
+      <span class="ph-brand">SSL</span>
+      <span class="ph-name">G-Bus Compressor</span>
+      <span class="ph-type comp">COMP</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-7" style="width:18%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-7-1" data-value="55" data-color="#0099ff"></canvas><div class="kn-label">Threshold</div><div class="kn-val" id="kv-7-1" style="color:#0099ff">-8dB</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-7-2" data-value="50" data-color="#0099ff"></canvas><div class="kn-label">Ratio</div><div class="kn-val" id="kv-7-2" style="color:#0099ff">4:1</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-7-3" data-value="40" data-color="#00ff88"></canvas><div class="kn-label">Attack</div><div class="kn-val" id="kv-7-3" style="color:#00ff88">3ms</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-7-4" data-value="50" data-color="#9933ff"></canvas><div class="kn-label">Release</div><div class="kn-val" id="kv-7-4" style="color:#9933ff">0.4s</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-7-5" data-value="60" data-color="#f5a623"></canvas><div class="kn-label">Makeup</div><div class="kn-val" id="kv-7-5" style="color:#f5a623">+3dB</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rack-section">— Saturation & Color —</div>
+
+  <!-- 8. Tape Saturation -->
+  <div class="plugin" data-type="sat" id="plugin-8">
+    <div class="plugin-header" onclick="togglePlugin(8)">
+      <div class="ph-power on" onclick="togglePower(event,8)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">08</span>
+      <span class="ph-brand">STUDER</span>
+      <span class="ph-name">A800 Tape Saturation</span>
+      <span class="ph-type sat">SATURATION</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-8" style="width:35%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-8-1" data-value="60" data-color="#ff6600"></canvas><div class="kn-label">Drive</div><div class="kn-val" id="kv-8-1" style="color:#ff6600">+3dB</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-8-2" data-value="50" data-color="#ff6600"></canvas><div class="kn-label">Bias</div><div class="kn-val" id="kv-8-2" style="color:#ff6600">0</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-8-3" data-value="70" data-color="#ff6600"></canvas><div class="kn-label">Mix</div><div class="kn-val" id="kv-8-3" style="color:#ff6600">70%</div></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <button class="p-chip active" onclick="selChip(this)">15 ips</button>
+        <button class="p-chip" onclick="selChip(this)">7.5 ips</button>
+        <button class="p-chip" onclick="selChip(this)">Vintage</button>
+        <button class="p-chip" onclick="selChip(this)">Modern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. Tube Warmer -->
+  <div class="plugin" data-type="sat" id="plugin-9">
+    <div class="plugin-header" onclick="togglePlugin(9)">
+      <div class="ph-power on" onclick="togglePower(event,9)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">09</span>
+      <span class="ph-brand">PULTEC</span>
+      <span class="ph-name">MEQ-5 Midrange EQ + Tube</span>
+      <span class="ph-type sat">TUBE</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-9" style="width:20%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-9-1" data-value="55" data-color="#ff6600"></canvas><div class="kn-label">Boost</div><div class="kn-val" id="kv-9-1" style="color:#ff6600">+2dB</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-9-2" data-value="45" data-color="#ff6600"></canvas><div class="kn-label">Atten.</div><div class="kn-val" id="kv-9-2" style="color:#ff6600">-1dB</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-9-3" data-value="60" data-color="#ff6600"></canvas><div class="kn-label">Warmth</div><div class="kn-val" id="kv-9-3" style="color:#ff6600">60%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rack-section">— Spatial & Time Effects —</div>
+
+  <!-- 10. Plate Reverb -->
+  <div class="plugin expanded" data-type="reverb" id="plugin-10">
+    <div class="plugin-header" onclick="togglePlugin(10)">
+      <div class="ph-power on" onclick="togglePower(event,10)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">10</span>
+      <span class="ph-brand">EMT</span>
+      <span class="ph-name">140 Plate Reverb</span>
+      <span class="ph-type reverb">REVERB</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-10" style="width:45%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-10-1" data-value="55" data-color="#9933ff"></canvas><div class="kn-label">Pre-Delay</div><div class="kn-val" id="kv-10-1" style="color:#9933ff">22ms</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-10-2" data-value="60" data-color="#9933ff"></canvas><div class="kn-label">Decay</div><div class="kn-val" id="kv-10-2" style="color:#9933ff">1.8s</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-10-3" data-value="55" data-color="#9933ff"></canvas><div class="kn-label">Damp</div><div class="kn-val" id="kv-10-3" style="color:#9933ff">55%</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-10-4" data-value="25" data-color="#9933ff"></canvas><div class="kn-label">Mix</div><div class="kn-val" id="kv-10-4" style="color:#9933ff">25%</div></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <button class="p-chip active" onclick="selChip(this)">Plate</button>
+        <button class="p-chip" onclick="selChip(this)">Hall</button>
+        <button class="p-chip" onclick="selChip(this)">Room</button>
+        <button class="p-chip" onclick="selChip(this)">Chamber</button>
+        <button class="p-chip" onclick="selChip(this)">Spring</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. Lexicon 480L Hall -->
+  <div class="plugin" data-type="reverb" id="plugin-11">
+    <div class="plugin-header" onclick="togglePlugin(11)">
+      <div class="ph-power on" onclick="togglePower(event,11)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">11</span>
+      <span class="ph-brand">LEXICON</span>
+      <span class="ph-name">480L Concert Hall</span>
+      <span class="ph-type reverb">REVERB</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-11" style="width:40%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-11-1" data-value="70" data-color="#9933ff"></canvas><div class="kn-label">Size</div><div class="kn-val" id="kv-11-1" style="color:#9933ff">70%</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-11-2" data-value="75" data-color="#9933ff"></canvas><div class="kn-label">Decay</div><div class="kn-val" id="kv-11-2" style="color:#9933ff">3.2s</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-11-3" data-value="30" data-color="#9933ff"></canvas><div class="kn-label">Mix</div><div class="kn-val" id="kv-11-3" style="color:#9933ff">30%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12. Delay -->
+  <div class="plugin" data-type="delay" id="plugin-12">
+    <div class="plugin-header" onclick="togglePlugin(12)">
+      <div class="ph-power on" onclick="togglePower(event,12)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">12</span>
+      <span class="ph-brand">WAVES</span>
+      <span class="ph-name">H-Delay — Slap / Ping</span>
+      <span class="ph-type delay">DELAY</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-12" style="width:30%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-12-1" data-value="50" data-color="#00ffdd"></canvas><div class="kn-label">Time</div><div class="kn-val" id="kv-12-1" style="color:#00ffdd">1/8</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-12-2" data-value="35" data-color="#00ffdd"></canvas><div class="kn-label">Feedback</div><div class="kn-val" id="kv-12-2" style="color:#00ffdd">35%</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-12-3" data-value="50" data-color="#00ffdd"></canvas><div class="kn-label">Pan</div><div class="kn-val" id="kv-12-3" style="color:#00ffdd">C</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-12-4" data-value="25" data-color="#00ffdd"></canvas><div class="kn-label">Mix</div><div class="kn-val" id="kv-12-4" style="color:#00ffdd">25%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rack-section">— Modulation —</div>
+
+  <!-- 13. Chorus -->
+  <div class="plugin" data-type="mod" id="plugin-13">
+    <div class="plugin-header" onclick="togglePlugin(13)">
+      <div class="ph-power" onclick="togglePower(event,13)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">13</span>
+      <span class="ph-brand">ROLAND</span>
+      <span class="ph-name">Dimension D Chorus</span>
+      <span class="ph-type mod">CHORUS</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-13" style="width:0%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-13-1" data-value="40" data-color="#00ff88"></canvas><div class="kn-label">Rate</div><div class="kn-val" id="kv-13-1" style="color:#00ff88">0.8Hz</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-13-2" data-value="45" data-color="#00ff88"></canvas><div class="kn-label">Depth</div><div class="kn-val" id="kv-13-2" style="color:#00ff88">45%</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-13-3" data-value="50" data-color="#00ff88"></canvas><div class="kn-label">Mix</div><div class="kn-val" id="kv-13-3" style="color:#00ff88">50%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14. Flanger/Phaser -->
+  <div class="plugin" data-type="mod" id="plugin-14">
+    <div class="plugin-header" onclick="togglePlugin(14)">
+      <div class="ph-power" onclick="togglePower(event,14)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">14</span>
+      <span class="ph-brand">MXR</span>
+      <span class="ph-name">Phase 90 / Flanger</span>
+      <span class="ph-type mod">PHASER</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-14" style="width:0%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-14-1" data-value="30" data-color="#00ff88"></canvas><div class="kn-label">Speed</div><div class="kn-val" id="kv-14-1" style="color:#00ff88">0.5Hz</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-14-2" data-value="60" data-color="#00ff88"></canvas><div class="kn-label">Depth</div><div class="kn-val" id="kv-14-2" style="color:#00ff88">60%</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-14-3" data-value="40" data-color="#00ff88"></canvas><div class="kn-label">Feedback</div><div class="kn-val" id="kv-14-3" style="color:#00ff88">40%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rack-section">— Pitch & Vocal —</div>
+
+  <!-- 15. Pitch Shift -->
+  <div class="plugin" data-type="pitch" id="plugin-15">
+    <div class="plugin-header" onclick="togglePlugin(15)">
+      <div class="ph-power on" onclick="togglePower(event,15)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">15</span>
+      <span class="ph-brand">EVENTIDE</span>
+      <span class="ph-name">H3000 Pitch Shift / Detune</span>
+      <span class="ph-type pitch">PITCH</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-15" style="width:20%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-15-1" data-value="50" data-color="#ffcc44"></canvas><div class="kn-label">Pitch</div><div class="kn-val" id="kv-15-1" style="color:#ffcc44">0st</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-15-2" data-value="50" data-color="#ffcc44"></canvas><div class="kn-label">Detune</div><div class="kn-val" id="kv-15-2" style="color:#ffcc44">0c</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-15-3" data-value="30" data-color="#ffcc44"></canvas><div class="kn-label">Mix</div><div class="kn-val" id="kv-15-3" style="color:#ffcc44">30%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 16. De-Esser -->
+  <div class="plugin" data-type="dyn" id="plugin-16">
+    <div class="plugin-header" onclick="togglePlugin(16)">
+      <div class="ph-power on" onclick="togglePower(event,16)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">16</span>
+      <span class="ph-brand">SPL</span>
+      <span class="ph-name">De-Esser</span>
+      <span class="ph-type dyn">DE-ESSER</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-16" style="width:8%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-16-1" data-value="65" data-color="#ff3355"></canvas><div class="kn-label">Frequency</div><div class="kn-val" id="kv-16-1" style="color:#ff3355">7kHz</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-16-2" data-value="55" data-color="#ff3355"></canvas><div class="kn-label">Threshold</div><div class="kn-val" id="kv-16-2" style="color:#ff3355">-14dB</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-16-3" data-value="50" data-color="#ff3355"></canvas><div class="kn-label">Reduction</div><div class="kn-val" id="kv-16-3" style="color:#ff3355">6dB</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rack-section">— Mastering Stage —</div>
+
+  <!-- 17. Limiter -->
+  <div class="plugin expanded" data-type="dyn" id="plugin-17">
+    <div class="plugin-header" onclick="togglePlugin(17)">
+      <div class="ph-power on" onclick="togglePower(event,17)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">17</span>
+      <span class="ph-brand">IZOTOPE</span>
+      <span class="ph-name">Ozone Limiter / LUFS</span>
+      <span class="ph-type dyn">LIMITER</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-17" style="width:10%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-17-1" data-value="90" data-color="#ff3355"></canvas><div class="kn-label">Ceiling</div><div class="kn-val" id="kv-17-1" style="color:#ff3355">-0.3dB</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-17-2" data-value="60" data-color="#0099ff"></canvas><div class="kn-label">Gain</div><div class="kn-val" id="kv-17-2" style="color:#0099ff">+3dB</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-17-3" data-value="50" data-color="#00ff88"></canvas><div class="kn-label">Release</div><div class="kn-val" id="kv-17-3" style="color:#00ff88">Auto</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;min-width:120px;">
+        <div style="font-size:10px;color:var(--text2);">LUFS Target</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;">
+          <button class="p-chip" onclick="selChip(this)">-23 LUFS</button>
+          <button class="p-chip active" onclick="selChip(this)">-14 LUFS</button>
+          <button class="p-chip" onclick="selChip(this)">-11 LUFS</button>
+          <button class="p-chip" onclick="selChip(this)">-9 LUFS</button>
+        </div>
+        <div style="font-size:18px;font-weight:700;color:var(--gold);margin-top:4px;" id="lufsDisplay">-13.8 LUFS</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 18. Multiband Comp -->
+  <div class="plugin" data-type="comp" id="plugin-18">
+    <div class="plugin-header" onclick="togglePlugin(18)">
+      <div class="ph-power on" onclick="togglePower(event,18)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">18</span>
+      <span class="ph-brand">WAVES</span>
+      <span class="ph-name">C6 Multiband Compressor</span>
+      <span class="ph-type comp">M-BAND</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-18" style="width:22%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div style="width:100%;">
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <div style="flex:1;background:var(--bg);border-radius:4px;border:1px solid var(--border2);padding:4px;text-align:center;">
+            <div style="font-size:8px;color:var(--text2);margin-bottom:2px;">SUB</div>
+            <input type="range" min="-24" max="0" value="-8" style="width:100%;accent-color:#ff6600;height:3px;" orient="vertical">
+            <div style="font-size:9px;color:#ff6600;">-8dB</div>
+          </div>
+          <div style="flex:1;background:var(--bg);border-radius:4px;border:1px solid var(--border2);padding:4px;text-align:center;">
+            <div style="font-size:8px;color:var(--text2);margin-bottom:2px;">LOW</div>
+            <input type="range" min="-24" max="0" value="-4" style="width:100%;accent-color:#f5a623;height:3px;">
+            <div style="font-size:9px;color:#f5a623;">-4dB</div>
+          </div>
+          <div style="flex:1;background:var(--bg);border-radius:4px;border:1px solid var(--border2);padding:4px;text-align:center;">
+            <div style="font-size:8px;color:var(--text2);margin-bottom:2px;">MID</div>
+            <input type="range" min="-24" max="0" value="-6" style="width:100%;accent-color:#00ff88;height:3px;">
+            <div style="font-size:9px;color:#00ff88;">-6dB</div>
+          </div>
+          <div style="flex:1;background:var(--bg);border-radius:4px;border:1px solid var(--border2);padding:4px;text-align:center;">
+            <div style="font-size:8px;color:var(--text2);margin-bottom:2px;">HIGH</div>
+            <input type="range" min="-24" max="0" value="-3" style="width:100%;accent-color:#0099ff;height:3px;">
+            <div style="font-size:9px;color:#0099ff;">-3dB</div>
+          </div>
+          <div style="flex:1;background:var(--bg);border-radius:4px;border:1px solid var(--border2);padding:4px;text-align:center;">
+            <div style="font-size:8px;color:var(--text2);margin-bottom:2px;">AIR</div>
+            <input type="range" min="-24" max="0" value="-2" style="width:100%;accent-color:#9933ff;height:3px;">
+            <div style="font-size:9px;color:#9933ff;">-2dB</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 19. Stereo Imager -->
+  <div class="plugin" data-type="util" id="plugin-19">
+    <div class="plugin-header" onclick="togglePlugin(19)">
+      <div class="ph-power on" onclick="togglePower(event,19)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">19</span>
+      <span class="ph-brand">WAVES</span>
+      <span class="ph-name">S1 Stereo Imager</span>
+      <span class="ph-type util">STEREO</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-19" style="width:0%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-19-1" data-value="60" data-color="#f5a623"></canvas><div class="kn-label">Width</div><div class="kn-val" id="kv-19-1" style="color:#f5a623">120%</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-19-2" data-value="50" data-color="#f5a623"></canvas><div class="kn-label">Rotation</div><div class="kn-val" id="kv-19-2" style="color:#f5a623">0°</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-19-3" data-value="55" data-color="#f5a623"></canvas><div class="kn-label">Asymm.</div><div class="kn-val" id="kv-19-3" style="color:#f5a623">0</div></div>
+      </div>
+      <canvas id="stereoScope" width="100" height="80" style="background:var(--bg);border-radius:4px;border:1px solid var(--border2);"></canvas>
+    </div>
+  </div>
+
+  <!-- 20. Output + Metering -->
+  <div class="plugin expanded" data-type="util" id="plugin-20">
+    <div class="plugin-header" onclick="togglePlugin(20)">
+      <div class="ph-power on" onclick="togglePower(event,20)" title="Power">●</div>
+      <span class="ph-drag">⠿</span>
+      <span class="ph-num">20</span>
+      <span class="ph-brand">GOAT</span>
+      <span class="ph-name">Master Output + Metering</span>
+      <span class="ph-type util">OUTPUT</span>
+      <div class="gr-bar"><div class="gr-fill" id="gr-20" style="width:0%"></div></div>
+      <div class="ph-expand">▾</div>
+    </div>
+    <div class="plugin-body">
+      <div class="knob-group">
+        <div class="knob-item"><canvas class="knob" id="kn-20-1" data-value="85" data-color="#f5a623"></canvas><div class="kn-label">Volume</div><div class="kn-val" id="kv-20-1" style="color:#f5a623">0dB</div></div>
+        <div class="knob-item"><canvas class="knob" id="kn-20-2" data-value="50" data-color="#00aaff"></canvas><div class="kn-label">Pan</div><div class="kn-val" id="kv-20-2" style="color:#00aaff">C</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px;min-width:160px;">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:9px;color:var(--text2);width:10px;">L</span>
+          <div class="vu-bar" style="height:12px;flex:1;"><div class="vu-fill l" id="out-l" style="width:70%;height:100%;"></div></div>
+          <span style="font-size:9px;color:var(--green);width:28px;" id="out-l-db">-3dB</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:9px;color:var(--text2);width:10px;">R</span>
+          <div class="vu-bar" style="height:12px;flex:1;"><div class="vu-fill l" id="out-r" style="width:65%;height:100%;"></div></div>
+          <span style="font-size:9px;color:var(--green);width:28px;" id="out-r-db">-4dB</span>
+        </div>
+        <div style="margin-top:6px;font-size:20px;font-weight:700;color:var(--gold);" id="lufsOutput">-13.2</div>
+        <div style="font-size:9px;color:var(--text2);letter-spacing:1px;">LUFS INTEGRATED</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <a href="goat-channel-strip.html" style="text-decoration:none;"><button class="tb-btn" style="font-size:10px;width:100%;text-align:left;">→ Channel Strip</button></a>
+        <a href="goat-autotune.html" style="text-decoration:none;"><button class="tb-btn" style="font-size:10px;width:100%;text-align:left;">→ AutoTune Pro</button></a>
+        <a href="ssl-mixer.html" style="text-decoration:none;"><button class="tb-btn" style="font-size:10px;width:100%;text-align:left;">→ SSL Mixer</button></a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MASTER BAR -->
+<div class="master-bar">
+  <div class="master-label">Master Out</div>
+  <div class="master-meters">
+    <div class="mm-row"><span class="mm-ch">L</span><div class="mm-bar"><div class="mm-fill" id="mm-l" style="width:68%"></div></div><span class="mm-db" id="mm-l-db">-4dB</span></div>
+    <div class="mm-row"><span class="mm-ch">R</span><div class="mm-bar"><div class="mm-fill" id="mm-r" style="width:62%"></div></div><span class="mm-db" id="mm-r-db">-5dB</span></div>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center;">
+    <div style="text-align:center;">
+      <div style="font-size:20px;font-weight:700;color:var(--gold);" id="masterLUFS">-13.5</div>
+      <div style="font-size:9px;color:var(--text2);">LUFS</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:20px;font-weight:700;color:var(--green);" id="masterTPeak">-0.3</div>
+      <div style="font-size:9px;color:var(--text2);">dB TPK</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:20px;font-weight:700;color:var(--blue);" id="masterDyn">8.2</div>
+      <div style="font-size:9px;color:var(--text2);">dB Dyn</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <button class="tb-btn" style="font-size:11px;">Export</button>
+  <button class="tb-btn" style="font-size:11px;">Bounce</button>
+</div>
+
+<script>
+// ===== KNOB ENGINE =====
+function initKnobs() {
+  document.querySelectorAll('canvas.knob').forEach(canvas => {
+    canvas.width = 40; canvas.height = 40;
+    let val = parseFloat(canvas.dataset.value || 50);
+    const color = canvas.dataset.color || '#f5a623';
+    let dragging = false, startY = 0, startVal = 0;
+    function drawKnob(v) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,40,40);
+      const cx=20, cy=20, r=17;
+      const startAngle = 0.75 * Math.PI;
+      const endAngle = 2.25 * Math.PI;
+      const pct = v / 100;
+      ctx.beginPath(); ctx.arc(cx,cy,r,startAngle,endAngle);
+      ctx.strokeStyle='#1e1e32'; ctx.lineWidth=4; ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx,cy,r,startAngle,startAngle+(endAngle-startAngle)*pct);
+      ctx.strokeStyle=color; ctx.lineWidth=4; ctx.lineCap='round'; ctx.stroke();
+      const dotAngle = startAngle + (endAngle-startAngle)*pct;
+      ctx.beginPath();
+      ctx.arc(cx+Math.cos(dotAngle)*(r-6), cy+Math.sin(dotAngle)*(r-6), 3, 0, Math.PI*2);
+      ctx.fillStyle='#fff'; ctx.fill();
+    }
+    drawKnob(val);
+    canvas.addEventListener('mousedown', e => { dragging=true; startY=e.clientY; startVal=val; e.preventDefault(); });
+    document.addEventListener('mousemove', e => {
+      if(!dragging) return;
+      val = Math.max(0,Math.min(100,startVal+(startY-e.clientY)*0.6));
+      drawKnob(val);
+    });
+    document.addEventListener('mouseup', () => { dragging=false; });
+    canvas.addEventListener('touchstart', e => { dragging=true; startY=e.touches[0].clientY; startVal=val; e.preventDefault(); },{passive:false});
+    document.addEventListener('touchmove', e => {
+      if(!dragging) return;
+      val = Math.max(0,Math.min(100,startVal+(startY-e.touches[0].clientY)*0.6));
+      drawKnob(val);
+    },{passive:true});
+    document.addEventListener('touchend', () => { dragging=false; });
+  });
+}
+
+// ===== PLUGIN CONTROLS =====
+function togglePlugin(id) {
+  const p = document.getElementById('plugin-'+id);
+  if(p) p.classList.toggle('expanded');
+}
+function togglePower(e, id) {
+  e.stopPropagation();
+  e.target.classList.toggle('on');
+}
+function selChip(el) {
+  const parent = el.closest('.preset-row,.plugin-body');
+  if(parent) parent.querySelectorAll('.p-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+function selRatio(el, r) {
+  const parent = el.parentElement;
+  parent.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+function bypassAll() {
+  document.querySelectorAll('.ph-power').forEach(p=>p.classList.remove('on'));
+  showToast('All plugins bypassed');
+}
+function toggleExpandAll() {
+  const allExpanded = document.querySelectorAll('.plugin.expanded').length > 5;
+  document.querySelectorAll('.plugin').forEach(p => {
+    allExpanded ? p.classList.remove('expanded') : p.classList.add('expanded');
+  });
+}
+function filterPlugins(type, btn) {
+  document.querySelectorAll('.toolbar .tb-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.plugin').forEach(p => {
+    if(type==='all') p.style.display='';
+    else p.style.display = p.dataset.type===type ? '' : 'none';
+  });
+  document.querySelectorAll('.rack-section').forEach(s=>s.style.display=type==='all'?'':'none');
+}
+function loadChain(c) {
+  if(!c) return;
+  showToast('Chain loaded: ' + c.charAt(0).toUpperCase()+c.slice(1));
+}
+function saveChain() { showToast('Chain saved'); }
+function resetChain() { showToast('Chain reset'); }
+function selectAB(ab) {
+  document.getElementById('abA').classList.toggle('active', ab==='A');
+  document.getElementById('abB').classList.toggle('active', ab==='B');
+  showToast('A/B: ' + ab + ' selected');
+}
+
+function showToast(msg) {
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:70px;right:16px;background:#f5a623;color:#000;padding:7px 14px;border-radius:6px;font-size:11px;font-weight:700;z-index:9999;pointer-events:none;';
+  t.textContent=msg; document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2000);
+}
+
+// ===== EQ CURVES =====
+function drawEQCurve(id, vals) {
+  const c = document.getElementById('eq-canvas-'+id);
+  if(!c || !c.offsetWidth) return;
+  c.width = c.offsetWidth; c.height = c.height||70;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle='#09090f'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.strokeStyle='rgba(245,166,35,0.15)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,c.height/2); ctx.lineTo(c.width,c.height/2); ctx.stroke();
+  const grad=ctx.createLinearGradient(0,0,c.width,0);
+  grad.addColorStop(0,'#f5a623'); grad.addColorStop(0.5,'#ffcc44'); grad.addColorStop(1,'#f5a623');
+  ctx.strokeStyle=grad; ctx.lineWidth=2; ctx.shadowColor='#f5a623'; ctx.shadowBlur=4;
+  ctx.beginPath();
+  for(let x=0;x<c.width;x++){
+    const t=x/c.width;
+    const i=t*(vals.length-1);
+    const lo=Math.floor(i),hi=Math.min(lo+1,vals.length-1);
+    const frac=i-lo;
+    const v=vals[lo]*(1-frac)+vals[hi]*frac;
+    const y=c.height/2-(v/12)*c.height*0.4;
+    x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke(); ctx.shadowBlur=0;
+}
+function drawEQ3() { drawEQCurve(3,[1,0,2,-1,3]); }
+function drawEQ4() { drawEQCurve(4,[2,-2,4]); }
+
+// ===== STEREO SCOPE =====
+function drawStereoScope() {
+  const c = document.getElementById('stereoScope');
+  if(!c) return;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='rgba(9,9,15,0.3)';
+  ctx.fillRect(0,0,100,80);
+  ctx.strokeStyle='rgba(0,255,136,0.6)';
+  ctx.lineWidth=1;
+  for(let i=0;i<15;i++){
+    const t=Date.now()*0.001+i*0.4;
+    const x=50+Math.sin(t*1.3+i)*35;
+    const y=40+Math.cos(t*0.9+i*0.7)*28;
+    ctx.beginPath();
+    ctx.arc(x,y,1.5,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,255,136,0.6)';
+    ctx.fill();
+  }
+}
+
+// ===== ANIMATION =====
+let frame=0;
+function animate() {
+  frame++;
+  const t=frame*0.02;
+  const lv=55+Math.sin(t*3)*18+Math.random()*12;
+  const rv=50+Math.sin(t*3.3)*15+Math.random()*12;
+  ['mm-l','mm-r'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el) el.style.width=(i===0?lv:rv)+'%';
+  });
+  document.getElementById('mm-l-db').textContent=(-Math.round((100-lv)/10))+'dB';
+  document.getElementById('mm-r-db').textContent=(-Math.round((100-rv)/10))+'dB';
+  document.getElementById('masterLUFS').textContent=(-13-Math.random()*0.5).toFixed(1);
+  document.getElementById('masterTPeak').textContent=(-0.3-Math.random()*0.05).toFixed(1);
+  document.getElementById('lufsDisplay').textContent=(-13.8-Math.random()*0.3).toFixed(1)+' LUFS';
+  document.getElementById('lufsOutput').textContent=(-13.2-Math.random()*0.4).toFixed(1);
+  document.getElementById('cpuVal').textContent=Math.round(12+Math.sin(t)*4)+'%';
+  // GR meters for active compressors
+  [5,6,7,17].forEach(id=>{
+    const el=document.getElementById('gr-'+id);
+    if(el) el.style.width=Math.max(0,Math.sin(t*2+id)*15+10)+'%';
+  });
+  // VU meters
+  document.querySelectorAll('.vu-fill').forEach((el,i)=>{
+    el.style.width=(45+Math.sin(t*2+i)*20+Math.random()*10)+'%';
+  });
+  if(frame%2===0) drawStereoScope();
+  requestAnimationFrame(animate);
+}
+
+// ===== INIT =====
+window.addEventListener('load', ()=>{
+  initKnobs();
+  setTimeout(()=>{
+    drawEQ3(); drawEQ4();
+    drawStereoScope();
+  },200);
+  animate();
+});
+</script>
+</body>
+</html>

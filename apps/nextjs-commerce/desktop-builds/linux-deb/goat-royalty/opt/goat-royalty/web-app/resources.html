@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📚 Resources - GOAT Royalty App</title>
+  <link rel="icon" href="favicon.ico">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #FFD700;
+      --secondary: #1a1a2e;
+      --accent: #e94560;
+      --dark: #0f0f23;
+      --light: #ffffff;
+      --glass: rgba(255, 255, 255, 0.1);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--dark);
+      color: var(--light);
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(233, 69, 96, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
+    }
+    
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(15, 15, 35, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    
+    .logo img { height: 40px; }
+    
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .nav-links a {
+      color: var(--light);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    
+    .nav-links a:hover, .nav-links a.active {
+      background: var(--glass);
+      color: var(--primary);
+    }
+    
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: linear-gradient(180deg, rgba(102, 126, 234, 0.2) 0%, transparent 100%);
+    }
+    
+    .hero h1 {
+      font-size: 3rem;
+      background: linear-gradient(135deg, var(--primary), #fff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    
+    .hero p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .resources-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .section-title {
+      font-size: 1.8rem;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    
+    .resources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .resource-card {
+      background: var(--glass);
+      border-radius: 16px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .resource-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+    }
+    
+    .resource-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    
+    .resource-card h3 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
+    }
+    
+    .resource-card p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    
+    .resource-card .meta {
+      display: flex;
+      justify-content: space-between;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.8rem;
+      margin-bottom: 1rem;
+    }
+    
+    .download-btn {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background: var(--primary);
+      color: var(--dark);
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    
+    .download-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+    }
+    
+    .category-section {
+      margin-bottom: 3rem;
+    }
+    
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .category-header h2 {
+      font-size: 1.5rem;
+      color: var(--light);
+    }
+    
+    .category-header .icon {
+      font-size: 2rem;
+    }
+    
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+      .top-nav { flex-direction: column; gap: 1rem; }
+      .nav-links { justify-content: center; }
+      .hero h1 { font-size: 2rem; }
+      .resources-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <nav class="top-nav">
+    <a href="index.html" class="logo">
+      <img src="goat-logo.png" alt="GOAT">
+      <span>GOAT Royalty App</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 AI Models</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="about.html">👑 About</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="catalog.html">📚 Catalog</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h1>📚 Resources & Documentation</h1>
+    <p>Technical documentation, learning materials, and development resources for the GOAT Royalty App ecosystem.</p>
+  </section>
+
+  <div class="resources-section">
+    <!-- GOAT Documentation -->
+    <div class="category-section">
+      <div class="category-header">
+        <span class="icon">🐐</span>
+        <h2>GOAT Royalty Documentation</h2>
+      </div>
+      <div class="resources-grid">
+        <div class="resource-card">
+          <div class="resource-icon">📄</div>
+          <h3>GOAT Force Gemini - Concept & Features</h3>
+          <p>Comprehensive concept document outlining the GOAT Force Gemini Royalty App features, architecture, and vision.</p>
+          <div class="meta">
+            <span>PDF</span>
+            <span>102 KB</span>
+          </div>
+          <a href="resources/GOAT-Force-Gemini-Concept.pdf" class="download-btn" download>⬇️ Download PDF</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Technical Books -->
+    <div class="category-section">
+      <div class="category-header">
+        <span class="icon">📖</span>
+        <h2>Technical Library</h2>
+      </div>
+      <div class="resources-grid">
+        <div class="resource-card">
+          <div class="resource-icon">🤖</div>
+          <h3>Learning LangChain</h3>
+          <p>Build powerful AI applications with LangChain. By Mayo Oshin - comprehensive guide to LLM application development.</p>
+          <div class="meta">
+            <span>PDF</span>
+            <span>10 MB</span>
+          </div>
+          <a href="resources/Learning_LangChain_-_Mayo_Oshin.pdf" class="download-btn" download>⬇️ Download PDF</a>
+        </div>
+        
+        <div class="resource-card">
+          <div class="resource-icon">🏗️</div>
+          <h3>Infrastructure as Code</h3>
+          <p>Managing servers in the cloud with Infrastructure as Code practices. By Kief Morris - essential DevOps knowledge.</p>
+          <div class="meta">
+            <span>PDF</span>
+            <span>13 MB</span>
+          </div>
+          <a href="resources/Infrastructure_as_Code_-_Kief_Morris.pdf" class="download-btn" download>⬇️ Download PDF</a>
+        </div>
+        
+        <div class="resource-card">
+          <div class="resource-icon">🔐</div>
+          <h3>Offensive Security Using Python</h3>
+          <p>Practical security testing and penetration testing with Python. By Rejah Rehim - hands-on security techniques.</p>
+          <div class="meta">
+            <span>EPUB</span>
+            <span>2 MB</span>
+          </div>
+          <a href="resources/Rejah_Rehim_-_Offensive_Security_Using_Python.epub" class="download-btn" download>⬇️ Download EPUB</a>
+        </div>
+        
+        <div class="resource-card">
+          <div class="resource-icon">⚔️</div>
+          <h3>Inside Cyber Warfare</h3>
+          <p>Understanding the changing face of conflict in the digital age. By Jeffrey Caruso - cybersecurity insights.</p>
+          <div class="meta">
+            <span>EPUB</span>
+            <span>13 MB</span>
+          </div>
+          <a href="resources/Inside_Cyber_Warfare_-_Jeffrey_Caruso.epub" class="download-btn" download>⬇️ Download EPUB</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- External Resources -->
+    <div class="category-section">
+      <div class="category-header">
+        <span class="icon">🔗</span>
+        <h2>External Resources</h2>
+      </div>
+      <div class="resources-grid">
+        <div class="resource-card">
+          <div class="resource-icon">🎵</div>
+          <h3>Shazam Music Discovery</h3>
+          <p>Music identification and concert discovery application. Useful for catalog cross-referencing.</p>
+          <div class="meta">
+            <span>RAR Archive</span>
+            <span>20 MB</span>
+          </div>
+          <span style="color: rgba(255,255,255,0.5); font-size: 0.9rem;">*Contact admin for access</span>
+        </div>
+        
+        <div class="resource-card">
+          <div class="resource-icon">🐧</div>
+          <h3>Ubuntu 25.10 Desktop</h3>
+          <p>Latest Ubuntu desktop ISO for development and testing environments.</p>
+          <div class="meta">
+            <span>Torrent</span>
+            <span>435 KB</span>
+          </div>
+          <span style="color: rgba(255,255,255,0.5); font-size: 0.9rem;">*Contact admin for access</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>© 2025 Harvey L. Miller Jr. (DJ Speedy) - GOAT Systems</p>
+    <p>BRICK SQUAD MONOPOLY PUBLISHING • Fastassman Publishing Inc.</p>
+  </div>
+</body>
+</html>

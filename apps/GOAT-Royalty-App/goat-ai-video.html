@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT AI Video Generator | Sora 2 Powered</title>
+<style>
+  :root{--gold:#d4a03c;--bg:#040608;--panel:#0d1117;--panel2:#131920;--pink:#f472b6;--purple:#a78bfa;--green:#22c55e;--red:#ef4444;--blue:#38bdf8;--text:#e2e8f0;--muted:#64748b;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;}
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:rgba(4,6,8,.97);border-bottom:1px solid rgba(212,160,60,.25);position:sticky;top:0;z-index:100;}
+  .nav-logo span{font-size:20px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .nav-links a{color:var(--muted);text-decoration:none;padding:5px 12px;border-radius:16px;font-size:12px;transition:.3s;margin:0 2px;}
+  .nav-links a:hover,.nav-links a.active{background:rgba(212,160,60,.12);color:var(--gold);}
+  .btn-gold{background:linear-gradient(135deg,var(--gold),#b8860b);color:#000;padding:8px 20px;border:none;border-radius:20px;font-weight:700;cursor:pointer;font-size:13px;}
+
+  /* HERO */
+  .hero{background:linear-gradient(135deg,#040608 0%,#0d0020 50%,#040608 100%);padding:56px 28px 40px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(167,139,250,.2) 0%,transparent 60%);}
+  .sora-logo{font-size:64px;margin-bottom:10px;filter:drop-shadow(0 0 30px rgba(167,139,250,.8));animation:soraGlow 2s ease-in-out infinite;}
+  @keyframes soraGlow{0%,100%{filter:drop-shadow(0 0 20px rgba(167,139,250,.5))}50%{filter:drop-shadow(0 0 50px rgba(167,139,250,1))}}
+  .hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.4);color:var(--purple);padding:5px 18px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:14px;}
+  .hero h1{font-size:52px;font-weight:900;margin-bottom:10px;position:relative;}
+  .hero h1 .highlight{background:linear-gradient(135deg,var(--purple),var(--pink),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .hero p{color:var(--muted);max-width:600px;margin:0 auto 12px;line-height:1.6;font-size:15px;position:relative;}
+  .powered-by{display:inline-flex;align-items:center;gap:8px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:20px;padding:6px 16px;font-size:12px;position:relative;}
+  .pb-dot{width:8px;height:8px;border-radius:50%;background:var(--purple);animation:pulse .8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .hero-stats{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;margin-top:24px;}
+  .h-stat .val{font-size:26px;font-weight:900;color:var(--gold);}
+  .h-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+
+  /* GENERATOR */
+  .generator{max-width:900px;margin:0 auto;padding:32px 28px;}
+
+  /* MAIN PROMPT */
+  .prompt-card{background:var(--panel);border:1px solid rgba(167,139,250,.25);border-radius:20px;padding:24px;margin-bottom:24px;}
+  .prompt-label{font-size:13px;font-weight:700;color:var(--purple);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .prompt-textarea{width:100%;background:var(--panel2);border:1px solid rgba(167,139,250,.15);border-radius:12px;padding:14px 16px;color:var(--text);font-size:14px;line-height:1.6;resize:vertical;min-height:100px;outline:none;font-family:'Segoe UI',sans-serif;transition:.3s;}
+  .prompt-textarea:focus{border-color:var(--purple);}
+  .prompt-actions{display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap;}
+  .enhance-btn{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);color:var(--purple);padding:8px 16px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;transition:.3s;}
+  .enhance-btn:hover{background:rgba(167,139,250,.2);}
+  .char-count{font-size:11px;color:var(--muted);margin-left:auto;}
+  .neg-prompt{margin-top:12px;}
+  .neg-label{font-size:11px;color:var(--muted);margin-bottom:6px;}
+  .neg-input{width:100%;background:var(--panel2);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 12px;color:var(--muted);font-size:12px;outline:none;}
+
+  /* SETTINGS GRID */
+  .settings-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px;}
+  .setting-card{background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px;}
+  .setting-title{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:700;margin-bottom:10px;}
+  .setting-select{width:100%;background:var(--panel2);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;cursor:pointer;}
+  .setting-opts{display:flex;flex-direction:column;gap:5px;}
+  .setting-opt{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:12px;border:1px solid rgba(255,255,255,.04);transition:.3s;}
+  .setting-opt:hover,.setting-opt.active{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.2);color:var(--purple);}
+  .setting-opt input[type=radio]{accent-color:var(--purple);}
+
+  /* STYLE PRESETS */
+  .style-presets{background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px;margin-bottom:24px;}
+  .sp-title{font-size:14px;font-weight:700;margin-bottom:14px;}
+  .sp-grid{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
+  .sp-grid::-webkit-scrollbar{display:none;}
+  .style-preset{flex-shrink:0;width:110px;cursor:pointer;transition:.3s;}
+  .style-preset:hover{transform:translateY(-3px);}
+  .sp-thumb{width:110px;height:70px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:30px;border:2px solid rgba(255,255,255,.06);transition:.3s;margin-bottom:6px;}
+  .style-preset.selected .sp-thumb{border-color:var(--purple);box-shadow:0 0 16px rgba(167,139,250,.3);}
+  .sp-name{font-size:11px;font-weight:600;text-align:center;}
+  .sp-desc{font-size:9px;color:var(--muted);text-align:center;}
+
+  /* GENERATE BUTTON */
+  .generate-section{text-align:center;margin-bottom:32px;}
+  .generate-btn{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;border:none;border-radius:16px;padding:18px 60px;font-size:18px;font-weight:700;cursor:pointer;transition:all .3s;box-shadow:0 8px 32px rgba(167,139,250,.3);}
+  .generate-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(167,139,250,.5);}
+  .generate-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+  .credit-info{font-size:12px;color:var(--muted);margin-top:8px;}
+  .credit-info span{color:var(--gold);font-weight:700;}
+
+  /* GENERATION PROGRESS */
+  .gen-progress{background:var(--panel);border:1px solid rgba(167,139,250,.25);border-radius:16px;padding:24px;margin-bottom:24px;display:none;}
+  .gp-title{font-size:15px;font-weight:700;color:var(--purple);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+  .gp-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .gp-step{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:var(--panel2);font-size:13px;}
+  .gp-step.active{background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);}
+  .gp-step.done{background:rgba(34,197,94,.05);}
+  .step-icon{font-size:18px;width:28px;text-align:center;}
+  .step-label{flex:1;font-weight:600;}
+  .step-status{font-size:11px;}
+  .step-done{color:var(--green);}
+  .step-active{color:var(--purple);animation:pulse .8s infinite;}
+  .step-wait{color:var(--muted);}
+  .main-progress{height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;margin-bottom:8px;}
+  .mp-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--pink));border-radius:4px;transition:width .4s;width:0%;}
+  .mp-label{font-size:12px;color:var(--muted);text-align:center;}
+
+  /* RESULTS */
+  .results-section{margin-bottom:32px;}
+  .results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .results-title{font-size:18px;font-weight:800;}
+  .results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+  .result-card{background:var(--panel);border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.06);cursor:pointer;transition:.3s;}
+  .result-card:hover{transform:translateY(-4px);border-color:var(--purple);}
+  .result-thumb{height:180px;display:flex;align-items:center;justify-content:center;font-size:64px;position:relative;}
+  .rt-a{background:linear-gradient(135deg,#0a0020,#200a40);}
+  .rt-b{background:linear-gradient(135deg,#1a1000,#402800);}
+  .rt-c{background:linear-gradient(135deg,#001a20,#003345);}
+  .rt-d{background:linear-gradient(135deg,#1a0a1a,#3d1070);}
+  .result-dur{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.8);color:var(--text);font-size:10px;padding:3px 8px;border-radius:6px;font-weight:600;}
+  .result-quality{position:absolute;top:8px;left:8px;background:rgba(167,139,250,.8);color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:6px;}
+  .result-info{padding:14px;}
+  .result-title{font-size:13px;font-weight:700;margin-bottom:4px;}
+  .result-meta{font-size:11px;color:var(--muted);margin-bottom:10px;}
+  .result-actions{display:flex;gap:8px;}
+  .ra-btn{flex:1;padding:8px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:none;text-align:center;}
+  .ra-dl{background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff;}
+  .ra-share{background:rgba(212,160,60,.1);border:1px solid rgba(212,160,60,.2);color:var(--gold);}
+  .ra-edit{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--text);}
+
+  /* TEMPLATES */
+  .templates{background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:20px;margin-bottom:24px;}
+  .tmpl-title{font-size:16px;font-weight:800;margin-bottom:14px;}
+  .tmpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+  .tmpl-card{background:var(--panel2);border-radius:12px;padding:14px;cursor:pointer;border:1px solid rgba(255,255,255,.04);transition:.3s;}
+  .tmpl-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .tmpl-icon{font-size:28px;margin-bottom:8px;}
+  .tmpl-name{font-size:13px;font-weight:700;margin-bottom:4px;}
+  .tmpl-desc{font-size:11px;color:var(--muted);line-height:1.4;}
+  .tmpl-stats{display:flex;gap:10px;margin-top:8px;}
+  .ts{font-size:10px;color:var(--muted);}
+  .ts span{color:var(--gold);}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="nav-logo"><span>👑 GOAT</span></a>
+  <div class="nav-links">
+    <a href="index.html">Dashboard</a>
+    <a href="goat-ai-video.html" class="active">AI Video</a>
+    <a href="goat-video-enhanced.html">Video Studio</a>
+    <a href="goat-3d-studio.html">3D Studio</a>
+    <a href="goat-3d-effects.html">3D Effects</a>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span style="font-size:12px;color:var(--purple)">Credits: <strong style="color:var(--gold)">2,400</strong></span>
+    <button class="btn-gold">Buy Credits 💎</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div style="position:relative;z-index:1">
+    <div class="sora-logo">🤖</div>
+    <div class="hero-badge"><div class="pb-dot"></div>SORA 2 AI ENGINE ACTIVE</div>
+    <h1>GOAT <span class="highlight">AI Video</span> Generator</h1>
+    <p>Generate breathtaking 4K videos from text prompts using the world's most advanced AI video engine — Sora 2, exclusively embedded in GOAT.</p>
+    <div class="powered-by">
+      <div class="pb-dot"></div>
+      <span>Powered by <strong style="color:var(--purple)">Sora 2</strong> + GOAT AI Engine + <strong style="color:var(--gold)">4K Render</strong></span>
+    </div>
+    <div class="hero-stats">
+      <div class="h-stat"><div class="val">4K</div><div class="lbl">Max Resolution</div></div>
+      <div class="h-stat"><div class="val">120fps</div><div class="lbl">Frame Rate</div></div>
+      <div class="h-stat"><div class="val">60s</div><div class="lbl">Max Duration</div></div>
+      <div class="h-stat"><div class="val">∞</div><div class="lbl">Style Presets</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="generator">
+
+  <!-- TEMPLATES -->
+  <div class="templates">
+    <div class="tmpl-title">⚡ Quick Templates</div>
+    <div class="tmpl-grid">
+      <div class="tmpl-card" onclick="applyTemplate('music')">
+        <div class="tmpl-icon">🎵</div>
+        <div class="tmpl-name">Music Video</div>
+        <div class="tmpl-desc">Epic cinematic music video with dynamic camera moves and lighting effects</div>
+        <div class="tmpl-stats"><span class="ts">⏱ <span>15-60s</span></span><span class="ts">🎨 <span>4K</span></span></div>
+      </div>
+      <div class="tmpl-card" onclick="applyTemplate('fashion')">
+        <div class="tmpl-icon">👗</div>
+        <div class="tmpl-name">Fashion Film</div>
+        <div class="tmpl-desc">Luxury runway and editorial-style fashion video for top designers</div>
+        <div class="tmpl-stats"><span class="ts">⏱ <span>10-30s</span></span><span class="ts">🎨 <span>4K</span></span></div>
+      </div>
+      <div class="tmpl-card" onclick="applyTemplate('celebrity')">
+        <div class="tmpl-icon">👑</div>
+        <div class="tmpl-name">Celebrity Intro</div>
+        <div class="tmpl-desc">Dramatic entrance video with gold particles and crown effects</div>
+        <div class="tmpl-stats"><span class="ts">⏱ <span>5-15s</span></span><span class="ts">🎨 <span>4K</span></span></div>
+      </div>
+      <div class="tmpl-card" onclick="applyTemplate('sneaker')">
+        <div class="tmpl-icon">👟</div>
+        <div class="tmpl-name">Sneaker Drop</div>
+        <div class="tmpl-desc">Hype product reveal video for limited edition sneaker releases</div>
+        <div class="tmpl-stats"><span class="ts">⏱ <span>10-20s</span></span><span class="ts">🎨 <span>4K</span></span></div>
+      </div>
+      <div class="tmpl-card" onclick="applyTemplate('nft')">
+        <div class="tmpl-icon">💎</div>
+        <div class="tmpl-name">NFT Showcase</div>
+        <div class="tmpl-desc">Animated NFT reveal with holographic effects and blockchain aesthetics</div>
+        <div class="tmpl-stats"><span class="ts">⏱ <span>5-10s</span></span><span class="ts">🎨 <span>4K</span></span></div>
+      </div>
+      <div class="tmpl-card" onclick="applyTemplate('brand')">
+        <div class="tmpl-icon">🏆</div>
+        <div class="tmpl-name">Brand Commercial</div>
+        <div class="tmpl-desc">Professional 30-second brand spot with storytelling and product highlights</div>
+        <div class="tmpl-stats"><span class="ts">⏱ <span>15-30s</span></span><span class="ts">🎨 <span>4K</span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROMPT -->
+  <div class="prompt-card">
+    <div class="prompt-label">🎬 Video Prompt <span style="color:var(--muted);font-weight:400;font-size:12px">— Describe your vision in detail</span></div>
+    <textarea class="prompt-textarea" id="mainPrompt" placeholder="Example: A luxury fashion model walking down a futuristic Paris runway at night, golden lights, cinematic slow motion, 4K ultra HD, dramatic lighting, GOAT aesthetic..." oninput="updateCharCount()"></textarea>
+    <div class="prompt-actions">
+      <button class="enhance-btn" onclick="enhancePrompt()">🤖 AI Enhance Prompt</button>
+      <button class="enhance-btn" onclick="randomPrompt()">🎲 Random Prompt</button>
+      <button class="enhance-btn" onclick="clearPrompt()">✕ Clear</button>
+      <span class="char-count" id="charCount">0 / 1000 chars</span>
+    </div>
+    <div class="neg-prompt">
+      <div class="neg-label">🚫 Negative Prompt (what to avoid)</div>
+      <input class="neg-input" placeholder="e.g. blurry, low quality, watermark, distorted faces..." id="negPrompt">
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="settings-grid">
+    <div class="setting-card">
+      <div class="setting-title">📐 Resolution</div>
+      <div class="setting-opts">
+        <label class="setting-opt active"><input type="radio" name="res" checked> 4K Ultra HD (3840×2160)</label>
+        <label class="setting-opt"><input type="radio" name="res"> 2K QHD (2560×1440)</label>
+        <label class="setting-opt"><input type="radio" name="res"> 1080p Full HD</label>
+        <label class="setting-opt"><input type="radio" name="res"> 9:16 Vertical (Social)</label>
+        <label class="setting-opt"><input type="radio" name="res"> 1:1 Square</label>
+      </div>
+    </div>
+    <div class="setting-card">
+      <div class="setting-title">⏱ Duration & FPS</div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:5px">Duration</div>
+        <select class="setting-select">
+          <option>5 seconds</option>
+          <option>10 seconds</option>
+          <option selected>15 seconds</option>
+          <option>30 seconds</option>
+          <option>60 seconds</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:5px">Frame Rate</div>
+        <select class="setting-select">
+          <option>24 fps (Cinematic)</option>
+          <option>30 fps (Standard)</option>
+          <option selected>60 fps (Smooth)</option>
+          <option>120 fps (Ultra)</option>
+        </select>
+      </div>
+    </div>
+    <div class="setting-card">
+      <div class="setting-title">🎨 AI Model</div>
+      <div class="setting-opts">
+        <label class="setting-opt active"><input type="radio" name="model" checked> 🤖 Sora 2 (Best)</label>
+        <label class="setting-opt"><input type="radio" name="model"> ⚡ GOAT Turbo (Fast)</label>
+        <label class="setting-opt"><input type="radio" name="model"> 💎 GOAT Cinema</label>
+        <label class="setting-opt"><input type="radio" name="model"> 👗 Fashion Mode</label>
+        <label class="setting-opt"><input type="radio" name="model"> 🌍 Realism Pro</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- STYLE PRESETS -->
+  <div class="style-presets">
+    <div class="sp-title">🎨 Visual Style Presets</div>
+    <div class="sp-grid" id="stylePresets"></div>
+  </div>
+
+  <!-- GENERATE BUTTON -->
+  <div class="generate-section">
+    <button class="generate-btn" id="generateBtn" onclick="startGenerate()">
+      🚀 Generate with Sora 2 AI
+    </button>
+    <div class="credit-info">Estimated cost: <span>120 Credits</span> • You have <span>2,400</span> remaining</div>
+  </div>
+
+  <!-- GENERATION PROGRESS -->
+  <div class="gen-progress" id="genProgress">
+    <div class="gp-title"><div class="pb-dot"></div>Sora 2 Generating Your Video...</div>
+    <div class="main-progress"><div class="mp-fill" id="mpFill"></div></div>
+    <div class="mp-label" id="mpLabel">Starting...</div>
+    <br>
+    <div class="gp-steps" id="gpSteps"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-section">
+    <div class="results-header">
+      <div class="results-title">🎬 Generated Videos</div>
+      <span style="font-size:12px;color:var(--muted)">4 videos • This session</span>
+    </div>
+    <div class="results-grid" id="resultsGrid"></div>
+  </div>
+
+</div>
+
+<script>
+// Style presets
+const styles = [
+  {e:'🎬',bg:'#0a0020',name:'Cinematic',desc:'Film quality'},
+  {e:'🌆',bg:'#001020',name:'Neon Noir',desc:'Dark cyberpunk'},
+  {e:'👑',bg:'#1a1000',name:'GOAT Gold',desc:'Luxury gold'},
+  {e:'🌅',bg:'#1a0505',name:'Sunset Epic',desc:'Golden hour'},
+  {e:'🌌',bg:'#000a1a',name:'Space',desc:'Cosmic feel'},
+  {e:'🎨',bg:'#0a001a',name:'Painterly',desc:'Art style'},
+  {e:'🤖',bg:'#0a1a20',name:'Futuristic',desc:'Sci-fi look'},
+  {e:'🌿',bg:'#001a08',name:'Natural',desc:'Earthy tones'},
+  {e:'💎',bg:'#0a0a1a',name:'Crystal',desc:'Glass effect'},
+  {e:'🔥',bg:'#1a0400',name:'Inferno',desc:'Fire & heat'},
+];
+let selectedStyle = 0;
+const spGrid = document.getElementById('stylePresets');
+styles.forEach((s,i) => {
+  const d = document.createElement('div');
+  d.className = 'style-preset' + (i===0?' selected':'');
+  d.innerHTML = `<div class="sp-thumb" style="background:${s.bg}">${s.e}</div><div class="sp-name">${s.name}</div><div class="sp-desc">${s.desc}</div>`;
+  d.addEventListener('click', () => {
+    document.querySelectorAll('.style-preset').forEach(x=>x.classList.remove('selected'));
+    d.classList.add('selected');
+    selectedStyle = i;
+  });
+  spGrid.appendChild(d);
+});
+
+// Templates
+const templates = {
+  music: 'A music artist performing on a massive concert stage with explosive pyrotechnics, laser beams cutting through fog, thousands of fans, cinematic slow-motion shots, 4K ultra HD, golden light.',
+  fashion: 'A luxury fashion model wearing a stunning designer gown walking down a futuristic Paris runway, golden chandeliers, slow-motion hair flow, ultra-cinematic, editorial photography style.',
+  celebrity: 'A celebrity making a grand entrance at a red carpet event, gold confetti raining down, flashing cameras, dramatic lighting, crown motif, GOAT aesthetic, 4K cinematic.',
+  sneaker: 'A limited edition sneaker rotating on a black mirror surface, particle effects, golden glow, dramatic lighting reveal, product showcase, cinematic macro photography style, 4K.',
+  nft: 'A holographic NFT artwork slowly revealing itself with blockchain-inspired geometric patterns, golden particles, purple energy beams, digital luxury aesthetic, cinematic 4K.',
+  brand: 'A powerful brand story opening with aerial city shots at dawn, transitioning to a champion athlete training, motivational energy, gold and black color palette, 4K cinematic.'
+};
+function applyTemplate(key) {
+  document.getElementById('mainPrompt').value = templates[key];
+  updateCharCount();
+}
+
+// Enhance prompt
+const enhancements = [
+  ', 4K ultra HD, cinematic lighting, shallow depth of field, award-winning photography',
+  ', dramatic GOAT aesthetic, golden hour lighting, luxury ambiance, photorealistic',
+  ', slow motion cinematic, volumetric lighting, 8K render quality, blockbuster quality',
+];
+let eIdx = 0;
+function enhancePrompt() {
+  const ta = document.getElementById('mainPrompt');
+  if(ta.value) { ta.value += enhancements[eIdx%enhancements.length]; eIdx++; updateCharCount(); }
+}
+
+const randomPrompts = [
+  'A sneakerhead in a futuristic sneaker museum, walls lined with glowing Air Jordans, dramatic golden lighting, cinematic slow motion walk, 4K GOAT aesthetic',
+  'A celebrity music video in a luxury Malibu mansion, rooftop pool at sunset, gold jewelry, private jets overhead, cinematic drone shots, 4K',
+  'A fashion show on top of the Empire State Building, models in couture gowns, city lights below, magical golden hour, cinematic 4K',
+  'Two rappers in a chrome studio environment, holograms around them, music producers in background, futuristic vibes, 4K ultra HD',
+];
+let rpIdx = 0;
+function randomPrompt() {
+  document.getElementById('mainPrompt').value = randomPrompts[rpIdx%randomPrompts.length];
+  rpIdx++; updateCharCount();
+}
+function clearPrompt() { document.getElementById('mainPrompt').value=''; updateCharCount(); }
+function updateCharCount() {
+  const len = document.getElementById('mainPrompt').value.length;
+  document.getElementById('charCount').textContent = len + ' / 1000 chars';
+}
+
+// Generation steps
+const genSteps = [
+  {icon:'📝',label:'Parsing prompt & settings',time:800},
+  {icon:'🧠',label:'Sora 2 semantic understanding',time:1200},
+  {icon:'🎨',label:'Generating visual keyframes',time:1500},
+  {icon:'🎬',label:'Rendering temporal motion',time:2000},
+  {icon:'✨',label:'Applying style & effects',time:1200},
+  {icon:'⚡',label:'4K upscaling & HDR',time:1000},
+  {icon:'💾',label:'Encoding & finalizing',time:600},
+];
+let generating = false;
+function startGenerate() {
+  if(generating) return;
+  const prompt = document.getElementById('mainPrompt').value.trim();
+  if(!prompt) { alert('Please enter a video prompt first!'); return; }
+  generating = true;
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating...';
+
+  const prog = document.getElementById('genProgress');
+  prog.style.display = 'block';
+  prog.scrollIntoView({behavior:'smooth'});
+
+  // Render steps
+  const stepsEl = document.getElementById('gpSteps');
+  stepsEl.innerHTML = genSteps.map((s,i) => `
+    <div class="gp-step" id="gstep-${i}">
+      <div class="step-icon">${s.icon}</div>
+      <div class="step-label">${s.label}</div>
+      <div class="step-status step-wait" id="gstatus-${i}">Waiting</div>
+    </div>`).join('');
+
+  let totalTime = 0;
+  genSteps.forEach((s,i) => {
+    setTimeout(() => {
+      // Mark previous done
+      if(i>0) {
+        document.getElementById('gstep-'+(i-1)).classList.remove('active');
+        document.getElementById('gstep-'+(i-1)).classList.add('done');
+        document.getElementById('gstatus-'+(i-1)).className = 'step-status step-done';
+        document.getElementById('gstatus-'+(i-1)).textContent = '✓ Done';
+      }
+      // Mark current active
+      document.getElementById('gstep-'+i).classList.add('active');
+      document.getElementById('gstatus-'+i).className = 'step-status step-active';
+      document.getElementById('gstatus-'+i).textContent = 'Processing...';
+      const pct = (i/genSteps.length)*100;
+      document.getElementById('mpFill').style.width = pct+'%';
+      document.getElementById('mpLabel').textContent = s.label + '...';
+    }, totalTime);
+    totalTime += s.time;
+  });
+
+  setTimeout(() => {
+    document.getElementById('gstep-'+(genSteps.length-1)).classList.remove('active');
+    document.getElementById('gstep-'+(genSteps.length-1)).classList.add('done');
+    document.getElementById('gstatus-'+(genSteps.length-1)).className = 'step-status step-done';
+    document.getElementById('gstatus-'+(genSteps.length-1)).textContent = '✓ Done';
+    document.getElementById('mpFill').style.width = '100%';
+    document.getElementById('mpLabel').textContent = '✅ Video generated successfully!';
+    btn.disabled = false;
+    btn.textContent = '🚀 Generate with Sora 2 AI';
+    generating = false;
+    addResult(prompt);
+    setTimeout(() => { prog.style.display='none'; }, 2000);
+  }, totalTime+400);
+}
+
+// Results
+const existingResults = [
+  {e:'👑',bg:'rt-a',title:'Crown Dynasty Intro',meta:'Sora 2 • 4K • 15s • Generated 2h ago',dur:'0:15'},
+  {e:'👟',bg:'rt-b',title:'Air Jordan Reveal',meta:'GOAT Cinema • 4K • 10s • Yesterday',dur:'0:10'},
+  {e:'🎵',bg:'rt-c',title:'Music Video Concept',meta:'Sora 2 • 4K • 30s • 2 days ago',dur:'0:30'},
+  {e:'💎',bg:'rt-d',title:'NFT Collection Drop',meta:'GOAT Turbo • 4K • 8s • 3 days ago',dur:'0:08'},
+];
+function renderResults(data) {
+  const rg = document.getElementById('resultsGrid');
+  rg.innerHTML = '';
+  data.forEach(r => {
+    rg.innerHTML += `
+      <div class="result-card">
+        <div class="result-thumb ${r.bg}">${r.e}<div class="result-dur">▶ ${r.dur}</div><div class="result-quality">4K</div></div>
+        <div class="result-info">
+          <div class="result-title">${r.title}</div>
+          <div class="result-meta">${r.meta}</div>
+          <div class="result-actions">
+            <button class="ra-btn ra-dl">⬇ Download</button>
+            <button class="ra-btn ra-share">📤 Share</button>
+            <button class="ra-btn ra-edit">✏ Edit</button>
+          </div>
+        </div>
+      </div>`;
+  });
+}
+renderResults(existingResults);
+
+function addResult(prompt) {
+  const emojis = ['🚀','🎬','✨','💫','⚡','🌟'];
+  const bgs = ['rt-a','rt-b','rt-c','rt-d'];
+  const newResult = {
+    e: emojis[Math.floor(Math.random()*emojis.length)],
+    bg: bgs[Math.floor(Math.random()*bgs.length)],
+    title: prompt.substring(0,35) + (prompt.length>35?'...':''),
+    meta: 'Sora 2 • 4K • Just generated',
+    dur: '0:15'
+  };
+  existingResults.unshift(newResult);
+  renderResults(existingResults);
+  document.getElementById('resultsGrid').scrollIntoView({behavior:'smooth'});
+}
+
+// Settings opts toggle
+document.querySelectorAll('.setting-opt').forEach(o => {
+  o.addEventListener('click',function(){
+    this.closest('.setting-opts').querySelectorAll('.setting-opt').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

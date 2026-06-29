@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Studio — Multi-Track DAW</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #ffa500;
+    --gold-bright: #ffcc33;
+    --red: #ff3030;
+    --green: #00ff66;
+    --blue: #3399ff;
+    --purple: #9944ff;
+    --bg: #0a0a0a;
+    --panel: #141414;
+    --panel-hi: #1f1f1f;
+    --border: #2a2a2a;
+    --track-bg: #181818;
+    --text: #e0e0e0;
+    --dim: #888;
+  }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+  /* TOP BAR */
+  .top {
+    height: 48px;
+    background: linear-gradient(180deg, #1f1f1f, #0a0a0a);
+    border-bottom: 2px solid #000;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 14px;
+    z-index: 10;
+  }
+  .logo {
+    font-family: 'Arial Black', sans-serif;
+    font-size: 16px;
+    color: var(--gold);
+    letter-spacing: 2px;
+  }
+  .top-btn {
+    padding: 6px 12px;
+    background: linear-gradient(180deg, #222, #0f0f0f);
+    border: 1px solid #333;
+    color: #ccc;
+    font-size: 10px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: inherit;
+  }
+  .top-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .top-btn.active { background: var(--gold); color: #000; border-color: var(--gold-bright); }
+  .transport {
+    display: flex; gap: 4px; align-items: center;
+  }
+  .transport .tbtn {
+    width: 32px; height: 28px;
+    background: linear-gradient(180deg, #222, #0f0f0f);
+    border: 1px solid #333;
+    color: #ccc;
+    cursor: pointer;
+    border-radius: 2px;
+    font-size: 12px;
+  }
+  .transport .tbtn.play.active { background: var(--green); color: #000; }
+  .transport .tbtn.rec.active { background: var(--red); color: #fff; animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: 0.5; } }
+  .timecode {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: var(--gold);
+    background: #000;
+    padding: 6px 12px;
+    border: 1px solid #333;
+    border-radius: 2px;
+    letter-spacing: 2px;
+    min-width: 120px;
+    text-align: center;
+  }
+  .bpm-ctrl {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .bpm-ctrl label { color: var(--dim); font-size: 10px; letter-spacing: 1px; }
+  .bpm-ctrl input {
+    width: 52px; height: 26px; background: #0a0a0a; border: 1px solid #333;
+    color: var(--gold); text-align: center; font-family: 'Courier New', monospace;
+    font-size: 14px; border-radius: 2px;
+  }
+
+  /* MAIN LAYOUT */
+  .main {
+    display: flex;
+    height: calc(100vh - 48px - 32px);
+  }
+  /* LEFT: Track headers */
+  .track-headers {
+    min-width: 220px;
+    width: 220px;
+    background: var(--panel);
+    border-right: 1px solid #000;
+    overflow-y: auto;
+  }
+  .track-hdr {
+    height: 80px;
+    border-bottom: 1px solid #0a0a0a;
+    padding: 6px 10px;
+    background: var(--track-bg);
+    display: flex; flex-direction: column; gap: 4px;
+    position: relative;
+  }
+  .track-hdr.selected { background: #2a1a05; box-shadow: inset 3px 0 0 var(--gold); }
+  .track-hdr .tnum {
+    position: absolute; top: 4px; left: 4px;
+    font-family: 'Courier New', monospace; font-size: 9px;
+    color: var(--gold); font-weight: bold;
+  }
+  .track-hdr .tname {
+    font-size: 11px; font-weight: bold; color: #fff;
+    padding: 2px 0 2px 18px; cursor: text;
+  }
+  .track-hdr .tname:focus { outline: 1px solid var(--gold); }
+  .track-hdr .tctrl {
+    display: flex; gap: 3px; margin-top: 2px;
+  }
+  .track-hdr .tctrl button {
+    flex: 1; height: 20px;
+    background: linear-gradient(180deg, #222, #0f0f0f);
+    border: 1px solid #2a2a2a;
+    color: #888; font-size: 9px; cursor: pointer; border-radius: 2px; font-family: inherit;
+  }
+  .track-hdr .tctrl button.mute.active { background: var(--red); color: #fff; }
+  .track-hdr .tctrl button.solo.active { background: var(--green); color: #000; }
+  .track-hdr .tctrl button.rec.active { background: var(--red); color: #fff; animation: blink 1s infinite; }
+  .track-hdr .tctrl button.arm { color: var(--red); }
+  .track-hdr .tvol {
+    height: 6px; background: #0a0a0a; border: 1px solid #333; border-radius: 2px;
+    margin-top: 2px; position: relative; cursor: pointer;
+  }
+  .track-hdr .tvol-fill {
+    height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+    border-radius: 1px;
+  }
+  .track-hdr .tmeter {
+    position: absolute; right: 4px; top: 22px; bottom: 4px; width: 4px;
+    background: #050505; border: 1px solid #222; overflow: hidden;
+    display: flex; flex-direction: column-reverse;
+  }
+  .track-hdr .tmeter .bar {
+    width: 100%; background: linear-gradient(0deg, var(--green) 0%, var(--green) 60%, #ffe500 60%, #ffe500 85%, var(--red) 85%); height: 0%;
+    transition: height 0.05s;
+  }
+
+  /* RIGHT: Timeline + tracks */
+  .timeline-wrap {
+    flex: 1;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  .timeline-ruler {
+    height: 28px;
+    background: linear-gradient(180deg, #222, #0a0a0a);
+    border-bottom: 1px solid #000;
+    position: relative;
+    overflow: hidden;
+  }
+  .timeline-ruler .bar-mark {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: #333;
+  }
+  .timeline-ruler .bar-num {
+    position: absolute;
+    top: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    padding-left: 4px;
+  }
+  .track-rows {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+  }
+  .track-row {
+    height: 80px;
+    border-bottom: 1px solid #0a0a0a;
+    position: relative;
+    background: var(--track-bg);
+  }
+  .track-row:nth-child(even) { background: #151515; }
+  .track-row.selected { background: #1f1a05; }
+  .clip {
+    position: absolute;
+    top: 4px; bottom: 4px;
+    background: linear-gradient(180deg, rgba(255,165,0,0.8), rgba(204,119,0,0.8));
+    border: 1px solid var(--gold-bright);
+    border-radius: 3px;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+  }
+  .clip.audio { background: linear-gradient(180deg, rgba(51,153,255,0.8), rgba(30,90,180,0.8)); border-color: var(--blue); }
+  .clip.midi  { background: linear-gradient(180deg, rgba(153,68,255,0.8), rgba(90,30,180,0.8)); border-color: var(--purple); }
+  .clip .clip-name {
+    font-size: 9px; color: #fff; padding: 2px 5px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    letter-spacing: 0.5px;
+    font-weight: bold;
+    white-space: nowrap; overflow: hidden;
+  }
+  .clip canvas { width: 100%; height: calc(100% - 18px); display: block; }
+  .playhead {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: var(--red);
+    box-shadow: 0 0 6px rgba(255,48,48,0.8);
+    pointer-events: none;
+    z-index: 5;
+  }
+  .playhead::before {
+    content: '';
+    position: absolute;
+    top: -6px; left: -6px;
+    width: 14px; height: 10px;
+    background: var(--red);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+  /* BOTTOM: Info / piano roll toggle */
+  .bottom-bar {
+    height: 32px;
+    background: linear-gradient(180deg, #1a1a1a, #0a0a0a);
+    border-top: 1px solid #000;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 12px;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 1px;
+  }
+  .bottom-bar .info { color: var(--gold); }
+  .bottom-bar a { color: var(--gold); text-decoration: none; }
+  .bottom-bar .spacer { flex: 1; }
+
+  /* PIANO ROLL OVERLAY */
+  .piano-roll {
+    position: fixed;
+    left: 0; right: 0; bottom: 32px;
+    height: 40%;
+    background: var(--panel);
+    border-top: 2px solid var(--gold);
+    display: none;
+    flex-direction: column;
+    z-index: 50;
+  }
+  .piano-roll.open { display: flex; }
+  .pr-header {
+    height: 32px;
+    background: linear-gradient(180deg, #2a1a05, #0a0a0a);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 10px;
+    border-bottom: 1px solid #000;
+  }
+  .pr-title { font-weight: bold; color: var(--gold); letter-spacing: 1.5px; font-size: 11px; }
+  .pr-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+  .pr-keys {
+    width: 80px;
+    background: #000;
+    overflow-y: auto;
+    border-right: 1px solid #000;
+  }
+  .pr-key {
+    height: 16px;
+    padding: 0 6px;
+    font-size: 8px;
+    color: #333;
+    display: flex; align-items: center;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .pr-key.white { background: #e0e0e0; color: #333; }
+  .pr-key.black { background: #111; color: #666; }
+  .pr-key.c     { background: #e0e0e0; color: var(--gold); font-weight: bold; }
+  .pr-grid {
+    flex: 1;
+    overflow: auto;
+    background: #0a0a0a;
+    position: relative;
+  }
+  .pr-cell-row {
+    height: 16px;
+    display: flex;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .pr-cell-row.row-white { background: #0f0f0f; }
+  .pr-cell-row.row-black { background: #080808; }
+  .pr-cell {
+    width: 30px;
+    border-right: 1px solid #1a1a1a;
+    cursor: pointer;
+    position: relative;
+  }
+  .pr-cell.beat-start { border-right: 1px solid #333; }
+  .pr-cell.active {
+    background: linear-gradient(180deg, var(--gold), #cc7700);
+    box-shadow: inset 0 0 2px rgba(255,255,255,0.4);
+  }
+  .close-pr {
+    margin-left: auto;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 10px;
+  }
+</style>
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms Money Penny">
+    <span>Ms Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+
+<!-- ============ TOP BAR ============ -->
+<div class="top">
+  <div class="logo">🐐 GOAT STUDIO</div>
+  <button class="top-btn" onclick="addTrack('audio')">+ AUDIO TRACK</button>
+  <button class="top-btn" onclick="addTrack('midi')">+ MIDI TRACK</button>
+  <button class="top-btn" onclick="loadAudioToSelected()">📁 LOAD AUDIO</button>
+  <button class="top-btn" onclick="openPianoRoll()">🎹 PIANO ROLL</button>
+  <button class="top-btn" onclick="openMixer()">🎚 SSL MIXER</button>
+  <button class="top-btn" onclick="autoMix()" style="background:linear-gradient(180deg,var(--gold),#cc7700);color:#000">🤖 AUTO-MIX</button>
+
+  <div class="transport" style="margin-left:auto">
+    <button class="tbtn" onclick="transportRew()">⏮</button>
+    <button class="tbtn" onclick="transportStop()">⏹</button>
+    <button class="tbtn play" id="btnPlay" onclick="transportPlay()">▶</button>
+    <button class="tbtn rec" id="btnRec" onclick="transportRec()">⏺</button>
+    <div class="timecode" id="timecode">001.01.00</div>
+  </div>
+
+  <div class="bpm-ctrl">
+    <label>BPM</label>
+    <input type="number" id="bpmInput" min="40" max="300" value="90">
+  </div>
+</div>
+
+<!-- ============ MAIN ============ -->
+<div class="main">
+  <div class="track-headers" id="trackHeaders"></div>
+  <div class="timeline-wrap">
+    <div class="timeline-ruler" id="timelineRuler"></div>
+    <div class="track-rows" id="trackRows">
+      <div class="playhead" id="playhead" style="left:0"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PIANO ROLL ============ -->
+<div class="piano-roll" id="pianoRoll">
+  <div class="pr-header">
+    <div class="pr-title" id="prTitle">🎹 PIANO ROLL</div>
+    <div style="font-size:10px;color:var(--dim);">16 steps · click cells to add notes</div>
+    <button class="close-pr" onclick="closePianoRoll()">✕ CLOSE</button>
+  </div>
+  <div class="pr-body">
+    <div class="pr-keys" id="prKeys"></div>
+    <div class="pr-grid" id="prGrid"></div>
+  </div>
+</div>
+
+<!-- ============ BOTTOM BAR ============ -->
+<div class="bottom-bar">
+  <div class="info" id="bottomInfo">🐐 GOAT STUDIO · Ready</div>
+  <div class="spacer"></div>
+  <div>Tracks: <span id="trackCount">0</span></div>
+  <div>Clips: <span id="clipCount">0</span></div>
+  <div><a href="/">← Home</a></div>
+  <div><a href="ssl-mixer.html">SSL Mixer</a></div>
+  <div><a href="beat-maker.html">Beat Maker</a></div>
+  <div><a href="plugins.html">Plugins</a></div>
+</div>
+
+<!-- hidden file input -->
+<input type="file" id="trackFileInput" accept="audio/*" multiple style="display:none">
+
+<script src="js/goat-audio-engine.js"></script>
+<script>
+/* =========================================================
+   GOAT STUDIO — Multi-Track DAW
+   ========================================================= */
+const PIXELS_PER_BEAT = 30;   // zoom
+const BEATS_PER_BAR = 4;
+const TOTAL_BARS = 64;
+const TRACK_HEIGHT = 80;
+
+let ac = null;
+let masterGain = null;
+let bpm = 90;
+let playing = false;
+let recording = false;
+let playStart = 0;
+let playbackOffsetBeats = 0;
+let tracks = [];
+let selectedTrack = -1;
+let pianoRollOpen = false;
+let pianoRollTrack = -1;
+let pianoRollNotes = {}; // trackId -> 2D grid [pitch][step]
+
+function initAudio() {
+  if (ac) return;
+  ac = (window.GoatAudio && window.GoatAudio.ac()) || new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = ac.createGain();
+  masterGain.gain.value = 0.8;
+  masterGain.connect(ac.destination);
+  if (window.GoatAudio && window.GoatAudio.bridge) {
+    window.GoatAudio.bridge.announce('studio-master', masterGain);
+  }
+  info('AUDIO ENGINE ONLINE · ' + ac.sampleRate + ' Hz');
+}
+
+class Track {
+  constructor(id, type='audio') {
+    this.id = id;
+    this.type = type;
+    this.name = (type === 'audio' ? 'AUDIO ' : 'MIDI ') + id;
+    this.color = type === 'audio' ? 'var(--blue)' : 'var(--purple)';
+    this.mute = false;
+    this.solo = false;
+    this.rec = false;
+    this.volume = 0.8;
+    this.clips = [];
+    this.gainNode = null;
+    this.analyser = null;
+    this.meter = 0;
+  }
+  ensureNodes() {
+    if (!this.gainNode && ac) {
+      this.gainNode = ac.createGain();
+      this.gainNode.gain.value = this.volume;
+      this.analyser = ac.createAnalyser();
+      this.analyser.fftSize = 256;
+      this.gainNode.connect(this.analyser);
+      this.analyser.connect(masterGain);
+    }
+  }
+}
+
+class Clip {
+  constructor(trackId, startBeat, lengthBeats, name='Clip') {
+    this.trackId = trackId;
+    this.startBeat = startBeat;
+    this.lengthBeats = lengthBeats;
+    this.name = name;
+    this.buffer = null;       // for audio clips
+    this.notes = null;        // for midi clips: [{pitch, start, length}]
+    this.source = null;       // active source node
+  }
+}
+
+/* --- UI Builders --- */
+function buildTimelineRuler() {
+  const r = document.getElementById('timelineRuler');
+  r.innerHTML = '';
+  const totalWidth = TOTAL_BARS * BEATS_PER_BAR * PIXELS_PER_BEAT;
+  r.style.width = totalWidth + 'px';
+  for (let b = 0; b < TOTAL_BARS; b++) {
+    const x = b * BEATS_PER_BAR * PIXELS_PER_BEAT;
+    const mark = document.createElement('div');
+    mark.className = 'bar-mark';
+    mark.style.left = x + 'px';
+    r.appendChild(mark);
+    const num = document.createElement('div');
+    num.className = 'bar-num';
+    num.style.left = x + 'px';
+    num.textContent = (b + 1).toString().padStart(3, '0');
+    r.appendChild(num);
+    // Sub-beat marks
+    for (let sb = 1; sb < BEATS_PER_BAR; sb++) {
+      const sx = x + sb * PIXELS_PER_BEAT;
+      const sm = document.createElement('div');
+      sm.className = 'bar-mark';
+      sm.style.left = sx + 'px';
+      sm.style.opacity = '0.3';
+      r.appendChild(sm);
+    }
+  }
+}
+
+function buildTrackHeaders() {
+  const el = document.getElementById('trackHeaders');
+  el.innerHTML = '';
+  tracks.forEach((t, i) => {
+    const d = document.createElement('div');
+    d.className = 'track-hdr' + (i === selectedTrack ? ' selected' : '');
+    d.onclick = () => { selectedTrack = i; buildTrackHeaders(); buildTrackRows(); };
+    d.innerHTML = `
+      <div class="tnum">${String(t.id).padStart(2,'0')}</div>
+      <div class="tname" contenteditable="true" spellcheck="false">${t.name}</div>
+      <div class="tctrl">
+        <button class="mute ${t.mute?'active':''}" data-a="mute">M</button>
+        <button class="solo ${t.solo?'active':''}" data-a="solo">S</button>
+        <button class="rec ${t.rec?'active':''}" data-a="rec">●</button>
+      </div>
+      <div class="tvol" data-a="vol">
+        <div class="tvol-fill" style="width:${t.volume*100}%"></div>
+      </div>
+      <div class="tmeter"><div class="bar" data-meter="${t.id}"></div></div>
+    `;
+    d.querySelectorAll('button').forEach(b => {
+      b.onclick = (e) => {
+        e.stopPropagation();
+        const a = b.dataset.a;
+        if (a === 'mute') t.mute = !t.mute;
+        if (a === 'solo') t.solo = !t.solo;
+        if (a === 'rec')  t.rec  = !t.rec;
+        applyTracks();
+        buildTrackHeaders();
+      };
+    });
+    d.querySelector('.tname').onblur = (e) => {
+      t.name = e.target.textContent.trim().slice(0, 20) || ('TRACK ' + t.id);
+      e.target.textContent = t.name;
+      buildTrackRows();
+    };
+    // Volume slider click
+    d.querySelector('.tvol').onclick = (e) => {
+      e.stopPropagation();
+      const rect = e.currentTarget.getBoundingClientRect();
+      t.volume = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      if (t.gainNode) t.gainNode.gain.setTargetAtTime(t.volume, ac.currentTime, 0.01);
+      buildTrackHeaders();
+    };
+    el.appendChild(d);
+  });
+  document.getElementById('trackCount').textContent = tracks.length;
+}
+
+function buildTrackRows() {
+  const rows = document.getElementById('trackRows');
+  const totalWidth = TOTAL_BARS * BEATS_PER_BAR * PIXELS_PER_BEAT;
+  // Keep playhead but clear rest
+  const playhead = document.getElementById('playhead');
+  rows.innerHTML = '';
+  rows.appendChild(playhead);
+  rows.style.width = totalWidth + 'px';
+  tracks.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'track-row' + (i === selectedTrack ? ' selected' : '');
+    row.style.width = totalWidth + 'px';
+    row.dataset.tid = t.id;
+    row.ondblclick = (e) => {
+      const rect = row.getBoundingClientRect();
+      const beat = (e.clientX - rect.left + row.parentElement.scrollLeft) / PIXELS_PER_BEAT;
+      addClip(t.id, beat, 4, t.type === 'midi' ? 'MIDI Clip' : 'Clip');
+    };
+    t.clips.forEach(c => row.appendChild(buildClipEl(c, t)));
+    rows.appendChild(row);
+  });
+  let clipTotal = 0;
+  tracks.forEach(t => clipTotal += t.clips.length);
+  document.getElementById('clipCount').textContent = clipTotal;
+}
+
+function buildClipEl(clip, track) {
+  const d = document.createElement('div');
+  d.className = 'clip ' + track.type;
+  d.style.left = (clip.startBeat * PIXELS_PER_BEAT) + 'px';
+  d.style.width = (clip.lengthBeats * PIXELS_PER_BEAT) + 'px';
+  d.innerHTML = `<div class="clip-name">${clip.name}</div><canvas></canvas>`;
+  d.onclick = (e) => {
+    e.stopPropagation();
+    if (track.type === 'midi') { openPianoRollFor(track, clip); }
+  };
+  // Waveform draw (if audio)
+  if (clip.buffer) {
+    setTimeout(() => drawWaveform(d.querySelector('canvas'), clip.buffer), 0);
+  }
+  return d;
+}
+
+function drawWaveform(canvas, buffer) {
+  const W = canvas.offsetWidth || 100;
+  const H = canvas.offsetHeight || 60;
+  canvas.width = W; canvas.height = H;
+  const ctx2d = canvas.getContext('2d');
+  const data = buffer.getChannelData(0);
+  const step = Math.ceil(data.length / W);
+  ctx2d.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx2d.fillRect(0, H/2 - 1, W, 2);
+  ctx2d.strokeStyle = '#fff';
+  ctx2d.lineWidth = 1;
+  ctx2d.beginPath();
+  for (let i = 0; i < W; i++) {
+    let min = 1.0, max = -1.0;
+    for (let j = 0; j < step; j++) {
+      const v = data[i * step + j];
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+    ctx2d.moveTo(i, (1 + min) * H / 2);
+    ctx2d.lineTo(i, (1 + max) * H / 2);
+  }
+  ctx2d.stroke();
+}
+
+/* --- Track management --- */
+function addTrack(type='audio') {
+  initAudio();
+  const id = tracks.length + 1;
+  const t = new Track(id, type);
+  t.ensureNodes();
+  tracks.push(t);
+  if (selectedTrack < 0) selectedTrack = 0;
+  buildTrackHeaders();
+  buildTrackRows();
+  info('ADDED ' + type.toUpperCase() + ' TRACK: ' + t.name);
+}
+
+function addClip(trackId, startBeat, lengthBeats, name) {
+  const t = tracks.find(x => x.id === trackId);
+  if (!t) return;
+  const c = new Clip(trackId, Math.max(0, Math.round(startBeat * 4) / 4), lengthBeats, name);
+  if (t.type === 'midi') {
+    c.notes = [];
+    pianoRollNotes[c.trackId + '-' + t.clips.length] = makeEmptyGrid();
+  }
+  t.clips.push(c);
+  buildTrackRows();
+  info('CLIP ADDED @ BAR ' + Math.floor(c.startBeat/4+1));
+}
+
+function applyTracks() {
+  const anySolo = tracks.some(t => t.solo);
+  tracks.forEach(t => {
+    if (t.gainNode) {
+      const effectiveMute = t.mute || (anySolo && !t.solo);
+      t.gainNode.gain.setTargetAtTime(effectiveMute ? 0 : t.volume, ac.currentTime, 0.02);
+    }
+  });
+}
+
+function loadAudioToSelected() {
+  if (selectedTrack < 0) { alert('Select or add a track first'); return; }
+  const fi = document.getElementById('trackFileInput');
+  fi.onchange = async (e) => {
+    initAudio();
+    const files = Array.from(e.target.files);
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      try {
+        const buf = await window.GoatAudio.loadAudioFile(f);
+        const t = tracks[selectedTrack];
+        const startBeat = t.clips.length > 0 ? Math.max(...t.clips.map(c => c.startBeat + c.lengthBeats)) : 0;
+        const lengthBeats = buf.duration * bpm / 60;
+        const clip = new Clip(t.id, startBeat, lengthBeats, f.name.replace(/\.[^.]+$/, ''));
+        clip.buffer = buf;
+        t.clips.push(clip);
+        info('LOADED: ' + f.name + ' (' + buf.duration.toFixed(1) + 's)');
+      } catch (err) {
+        info('LOAD FAILED: ' + err.message);
+      }
+    }
+    buildTrackRows();
+    fi.value = '';
+  };
+  fi.click();
+}
+
+/* --- Transport --- */
+let playTimer = null;
+function transportPlay() {
+  initAudio();
+  if (playing) {
+    transportStop();
+    return;
+  }
+  playing = true;
+  document.getElementById('btnPlay').classList.add('active');
+  playStart = ac.currentTime;
+  scheduleClips();
+  playTimer = requestAnimationFrame(updatePlayhead);
+  info('TRANSPORT PLAY');
+}
+function transportStop() {
+  playing = false;
+  document.getElementById('btnPlay').classList.remove('active');
+  cancelAnimationFrame(playTimer);
+  // Stop all sources
+  tracks.forEach(t => t.clips.forEach(c => {
+    if (c.source) { try { c.source.stop(); } catch (e) {} c.source = null; }
+  }));
+  playbackOffsetBeats = 0;
+  document.getElementById('playhead').style.left = '0px';
+  info('TRANSPORT STOP');
+}
+function transportRew() {
+  playbackOffsetBeats = 0;
+  document.getElementById('playhead').style.left = '0px';
+}
+function transportRec() {
+  recording = !recording;
+  const btn = document.getElementById('btnRec');
+  btn.classList.toggle('active', recording);
+  info(recording ? '● ARMED FOR RECORDING' : 'RECORD DISARMED');
+}
+
+function scheduleClips() {
+  const startTime = ac.currentTime;
+  tracks.forEach(t => {
+    if (t.mute) return;
+    t.clips.forEach(c => {
+      if (!c.buffer) return; // only audio clips schedule here
+      const beatTime = c.startBeat * 60 / bpm;
+      const when = startTime + beatTime;
+      if (when < ac.currentTime) return;
+      const src = ac.createBufferSource();
+      src.buffer = c.buffer;
+      src.connect(t.gainNode);
+      src.start(when);
+      c.source = src;
+    });
+  });
+}
+
+function updatePlayhead() {
+  if (!playing) return;
+  const elapsed = ac.currentTime - playStart;
+  const beats = elapsed * bpm / 60;
+  const x = beats * PIXELS_PER_BEAT;
+  document.getElementById('playhead').style.left = x + 'px';
+  // Scroll view if playhead leaves
+  const rows = document.getElementById('trackRows');
+  const scrollX = rows.scrollLeft;
+  const viewW = rows.clientWidth;
+  if (x > scrollX + viewW - 50) rows.scrollLeft = x - viewW * 0.3;
+  // Timecode
+  const bar = Math.floor(beats / BEATS_PER_BAR) + 1;
+  const beat = Math.floor(beats % BEATS_PER_BAR) + 1;
+  const tick = Math.floor((beats % 1) * 100);
+  document.getElementById('timecode').textContent =
+    String(bar).padStart(3,'0') + '.' + String(beat).padStart(2,'0') + '.' + String(tick).padStart(2,'0');
+  // Meters
+  updateMeters();
+  playTimer = requestAnimationFrame(updatePlayhead);
+}
+
+function updateMeters() {
+  tracks.forEach(t => {
+    if (!t.analyser) return;
+    const buf = new Uint8Array(t.analyser.fftSize);
+    t.analyser.getByteTimeDomainData(buf);
+    let p = 0;
+    for (let i = 0; i < buf.length; i++) p = Math.max(p, Math.abs(buf[i] - 128));
+    t.meter = t.meter * 0.6 + (p / 128) * 0.4;
+    const bar = document.querySelector(`[data-meter="${t.id}"]`);
+    if (bar) bar.style.height = (t.meter * 150) + '%';
+  });
+}
+
+/* --- Piano Roll --- */
+function makeEmptyGrid() {
+  // 24 pitches (C3 to B4), 16 steps
+  const g = [];
+  for (let p = 0; p < 24; p++) { g.push(new Array(16).fill(false)); }
+  return g;
+}
+function openPianoRoll() {
+  if (selectedTrack < 0) { alert('Select a MIDI track first'); return; }
+  const t = tracks[selectedTrack];
+  if (t.type !== 'midi') { alert('Piano roll is only for MIDI tracks. Add a MIDI track.'); return; }
+  pianoRollTrack = selectedTrack;
+  openPianoRollFor(t, t.clips[0] || (addClip(t.id, 0, 4, 'MIDI'), t.clips[0]));
+}
+function openPianoRollFor(track, clip) {
+  pianoRollOpen = true;
+  document.getElementById('pianoRoll').classList.add('open');
+  document.getElementById('prTitle').textContent = `🎹 PIANO ROLL — ${track.name} / ${clip.name}`;
+  buildPianoKeys();
+  buildPianoGrid(track, clip);
+}
+function closePianoRoll() {
+  pianoRollOpen = false;
+  document.getElementById('pianoRoll').classList.remove('open');
+}
+function buildPianoKeys() {
+  const k = document.getElementById('prKeys');
+  k.innerHTML = '';
+  const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  for (let p = 23; p >= 0; p--) {
+    const oct = Math.floor(p / 12) + 3;
+    const note = names[p % 12];
+    const isBlack = note.includes('#');
+    const isC = note === 'C';
+    const d = document.createElement('div');
+    d.className = 'pr-key ' + (isBlack ? 'black' : (isC ? 'c' : 'white'));
+    d.textContent = note + oct;
+    k.appendChild(d);
+  }
+}
+function buildPianoGrid(track, clip) {
+  const g = document.getElementById('prGrid');
+  g.innerHTML = '';
+  const key = track.id + '-' + track.clips.indexOf(clip);
+  let grid = pianoRollNotes[key];
+  if (!grid) { grid = makeEmptyGrid(); pianoRollNotes[key] = grid; }
+  for (let p = 23; p >= 0; p--) {
+    const row = document.createElement('div');
+    const note = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][p % 12];
+    const isBlack = note.includes('#');
+    row.className = 'pr-cell-row ' + (isBlack ? 'row-black' : 'row-white');
+    for (let s = 0; s < 16; s++) {
+      const cell = document.createElement('div');
+      cell.className = 'pr-cell' + (s % 4 === 0 ? ' beat-start' : '') + (grid[p][s] ? ' active' : '');
+      cell.onclick = () => {
+        grid[p][s] = !grid[p][s];
+        cell.classList.toggle('active');
+        // Preview note
+        initAudio();
+        const freq = 261.63 * Math.pow(2, (p - 12) / 12); // C3 = ~130Hz
+        playTone(freq, 0.1);
+      };
+      row.appendChild(cell);
+    }
+    g.appendChild(row);
+  }
+}
+function playTone(freq, dur) {
+  const o = ac.createOscillator();
+  const gg = ac.createGain();
+  o.type = 'triangle';
+  o.frequency.value = freq;
+  gg.gain.setValueAtTime(0.001, ac.currentTime);
+  gg.gain.exponentialRampToValueAtTime(0.3, ac.currentTime + 0.01);
+  gg.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+  o.connect(gg); gg.connect(masterGain);
+  o.start(); o.stop(ac.currentTime + dur);
+}
+
+/* --- Nav --- */
+function openMixer() { window.open('ssl-mixer.html', 'goat-ssl'); }
+function info(msg) {
+  document.getElementById('bottomInfo').textContent = '🐐 ' + msg;
+}
+
+/* --- Auto-mix (AI) --- */
+function autoMix() {
+  if (tracks.length === 0) { info('ADD TRACKS FIRST'); return; }
+  info('🤖 SPEEDY AUTOMIX · analyzing tracks...');
+  tracks.forEach((t, i) => {
+    const name = t.name.toLowerCase();
+    let vol = 0.8;
+    if (/kick/.test(name)) vol = 0.9;
+    else if (/snare|clap/.test(name)) vol = 0.85;
+    else if (/hat|cymbal/.test(name)) vol = 0.6;
+    else if (/808|bass|sub/.test(name)) vol = 0.8;
+    else if (/vox|vocal|lead/.test(name)) vol = 0.88;
+    else if (/bgv|back/.test(name)) vol = 0.65;
+    else if (/fx|pad|atmos/.test(name)) vol = 0.55;
+    t.volume = vol;
+    if (t.gainNode) t.gainNode.gain.setTargetAtTime(vol, ac.currentTime, 0.2);
+  });
+  buildTrackHeaders();
+  setTimeout(() => info('🤖 AUTOMIX DONE — ' + tracks.length + ' tracks balanced. Open SSL Mixer for EQ/Comp.'), 1000);
+}
+
+/* --- BPM --- */
+document.getElementById('bpmInput').addEventListener('change', (e) => {
+  bpm = parseFloat(e.target.value) || 90;
+  info('BPM → ' + bpm);
+});
+
+/* --- Keyboard --- */
+window.addEventListener('keydown', (e) => {
+  if (e.target.isContentEditable || e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space') { e.preventDefault(); transportPlay(); }
+  if (e.key === 'r') transportRec();
+  if (e.key === 's' && !e.ctrlKey) transportStop();
+  if (e.key === 'Home') transportRew();
+});
+
+/* --- Init --- */
+buildTimelineRuler();
+buildTrackRows();
+// Add 4 starter tracks
+addTrack('audio');
+addTrack('audio');
+addTrack('midi');
+addTrack('audio');
+tracks[0].name = 'DRUMS';
+tracks[1].name = 'BASS';
+tracks[2].name = 'SYNTH';
+tracks[3].name = 'VOX';
+buildTrackHeaders();
+buildTrackRows();
+info('STUDIO READY · Double-click a track row to add clip · Load audio files · Open piano roll for MIDI · AUTO-MIX for AI balance');
+</script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>
