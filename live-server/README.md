@@ -36,5 +36,19 @@ Ingress is **nginx** (ports 80/443). Apps run as `systemd` services.
 - **Backups / caches / media** — `BackupVault/`, `__pycache__/`, server tarballs,
   and the 36 MB branding `.mp4` under `www-goat/videos/`.
 
+## `srv1782156` (the "staging" box — 2.25.68.216, `srv1782156.hstgr.cloud`)
+
+Despite being called staging, this is a **second live GOAT/Oscar server** running the
+**same stack** behind nginx (no Traefik here, so nothing to fix). Same layout under
+`srv1782156/code/` (`oscar`, `intel`, `royalty-app`, `halito-chat`, `www-goat`) plus
+`systemd/` units and `nginx/` (`goat-royalty`, `halitochat.tech.conf`).
+
+- The Oscar runtime is **byte-identical** to production (`chat_server.py` 9,514 lines,
+  `FastChatUI.html` 5,035 lines); all four services healthy (0 error restarts).
+- This box has a **more developed Halito chat** (`command-center.html`, `pilot.html`,
+  `prototype.html`, `landing-assets/`) than production.
+- Same scrubbing applied (xAI key → `.example`, `fans.db`/PII, private `chat_data/`,
+  caches/media excluded).
+
 This is a point-in-time snapshot (pulled 2026-06-29). It is a backup/reference —
-deploying changes back to the server is a separate, deliberate step.
+deploying changes back to either server is a separate, deliberate step.
