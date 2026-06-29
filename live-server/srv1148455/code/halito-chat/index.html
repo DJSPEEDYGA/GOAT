@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#10131a" />
+    <title>Halito Chat</title>
+    <link rel="manifest" href="./manifest.webmanifest?v=12" />
+    <link rel="stylesheet" href="./styles.css?v=12" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero" aria-labelledby="app-title">
+        <div>
+          <p class="eyebrow">Standalone local mesh chat</p>
+          <h1 id="app-title">Halito Chat</h1>
+          <p class="lede">
+            Direct browser-to-browser rooms using WebRTC data channels, local message storage, and multi-hop packet gossip across connected peers.
+          </p>
+          <a class="phone-link" href="./phone.html">Open phone version</a>
+        </div>
+        <div class="identity-card">
+          <label for="handle">Handle</label>
+          <div class="identity-row">
+            <input id="handle" maxlength="32" autocomplete="nickname" />
+            <button id="save-handle" type="button">Save</button>
+          </div>
+          <p id="node-id" class="node-id"></p>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="panel room-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Room</p>
+              <h2>Local Channel</h2>
+            </div>
+            <div class="room-actions">
+              <button id="sync-chat" type="button" class="small">Sync</button>
+              <span id="peer-count" class="status-pill">connecting</span>
+            </div>
+          </div>
+          <p id="relay-status" class="relay-status">Joining shared Halito lobby...</p>
+          <div id="messages" class="messages" aria-live="polite"></div>
+          <form id="message-form" class="composer">
+            <input id="message-input" maxlength="800" autocomplete="off" placeholder="Broadcast to the mesh" />
+            <button type="submit">Send</button>
+          </form>
+        </article>
+
+        <aside class="side-stack">
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+              <p class="eyebrow">Optional</p>
+              <h2>Direct Peer</h2>
+              </div>
+              <span id="pair-state" class="status-pill muted">idle</span>
+            </div>
+            <div class="button-row">
+              <button id="create-offer" type="button">Create Offer</button>
+              <button id="use-signal" type="button">Use Pasted Signal</button>
+            </div>
+            <p class="pair-help">
+              Chat works through the shared room first. Use this only when testing direct browser-to-browser peering.
+            </p>
+            <label for="signal-input">Paste remote signal</label>
+            <textarea id="signal-input" spellcheck="false" placeholder="Paste an offer or answer from another device"></textarea>
+            <label for="signal-output">Share this signal</label>
+            <textarea id="signal-output" readonly spellcheck="false" placeholder="Generated signal appears here"></textarea>
+            <div class="split-row">
+              <button id="copy-signal" type="button">Copy Signal</button>
+              <button id="share-signal" type="button">Share</button>
+            </div>
+            <div id="connection-log" class="connection-log" aria-live="polite"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Peers</p>
+                <h2>Mesh Links</h2>
+              </div>
+              <button id="export-packets" type="button" class="small">Export</button>
+            </div>
+            <div id="peers" class="peers"></div>
+            <label for="packet-import">Import packet bundle</label>
+            <textarea id="packet-import" spellcheck="false" placeholder="Paste an exported bundle to sneaker-net messages"></textarea>
+            <button id="import-packets" type="button" class="wide">Import Bundle</button>
+          </article>
+
+          <article class="panel notes">
+            <p class="eyebrow">Truth in labeling</p>
+            <p>
+              Browsers cannot access iOS/Android Bluetooth mesh or Wi-Fi Direct like native FireChat-style apps did.
+              This prototype is real direct WebRTC mesh between paired browsers; native radio support would be the next layer.
+            </p>
+          </article>
+        </aside>
+      </section>
+    </main>
+    <script src="./app.js?v=12" type="module"></script>
+  </body>
+</html>
