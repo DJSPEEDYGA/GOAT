@@ -9,9 +9,14 @@ pulled from the VPS so the master repo reflects the real, latest deployment.
 
 ## `srv1148455` (production — 72.61.193.184, `srv1148455.hstgr.cloud`)
 
-Ingress is **nginx** (ports 80/443). Apps run as `systemd` services. (A Traefik
-container exists but is crash-looping because nginx owns 80/443 — it is not the
-active ingress.)
+Ingress is **nginx** (ports 80/443). Apps run as `systemd` services.
+
+> **Traefik:** a Traefik container (`docker/traefik/docker-compose.yml`, `network_mode: host`)
+> was stuck in a crash loop (66,870 restarts) because it could not bind :80/:443 —
+> **nginx** already owns those ports and serves all live sites. On 2026-06-29 it was
+> **stopped and its restart policy set to `no`** (it routed no traffic, so this caused
+> no downtime). The compose file is preserved here for reference; to ever use Traefik
+> as ingress you'd first need to move nginx off 80/443, then `docker compose up -d`.
 
 | Path here | On server | Service | Notes |
 |---|---|---|---|
