@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Request a Halito Field Kit</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07090c;
+      --panel: rgba(16, 22, 27, .92);
+      --panel-solid: #10161b;
+      --line: rgba(255,255,255,.14);
+      --text: #f8fafc;
+      --muted: #9aa7b6;
+      --mint: #4ee2a0;
+      --gold: #ffd24a;
+      --sky: #59b8ff;
+      --red: #ff5a62;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        linear-gradient(90deg, rgba(3,7,9,.95) 0%, rgba(3,7,9,.80) 48%, rgba(3,7,9,.56) 100%),
+        url("/landing-assets/halito-field-hero.png") center / cover fixed no-repeat,
+        var(--bg);
+      font: 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      border-bottom: 1px solid var(--line);
+      background: rgba(7,9,12,.84);
+      backdrop-filter: blur(16px);
+    }
+    .topbar {
+      width: min(1120px, calc(100% - 28px));
+      min-height: 66px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(78,226,160,.42);
+      border-radius: 8px;
+      color: var(--mint);
+      background: rgba(78,226,160,.12);
+      font-weight: 950;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    .brand span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .status-pill, a.back-link {
+      border: 1px solid rgba(255,210,74,.36);
+      color: var(--gold);
+      background: rgba(255,210,74,.10);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    main {
+      width: min(1120px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: clamp(26px, 6vw, 70px) 0 34px;
+    }
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(340px, .72fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .copy {
+      padding: clamp(10px, 2vw, 22px) 0;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--mint);
+      font-size: 12px;
+      font-weight: 950;
+      text-transform: uppercase;
+      border: 1px solid rgba(78,226,160,.32);
+      border-radius: 999px;
+      padding: 8px 10px;
+      background: rgba(8,13,17,.72);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      background: var(--mint);
+      box-shadow: 0 0 18px rgba(78,226,160,.9);
+    }
+    h2 {
+      margin: 18px 0 12px;
+      font-size: clamp(48px, 9vw, 96px);
+      line-height: .92;
+      letter-spacing: 0;
+      text-shadow: 0 20px 54px rgba(0,0,0,.44);
+    }
+    .deck {
+      max-width: 700px;
+      margin: 0;
+      color: #d8e3ee;
+      font-size: clamp(17px, 2vw, 23px);
+      line-height: 1.3;
+    }
+    .signal-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 22px;
+      max-width: 720px;
+    }
+    .signal {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(16,22,27,.74);
+      padding: 11px;
+      min-width: 0;
+    }
+    .signal b {
+      display: block;
+      color: var(--mint);
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+    .signal span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .form-panel {
+      border: 1px solid rgba(78,226,160,.30);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 30px 90px rgba(0,0,0,.42);
+      padding: 16px;
+    }
+    form {
+      display: grid;
+      gap: 11px;
+    }
+    .form-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 4px;
+    }
+    .form-top h3 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    .form-top p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      line-height: 1.4;
+      font-size: 13px;
+    }
+    label {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 950;
+      text-transform: uppercase;
+      min-width: 0;
+    }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #080b10;
+      color: var(--text);
+      padding: 11px;
+      font: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+    textarea {
+      min-height: 104px;
+      resize: vertical;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: rgba(78,226,160,.58);
+      box-shadow: 0 0 0 3px rgba(78,226,160,.10);
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+    .checks {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(8,11,16,.72);
+      padding: 9px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 850;
+      text-transform: none;
+    }
+    .check input { width: auto; }
+    .submit-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    button, .copy-button {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 1px solid rgba(78,226,160,.52);
+      border-radius: 8px;
+      padding: 0 15px;
+      color: #06100c;
+      background: var(--mint);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 950;
+      text-decoration: none;
+    }
+    button[disabled] {
+      cursor: wait;
+      opacity: .72;
+    }
+    .status {
+      min-height: 18px;
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .success {
+      display: none;
+      border: 1px solid rgba(78,226,160,.36);
+      border-radius: 8px;
+      background: rgba(78,226,160,.10);
+      padding: 12px;
+      color: #dfffee;
+      line-height: 1.45;
+    }
+    .success.show { display: block; }
+    .note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    @media (max-width: 860px) {
+      .intro, .signal-row, .two-col, .checks { grid-template-columns: 1fr; }
+      .status-pill { display: none; }
+      body { background-attachment: scroll; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <a class="brand" href="/" aria-label="Halito Chat home">
+        <div class="mark">H</div>
+        <div>
+          <h1>Halito Chat</h1>
+          <span>Offline-first local mesh</span>
+        </div>
+      </a>
+      <a class="status-pill" href="/command-center.html">Command Center</a>
+    </div>
+  </header>
+  <main>
+    <section class="intro">
+      <div class="copy">
+        <div class="eyebrow"><span class="dot"></span><span>Field kit pilot</span></div>
+        <h2>Bring Halito to your next real-world test.</h2>
+        <p class="deck">Tell us where signal gets crowded, broken, or risky. We will shape the field kit around the people who actually have to keep moving.</p>
+        <div class="signal-row">
+          <div class="signal"><b>Events</b><span>Festivals, venues, stage teams, gates, medics, vendors.</span></div>
+          <div class="signal"><b>Response</b><span>Storms, shelters, neighborhood teams, supply runs.</span></div>
+          <div class="signal"><b>Operations</b><span>Campuses, job sites, film sets, farms, pop-up crews.</span></div>
+        </div>
+      </div>
+
+      <section class="form-panel" aria-labelledby="pilot-title">
+        <div class="form-top">
+          <div>
+            <h3 id="pilot-title">Request Field Kit</h3>
+            <p>Share enough detail for a pilot setup, device plan, and field-test checklist.</p>
+          </div>
+          <a class="back-link" href="/">Home</a>
+        </div>
+        <form id="pilotForm">
+          <div class="two-col">
+            <label>Your Name
+              <input name="name" autocomplete="name" required maxlength="90">
+            </label>
+            <label>Email
+              <input name="email" type="email" autocomplete="email" required maxlength="120">
+            </label>
+          </div>
+          <div class="two-col">
+            <label>Team / Organization
+              <input name="team" autocomplete="organization" maxlength="120">
+            </label>
+            <label>Phone
+              <input name="phone" autocomplete="tel" maxlength="40">
+            </label>
+          </div>
+          <div class="two-col">
+            <label>Use Case
+              <select name="useCase" required>
+                <option value="">Choose one</option>
+                <option>Festival or event</option>
+                <option>Storm or disaster response</option>
+                <option>Campus or job site</option>
+                <option>Film set or field crew</option>
+                <option>Other local mesh need</option>
+              </select>
+            </label>
+            <label>Timeline
+              <select name="timeline" required>
+                <option value="">Choose one</option>
+                <option>Now / urgent</option>
+                <option>Next 30 days</option>
+                <option>1-3 months</option>
+                <option>Planning ahead</option>
+              </select>
+            </label>
+          </div>
+          <div class="two-col">
+            <label>City / Region
+              <input name="location" autocomplete="address-level2" maxlength="140">
+            </label>
+            <label>Expected Size
+              <input name="scale" placeholder="Team size, crowd size, or area" maxlength="140">
+            </label>
+          </div>
+          <label>Devices Available</label>
+          <div class="checks">
+            <label class="check"><input type="checkbox" name="devices" value="iPhone"> iPhone</label>
+            <label class="check"><input type="checkbox" name="devices" value="Android"> Android</label>
+            <label class="check"><input type="checkbox" name="devices" value="Mac command center"> Mac command center</label>
+            <label class="check"><input type="checkbox" name="devices" value="Browser fallback"> Browser fallback</label>
+          </div>
+          <label>What needs to work?
+            <textarea name="message" maxlength="1600" placeholder="Example: overloaded towers at a festival, storm outage response, private team rooms, image/chirp reports, hop distance testing..."></textarea>
+          </label>
+          <div class="submit-row">
+            <button id="submitButton" type="submit">Send Pilot Request</button>
+            <span id="formStatus" class="status"></span>
+          </div>
+          <div id="successBox" class="success"></div>
+          <p class="note">Do not send secrets, passwords, room keys, or sensitive emergency details here. This request starts the setup conversation.</p>
+        </form>
+      </section>
+    </section>
+  </main>
+  <script>
+    const form = document.getElementById('pilotForm');
+    const button = document.getElementById('submitButton');
+    const statusEl = document.getElementById('formStatus');
+    const successBox = document.getElementById('successBox');
+
+    function collectPayload() {
+      const data = new FormData(form);
+      return {
+        name: (data.get('name') || '').trim(),
+        email: (data.get('email') || '').trim(),
+        team: (data.get('team') || '').trim(),
+        phone: (data.get('phone') || '').trim(),
+        useCase: (data.get('useCase') || '').trim(),
+        timeline: (data.get('timeline') || '').trim(),
+        location: (data.get('location') || '').trim(),
+        scale: (data.get('scale') || '').trim(),
+        devices: data.getAll('devices'),
+        message: (data.get('message') || '').trim(),
+        page: location.href,
+        submittedAt: new Date().toISOString()
+      };
+    }
+
+    function summary(payload, id) {
+      return [
+        `Halito pilot request ${id || ''}`.trim(),
+        `Name: ${payload.name}`,
+        `Email: ${payload.email}`,
+        `Team: ${payload.team || 'Not provided'}`,
+        `Phone: ${payload.phone || 'Not provided'}`,
+        `Use case: ${payload.useCase}`,
+        `Timeline: ${payload.timeline}`,
+        `Location: ${payload.location || 'Not provided'}`,
+        `Scale: ${payload.scale || 'Not provided'}`,
+        `Devices: ${payload.devices.length ? payload.devices.join(', ') : 'Not provided'}`,
+        `Need: ${payload.message || 'Not provided'}`
+      ].join('\n');
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        statusEl.textContent = 'Copied';
+      } catch {
+        statusEl.textContent = 'Copy failed';
+      }
+    }
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const payload = collectPayload();
+      button.disabled = true;
+      statusEl.textContent = 'Sending...';
+      successBox.classList.remove('show');
+      try {
+        const res = await fetch('/api/pilot-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok || !body.ok) throw new Error(body.error || 'Request failed');
+        const text = summary(payload, body.id);
+        successBox.innerHTML = `<strong>Request received.</strong><br>Reference: ${body.id}<br><button class="copy-button" type="button" id="copySummary">Copy request summary</button>`;
+        successBox.classList.add('show');
+        document.getElementById('copySummary').addEventListener('click', () => copyText(text));
+        form.reset();
+        statusEl.textContent = 'Saved';
+      } catch (error) {
+        const text = summary(payload, 'not-sent');
+        successBox.innerHTML = `<strong>Request could not be saved automatically.</strong><br><a class="copy-button" href="mailto:pilot@halitochat.tech?subject=Halito%20Field%20Kit%20Pilot&body=${encodeURIComponent(text)}">Open email draft</a>`;
+        successBox.classList.add('show');
+        statusEl.textContent = error.message || 'Try again';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

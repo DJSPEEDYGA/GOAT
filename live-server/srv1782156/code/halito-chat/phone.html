@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#10131a" />
+    <title>Halito Chat Phone</title>
+    <link rel="manifest" href="./manifest.webmanifest?v=12" />
+    <link rel="stylesheet" href="./styles.css?v=12" />
+  </head>
+  <body class="phone-app">
+    <main class="phone-shell">
+      <header class="phone-top">
+        <div>
+          <p class="eyebrow">Phone node</p>
+          <h1>Halito Chat</h1>
+          <p id="node-id" class="node-id"></p>
+        </div>
+        <span id="peer-count" class="status-pill">connecting</span>
+      </header>
+
+      <section class="phone-identity">
+        <label for="handle">Handle</label>
+        <div class="identity-row">
+          <input id="handle" maxlength="32" autocomplete="nickname" />
+          <button id="save-handle" type="button">Save</button>
+        </div>
+      </section>
+
+      <section class="phone-tabs" aria-label="Phone sections">
+        <a href="#chat">Chat</a>
+        <a href="#pair">Peer</a>
+        <a href="#peers">Peers</a>
+      </section>
+
+      <section id="chat" class="panel phone-room">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Room</p>
+            <h2>Local Channel</h2>
+          </div>
+          <button id="sync-chat" type="button" class="small">Sync</button>
+        </div>
+        <p id="relay-status" class="relay-status">Joining shared Halito lobby...</p>
+        <div id="messages" class="messages" aria-live="polite"></div>
+        <form id="message-form" class="composer">
+          <input id="message-input" maxlength="800" autocomplete="off" placeholder="Broadcast to the mesh" />
+          <button type="submit">Send</button>
+        </form>
+      </section>
+
+      <section id="pair" class="panel phone-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Optional</p>
+            <h2>Direct Peer</h2>
+          </div>
+          <span id="pair-state" class="status-pill muted">idle</span>
+        </div>
+        <div class="button-row phone-actions">
+          <button id="create-offer" type="button">Offer</button>
+          <button id="use-signal" type="button">Use Signal</button>
+        </div>
+        <p class="pair-help">
+          The shared room works without this. Use Signal is only for testing direct browser-to-browser peering.
+        </p>
+        <label for="signal-input">Paste remote signal</label>
+        <textarea id="signal-input" spellcheck="false" placeholder="Paste an offer or answer"></textarea>
+        <label for="signal-output">Your signal</label>
+        <textarea id="signal-output" readonly spellcheck="false" placeholder="Tap Offer or Answer"></textarea>
+        <div class="split-row">
+          <button id="copy-signal" type="button">Copy</button>
+          <button id="share-signal" type="button">Share</button>
+        </div>
+        <div id="connection-log" class="connection-log" aria-live="polite"></div>
+      </section>
+
+      <section id="peers" class="panel phone-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Mesh</p>
+            <h2>Links</h2>
+          </div>
+          <button id="export-packets" type="button" class="small">Export</button>
+        </div>
+        <div id="peers-list" class="peers"></div>
+        <label for="packet-import">Import bundle</label>
+        <textarea id="packet-import" spellcheck="false" placeholder="Paste exported packet bundle"></textarea>
+        <button id="import-packets" type="button" class="wide">Import Bundle</button>
+      </section>
+
+      <section class="panel notes phone-panel">
+        <p class="eyebrow">Field note</p>
+        <p>
+          This phone version pairs with the desktop version in a browser. Native Bluetooth and Wi-Fi Direct mesh are still the next app layer.
+        </p>
+      </section>
+    </main>
+    <script src="./app.js?v=12" type="module"></script>
+  </body>
+</html>
