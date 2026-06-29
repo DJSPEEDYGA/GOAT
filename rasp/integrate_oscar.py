@@ -20,6 +20,7 @@ Touch-points in `chat_server.py`:
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 from typing import Dict, List, Optional, Tuple
@@ -75,6 +76,54 @@ def rasp_finalize(
 def rasp_stats() -> Dict[str, object]:
     """Expose on Oscar's /api/stats so the UI can show gate health."""
     return RASP.metrics.snapshot()
+
+
+# --------------------------------------------------------------------------- #
+# Byte-level helpers — minimal-footprint hooks for chat_server.py's proxy.
+# These let the in-server edits be 1-3 lines and never raise into the proxy.
+# --------------------------------------------------------------------------- #
+def rasp_prepare_body(body: bytes, host_skill_prompt: str = ""):
+    """STEP 1 (byte form): inject the RASP constitution + lane nudge into a raw
+    /api/chat request body. Returns (new_body_bytes, user_text, lane_or_None).
+    On any parse problem the original body is returned unchanged.
+    """
+    try:
+        req = json.loads(body) if body else {}
+    except Exception:
+        return body, "", None
+    messages = req.get("messages")
+    if not isinstance(messages, list):
+        return body, "", None
+    new_messages, before = rasp_prepare(messages, host_skill_prompt=host_skill_prompt)
+    req["messages"] = new_messages
+    return json.dumps(req).encode("utf-8"), last_user_text(messages), before.lane.value
+
+
+def rasp_gate_ollama_answer(
+    request_body: bytes,
+    answer_bytes: bytes,
+    evidence: Optional[List[Evidence]] = None,
+    had_tool_result: bool = False,
+) -> bytes:
+    """STEP 3 (byte form): gate a NON-streaming Ollama-format answer
+    ({"message": {"content": ...}}) and return possibly-remediated bytes.
+    Safe no-op on anything it can't parse.
+    """
+    try:
+        req = json.loads(request_body) if request_body else {}
+        ans = json.loads(answer_bytes)
+    except Exception:
+        return answer_bytes
+    msg = ans.get("message") if isinstance(ans, dict) else None
+    content = msg.get("content") if isinstance(msg, dict) else None
+    if not isinstance(content, str) or not content:
+        return answer_bytes
+    user_text = last_user_text(req.get("messages") or [])
+    final = rasp_finalize(user_text, content, evidence=evidence, had_tool_result=had_tool_result)
+    if final != content:
+        ans["message"]["content"] = final
+        return json.dumps(ans).encode("utf-8")
+    return answer_bytes
 
 
 # --------------------------------------------------------------------------- #
