@@ -32,8 +32,31 @@ except ImportError:
     HAS_PSUTIL = False
 
 # ── Configuration ──────────────────────────────────────────────
-CHAT_SERVER_PORT = 3333
-OLLAMA_HOST = "http://127.0.0.1:11434"
+def _env_int(name, default):
+    """Read an int from the environment, falling back to default if unset/invalid."""
+    try:
+        return int(os.environ.get(name, "").strip())
+    except (TypeError, ValueError):
+        return default
+
+def _resolve_ollama_host():
+    """Resolve the Ollama endpoint from OLLAMA_HOST.
+
+    Accepts a full URL (http://host:port), a bare host:port, or just a port.
+    Falls back to the default local Ollama endpoint when unset.
+    """
+    raw = os.environ.get("OLLAMA_HOST", "").strip()
+    if not raw:
+        return "http://127.0.0.1:11434"
+    if raw.startswith("http://") or raw.startswith("https://"):
+        return raw.rstrip("/")
+    if raw.isdigit():
+        return f"http://127.0.0.1:{raw}"
+    return f"http://{raw}".rstrip("/")
+
+# Port: honor AGENT_007_PORT / CHAT_SERVER_PORT set by the launcher scripts.
+CHAT_SERVER_PORT = _env_int("AGENT_007_PORT", _env_int("CHAT_SERVER_PORT", 3333))
+OLLAMA_HOST = _resolve_ollama_host()
 
 # Always resolve paths relative to THIS script's location (the USB drive)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -146,10 +169,9 @@ def _get_hw_stats():
 
     # ── macOS ─────────────────────────────────────────────────────
     else:
-        # User requested to skip macOS usage to avoid any potential permission/execution issues
-        cpu = 0.0
-        ram = 0.0
-        return cpu, ram
+        # User requested to skip macOS usage to avoid any potential permission/execution issues.
+        # Return -1 so the UI shows "Stats unavailable" instead of a misleading 0%.
+        return -1.0, -1.0
 
 
 def ensure_data_dir():
@@ -266,8 +288,10 @@ class ChatHandler(http.server.BaseHTTPRequestHandler):
         safe_path = os.path.normpath(path.lstrip("/"))
         full_path = os.path.join(SCRIPT_DIR, safe_path)
 
-        # Security: don't allow path traversal
-        if not full_path.startswith(SCRIPT_DIR):
+        # Security: don't allow path traversal (match on a directory boundary,
+        # so SCRIPT_DIR "/a/b" does not accept a sibling like "/a/bc").
+        script_dir_prefix = os.path.join(SCRIPT_DIR, "")
+        if full_path != SCRIPT_DIR and not full_path.startswith(script_dir_prefix):
             self.send_response(403)
             self.end_headers()
             return
