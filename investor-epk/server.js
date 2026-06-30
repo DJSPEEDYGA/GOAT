@@ -136,6 +136,12 @@ app.use('/epk', requireSessionRedirect, express.static(EPK_DIR, {
   },
 }));
 
+// The casino is a single-page app that uses pushState routing under
+// /epk/casino/ (e.g. /epk/casino/games/dice/). Serve its shell for any such
+// deep link so a reload or shared link resolves instead of 404-ing.
+app.get(/^\/epk\/casino\/(games\/[^?]*)?$/, requireSessionRedirect, (req, res) =>
+  res.sendFile(path.join(EPK_DIR, 'casino', 'index.html')));
+
 // A few surfaces linked from the EPK are not yet in the bundle. Route those
 // page requests back to the main Living EPK so a click never dead-ends.
 app.get(/^\/epk\/[^?]*\.html$/, requireSessionRedirect, (req, res) =>
