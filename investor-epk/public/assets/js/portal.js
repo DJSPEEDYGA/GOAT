@@ -46,7 +46,7 @@ function tile(d) {
 
   const deck = document.getElementById('deck');
   if (deck) {
-    for (let i = 1; i <= 13; i += 1) {
+    for (let i = 1; i <= 27; i += 1) {
       const n = String(i).padStart(2, '0');
       const a = document.createElement('a');
       a.className = 'deck-slide';
