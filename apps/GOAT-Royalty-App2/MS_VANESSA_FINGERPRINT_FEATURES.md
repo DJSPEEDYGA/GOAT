@@ -1,9 +1,9 @@
-# Ms Vanessa AI Assistant & Fingerprint Authentication
+# Ms. Vanessa AI Assistant & Fingerprint Authentication
 
-## 🤖 Ms Vanessa AI Assistant
+## 🤖 Ms. Vanessa AI Assistant
 
 ### Overview
-Ms Vanessa is an intelligent AI assistant powered by OpenAI GPT-4, specifically designed for the GOAT Royalty App to help artists manage their music publishing, track royalties, and maximize revenue.
+Ms. Vanessa is an intelligent AI assistant powered by OpenAI GPT-4, specifically designed for the GOAT Royalty App to help artists manage their music publishing, track royalties, and maximize revenue.
 
 ### Features
 - **Smart Analytics**: Intelligent insights about royalty earnings and performance metrics
@@ -26,7 +26,7 @@ Ms Vanessa is an intelligent AI assistant powered by OpenAI GPT-4, specifically 
 4. Get personalized advice for your music career
 
 ### Backend Setup
-The Ms Vanessa backend service requires:
+The Ms. Vanessa backend service requires:
 ```bash
 cd /path/to/ms-vanessa-backend
 npm install
@@ -89,7 +89,7 @@ Both features are now integrated into the main navigation:
 Both pages are configured as public pages (no authentication required) for easy access and demonstration.
 
 ### API Endpoints
-- **Ms Vanessa Chat**: `/api/ms-vanessa/chat` - Proxy to backend service
+- **Ms. Vanessa Chat**: `/api/ms-vanessa/chat` - Proxy to backend service
 - **Backend Service**: `http://localhost:4000/chat` - Express.js server
 
 ### Component Structure
@@ -124,7 +124,7 @@ pages/
 ### Dependencies
 - **React**: Frontend framework
 - **Lucide React**: Icon library
-- **Express.js**: Backend server (Ms Vanessa)
+- **Express.js**: Backend server (Ms. Vanessa)
 - **OpenAI API**: AI service integration
 - **Next.js**: Full-stack framework
 
@@ -156,7 +156,7 @@ pages/
 
 ## 🔮 Future Enhancements
 
-### Ms Vanessa Roadmap
+### Ms. Vanessa Roadmap
 - **Voice Integration**: Speech-to-text and text-to-speech
 - **Multilingual Support**: Multiple language responses
 - **Integration APIs**: Direct streaming platform connections

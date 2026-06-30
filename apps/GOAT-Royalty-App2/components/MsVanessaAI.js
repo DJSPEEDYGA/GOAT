@@ -1,5 +1,5 @@
 /**
- * GOAT Royalty App - Ms Vanessa AI Assistant Component
+ * GOAT Royalty App - Ms. Vanessa AI Assistant Component
  * Smart and loyal AI assistant powered by OpenAI GPT-4
  */
 
@@ -11,7 +11,7 @@ const MsVanessaAI = () => {
     {
       id: 1,
       role: 'assistant',
-      content: "Hello! I'm Ms Vanessa, your smart and loyal AI assistant for the GOAT Royalty App. I'm here to help you manage your music publishing, track royalties, and maximize your revenue. How can I assist you today?",
+      content: "Hello! I'm Ms. Vanessa, your smart and loyal AI assistant for the GOAT Royalty App. I'm here to help you manage your music publishing, track royalties, and maximize your revenue. How can I assist you today?",
       timestamp: new Date()
     }
   ]);
@@ -61,7 +61,7 @@ const MsVanessaAI = () => {
 
     try {
       // For development, simulate a response
-      // In production, this would call your Ms Vanessa backend
+      // In production, this would call your Ms. Vanessa backend
       setTimeout(() => {
         const assistantResponse = {
           id: Date.now() + 1,
@@ -96,7 +96,7 @@ const MsVanessaAI = () => {
       setIsLoading(false);
       */
     } catch (error) {
-      console.error('Error sending message to Ms Vanessa:', error);
+      console.error('Error sending message to Ms. Vanessa:', error);
       const errorMessage = {
         id: Date.now() + 1,
         role: 'assistant',
@@ -122,7 +122,7 @@ const MsVanessaAI = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <Crown className="w-8 h-8 text-purple-400 mr-2" />
-            <h1 className="text-4xl font-bold text-white">Ms Vanessa AI Assistant</h1>
+            <h1 className="text-4xl font-bold text-white">Ms. Vanessa AI Assistant</h1>
             <Sparkles className="w-8 h-8 text-purple-400 ml-2 animate-pulse" />
           </div>
           <p className="text-white/70 text-lg">Your smart and loyal AI companion for music royalty management</p>
@@ -212,7 +212,7 @@ const MsVanessaAI = () => {
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask Ms Vanessa about royalties, analytics, or anything else..."
+                placeholder="Ask Ms. Vanessa about royalties, analytics, or anything else..."
                 className="flex-1 bg-white/10 border border-white/20 rounded-full px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 disabled={isLoading}
               />

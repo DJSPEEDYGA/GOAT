@@ -1,7 +1,7 @@
-# Ms Vanessa AI Backend
+# Ms. Vanessa AI Backend
 
 ## Overview
-Ms Vanessa is an intelligent AI assistant backend service powered by OpenAI GPT-4, designed specifically for the GOAT Royalty App to help artists manage their music publishing, track royalties, and maximize revenue.
+Ms. Vanessa is an intelligent AI assistant backend service powered by OpenAI GPT-4, designed specifically for the GOAT Royalty App to help artists manage their music publishing, track royalties, and maximize revenue.
 
 ## Setup Instructions
 
@@ -49,7 +49,7 @@ SYSTEM_PROMPT=You are Ms. Vanessa, a smart and loyal assistant specializing in m
 ## API Endpoints
 
 ### POST /chat
-Send a message to Ms Vanessa and receive an AI-powered response.
+Send a message to Ms. Vanessa and receive an AI-powered response.
 
 **Request Body**:
 ```json
@@ -67,9 +67,9 @@ Send a message to Ms Vanessa and receive an AI-powered response.
 
 ## Usage with GOAT Royalty App
 
-1. Make sure the Ms Vanessa backend is running on port 4000
+1. Make sure the Ms. Vanessa backend is running on port 4000
 2. Navigate to `/ms-vanessa` in the GOAT Royalty App
-3. Start chatting with Ms Vanessa for intelligent assistance
+3. Start chatting with Ms. Vanessa for intelligent assistance
 
 ## Features
 
@@ -98,7 +98,7 @@ npm start
 ```bash
 curl -X POST http://localhost:4000/chat \
   -H "Content-Type: application/json" \
-  -d '{"message": "Hello Ms Vanessa!"}'
+  -d '{"message": "Hello Ms. Vanessa!"}'
 ```
 
 ## Integration

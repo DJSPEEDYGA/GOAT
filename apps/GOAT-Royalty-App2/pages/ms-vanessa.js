@@ -1,5 +1,5 @@
 /**
- * GOAT Royalty App - Ms Vanessa AI Page
+ * GOAT Royalty App - Ms. Vanessa AI Page
  */
 
 import React from 'react';
