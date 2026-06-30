@@ -175,6 +175,63 @@ body::before{
 .gen-bar .b span{position:absolute; bottom:-18px; left:0; right:0; text-align:center; font-size:9px; color:var(--muted)}
 .gen-bar .b em{position:absolute; top:-16px; left:0; right:0; text-align:center; font-size:10px; font-style:normal}
 
+/* ---------- TOUCH STUDIO CONTROLS (Slate-style) ---------- */
+.studio{display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; margin-top:6px}
+.st-rack{display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; width:100%}
+/* knob */
+.knob{width:78px; text-align:center; user-select:none; touch-action:none}
+.knob .dial{width:64px; height:64px; margin:0 auto; border-radius:50%; position:relative;
+  background:radial-gradient(circle at 50% 35%,#2c2c3c,#0c0c14); border:2px solid var(--border);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.6), 0 2px 5px rgba(0,0,0,.4); cursor:grab}
+.knob .dial:active{cursor:grabbing}
+.knob .ind{position:absolute; left:50%; top:6px; width:3px; height:20px; margin-left:-1.5px;
+  background:var(--accent2); border-radius:2px; transform-origin:50% 26px; box-shadow:0 0 5px var(--accent2)}
+.knob .ring{position:absolute; inset:-3px; border-radius:50%; pointer-events:none;
+  -webkit-mask:radial-gradient(transparent 60%,#000 62%); mask:radial-gradient(transparent 60%,#000 62%)}
+.knob .kl{font-size:11px; color:var(--muted); margin-top:5px}
+.knob .kv{font-size:12px; font-weight:700; color:var(--accent2)}
+/* fader / mixer */
+.fader{width:60px; text-align:center; user-select:none}
+.fader .track{position:relative; width:10px; height:150px; margin:6px auto; border-radius:6px;
+  background:linear-gradient(180deg,#0a0a12,#1c1c28); border:1px solid var(--border); touch-action:none; cursor:pointer}
+.fader .fill{position:absolute; left:0; right:0; bottom:0; border-radius:6px;
+  background:linear-gradient(180deg,var(--accent),var(--accent2))}
+.fader .cap{position:absolute; left:50%; width:34px; height:18px; margin-left:-17px; border-radius:4px;
+  background:linear-gradient(180deg,#3a3a4e,#15151f); border:1px solid var(--accent2);
+  box-shadow:0 2px 5px rgba(0,0,0,.5); touch-action:none}
+.fader .fl{font-size:11px; color:var(--muted)}
+.fader .fv{font-size:11px; font-weight:700; color:var(--accent2)}
+/* pads */
+.pads{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:8px}
+.pad{aspect-ratio:1/1; border-radius:10px; background:var(--bg3); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:var(--text);
+  cursor:pointer; touch-action:manipulation; user-select:none; transition:transform .05s, box-shadow .1s}
+.pad:active,.pad.hit{transform:scale(.94); background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff; box-shadow:0 0 16px var(--accent2)}
+/* transport */
+.transport{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.tp{min-width:48px; height:44px; padding:0 14px; border-radius:8px; background:var(--bg3);
+  border:1px solid var(--border); color:var(--text); font-size:16px; cursor:pointer; touch-action:manipulation}
+.tp.on{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none}
+.tp.rec.on{background:var(--red)}
+/* meter */
+.meter{width:18px; height:120px; border-radius:5px; background:#0a0a12; border:1px solid var(--border);
+  position:relative; overflow:hidden}
+.meter .lvl{position:absolute; left:0; right:0; bottom:0;
+  background:linear-gradient(180deg,var(--red),var(--accent2) 40%,var(--green)); transition:height .08s}
+/* xy pad */
+.xy{position:relative; width:100%; max-width:240px; aspect-ratio:1/1; border-radius:12px;
+  background:radial-gradient(circle at 50% 50%,#1a1a28,#0a0a12); border:1px solid var(--border);
+  touch-action:none; margin-top:8px; overflow:hidden}
+.xy .puck{position:absolute; width:26px; height:26px; margin:-13px 0 0 -13px; border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,var(--accent2),var(--accent)); box-shadow:0 0 14px var(--accent2)}
+/* full-screen studio mode */
+#studioMode{position:fixed; inset:0; z-index:60; background:var(--bg); display:none; flex-direction:column}
+#studioMode.open{display:flex}
+.studio-top{display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border)}
+.studio-top .title{flex:1; font-weight:700}
+.studio-body{flex:1; overflow:auto; padding:18px}
+
 /* ---------- SETTINGS DRAWER ---------- */
 .overlay{position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:50; display:none}
 .overlay.open{display:block}
@@ -256,6 +313,7 @@ body::before{
       <span class="pp" id="miniPP">▶</span>
       <span class="tname" id="miniName">No music</span>
     </div>
+    <button class="icon-btn" id="openStudio" title="Open touch Studio (full screen)">🎛️</button>
     <button class="icon-btn" id="toggleWorkspace" title="Toggle workspace">▦</button>
     <button class="icon-btn" id="openSettings" title="Settings & customize">⚙</button>
     <div class="win-controls" id="winControls">
@@ -453,6 +511,17 @@ body::before{
 
 <audio id="musicAudio"></audio>
 
+<!-- Full-screen touch Studio -->
+<div id="studioMode">
+  <div class="studio-top">
+    <div class="logo" style="font-size:20px">🎛️</div>
+    <div class="title">Oscar Studio — touch console</div>
+    <button class="btn ghost" id="studioReset">Reset</button>
+    <button class="btn ghost" id="studioClose">✕ Close</button>
+  </div>
+  <div class="studio-body" id="studioBody"></div>
+</div>
+
 <script>
 'use strict';
 /* ============================ CONFIG / BACKEND ============================ */
@@ -610,6 +679,29 @@ function buildGenComponent(spec){
     const max=Math.max(...spec.data.map(d=>+d.value||0),1);
     html+='<div class="gen-bar">'+spec.data.map(d=>`<div class="b" style="height:${Math.round((+d.value/max)*100)}%"><em>${esc(d.value)}</em><span>${esc(d.label)}</span></div>`).join('')+'</div>';
   }
+  // ---- Touch studio controls (knob, fader/mixer, pads, transport, xy, meter, studio) ----
+  if(t==='knob' || (t==='knobs' && Array.isArray(spec.knobs))){
+    const ks = t==='knob'? [{label:spec.label||spec.title||'Knob', value:spec.value}] : spec.knobs;
+    html+='<div class="studio">'+ks.map((k,i)=>genKnob(k,i)).join('')+'</div>';
+  }
+  if(t==='fader' || t==='mixer'){
+    const fs = t==='fader'? [{label:spec.label||spec.title||'Level', value:spec.value}] : (spec.channels||spec.faders||[]);
+    html+='<div class="studio">'+fs.map((f,i)=>genFader(f,i)).join('')+'</div>';
+  }
+  if(t==='pads' && Array.isArray(spec.pads)){
+    html+='<div class="pads">'+spec.pads.map((p,i)=>`<div class="pad" data-pad="${i}">${esc(typeof p==='string'?p:(p.label||('Pad '+(i+1))))}</div>`).join('')+'</div>';
+  }
+  if(t==='transport'){ html+=genTransport(spec); }
+  if(t==='xy'){ html+=genXY(spec); }
+  if(t==='studio'){
+    html+='<div class="st-rack">';
+    if(Array.isArray(spec.knobs)) html+='<div class="studio">'+spec.knobs.map((k,i)=>genKnob(k,i)).join('')+'</div>';
+    if(Array.isArray(spec.channels)) html+='<div class="studio">'+spec.channels.map((f,i)=>genFader(f,i)).join('')+'</div>';
+    if(spec.xy) html+=genXY(spec.xy);
+    html+='</div>';
+    if(spec.transport!==false) html+=genTransport(spec);
+    if(Array.isArray(spec.pads)) html+='<div class="pads">'+spec.pads.map((p,i)=>`<div class="pad" data-pad="${i}">${esc(typeof p==='string'?p:(p.label||('Pad '+(i+1))))}</div>`).join('')+'</div>';
+  }
   if(t==='form' && Array.isArray(spec.fields)){
     html+=spec.fields.map((f,i)=>{
       if(f.type==='select')return `<div class="gen-field"><label>${esc(f.label)}</label><select data-fi="${i}">${(f.options||[]).map(o=>`<option>${esc(o)}</option>`).join('')}</select></div>`;
@@ -638,7 +730,102 @@ function bindGen(card,spec){
       inputEl.value=payload; sendMessage();
     };
   });
+  bindStudio(card,spec);
 }
+
+/* ---------- Touch studio control generators ---------- */
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function genKnob(k,i){const v=(k.value==null?50:+k.value);
+  return `<div class="knob" data-knob="${i}" data-v="${v}" data-label="${esc(k.label||('Knob '+(i+1)))}" data-min="${k.min==null?0:k.min}" data-max="${k.max==null?100:k.max}">
+    <div class="dial"><div class="ring"></div><div class="ind"></div></div><div class="kl">${esc(k.label||('Knob '+(i+1)))}</div><div class="kv">${v}</div></div>`;}
+function genFader(f,i){const v=(f.value==null?70:+f.value);
+  return `<div class="fader" data-fader="${i}" data-v="${v}" data-label="${esc(f.name||f.label||('Ch '+(i+1)))}">
+    <div class="track"><div class="fill" style="height:${v}%"></div><div class="cap" style="bottom:calc(${v}% - 9px)"></div></div>
+    <div class="fv">${v}</div><div class="fl">${esc(f.name||f.label||('Ch '+(i+1)))}</div></div>`;}
+function genTransport(spec){const btns=spec.transportButtons||['play','stop','rec'];
+  const ic={play:'▶',stop:'■',rec:'●',pause:'⏸',loop:'↻',rewind:'⏮'};
+  return '<div class="transport">'+btns.map(b=>`<button class="tp ${b}" data-tp="${b}">${ic[b]||esc(b)}</button>`).join('')+'</div>';}
+function genXY(spec){const xl=spec.xLabel||'X',yl=spec.yLabel||'Y';
+  return `<div class="xy" data-xy="1" data-xl="${esc(xl)}" data-yl="${esc(yl)}"><div class="puck" style="left:50%; top:50%"></div></div>`;}
+
+function bindStudio(card,spec){
+  const toOscar=(msg)=>{ inputEl.value=msg; sendMessage(); };
+  // KNOBS (vertical drag → rotate)
+  card.querySelectorAll('.knob').forEach(kn=>{
+    const dial=kn.querySelector('.dial'), kv=kn.querySelector('.kv'), ind=kn.querySelector('.ind'), ring=kn.querySelector('.ring');
+    const min=+kn.dataset.min, max=+kn.dataset.max, label=kn.dataset.label;
+    const setV=v=>{v=clamp(Math.round(v),min,max); kn.dataset.v=v; kv.textContent=v;
+      const frac=(v-min)/(max-min||1), deg=-135+frac*270;
+      ind.style.transform='rotate('+deg+'deg)';
+      ring.style.background=`conic-gradient(from -135deg, var(--accent) ${frac*270}deg, var(--border) 0)`;
+    };
+    setV(+kn.dataset.v);
+    let dragging=false, startY=0, startV=0;
+    const down=e=>{dragging=true; startY=(e.touches?e.touches[0].clientY:e.clientY); startV=+kn.dataset.v; e.preventDefault();};
+    const move=e=>{if(!dragging)return; const y=(e.touches?e.touches[0].clientY:e.clientY); setV(startV+(startY-y)*((max-min)/150)); e.preventDefault();};
+    const up=()=>{if(!dragging)return; dragging=false; toOscar(`[studio] knob "${label}" = ${kn.dataset.v}`);};
+    dial.addEventListener('pointerdown',down); window.addEventListener('pointermove',move); window.addEventListener('pointerup',up);
+  });
+  // FADERS (vertical drag)
+  card.querySelectorAll('.fader').forEach(fd=>{
+    const track=fd.querySelector('.track'), fill=fd.querySelector('.fill'), cap=fd.querySelector('.cap'), fv=fd.querySelector('.fv');
+    const label=fd.dataset.label;
+    const setV=v=>{v=clamp(Math.round(v),0,100); fd.dataset.v=v; fill.style.height=v+'%'; cap.style.bottom='calc('+v+'% - 9px)'; fv.textContent=v;};
+    const fromY=clientY=>{const r=track.getBoundingClientRect(); return ((r.bottom-clientY)/r.height)*100;};
+    let dragging=false;
+    const down=e=>{dragging=true; setV(fromY(e.touches?e.touches[0].clientY:e.clientY)); e.preventDefault();};
+    const move=e=>{if(!dragging)return; setV(fromY(e.touches?e.touches[0].clientY:e.clientY)); e.preventDefault();};
+    const up=()=>{if(!dragging)return; dragging=false; toOscar(`[studio] fader "${label}" = ${fd.dataset.v}`);};
+    track.addEventListener('pointerdown',down); window.addEventListener('pointermove',move); window.addEventListener('pointerup',up);
+  });
+  // PADS (tap)
+  card.querySelectorAll('.pad').forEach(pad=>{
+    pad.addEventListener('pointerdown',()=>{pad.classList.add('hit'); setTimeout(()=>pad.classList.remove('hit'),120); toOscar(`[studio] pad "${pad.textContent.trim()}" triggered`);});
+  });
+  // TRANSPORT (toggle)
+  card.querySelectorAll('.tp').forEach(tp=>{
+    tp.addEventListener('click',()=>{
+      const name=tp.dataset.tp;
+      if(name==='stop'){card.querySelectorAll('.tp').forEach(x=>x.classList.remove('on'));}
+      else tp.classList.toggle('on');
+      toOscar(`[studio] transport: ${name}${tp.classList.contains('on')?' on':''}`);
+    });
+  });
+  // XY pad (drag puck)
+  card.querySelectorAll('.xy').forEach(xy=>{
+    const puck=xy.querySelector('.puck'); let dragging=false;
+    const set=(cx,cy)=>{const r=xy.getBoundingClientRect(); const x=clamp((cx-r.left)/r.width,0,1), y=clamp((cy-r.top)/r.height,0,1);
+      puck.style.left=(x*100)+'%'; puck.style.top=(y*100)+'%'; xy.dataset.x=Math.round(x*100); xy.dataset.y=Math.round((1-y)*100);};
+    const down=e=>{dragging=true; const t=e.touches?e.touches[0]:e; set(t.clientX,t.clientY); e.preventDefault();};
+    const move=e=>{if(!dragging)return; const t=e.touches?e.touches[0]:e; set(t.clientX,t.clientY); e.preventDefault();};
+    const up=()=>{if(!dragging)return; dragging=false; toOscar(`[studio] XY ${xy.dataset.xl}=${xy.dataset.x||50}, ${xy.dataset.yl}=${xy.dataset.y||50}`);};
+    xy.addEventListener('pointerdown',down); window.addEventListener('pointermove',move); window.addEventListener('pointerup',up);
+  });
+}
+
+/* ---------- Studio surface (Producer mode + full-screen) ---------- */
+function defaultStudioSpec(){
+  return {type:'studio', title:'Oscar Studio',
+    knobs:[{label:'Gain',value:60},{label:'Tone',value:45},{label:'Drive',value:30},{label:'Verb',value:25},{label:'Pan',value:50,min:-50,max:50}],
+    channels:[{name:'Kick',value:80},{name:'Snare',value:70},{name:'Bass',value:75},{name:'Keys',value:60},{name:'Vox',value:85},{name:'FX',value:40},{name:'Master',value:90}],
+    xy:{xLabel:'Filter',yLabel:'Reso'},
+    transportButtons:['rewind','play','stop','rec','loop'],
+    pads:['Kick','Snare','Hat','Clap','Tom','Rim','Crash','Perc','808','Vox','FX','Stab','Bass','Lead','Pad','Riser'],
+    actions:[{label:'Send mix to Oscar',primary:true,send:'Apply the current studio mix and suggest production tweaks.'}]
+  };
+}
+function renderProducerStudio(){
+  const host=$('#genuiHost'); if(!host)return;
+  host.innerHTML=''; switchWsPane('genui',false);
+  const c=buildGenComponent(defaultStudioSpec()); host.appendChild(c); bindGen(c,defaultStudioSpec());
+  $('#workspace').classList.remove('collapsed');
+}
+function openStudio(){
+  const body=$('#studioBody'); body.innerHTML='';
+  const spec=defaultStudioSpec(); const c=buildGenComponent(spec); body.appendChild(c); bindGen(c,spec);
+  $('#studioMode').classList.add('open');
+}
+function closeStudio(){ $('#studioMode').classList.remove('open'); }
 
 /* ============================ SEND / RECEIVE ============================ */
 let sending=false;
@@ -657,7 +844,7 @@ async function sendMessage(){
 
   const sys=[]; if(S.settings.sysPrompt)sys.push({role:'system',content:S.settings.sysPrompt});
   if(S.settings.projMem)sys.push({role:'system',content:'PROJECT MEMORY:\n'+S.settings.projMem});
-  if(S.settings.genui)sys.push({role:'system',content:'GENERATIVE UI: When a card, form, table, stats, or chart would help, append a fenced block ```ui {json}``` where json has a "type" of card|form|table|stats|chart and relevant fields (title, body, fields[], columns/rows, stats[], data[], actions[{label,send,primary}]). Keep normal prose outside the block.'});
+  if(S.settings.genui)sys.push({role:'system',content:'GENERATIVE UI: When a card, form, table, stats, chart, or a touch studio control would help, append a fenced block ```ui {json}``` where json has a "type". Types: card|form|table|stats|chart|knobs|fader|mixer|pads|transport|xy|studio. Fields by type: card{title,body}; form{fields[{label,name,type,options}],submitLabel}; table{columns[],rows[[]]}; stats{stats[{label,value}]}; chart{data[{label,value}]}; knobs{knobs[{label,value,min,max}]}; mixer{channels[{name,value}]}; pads{pads[strings]}; transport{transportButtons[]}; xy{xLabel,yLabel}; studio{knobs[],channels[],pads[],xy{},transportButtons[]} for a full DAW-style touch console. All controls are touch/drag and report back to you. Always add actions[{label,send,primary}] when useful. Keep normal prose outside the block.'});
 
   const body={model:S.settings.model||$('#modelPick').value,
     messages:[...sys,...c.messages.map(m=>({role:m.role,content:m.content}))], stream:false};
@@ -856,7 +1043,12 @@ function wire(){
     S.mode=t.dataset.mode; S.settings.capability=t.dataset.mode; saveSettings();
     document.querySelectorAll('.side-item[data-mode]').forEach(x=>x.classList.toggle('active',x===t));
     $('#modeBadge').textContent=t.dataset.mode;
+    if(t.dataset.mode==='producer') renderProducerStudio();
   });
+  // studio (full-screen touch console)
+  $('#openStudio').onclick=openStudio;
+  $('#studioClose').onclick=closeStudio;
+  $('#studioReset').onclick=()=>openStudio();
   // settings drawer
   $('#openSettings').onclick=()=>{$('#overlay').classList.add('open');$('#drawer').classList.add('open');};
   const closeSet=()=>{$('#overlay').classList.remove('open');$('#drawer').classList.remove('open');};
