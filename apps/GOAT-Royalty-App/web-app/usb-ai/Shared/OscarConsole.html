@@ -9,7 +9,23 @@
    OSCAR CONSOLE — Devin-style local launcher for GOAT Force
    Zero dependencies. Runs from USB / OSCAR drive / server.
    ============================================================ */
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+/* Touch-screen support: comfortable tap targets, smooth touch scroll, no accidental zoom on controls */
+html{touch-action:manipulation}
+button,.side-item,.ws-tab,.swatch,.icon-btn,.cbtn,.tab{touch-action:manipulation; cursor:pointer}
+.msgs,#msgs,#genuiHost,#sidebar,.drawer-body,.sidebar{-webkit-overflow-scrolling:touch}
+input[type=range]{touch-action:none; height:28px}
+@media (pointer:coarse){
+  .side-item,.ws-tab{min-height:44px; display:flex; align-items:center}
+  .swatch{width:36px!important; height:36px!important}
+  #input{font-size:16px} /* prevents iOS zoom-on-focus */
+  .icon-btn,.cbtn{min-width:44px; min-height:44px}
+}
+/* Tablet / smaller touch screens: collapse workspace, keep chat usable */
+@media (max-width:900px){
+  #workspace{display:none}
+  #sidebar{position:absolute; z-index:40; height:100%}
+}
 :root{
   --bg:#0a0a0f; --bg2:#111118; --bg3:#1a1a25; --card:#15151f;
   --border:#2a2a3a; --text:#f0f0f5; --muted:#7a7a90;
