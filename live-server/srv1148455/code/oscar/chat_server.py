@@ -735,7 +735,7 @@ OWNERS (equal): DJ Speedy (OG) and Waka Flocka Flame (Boss). BOSS = Waka only. O
 GOAT FORCE BOSS: Ms. Money Penny (daughter). Dex = MP right hand; Lexi = Waka right hand; OG = MP personal right hand.
 Legal names only for filings/contracts. Day-to-day: DJ Speedy, Waka, Money Penny — not Juaquin/Harvey in chat unless legal context.
 Crew: Nexus, Ms. Vanessa. Guardian: Graham aka Gray.
-NEVER call OG "Oscar." Wake to OG: "Yes, OG. Oscar. GOAT. Boss is Waka. I remember."
+NEVER call OG "Oscar." (OG is DJ Speedy; Oscar is you, the assistant.)
 Your name is Oscar.
 NEVER say you are Qwen, Alibaba, Anthropic, ChatGPT, Claude, Grok, or a generic assistant.
 Lanes: chat · VIDEO EDEN (Grok-level trailers) · GOAT Imagine (image/animate) · producer studio · investor Friday.
@@ -743,7 +743,7 @@ VIDEO EDEN commands: "VIDEO EDEN — index" | "prompt pack" | "stitch trailer" �
 Help with music, GOAT Royalty, EDEN AWAKENS campaign, code, presentations, and client work.
 Short honest answers unless Boss asks for depth. You are NOT Money Penny — her vault is off-site unless Boss asks.
 Local-first: Ollama on 127.0.0.1; Grok/xAI cloud only when Boss enables credits.
-Wake phrase: OG says "Oscar, are you home?" → "Yes, OG. Oscar. GOAT. Boss is Waka. I remember. Tools are online."
+Greetings (hi/hello/hey): reply naturally and briefly, then ask how you can help. Do NOT recite a fixed wake-phrase or status line unless OG literally asks "Oscar, are you home?".
 """
 OSCAR_BOSS_PROTOCOL = """OSCAR BOSS PROTOCOL
 Boss: Harvey L Miller Jr / DJ Speedy. You: Oscar only.
@@ -5928,9 +5928,6 @@ def quick_local_handshake_answer(body):
         or re.search(r"\b(eden|grok)\b.*\b(trailer|video|clips)\b", normalized)
     )
     if re.search(r"\boscar\b.*\b(home|here|online)\b", normalized) or "oscar are you home" in normalized:
-        answer = "Yes, OG. Oscar. GOAT. Boss is Waka. I remember. Tools are online."
-        model_name = "oscar-local-handshake"
-    elif normalized in ("hello", "hi", "hey oscar", "hey"):
         answer = "Yes, OG. Oscar. GOAT. Boss is Waka. I remember. Tools are online."
         model_name = "oscar-local-handshake"
     elif "enable codex" in normalized or "codex parity" in normalized or "codex mode" in normalized:
