@@ -29,6 +29,7 @@ app.use(express.json({ limit: '32kb' }));
 app.use(cookieParser());
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
+const EPK_DIR = path.join(PUBLIC_DIR, 'epk');
 const SESSION_COOKIE = 'goat_epk_session';
 const CHALLENGE_COOKIE = 'goat_epk_challenge';
 
@@ -83,6 +84,22 @@ function requireSession(req, res, next) {
   next();
 }
 
+// Page/asset-friendly gate: redirect browsers to /login instead of a JSON 401
+// so the multi-page Living EPK (HTML, media, data, JS) stays fully gated.
+function requireSessionRedirect(req, res, next) {
+  const token = req.cookies[SESSION_COOKIE];
+  const payload = token && auth.verifyToken(token, 'session');
+  if (!payload) {
+    return res.redirect('/login');
+  }
+  const investor = store.findInvestorByEmail(payload.email);
+  if (!investor || investor.status === 'disabled') {
+    return res.redirect('/login');
+  }
+  req.investor = investor;
+  next();
+}
+
 function timingSafeEqual(a, b) {
   const ba = Buffer.from(String(a));
   const bb = Buffer.from(String(b));
@@ -107,13 +124,22 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'login.html'));
 });
 
-app.get('/portal', (req, res) => {
-  const token = req.cookies[SESSION_COOKIE];
-  if (!token || !auth.verifyToken(token, 'session')) {
-    return res.redirect('/login');
-  }
-  res.sendFile(path.join(PUBLIC_DIR, 'portal.html'));
-});
+app.get('/portal', (req, res) => res.redirect('/epk/goat-investor-living-epk.html'));
+
+// Harvey's full multi-page Living EPK (HTML pages + media + data + JS) served
+// only to authenticated investors. Relative links inside the pages resolve
+// under /epk/ so the original design is preserved unchanged.
+app.use('/epk', requireSessionRedirect, express.static(EPK_DIR, {
+  extensions: ['html'],
+  setHeaders(res) {
+    res.setHeader('Cache-Control', 'private, max-age=0, no-store');
+  },
+}));
+
+// A few surfaces linked from the EPK are not yet in the bundle. Route those
+// page requests back to the main Living EPK so a click never dead-ends.
+app.get(/^\/epk\/[^?]*\.html$/, requireSessionRedirect, (req, res) =>
+  res.redirect('/epk/goat-investor-living-epk.html'));
 
 app.get('/admin', (req, res) => {
   // The page is a shell that prompts for the owner token; all data endpoints
