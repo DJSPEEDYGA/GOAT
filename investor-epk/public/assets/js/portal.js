@@ -44,6 +44,24 @@ function tile(d) {
   const grid = document.getElementById('grid');
   (data.destinations || []).forEach((d) => grid.appendChild(tile(d)));
 
+  const deck = document.getElementById('deck');
+  if (deck) {
+    for (let i = 1; i <= 13; i += 1) {
+      const n = String(i).padStart(2, '0');
+      const a = document.createElement('a');
+      a.className = 'deck-slide';
+      a.href = `/assets/deck/slide-${n}.png`;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      const img = document.createElement('img');
+      img.loading = 'lazy';
+      img.alt = `GOAT Royalty deck slide ${n}`;
+      img.src = `/assets/deck/slide-${n}.png`;
+      a.appendChild(img);
+      deck.appendChild(a);
+    }
+  }
+
   document.getElementById('logout').addEventListener('click', async () => {
     await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
     window.location.href = '/login';
