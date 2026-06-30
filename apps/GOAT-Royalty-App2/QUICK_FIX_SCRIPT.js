@@ -26,7 +26,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 # Supabase Service Role Key (for server-side operations)
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 
-# OpenAI API Key (for Ms Vanessa AI)
+# OpenAI API Key (for Ms. Vanessa AI)
 OPENAI_API_KEY=your_openai_api_key_here
 
 # Application Configuration

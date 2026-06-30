@@ -1,11 +1,11 @@
 #!/bin/bash
 # ============================================================================
 # DEPLOY-SERVER-1-FULL.sh
-# ONE-CLICK DEPLOY: Full Ms Money Penny ecosystem + Ollama + NVIDIA + API
+# ONE-CLICK DEPLOY: Full Ms. Money Penny ecosystem + Ollama + NVIDIA + API
 # Target: Server 1 (93.127.214.171) — standard port 80
 # ============================================================================
 # Deploys:
-#   • 18-page Ms Money Penny ecosystem (HTML/CSS/JS + all real data)
+#   • 18-page Ms. Money Penny ecosystem (HTML/CSS/JS + all real data)
 #   • GOAT Royalty v6 Empire Edition sub-app (/goat-royalty/)
 #   • Ollama local AI (gemma2:2b + llama3.2:3b) on /api/chat
 #   • Model Downloader Flask backend on /api/download & /api/nvidia
@@ -51,7 +51,7 @@ echo "   ✅ Dependencies installed"
 # STEP 2: Clone Repository (sparse checkout of web-app/)
 # ============================================================================
 echo ""
-echo "📥 [2/6] Cloning Ms Money Penny ecosystem from GitHub..."
+echo "📥 [2/6] Cloning Ms. Money Penny ecosystem from GitHub..."
 rm -rf /tmp/goat-deploy
 mkdir -p /tmp/goat-deploy
 cd /tmp/goat-deploy

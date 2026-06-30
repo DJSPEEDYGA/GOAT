@@ -187,7 +187,7 @@ Once deployed, your GOAT Royalty App will be live at:
 
 All features will be available:
 - 49 pages with GOAT Force styling
-- Ms Vanessa AI assistant
+- Ms. Vanessa AI assistant
 - Codex Engine royalty tracking
 - Fingerprint authentication
 - Audio mastering suite

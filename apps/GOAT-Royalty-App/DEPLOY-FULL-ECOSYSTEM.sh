@@ -1,5 +1,5 @@
 # ============================================================================
-# 🐐 Ms Money Penny — THE GOAT ROYALTY STORE
+# 🐐 Ms. Money Penny — THE GOAT ROYALTY STORE
 # by Life Imitates Art Inc.
 # Complete Ecosystem Deployment (18 Pages + Full Assets)
 # ============================================================================
@@ -55,7 +55,7 @@ echo "   ✅ Dependencies installed"
 
 # Clone entire web-app folder from GitHub
 echo ""
-echo "⬇️  [2/5] Downloading complete Ms Money Penny ecosystem..."
+echo "⬇️  [2/5] Downloading complete Ms. Money Penny ecosystem..."
 rm -rf /tmp/goat-deploy
 mkdir -p /tmp/goat-deploy
 cd /tmp/goat-deploy
