@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0a">
+<title>🎚️ GOAT Touch Mixer</title>
+<link rel="stylesheet" href="css/goat-touch.css">
+<script src="js/goat-touch.js" defer></script>
+<style>
+  .mix-page {
+    padding: calc(64px + env(safe-area-inset-top) + 10px) 8px calc(84px + env(safe-area-inset-bottom)) 8px;
+    min-height: 100vh;
+  }
+  .mixer-strip {
+    min-width: 100px;
+    padding: 14px 10px;
+    position: relative;
+  }
+  .strip-top {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .mini-btn {
+    min-height: 40px;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 800;
+    background: var(--gradient-dark);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: var(--goat-cream);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .mini-btn:active { transform: scale(0.95); }
+  .mini-btn.mute.on    { background: var(--gradient-power); color: white; border-color: var(--goat-red-bright); }
+  .mini-btn.solo.on    { background: var(--gradient-gold); color: var(--goat-black); border-color: var(--goat-gold); }
+  .mini-btn.rec.on     { background: var(--gradient-power); color: white; animation: blink-rec 1s infinite; }
+
+  .knob-row {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+  .knob {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #3a3a3a, #0a0a0a 70%);
+    border: 1px solid #444;
+    position: relative;
+    cursor: pointer;
+    touch-action: none;
+  }
+  .knob::after {
+    content: '';
+    position: absolute;
+    left: 50%; top: 6px;
+    width: 3px; height: 14px;
+    background: var(--goat-gold);
+    transform-origin: 50% 14px;
+    transform: translateX(-50%);
+  }
+  .knob-label { font-size: 9px; color: var(--goat-silver); text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .meter-col {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .master-strip {
+    background: linear-gradient(180deg, #2a1a0a, #1a0a00);
+    border: 2px solid var(--goat-gold);
+    box-shadow: var(--shadow-glow-gold);
+  }
+  .master-strip .fader-label { color: var(--goat-gold); font-weight: 900; }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="touch-mode">
+
+<header class="t-topbar">
+  <button class="t-btn" onclick="history.back()" style="min-width:auto;min-height:44px;padding:8px 12px;">←</button>
+  <div class="brand"><span class="emoji">🎚️</span><span>MIXER</span></div>
+  <span class="spacer"></span>
+  <button class="mini-btn" onclick="allReset()">RESET</button>
+  <a class="mini-btn" href="ssl-mixer.html">SSL PRO</a>
+</header>
+
+<main class="mix-page">
+  <div class="fader-rack" id="faderRack"></div>
+</main>
+
+<nav class="t-tabbar">
+  <a class="t-tab" href="touch-hub.html"><span class="ic">🏠</span><span class="lb">Hub</span></a>
+  <a class="t-tab" href="touch-brain.html"><span class="ic">🧠</span><span class="lb">AI</span></a>
+  <a class="t-tab" href="touch-pads.html"><span class="ic">🎹</span><span class="lb">Pads</span></a>
+  <a class="t-tab active" href="touch-mixer.html"><span class="ic">🎚️</span><span class="lb">Mix</span></a>
+  <a class="t-tab" href="touch-deck.html"><span class="ic">🎛️</span><span class="lb">Deck</span></a>
+  <a class="t-tab" href="touch-transport.html"><span class="ic">⏯️</span><span class="lb">Trans</span></a>
+</nav>
+
+<script>
+const CHANNELS = [
+  { name:'KICK',    color:'#e63946' },
+  { name:'SNARE',   color:'#f97316' },
+  { name:'HATS',    color:'#ffd700' },
+  { name:'808',     color:'#a855f7' },
+  { name:'VOX',     color:'#22c55e' },
+  { name:'KEYS',    color:'#06b6d4' },
+  { name:'FX',      color:'#ec4899' },
+  { name:'BUS',     color:'#f5f5dc' },
+];
+
+const faders = [];
+const rack = document.getElementById('faderRack');
+
+function createStrip(name, color, isMaster = false) {
+  const strip = document.createElement('div');
+  strip.className = 'fader-strip mixer-strip' + (isMaster ? ' master-strip' : '');
+  strip.innerHTML = `
+    <div class="fader-label" style="color:${isMaster ? '' : color}">${name}</div>
+    <div class="strip-top">
+      <button class="mini-btn mute">MUTE</button>
+      <button class="mini-btn solo">SOLO</button>
+      ${isMaster ? '' : '<button class="mini-btn rec">REC</button>'}
+    </div>
+    <div class="knob-row">
+      <div><div class="knob" data-knob="hi"></div><div class="knob-label">HI</div></div>
+      <div><div class="knob" data-knob="mid"></div><div class="knob-label">MID</div></div>
+      <div><div class="knob" data-knob="lo"></div><div class="knob-label">LO</div></div>
+    </div>
+    <div class="knob-row">
+      <div><div class="knob" data-knob="rev"></div><div class="knob-label">REV</div></div>
+      <div><div class="knob" data-knob="dly"></div><div class="knob-label">DLY</div></div>
+      <div><div class="knob" data-knob="pan"></div><div class="knob-label">PAN</div></div>
+    </div>
+    <div class="meter-col">
+      <div class="meter"><div class="meter-fill" style="height:30%"></div></div>
+      <div class="meter"><div class="meter-fill" style="height:28%"></div></div>
+    </div>
+    <div class="fader-track">
+      <div class="fader-fill"></div>
+      <div class="fader-thumb"></div>
+    </div>
+    <div class="fader-value">0.0 dB</div>
+  `;
+
+  // Fader binding
+  const track = strip.querySelector('.fader-track');
+  const ctrl = GoatTouch.bindFader(track, {
+    min: -60, max: 12, value: 0,
+    fmt: v => (v > 0 ? '+' : '') + v.toFixed(1) + ' dB',
+    onChange: v => { /* audio gain hook would go here */ }
+  });
+
+  // Mute / Solo / Rec toggles
+  strip.querySelectorAll('.mini-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      b.classList.toggle('on');
+      GoatTouch.haptic('medium');
+    });
+  });
+
+  // Knob rotation (touch drag vertically)
+  strip.querySelectorAll('.knob').forEach(k => {
+    let angle = 0;
+    function handle(e) {
+      const touch = e.touches ? e.touches[0] : e;
+      const rect = k.getBoundingClientRect();
+      const cy = rect.top + rect.height/2;
+      const rel = (cy - touch.clientY) / 100;
+      angle = Math.max(-135, Math.min(135, rel * 135));
+      k.style.setProperty('--rot', angle + 'deg');
+      k.querySelector('::after');
+      // Use actual pseudo-element rotation via style attribute on inline element
+      k.firstElementChild && (k.firstElementChild.style.transform = `rotate(${angle}deg)`);
+      // CSS doesn't let us rotate ::after directly, so apply via CSS var
+      k.style.transform = `rotate(${angle}deg)`;
+    }
+    k.addEventListener('touchstart', e => { e.preventDefault(); handle(e); GoatTouch.haptic('light'); }, {passive:false});
+    k.addEventListener('touchmove',  e => { e.preventDefault(); handle(e); }, {passive:false});
+    k.addEventListener('mousedown', e => {
+      handle(e);
+      const mv = ev => handle(ev);
+      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+      document.addEventListener('mousemove', mv);
+      document.addEventListener('mouseup', up);
+    });
+  });
+
+  return { el: strip, ctrl };
+}
+
+// Build 8 channels + master
+CHANNELS.forEach(ch => {
+  const s = createStrip(ch.name, ch.color);
+  rack.appendChild(s.el);
+  faders.push(s);
+});
+const master = createStrip('MASTER', '#ffd700', true);
+rack.appendChild(master.el);
+
+// Fake level meter animation (would be real audio RMS)
+setInterval(() => {
+  document.querySelectorAll('.meter-fill').forEach(m => {
+    const base = 10 + Math.random() * 60;
+    m.style.height = base + '%';
+    if (base > 70) m.style.background = 'linear-gradient(to top, #22c55e 0%, #ffd700 50%, #e63946 80%)';
+  });
+}, 150);
+
+function allReset() {
+  faders.forEach(f => f.ctrl.setValue(0));
+  master.ctrl.setValue(0);
+  document.querySelectorAll('.mini-btn.on').forEach(b => b.classList.remove('on'));
+  GoatTouch.haptic('heavy');
+}
+</script>
+</body>
+</html>

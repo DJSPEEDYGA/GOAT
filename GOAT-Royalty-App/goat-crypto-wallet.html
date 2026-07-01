@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐐 Crypto Wallet | GOAT Royalty</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <link rel="stylesheet" href="css/goat-brand.css">
+    <style>
+        :root {
+            --bg: #040608; --panel: #0d1117; --panel2: #161b22;
+            --gold: #d4a03c; --gold2: #f0c040; --gold3: #ffd700;
+            --red: #c1121f; --red2: #e63946; --green: #3fb950; --blue: #58a6ff;
+            --ink: #f0ece4; --dim: #8b949e; --line: #21262d;
+            --btc: #f7931a; --eth: #627eea; --sol: #14f195; --xmr: #f26822;
+            --glow: rgba(212,160,60,.25);
+        }
+        body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .crypto-dashboard { max-width: 1400px; margin: 0 auto; padding: 80px 20px 40px; width: 100%; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .dashboard-title h1 { font-size: 28px; font-weight: 700; color: var(--gold); margin: 0; display: flex; align-items: center; gap: 12px; }
+        .dashboard-title span { font-size: 14px; color: var(--dim); font-weight: 400; }
+        
+        .balance-card { background: linear-gradient(135deg, var(--panel) 0%, #1a1d26 100%); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 24px; position: relative; overflow: hidden; }
+        .balance-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--gold), var(--gold3)); }
+        .balance-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+        .balance-label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
+        .balance-actions { display: flex; gap: 8px; }
+        .btn-balance { padding: 6px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; border: none; }
+        .btn-send { background: var(--green); color: #fff; }
+        .btn-receive { background: var(--panel2); color: var(--ink); border: 1px solid var(--line); }
+        .btn-swap { background: var(--blue); color: #fff; }
+        
+        .balance-amount { font-size: 42px; font-weight: 700; color: var(--gold3); margin-bottom: 8px; line-height: 1; }
+        .balance-change { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .change-up { color: var(--green); }
+        .change-down { color: var(--red); }
+        .change-label { color: var(--dim); }
+        
+        .crypto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        
+        .coin-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden; }
+        .coin-card:hover { transform: translateY(-2px); border-color: var(--gold); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+        .coin-card.active { border-color: var(--gold3); background: linear-gradient(135deg, rgba(212,160,60,.1) 0%, transparent 100%); }
+        
+        .coin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .coin-info { display: flex; align-items: center; gap: 12px; }
+        .coin-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+        .btc-icon { background: rgba(247,147,26,.2); color: var(--btc); }
+        .eth-icon { background: rgba(98,126,234,.2); color: var(--eth); }
+        .sol-icon { background: rgba(20,241,149,.2); color: var(--sol); }
+        .xmr-icon { background: rgba(242,104,34,.2); color: var(--xmr); }
+        
+        .coin-name { font-size: 14px; font-weight: 600; color: var(--ink); }
+        .coin-symbol { font-size: 12px; color: var(--dim); }
+        
+        .coin-balance { font-size: 20px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+        .coin-balance-usd { font-size: 12px; color: var(--dim); }
+        
+        .coin-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--line); }
+        .coin-price { font-size: 12px; color: var(--dim); }
+        .coin-price span { color: var(--ink); font-weight: 600; }
+        .coin-change { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+        .change-pos { background: rgba(63,185,80,.15); color: var(--green); }
+        .change-neg { background: rgba(193,18,31,.15); color: var(--red); }
+        
+        .wallet-details { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px; }
+        .wallet-details h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--gold); }
+        
+        .address-row { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--panel2); border-radius: 8px; margin-bottom: 12px; }
+        .address-label { font-size: 12px; color: var(--dim); flex: 0 0 80px; }
+        .address-value { font-family: 'Monaco', 'Consolas', monospace; font-size: 12px; color: var(--ink); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .btn-copy { background: none; border: none; color: var(--gold); cursor: pointer; font-size: 12px; padding: 4px 8px; }
+        
+        .transaction-list { max-height: 400px; overflow-y: auto; }
+        .transaction-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--line); }
+        .transaction-item:last-child { border-bottom: none; }
+        .tx-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .tx-in { background: rgba(63,185,80,.15); color: var(--green); }
+        .tx-out { background: rgba(193,18,31,.15); color: var(--red); }
+        
+        .tx-details { flex: 1; }
+        .tx-type { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+        .tx-amount { font-size: 14px; font-weight: 700; }
+        .tx-amount.in { color: var(--green); }
+        .tx-amount.out { color: var(--ink); }
+        
+        .tx-meta { text-align: right; }
+        .tx-time { font-size: 10px; color: var(--dim); }
+        .tx-status { font-size: 10px; font-weight: 600; }
+        .status-confirmed { color: var(--green); }
+        .status-pending { color: var(--gold2); }
+        
+        .celebrity-section { margin-top: 24px; }
+        .celebrity-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--gold); }
+        
+        .celebrity-card { background: linear-gradient(135deg, rgba(212,160,60,.1) 0%, transparent 100%); border: 1px solid rgba(212,160,60,.3); border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+        .celebrity-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .celebrity-name { font-size: 16px; font-weight: 700; color: var(--gold3); }
+        .celebrity-platform { font-size: 12px; color: var(--dim); }
+        .celebrity-note { font-size: 12px; color: var(--ink); line-height: 1.5; margin-bottom: 8px; }
+        
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .live-indicator { display: inline-block; width: 6px; height: 6px; background: var(--green); border-radius: 50%; margin-right: 6px; animation: pulse 2s infinite; }
+        .live-label { font-size: 10px; color: var(--green); text-transform: uppercase; letter-spacing: 1px; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<nav class="goat-nav">
+    <div class="goat-nav-logo">
+        <span class="crown">👑</span>
+        <span>GOAT Royalty</span>
+    </div>
+    <div class="goat-nav-links">
+        <a href="index.html" class="goat-nav-link">Dashboard</a>
+        <a href="goat-crypto-wallet.html" class="goat-nav-link active">Wallet</a>
+        <a href="goat-bank.html" class="goat-nav-link">Bank</a>
+        <a href="goat-security.html" class="goat-nav-link">Security</a>
+        <a href="powerhouse.html" class="goat-nav-link">All Tools</a>
+    </div>
+</nav>
+
+<main class="crypto-dashboard">
+    <div class="dashboard-header">
+        <div class="dashboard-title">
+            <h1>💰 Crypto Wallet</h1>
+            <span>Multi-chain portfolio • Celebrity tracking • Real-time prices</span>
+        </div>
+        <div class="balance-actions">
+            <button class="btn-balance btn-send" onclick="openSendModal()">Send</button>
+            <button class="btn-balance btn-receive" onclick="openReceiveModal()">Receive</button>
+            <button class="btn-balance btn-swap" onclick="window.location.href='goat-token-swap.html'">Swap</button>
+        </div>
+    </div>
+    
+    <div class="balance-card">
+        <div class="balance-header">
+            <div>
+                <div class="balance-label">Total Balance</div>
+                <div class="balance-amount">$<span id="totalBalance">2,847,593.42</span></div>
+                <div class="balance-change">
+                    <span class="change-up">▲ $127,834.21</span>
+                    <span class="change-label">$1.5M in last 24h</span>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div class="live-indicator"></div>
+                <div class="live-label">Live prices</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="crypto-grid" id="coinGrid">
+        <!-- Coin cards will be generated here -->
+    </div>
+    
+    <div class="wallet-details">
+        <h3>📍 Wallet Addresses</h3>
+        <div class="address-row">
+            <div class="address-label">Bitcoin</div>
+            <div class="address-value">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</div>
+            <button class="btn-copy" onclick="copyAddress('bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh')">📋</button>
+        </div>
+        <div class="address-row">
+            <div class="address-label">Ethereum</div>
+            <div class="address-value">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</div>
+            <button class="btn-copy" onclick="copyAddress('0x71C7656EC7ab88b098defB751B7401B5f6d8976F')">📋</button>
+        </div>
+        <div class="address-row">
+            <div class="address-label">Solana</div>
+            <div class="address-value">6SdMXLHz6bkC8Z22mf7pjLKNzuQgGbyPfLrmFQvEcHe8U</div>
+            <button class="btn-copy" onclick="copyAddress('6SdMXLHz6bkC8Z22mf7pjLKNzuQgGbyPfLrmFQvEcHe8U')">📋</button>
+        </div>
+    </div>
+    
+    <div class="wallet-details" style="margin-top: 24px;">
+        <h3>📜 Recent Transactions</h3>
+        <div class="transaction-list" id="txList">
+            <!-- Transactions will be generated here -->
+        </div>
+    </div>
+    
+    <div class="celebrity-section">
+        <h3>🌟 Tracked Celebrity Wallets</h3>
+        <div id="celebrityList">
+            <!-- Celebrity wallets will be generated here -->
+        </div>
+    </div>
+</main>
+
+<script>
+// Portfolio data
+const portfolio = [
+    { symbol: 'BTC', name: 'Bitcoin', balance: 12.456789, price: 67500, change: 2.34, icon: '₿', iconClass: 'btc-icon', address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh' },
+    { symbol: 'ETH', name: 'Ethereum', balance: 45.6789, price: 3450, change: -1.23, icon: 'Ξ', iconClass: 'eth-icon', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F' },
+    { symbol: 'SOL', name: 'Solana', balance: 12500.00, price: 145.67, change: 5.67, icon: '◎', iconClass: 'sol-icon', address: '6SdMXLHz6bkC8Z22mf7pjLKNzuQgGbyPfLrmFQvEcHe8U' },
+    { symbol: 'XMR', name: 'Monero', balance: 450.00, price: 125.45, change: 1.89, icon: 'ɱ', iconClass: 'xmr-icon', address: '44AFFq5kSiGBoZ4NMDwYtN187fr531kLB6J83C7C' }
+];
+
+// Recent transactions
+const transactions = [
+    { type: 'in', amount: 45.6789, symbol: 'ETH', time: '2 min ago', status: 'confirmed', from: '0x1234...5678' },
+    { type: 'out', amount: 2500.00, symbol: 'SOL', time: '15 min ago', status: 'confirmed', to: '8x9876...1234' },
+    { type: 'in', amount: 0.890234, symbol: 'BTC', time: '1 hour ago', status: 'confirmed', from: 'bc1q...xy2z' },
+    { type: 'out', amount: 25.00, symbol: 'XMR', time: '3 hours ago', status: 'pending', to: '48rYH...jK9L' },
+    { type: 'in', amount: 500.00, symbol: 'SOL', time: '5 hours ago', status: 'confirmed', from: 'AbCd...EfGh' }
+];
+
+// Celebrity wallets (from backend data)
+const celebrities = [
+    {
+        name: 'Waka Flocka Flame',
+        username: 'obituaryspy',
+        platform: 'Liberdus',
+        tokens: ['FLOCKA'],
+        holdings: { SOL: 125000, FLOCKA: 50000000 },
+        notes: [
+            'Launched FLOCKA token on Solana in June 2024',
+            'Faced insider trading allegations - 40% of supply sniped before announcement',
+            'Previously hacked in Dec 2021 via malicious NFT on OpenSea, lost $19k'
+        ],
+        twitter: 'https://twitter.com/WakaFlocka',
+        followers: '1.8M'
+    }
+];
+
+// Generate coin cards
+function renderCoins() {
+    const grid = document.getElementById('coinGrid');
+    grid.innerHTML = portfolio.map(coin => {
+        const balanceUSD = coin.balance * coin.price;
+        const changeClass = coin.change >= 0 ? 'change-pos' : 'change-neg';
+        const changeSign = coin.change >= 0 ? '+' : '';
+        const sign = coin.symbol === 'BTC' ? '$' : '';
+        
+        return `
+            <div class="coin-card" onclick="selectCoin('${coin.symbol}')">
+                <div class="coin-header">
+                    <div class="coin-info">
+                        <div class="coin-icon ${coin.iconClass}">${coin.icon}</div>
+                        <div>
+                            <div class="coin-name">${coin.name}</div>
+                            <div class="coin-symbol">${coin.symbol}</div>
+                        </div>
+                    </div>
+                    <div class="coin-change ${changeClass}">${changeSign}${coin.change}%</div>
+                </div>
+                <div class="coin-balance">${coin.balance.toLocaleString()} ${coin.symbol}</div>
+                <div class="coin-balance-usd">${sign}$${balanceUSD.toLocaleString()}</div>
+                <div class="coin-footer">
+                    <div class="coin-price">Price: <span>${sign}${coin.price.toLocaleString()}</span></div>
+                    <div class="coin-change ${changeClass}">${changeSign}${(balanceUSD * coin.change / 100).toLocaleString(undefined, {maximumFractionDigits: 2})}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    updateTotalBalance();
+}
+
+// Calculate total balance
+function updateTotalBalance() {
+    const total = portfolio.reduce((sum, coin) => sum + (coin.balance * coin.price), 0);
+    document.getElementById('totalBalance').textContent = total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+// Generate transaction list
+function renderTransactions() {
+    const list = document.getElementById('txList');
+    list.innerHTML = transactions.map(tx => {
+        const typeLabel = tx.type === 'in' ? 'Received' : 'Sent';
+        const amountSign = tx.type === 'in' ? '+' : '-';
+        const icon = tx.type === 'in' ? '↓' : '↑';
+        
+        return `
+            <div class="transaction-item">
+                <div class="tx-icon tx-${tx.type}">${icon}</div>
+                <div class="tx-details">
+                    <div class="tx-type">${typeLabel} ${tx.symbol}</div>
+                    <div class="tx-amount ${tx.type}">${amountSign}${tx.amount.toLocaleString()} ${tx.symbol}</div>
+                </div>
+                <div class="tx-meta">
+                    <div class="tx-time">${tx.time}</div>
+                    <div class="tx-status status-${tx.status}">${tx.status}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Generate celebrity wallets
+function renderCelebrities() {
+    const list = document.getElementById('celebrityList');
+    list.innerHTML = celebrities.map(celeb => `
+        <div class="celebrity-card">
+            <div class="celebrity-header">
+                <div class="celebrity-name">🌟 ${celeb.name}</div>
+                <div class="celebrity-platform">@${celeb.username} • ${celeb.platform} • ${celeb.followers} followers</div>
+            </div>
+            ${celeb.notes.map(note => `<div class="celebrity-note">⚠️ ${note}</div>`).join('')}
+            <div style="margin-top: 12px; display: flex; gap: 12px;">
+                <div>
+                    <div style="font-size: 10px; color: var(--dim);">SOL Holdings</div>
+                    <div style="font-size: 14px; font-weight: 700; color: var(--ink);">${(celeb.holdings.SOL * 145.67).toLocaleString('en-US', {style: 'currency', currency: 'USD'})}</div>
+                </div>
+                <div>
+                    <div style="font-size: 10px; color: var(--dim);">FLOCKA Tokens</div>
+                    <div style="font-size: 14px; font-weight: 700; color: var(--ink);">${celeb.holdings.FLOCKA.toLocaleString()}</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Copy address
+function copyAddress(address) {
+    navigator.clipboard.writeText(address);
+    alert('Address copied: ' + address);
+}
+
+// Select coin
+function selectCoin(symbol) {
+    const cards = document.querySelectorAll('.coin-card');
+    cards.forEach(card => card.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+}
+
+// Open send modal
+function openSendModal() {
+    alert('Send modal — connect backend to wallet-tracker.js');
+}
+
+// Open receive modal
+function openReceiveModal() {
+    alert('Receive modal — show QR code for selected coin');
+}
+
+// Simulate live price updates
+function simulateLivePrices() {
+    setInterval(() => {
+        portfolio.forEach(coin => {
+            const change = (Math.random() - 0.5) * 0.5;
+            coin.price = coin.price * (1 + change / 100);
+            coin.change = coin.change + (Math.random() - 0.5) * 0.2;
+        });
+        renderCoins();
+    }, 5000);
+}
+
+// Initialize
+renderCoins();
+renderTransactions();
+renderCelebrities();
+simulateLivePrices();
+</script>
+</body>
+</html>

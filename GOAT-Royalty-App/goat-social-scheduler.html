@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📱 Social Scheduler | GOAT Royalty</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-light: #F4E4BA;
+            --gold-dark: #996515;
+            --bg-primary: #040608;
+            --bg-secondary: #0A0D12;
+            --bg-tertiary: #141A24;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0AEC0;
+            --accent-green: #00FF88;
+            --accent-blue: #3B82F6;
+            --accent-purple: #8B5CF6;
+            --accent-pink: #EC4899;
+            --accent-orange: #F59E0B;
+            --accent-red: #EF4444;
+            --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #F4E4BA 50%, #D4AF37 100%);
+            --gradient-dark: linear-gradient(180deg, #0A0D12 0%, #040608 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(10, 13, 18, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient-gold);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--gold);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding-top: 100px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        /* Header Section */
+        .header-section {
+            text-align: center;
+            padding: 40px 0 60px;
+        }
+
+        .header-section h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-section p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-4px);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        /* Calendar Section */
+        .calendar-section {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: var(--gold);
+        }
+
+        .calendar-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .calendar-controls button {
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .calendar-controls button:hover {
+            background: var(--gold);
+            color: var(--bg-primary);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 600;
+            color: var(--gold);
+            padding: 10px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--gold);
+        }
+
+        .calendar-day.today {
+            border: 2px solid var(--gold);
+        }
+
+        .calendar-day.has-posts {
+            background: rgba(212, 175, 55, 0.15);
+        }
+
+        .calendar-day-number {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .post-indicator {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+        }
+
+        .post-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .post-dot.instagram { background: var(--accent-pink); }
+        .post-dot.twitter { background: var(--accent-blue); }
+        .post-dot.facebook { background: #1877F2; }
+        .post-dot.tiktok { background: #000; border: 1px solid #fff; }
+        .post-dot.youtube { background: var(--accent-red); }
+        .post-dot.linkedin { background: #0A66C2; }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Create Post Card */
+        .create-post-card {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .platform-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .platform-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .platform-btn.active {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.15);
+        }
+
+        .platform-btn:hover {
+            border-color: var(--gold);
+        }
+
+        .post-input {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 120px;
+            margin-bottom: 15px;
+        }
+
+        .post-input:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        .media-upload {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .upload-btn {
+            flex: 1;
+            background: var(--bg-tertiary);
+            border: 2px dashed rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .upload-btn i {
+            font-size: 1.5rem;
+            color: var(--gold);
+            margin-bottom: 8px;
+        }
+
+        .schedule-datetime {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .datetime-input {
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 10px;
+            padding: 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        .schedule-btn {
+            width: 100%;
+            background: var(--gradient-gold);
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--bg-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .schedule-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Scheduled Posts */
+        .scheduled-posts {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .post-item {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .post-item:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .post-platform-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .post-platform-icon.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .post-platform-icon.twitter { background: #1DA1F2; }
+        .post-platform-icon.facebook { background: #1877F2; }
+        .post-platform-icon.tiktok { background: #000; }
+        .post-platform-icon.youtube { background: #FF0000; }
+
+        .post-details {
+            flex: 1;
+        }
+
+        .post-time {
+            font-size: 0.85rem;
+            color: var(--gold);
+            margin-bottom: 4px;
+        }
+
+        .post-preview {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .post-action-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .post-action-btn:hover {
+            background: var(--gold);
+            color: var(--bg-primary);
+        }
+
+        /* Analytics Preview */
+        .analytics-preview {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .analytics-item {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .analytics-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .analytics-value.up { color: var(--accent-green); }
+        .analytics-value.down { color: var(--accent-red); }
+
+        .analytics-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .analytics-change {
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .analytics-change.up { color: var(--accent-green); }
+        .analytics-change.down { color: var(--accent-red); }
+
+        /* AI Suggestions */
+        .ai-suggestions {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .suggestion-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .suggestion-card {
+            background: var(--bg-tertiary);
+            border-radius: 16px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .suggestion-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-4px);
+        }
+
+        .suggestion-type {
+            font-size: 0.8rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .suggestion-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .suggestion-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .use-suggestion-btn {
+            margin-top: 15px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .use-suggestion-btn:hover {
+            background: var(--gold);
+            color: var(--bg-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .suggestion-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 20px;
+            }
+            
+            .container {
+                padding: 0 20px;
+            }
+            
+            .header-section h1 {
+                font-size: 2.5rem;
+            }
+            
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+            
+            .calendar-grid {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">🐐</div>
+            GOAT Royalty
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="goat-fashion-hub.html">Fashion</a>
+            <a href="goat-3d-studio.html">3D Studio</a>
+            <a href="goat-analytics.html">Analytics</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Header -->
+            <div class="header-section">
+                <h1>📱 Social Scheduler</h1>
+                <p>Plan, schedule, and manage all your social media content across platforms with AI-powered optimization.</p>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-value">156</div>
+                    <div class="stat-label">Scheduled Posts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">2.4M</div>
+                    <div class="stat-label">Total Reach</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8.7%</div>
+                    <div class="stat-label">Engagement Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">6</div>
+                    <div class="stat-label">Active Platforms</div>
+                </div>
+            </div>
+
+            <!-- Main Grid -->
+            <div class="main-grid">
+                <!-- Calendar Section -->
+                <div class="calendar-section">
+                    <div class="section-header">
+                        <h2 class="section-title"><i class="fas fa-calendar-alt"></i> Content Calendar</h2>
+                        <div class="calendar-controls">
+                            <button id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                            <button id="currentMonth">January 2025</button>
+                            <button id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid">
+                        <div class="calendar-day-header">Sun</div>
+                        <div class="calendar-day-header">Mon</div>
+                        <div class="calendar-day-header">Tue</div>
+                        <div class="calendar-day-header">Wed</div>
+                        <div class="calendar-day-header">Thu</div>
+                        <div class="calendar-day-header">Fri</div>
+                        <div class="calendar-day-header">Sat</div>
+                        <!-- Calendar days will be generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <!-- Create Post -->
+                    <div class="create-post-card">
+                        <h3 class="section-title"><i class="fas fa-plus-circle"></i> Create Post</h3>
+                        
+                        <div class="platform-selector">
+                            <button class="platform-btn active" data-platform="instagram" title="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </button>
+                            <button class="platform-btn" data-platform="twitter" title="Twitter/X">
+                                <i class="fab fa-x-twitter"></i>
+                            </button>
+                            <button class="platform-btn" data-platform="facebook" title="Facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </button>
+                            <button class="platform-btn" data-platform="tiktok" title="TikTok">
+                                <i class="fab fa-tiktok"></i>
+                            </button>
+                            <button class="platform-btn" data-platform="youtube" title="YouTube">
+                                <i class="fab fa-youtube"></i>
+                            </button>
+                            <button class="platform-btn" data-platform="linkedin" title="LinkedIn">
+                                <i class="fab fa-linkedin-in"></i>
+                            </button>
+                        </div>
+
+                        <textarea class="post-input" placeholder="What's on your mind? Write your post content here..."></textarea>
+
+                        <div class="media-upload">
+                            <div class="upload-btn">
+                                <i class="fas fa-image"></i>
+                                <div>Photos</div>
+                            </div>
+                            <div class="upload-btn">
+                                <i class="fas fa-video"></i>
+                                <div>Videos</div>
+                            </div>
+                            <div class="upload-btn">
+                                <i class="fas fa-link"></i>
+                                <div>Link</div>
+                            </div>
+                        </div>
+
+                        <div class="schedule-datetime">
+                            <input type="date" class="datetime-input" id="scheduleDate">
+                            <input type="time" class="datetime-input" id="scheduleTime">
+                        </div>
+
+                        <button class="schedule-btn" onclick="schedulePost()">
+                            <i class="fas fa-clock"></i> Schedule Post
+                        </button>
+                    </div>
+
+                    <!-- Upcoming Posts -->
+                    <div class="scheduled-posts">
+                        <h3 class="section-title"><i class="fas fa-clock"></i> Upcoming Posts</h3>
+                        
+                        <div class="post-item">
+                            <div class="post-platform-icon instagram">
+                                <i class="fab fa-instagram"></i>
+                            </div>
+                            <div class="post-details">
+                                <div class="post-time">Today, 6:00 PM</div>
+                                <div class="post-preview">New track dropping this Friday! Pre-save now 🔥🎵 #NewMusic</div>
+                            </div>
+                            <div class="post-actions">
+                                <button class="post-action-btn"><i class="fas fa-edit"></i></button>
+                                <button class="post-action-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="post-item">
+                            <div class="post-platform-icon twitter">
+                                <i class="fab fa-x-twitter"></i>
+                            </div>
+                            <div class="post-details">
+                                <div class="post-time">Tomorrow, 10:00 AM</div>
+                                <div class="post-preview">Tour dates announced! Check out the full schedule on the website...</div>
+                            </div>
+                            <div class="post-actions">
+                                <button class="post-action-btn"><i class="fas fa-edit"></i></button>
+                                <button class="post-action-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="post-item">
+                            <div class="post-platform-icon tiktok">
+                                <i class="fab fa-tiktok"></i>
+                            </div>
+                            <div class="post-details">
+                                <div class="post-time">Wed, 8:00 PM</div>
+                                <div class="post-preview">Behind the scenes from the studio session 👀</div>
+                            </div>
+                            <div class="post-actions">
+                                <button class="post-action-btn"><i class="fas fa-edit"></i></button>
+                                <button class="post-action-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Preview -->
+                    <div class="analytics-preview">
+                        <h3 class="section-title"><i class="fas fa-chart-line"></i> This Week</h3>
+                        <div class="analytics-grid">
+                            <div class="analytics-item">
+                                <div class="analytics-value up">+24%</div>
+                                <div class="analytics-label">Followers</div>
+                                <div class="analytics-change up">+12.5K</div>
+                            </div>
+                            <div class="analytics-item">
+                                <div class="analytics-value up">+18%</div>
+                                <div class="analytics-label">Engagement</div>
+                                <div class="analytics-change up">+45K</div>
+                            </div>
+                            <div class="analytics-item">
+                                <div class="analytics-value up">+32%</div>
+                                <div class="analytics-label">Impressions</div>
+                                <div class="analytics-change up">+1.2M</div>
+                            </div>
+                            <div class="analytics-item">
+                                <div class="analytics-value down">-5%</div>
+                                <div class="analytics-label">Click Rate</div>
+                                <div class="analytics-change down">-2.3K</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Suggestions -->
+            <div class="ai-suggestions">
+                <div class="ai-badge">
+                    <i class="fas fa-robot"></i> AI-Powered Suggestions
+                </div>
+                <div class="suggestion-list">
+                    <div class="suggestion-card">
+                        <div class="suggestion-type">Best Time</div>
+                        <div class="suggestion-title">Post at 7 PM Today</div>
+                        <div class="suggestion-desc">Your audience is most active between 6-8 PM. Schedule your content for maximum engagement.</div>
+                        <button class="use-suggestion-btn" onclick="useSuggestion('time', '19:00')">Use This Time</button>
+                    </div>
+                    <div class="suggestion-card">
+                        <div class="suggestion-type">Content Idea</div>
+                        <div class="suggestion-title">Trending Hashtag Alert</div>
+                        <div class="suggestion-desc">#NewMusic2025 is trending in your niche. Consider creating content around this topic.</div>
+                        <button class="use-suggestion-btn" onclick="useSuggestion('hashtag', '#NewMusic2025')">Add Hashtag</button>
+                    </div>
+                    <div class="suggestion-card">
+                        <div class="suggestion-type">Cross-Post</div>
+                        <div class="suggestion-title">Repurpose Content</div>
+                        <div class="suggestion-desc">Your Instagram Reel from Tuesday can be cross-posted to TikTok for 40% more reach.</div>
+                        <button class="use-suggestion-btn">Cross-Post Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Generate calendar
+        function generateCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            
+            // Add day headers
+            dayHeaders.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'calendar-day-header';
+                header.textContent = day;
+            });
+            
+            // Sample scheduled posts data
+            const scheduledPosts = {
+                3: ['instagram', 'twitter'],
+                7: ['tiktok'],
+                12: ['instagram', 'facebook', 'youtube'],
+                15: ['twitter'],
+                18: ['instagram'],
+                22: ['tiktok', 'instagram'],
+                25: ['youtube'],
+                28: ['instagram', 'twitter', 'facebook']
+            };
+            
+            // Add calendar days
+            for (let i = 1; i <= 31; i++) {
+                const day = document.createElement('div');
+                day.className = 'calendar-day';
+                if (i === 15) day.classList.add('today');
+                if (scheduledPosts[i]) day.classList.add('has-posts');
+                
+                day.innerHTML = `
+                    <div class="calendar-day-number">${i}</div>
+                    <div class="post-indicator">
+                        ${scheduledPosts[i] ? scheduledPosts[i].map(p => `<div class="post-dot ${p}"></div>`).join('') : ''}
+                    </div>
+                `;
+                
+                day.onclick = () => selectDay(i);
+                grid.appendChild(day);
+            }
+        }
+
+        function selectDay(day) {
+            document.getElementById('scheduleDate').value = `2025-01-${day.toString().padStart(2, '0')}`;
+            // Highlight selected day
+            document.querySelectorAll('.calendar-day').forEach(d => d.style.background = '');
+            event.currentTarget.style.background = 'rgba(212, 175, 55, 0.2)';
+        }
+
+        // Platform selector
+        document.querySelectorAll('.platform-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+        });
+
+        // Schedule post
+        function schedulePost() {
+            const date = document.getElementById('scheduleDate').value;
+            const time = document.getElementById('scheduleTime').value;
+            const content = document.querySelector('.post-input').value;
+            const platforms = Array.from(document.querySelectorAll('.platform-btn.active'))
+                .map(btn => btn.dataset.platform);
+            
+            if (!content) {
+                alert('Please enter some content for your post.');
+                return;
+            }
+            
+            // Show success message
+            const btn = document.querySelector('.schedule-btn');
+            btn.innerHTML = '<i class="fas fa-check"></i> Post Scheduled!';
+            btn.style.background = 'var(--accent-green)';
+            
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-clock"></i> Schedule Post';
+                btn.style.background = '';
+            }, 2000);
+        }
+
+        // Use AI suggestion
+        function useSuggestion(type, value) {
+            if (type === 'time') {
+                document.getElementById('scheduleTime').value = value;
+            } else if (type === 'hashtag') {
+                const input = document.querySelector('.post-input');
+                input.value += ' ' + value;
+            }
+        }
+
+        // Set default date to today
+        document.getElementById('scheduleDate').valueAsDate = new Date();
+        document.getElementById('scheduleTime').value = '18:00';
+
+        // Initialize
+        generateCalendar();
+    </script>
+</body>
+</html>

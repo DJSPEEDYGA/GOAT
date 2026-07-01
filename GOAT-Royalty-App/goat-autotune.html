@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>GOAT AutoTune Pro — Pitch Perfection</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #0f0f1a;
+  --bg3: #141420;
+  --bg4: #1a1a2e;
+  --panel: #12121e;
+  --border: #2a2a3e;
+  --gold: #f5a623;
+  --gold2: #ffcc44;
+  --red: #ff3366;
+  --green: #00ff88;
+  --blue: #00aaff;
+  --purple: #aa44ff;
+  --cyan: #00ffcc;
+  --text: #e0e0f0;
+  --text2: #9090b0;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+.topbar { display:flex; align-items:center; gap:12px; padding:8px 16px; background:var(--panel); border-bottom:1px solid var(--border); height:52px; flex-shrink:0; }
+.topbar .logo { font-size:18px; font-weight:900; background:linear-gradient(135deg,var(--gold),var(--gold2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:2px; }
+.topbar .title { font-size:13px; color:var(--text2); font-weight:600; }
+.tb-sep { width:1px; height:28px; background:var(--border); margin:0 4px; }
+.tb-btn { padding:5px 14px; border-radius:6px; border:1px solid var(--border); background:var(--bg3); color:var(--text); font-size:12px; cursor:pointer; transition:all .2s; }
+.tb-btn:hover { border-color:var(--gold); color:var(--gold); }
+.tb-btn.active { background:var(--gold); color:#000; border-color:var(--gold); font-weight:700; }
+.tb-btn.red { border-color:var(--red); color:var(--red); }
+.tb-btn.red.active { background:var(--red); color:#fff; }
+.tb-btn.green { border-color:var(--green); color:var(--green); }
+.tb-btn.green.active { background:var(--green); color:#000; }
+.spacer { flex:1; }
+.bypass-btn { padding:5px 18px; border-radius:6px; border:2px solid var(--red); background:transparent; color:var(--red); font-size:12px; font-weight:700; cursor:pointer; letter-spacing:1px; }
+.bypass-btn.on { background:var(--red); color:#fff; }
+.mode-tabs { display:flex; background:var(--bg2); border-bottom:1px solid var(--border); flex-shrink:0; }
+.mode-tab { flex:1; padding:10px; text-align:center; font-size:12px; font-weight:600; cursor:pointer; color:var(--text2); border-bottom:2px solid transparent; transition:all .2s; letter-spacing:1px; text-transform:uppercase; }
+.mode-tab.active { color:var(--gold); border-bottom-color:var(--gold); background:rgba(245,166,35,.07); }
+.main { display:flex; flex:1; overflow:hidden; }
+.sidebar { width:220px; background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow-y:auto; flex-shrink:0; }
+.sidebar::-webkit-scrollbar { width:4px; }
+.sidebar::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.s-section { border-bottom:1px solid var(--border); padding:12px; }
+.s-title { font-size:10px; font-weight:700; color:var(--text2); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
+.knob-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+.knob-wrap { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.knob-label { font-size:9px; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
+.knob-val { font-size:10px; color:var(--gold); font-weight:700; font-variant-numeric:tabular-nums; }
+.knob { width:44px; height:44px; border-radius:50%; background:conic-gradient(var(--gold) 0deg, var(--bg3) 0deg); border:3px solid var(--bg3); box-shadow:0 0 0 1px var(--border), inset 0 2px 4px rgba(0,0,0,.5); cursor:ns-resize; position:relative; transition:box-shadow .2s; }
+.knob:hover { box-shadow:0 0 0 1px var(--gold), inset 0 2px 4px rgba(0,0,0,.5); }
+.knob::after { content:''; position:absolute; top:4px; left:50%; transform:translateX(-50%); width:3px; height:12px; background:var(--gold); border-radius:2px; }
+.knob.blue { background:conic-gradient(var(--blue) 0deg, var(--bg3) 0deg); }
+.knob.blue::after { background:var(--blue); }
+.knob.purple { background:conic-gradient(var(--purple) 0deg, var(--bg3) 0deg); }
+.knob.purple::after { background:var(--purple); }
+.knob.green { background:conic-gradient(var(--green) 0deg, var(--bg3) 0deg); }
+.knob.green::after { background:var(--green); }
+.slider-row { display:flex; flex-direction:column; gap:8px; }
+.slider-item { display:flex; align-items:center; gap:8px; }
+.slider-item label { font-size:10px; color:var(--text2); width:62px; text-transform:uppercase; letter-spacing:.5px; }
+.slider-item input[type=range] { flex:1; height:4px; accent-color:var(--blue); cursor:pointer; }
+.slider-item .sv { font-size:10px; color:var(--blue); font-weight:700; width:32px; text-align:right; font-variant-numeric:tabular-nums; }
+.retune-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
+.rt-btn { padding:8px 4px; text-align:center; border-radius:6px; border:1px solid var(--border); background:var(--bg3); cursor:pointer; font-size:10px; color:var(--text2); transition:.15s; }
+.rt-btn:hover { border-color:var(--gold); }
+.rt-btn.active { background:var(--gold); color:#000; font-weight:700; border-color:var(--gold); }
+.rt-btn .rt-name { font-size:11px; font-weight:600; }
+.rt-btn .rt-ms { font-size:9px; margin-top:2px; opacity:.7; }
+.note-bypass { display:grid; grid-template-columns:repeat(6,1fr); gap:4px; }
+.nb-btn { padding:6px 2px; text-align:center; border-radius:4px; border:1px solid var(--border); background:var(--bg3); cursor:pointer; font-size:10px; color:var(--text2); transition:.15s; }
+.nb-btn.bypassed { background:var(--red); color:#fff; border-color:var(--red); }
+.nb-btn:hover:not(.bypassed) { border-color:var(--blue); }
+.auto-mode-section { display:flex; flex-direction:column; gap:8px; }
+.toggle-row { display:flex; align-items:center; justify-content:space-between; }
+.toggle-row label { font-size:11px; color:var(--text2); }
+.toggle { width:36px; height:20px; background:var(--bg3); border-radius:10px; cursor:pointer; position:relative; border:1px solid var(--border); transition:.2s; }
+.toggle.on { background:var(--gold); border-color:var(--gold); }
+.toggle::after { content:''; position:absolute; width:16px; height:16px; background:#fff; border-radius:50%; top:1px; left:1px; transition:.2s; box-shadow:0 1px 3px rgba(0,0,0,.5); }
+.toggle.on::after { left:17px; }
+.input-device { width:100%; padding:6px 8px; background:var(--bg3); border:1px solid var(--border); color:var(--text); border-radius:6px; font-size:12px; }
+.level-meter { flex:1; height:12px; background:var(--bg3); border-radius:6px; overflow:hidden; border:1px solid var(--border); position:relative; }
+.level-fill { height:100%; background:linear-gradient(90deg,var(--green),var(--gold) 70%,var(--red)); border-radius:6px; transition:width .05s; width:0%; }
+.center { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.graph-area { flex:1; position:relative; background:var(--bg2); overflow:hidden; }
+.graph-overlay { position:absolute; top:8px; left:8px; display:flex; gap:8px; pointer-events:none; }
+.go-badge { padding:3px 10px; border-radius:4px; font-size:11px; font-weight:700; }
+.go-badge.key { background:rgba(245,166,35,.2); color:var(--gold); border:1px solid var(--gold); }
+.go-badge.scale { background:rgba(0,255,136,.15); color:var(--green); border:1px solid var(--green); }
+.go-badge.detect { background:rgba(0,170,255,.15); color:var(--blue); border:1px solid var(--blue); }
+.pitch-meter { height:80px; background:var(--panel); border-top:1px solid var(--border); display:flex; align-items:center; padding:0 16px; gap:16px; flex-shrink:0; }
+.pitch-note { font-size:32px; font-weight:900; color:var(--gold); font-variant-numeric:tabular-nums; line-height:1; min-width:60px; text-align:center; }
+.pitch-cents { font-size:12px; color:var(--text2); }
+.pitch-bar-wrap { flex:1; height:16px; background:var(--bg3); border-radius:8px; overflow:hidden; border:1px solid var(--border); position:relative; }
+.pitch-bar-center { position:absolute; left:50%; top:0; bottom:0; width:2px; background:var(--text2); transform:translateX(-50%); z-index:2; }
+.pitch-bar { position:absolute; top:2px; bottom:2px; width:24px; background:var(--green); border-radius:6px; transition:left .05s; left:50%; transform:translateX(-50%); }
+.pitch-bar.sharp { background:var(--red); }
+.pitch-bar.flat { background:var(--blue); }
+.pi-item { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.pi-val { font-size:16px; font-weight:700; color:var(--text); }
+.pi-lab { font-size:9px; color:var(--text2); text-transform:uppercase; letter-spacing:1px; }
+.right-panel { width:240px; background:var(--panel); border-left:1px solid var(--border); display:flex; flex-direction:column; overflow-y:auto; flex-shrink:0; }
+.right-panel::-webkit-scrollbar { width:4px; }
+.right-panel::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.rp-section { border-bottom:1px solid var(--border); padding:12px; }
+.rp-title { font-size:10px; font-weight:700; color:var(--text2); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
+.fx-item { background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:8px; }
+.fx-header { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+.fx-name { font-size:11px; font-weight:700; color:var(--text); flex:1; }
+.fx-toggle { width:28px; height:16px; background:var(--bg); border-radius:8px; cursor:pointer; position:relative; border:1px solid var(--border); transition:.2s; }
+.fx-toggle.on { background:var(--green); border-color:var(--green); }
+.fx-toggle::after { content:''; position:absolute; width:12px; height:12px; background:#fff; border-radius:50%; top:1px; left:1px; transition:.2s; }
+.fx-toggle.on::after { left:13px; }
+.preset-bar { background:var(--bg2); border-bottom:1px solid var(--border); padding:8px 16px; display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.preset-select { background:var(--bg3); border:1px solid var(--border); color:var(--text); padding:5px 10px; border-radius:6px; font-size:12px; }
+.preset-select:focus { outline:none; border-color:var(--gold); }
+.pb-btn { padding:5px 12px; background:var(--bg3); border:1px solid var(--border); color:var(--text2); border-radius:6px; font-size:11px; cursor:pointer; transition:.2s; }
+.pb-btn:hover { border-color:var(--gold); color:var(--gold); }
+.view-panel { display:none; }
+.view-panel.active { display:flex; flex:1; overflow:hidden; }
+@keyframes pulse-red { 0%,100% { box-shadow:0 0 8px rgba(255,51,102,.3); } 50% { box-shadow:0 0 20px rgba(255,51,102,.8); } }
+.recording { animation:pulse-red 1s infinite; }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">GOAT</div>
+  <div class="title">AutoTune Pro</div>
+  <div class="tb-sep"></div>
+  <button class="tb-btn active" onclick="setMode('auto')">AUTO</button>
+  <button class="tb-btn" onclick="setMode('graph')">GRAPH</button>
+  <button class="tb-btn" onclick="setMode('flex')">FLEX TUNE</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn green" id="inputBtn" onclick="toggleInput()">MIC INPUT</button>
+  <button class="tb-btn red" id="recBtn" onclick="toggleRecord()">REC</button>
+  <div class="spacer"></div>
+  <div style="font-size:11px;color:var(--text2);margin-right:8px;">CPU: <span id="cpuMeter" style="color:var(--green)">12%</span></div>
+  <button class="bypass-btn" id="bypassBtn" onclick="toggleBypass()">BYPASS</button>
+  <div class="tb-sep"></div>
+  <a href="powerhouse.html" style="text-decoration:none;"><button class="tb-btn">Back</button></a>
+</div>
+
+<!-- PRESET BAR -->
+<div class="preset-bar">
+  <span style="font-size:11px;color:var(--text2);letter-spacing:1px;">PRESET:</span>
+  <select class="preset-select" id="presetSelect" onchange="loadPreset(this.value)" style="max-width:220px;">
+    <option value="">— Select Preset —</option>
+    <optgroup label="Vocal Styles">
+      <option value="natural">Natural Correction</option>
+      <option value="slight">Subtle Polish</option>
+      <option value="pop">Pop Perfect</option>
+      <option value="rnb">R&B Smooth</option>
+      <option value="trap">Trap Auto (T-Pain Style)</option>
+      <option value="hard">Hard Tune Effect</option>
+      <option value="robot">Robot Voice</option>
+      <option value="choir">Choir Stack</option>
+    </optgroup>
+    <optgroup label="Instruments">
+      <option value="guitar">Guitar Correction</option>
+      <option value="bass">Bass Guitar</option>
+      <option value="keys">Keys / Piano</option>
+    </optgroup>
+    <optgroup label="Creative FX">
+      <option value="vocoder">Vocoder Stack</option>
+      <option value="harmony4">4-Voice Harmony</option>
+      <option value="octave">Octave Doubler</option>
+      <option value="formant_up">Formant Shift Up</option>
+      <option value="formant_down">Formant Shift Down</option>
+    </optgroup>
+  </select>
+  <button class="pb-btn" onclick="savePreset()">Save</button>
+  <button class="pb-btn" onclick="copyPreset()">Copy</button>
+  <div class="tb-sep"></div>
+  <span style="font-size:11px;color:var(--text2);">KEY:</span>
+  <select id="keySelect" class="preset-select" style="max-width:80px;" onchange="updateKeyDisplay()">
+    <option>C</option><option>C#/Db</option><option>D</option><option>D#/Eb</option>
+    <option>E</option><option>F</option><option>F#/Gb</option><option>G</option>
+    <option>G#/Ab</option><option>A</option><option>A#/Bb</option><option>B</option>
+  </select>
+  <select id="scaleSelect2" class="preset-select" style="max-width:130px;" onchange="updateKeyDisplay()">
+    <option>Major</option><option>Minor</option><option>Dorian</option><option>Mixolydian</option>
+    <option>Chromatic</option><option>Blues</option><option>Pentatonic</option><option>Harmonic Minor</option>
+  </select>
+  <div class="spacer"></div>
+  <a href="goat-plugin-rack.html" style="text-decoration:none;"><button class="tb-btn">Plugin Rack</button></a>
+</div>
+
+<!-- MODE TABS -->
+<div class="mode-tabs">
+  <div class="mode-tab active" onclick="switchTab('pitch')">Pitch Correction</div>
+  <div class="mode-tab" onclick="switchTab('harmony')">Harmony Engine</div>
+  <div class="mode-tab" onclick="switchTab('formant')">Formant & Throat</div>
+  <div class="mode-tab" onclick="switchTab('vibrato')">Vibrato & Mod</div>
+  <div class="mode-tab" onclick="switchTab('effects')">Effects Chain</div>
+  <div class="mode-tab" onclick="switchTab('analyze')">Analyzer</div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar">
+    <div class="s-section">
+      <div class="s-title">Retune Speed</div>
+      <div class="retune-grid">
+        <div class="rt-btn active" onclick="setRetune(this,'instant')"><div class="rt-name">INF</div><div class="rt-ms">Instant</div></div>
+        <div class="rt-btn" onclick="setRetune(this,'fast')"><div class="rt-name">10</div><div class="rt-ms">Fast</div></div>
+        <div class="rt-btn" onclick="setRetune(this,'medium')"><div class="rt-name">25</div><div class="rt-ms">Med</div></div>
+        <div class="rt-btn" onclick="setRetune(this,'smooth')"><div class="rt-name">50</div><div class="rt-ms">Smooth</div></div>
+        <div class="rt-btn" onclick="setRetune(this,'natural')"><div class="rt-name">100</div><div class="rt-ms">Natural</div></div>
+      </div>
+    </div>
+    <div class="s-section">
+      <div class="s-title">Core Controls</div>
+      <div class="knob-row">
+        <div class="knob-wrap">
+          <div class="knob" id="knob-retune" data-value="100" data-min="0" data-max="100"></div>
+          <div class="knob-label">Retune</div>
+          <div class="knob-val" id="kv-retune">100</div>
+        </div>
+        <div class="knob-wrap">
+          <div class="knob" id="knob-flex" data-value="50" data-min="0" data-max="100"></div>
+          <div class="knob-label">Flex</div>
+          <div class="knob-val" id="kv-flex">50</div>
+        </div>
+        <div class="knob-wrap">
+          <div class="knob blue" id="knob-humanize" data-value="30" data-min="0" data-max="100"></div>
+          <div class="knob-label">Humanize</div>
+          <div class="knob-val" id="kv-humanize" style="color:var(--blue);">30</div>
+        </div>
+      </div>
+    </div>
+    <div class="s-section">
+      <div class="s-title">Input</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <select class="input-device" id="inputDevice">
+          <option>Default Microphone</option>
+          <option>Scarlett 2i2 USB</option>
+          <option>Apollo Twin</option>
+          <option>Built-in Mic</option>
+        </select>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;color:var(--text2);width:28px;">IN</span>
+          <div class="level-meter"><div class="level-fill" id="inputLevel"></div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;color:var(--green);width:28px;">OUT</span>
+          <div class="level-meter"><div class="level-fill" id="outputLevel" style="background:linear-gradient(90deg,var(--green),var(--gold));"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="s-section">
+      <div class="s-title">Auto Mode</div>
+      <div class="auto-mode-section">
+        <div class="toggle-row"><label>Low Latency</label><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="toggle-row"><label>Natural Vibrato</label><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="toggle-row"><label>Throat Modeling</label><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        <div class="toggle-row"><label>Pitch Correct Tail</label><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="toggle-row"><label>Auto Key Detect</label><div class="toggle on" id="autoKeyToggle" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+    </div>
+    <div class="s-section">
+      <div class="s-title">Note Bypass</div>
+      <div class="note-bypass" id="noteBypass">
+        <div class="nb-btn" onclick="this.classList.toggle('bypassed')">C</div>
+        <div class="nb-btn" onclick="this.classList.toggle('bypassed')">C#</div>
+        <div class="nb-btn" onclick="this.classList.toggle('bypassed')">D</div>
+        <div class="nb-btn" onclick="this.classList.toggle('bypassed')">D#</div>
+        <div class="nb-btn" onclick="this.classList.toggle('bypassed')">E</div>
+        <div class="nb-btn" onclick="this.classList.toggle('bypassed')">F</div>
+        <div class="nb-btn" onclick="this.classList.toggle('bypassed')">F#</div>
+        <div class="nb-btn" onclick="this.classList.toggle('bypassed')">G</div>
+        <div class="nb-btn" onclick="this.classList.toggle('bypassed')">G#</div>
+        <div class="nb-btn" onclick="this.classList.toggle('bypassed')">A</div>
+        <div class="nb-btn" onclick="this.classList.toggle('bypassed')">A#</div>
+        <div class="nb-btn" onclick="this.classList.toggle('bypassed')">B</div>
+      </div>
+    </div>
+    <div class="s-section">
+      <div class="s-title">Scale Select</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <select class="input-device" id="scaleSelectSide" onchange="updateKeyDisplay()">
+          <option>Major</option><option>Minor</option><option>Dorian</option><option>Mixolydian</option>
+          <option>Chromatic</option><option>Blues</option><option>Pentatonic</option><option>Harmonic Minor</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER AREA -->
+  <div class="center">
+
+    <!-- PITCH CORRECTION TAB -->
+    <div class="view-panel active" id="tab-pitch" style="flex-direction:column;">
+      <div class="graph-area">
+        <canvas id="graphCanvas"></canvas>
+        <div class="graph-overlay">
+          <div class="go-badge key" id="badgeKey">C Major</div>
+          <div class="go-badge scale" id="badgeScale">Major Scale</div>
+          <div class="go-badge detect" id="badgeDetect">Detecting...</div>
+        </div>
+        <div style="position:absolute;bottom:8px;left:8px;display:flex;gap:6px;">
+          <button class="tb-btn" style="font-size:10px;padding:4px 10px;" onclick="clearGraph()">Clear</button>
+          <button class="tb-btn" style="font-size:10px;padding:4px 10px;" onclick="toggleShowScale()">Scale Lines</button>
+          <button class="tb-btn" style="font-size:10px;padding:4px 10px;" onclick="toggleShowGrid()">Grid</button>
+          <button class="tb-btn" style="font-size:10px;padding:4px 10px;" onclick="zoomGraph(-1)">Zoom -</button>
+          <button class="tb-btn" style="font-size:10px;padding:4px 10px;" onclick="zoomGraph(1)">Zoom +</button>
+        </div>
+      </div>
+      <div class="pitch-meter">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <div class="pitch-note" id="currentNote">--</div>
+          <div class="pitch-cents" id="centsDisplay">0c</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;">
+          <div style="font-size:9px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;">Pitch Deviation</div>
+          <div class="pitch-bar-wrap">
+            <div class="pitch-bar-center"></div>
+            <div class="pitch-bar" id="pitchBar"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text2);">
+            <span>-100c</span><span>Flat</span><span>In Tune</span><span>Sharp</span><span>+100c</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,auto);gap:4px 16px;">
+          <div class="pi-item"><div class="pi-val" id="piFreq">--</div><div class="pi-lab">Hz</div></div>
+          <div class="pi-item"><div class="pi-val" id="piCorrection">--</div><div class="pi-lab">Correction</div></div>
+          <div class="pi-item"><div class="pi-val" id="piTarget">--</div><div class="pi-lab">Target</div></div>
+          <div class="pi-item"><div class="pi-val" id="piLatency">8ms</div><div class="pi-lab">Latency</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HARMONY TAB -->
+    <div class="view-panel" id="tab-harmony" style="flex-direction:column;">
+      <div style="padding:20px;flex:1;overflow-y:auto;">
+        <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px;letter-spacing:2px;text-transform:uppercase;">Harmony Engine — 4 Voice Stacker</div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:16px;">
+          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Harmony Keyboard Preview</div>
+          <canvas id="harmonyKeyboard" height="80" style="width:100%;border-radius:6px;"></canvas>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="background:var(--bg3);border:1px solid rgba(245,166,35,.3);border-radius:8px;padding:16px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <div style="width:28px;height:28px;border-radius:50%;background:rgba(245,166,35,.2);color:var(--gold);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;">1</div>
+              <span style="font-weight:700;color:var(--gold);">Voice 1 — LEAD</span>
+              <div class="toggle on" style="margin-left:auto;" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="slider-row">
+              <div class="slider-item"><label>Interval</label>
+                <select style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:4px;border-radius:4px;font-size:11px;">
+                  <option>Unison</option><option>Minor 2nd</option><option>Major 2nd</option>
+                  <option>Minor 3rd</option><option selected>Major 3rd</option><option>Perfect 4th</option>
+                  <option>Tritone</option><option>Perfect 5th</option><option>Minor 6th</option>
+                  <option>Major 6th</option><option>Minor 7th</option><option>Octave</option>
+                </select>
+              </div>
+              <div class="slider-item"><label>Volume</label><input type="range" min="0" max="100" value="85" style="flex:1;accent-color:var(--gold);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--gold);">85</span></div>
+              <div class="slider-item"><label>Pan</label><input type="range" min="-100" max="100" value="-30" style="flex:1;accent-color:var(--gold);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--gold);">-30</span></div>
+              <div class="slider-item"><label>Humanize</label><input type="range" min="0" max="100" value="20" style="flex:1;accent-color:var(--gold);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--gold);">20</span></div>
+            </div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid rgba(0,170,255,.3);border-radius:8px;padding:16px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <div style="width:28px;height:28px;border-radius:50%;background:rgba(0,170,255,.2);color:var(--blue);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;">2</div>
+              <span style="font-weight:700;color:var(--blue);">Voice 2</span>
+              <div class="toggle on" style="margin-left:auto;" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="slider-row">
+              <div class="slider-item"><label>Interval</label>
+                <select style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:4px;border-radius:4px;font-size:11px;">
+                  <option>Unison</option><option>Minor 3rd</option><option>Major 3rd</option>
+                  <option>Perfect 4th</option><option selected>Perfect 5th</option><option>Octave</option>
+                </select>
+              </div>
+              <div class="slider-item"><label>Volume</label><input type="range" min="0" max="100" value="70" style="flex:1;accent-color:var(--blue);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv">70</span></div>
+              <div class="slider-item"><label>Pan</label><input type="range" min="-100" max="100" value="30" style="flex:1;accent-color:var(--blue);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv">30</span></div>
+              <div class="slider-item"><label>Humanize</label><input type="range" min="0" max="100" value="35" style="flex:1;accent-color:var(--blue);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv">35</span></div>
+            </div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid rgba(170,68,255,.3);border-radius:8px;padding:16px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <div style="width:28px;height:28px;border-radius:50%;background:rgba(170,68,255,.2);color:var(--purple);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;">3</div>
+              <span style="font-weight:700;color:var(--purple);">Voice 3</span>
+              <div class="toggle" style="margin-left:auto;" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="slider-row">
+              <div class="slider-item"><label>Interval</label>
+                <select style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:4px;border-radius:4px;font-size:11px;">
+                  <option>Unison</option><option>Minor 3rd</option><option>Major 3rd</option>
+                  <option>Perfect 5th</option><option selected>Octave</option>
+                </select>
+              </div>
+              <div class="slider-item"><label>Volume</label><input type="range" min="0" max="100" value="55" style="flex:1;accent-color:var(--purple);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv">55</span></div>
+              <div class="slider-item"><label>Pan</label><input type="range" min="-100" max="100" value="-60" style="flex:1;accent-color:var(--purple);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv">-60</span></div>
+              <div class="slider-item"><label>Humanize</label><input type="range" min="0" max="100" value="50" style="flex:1;accent-color:var(--purple);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv">50</span></div>
+            </div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid rgba(0,255,136,.3);border-radius:8px;padding:16px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <div style="width:28px;height:28px;border-radius:50%;background:rgba(0,255,136,.2);color:var(--green);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;">4</div>
+              <span style="font-weight:700;color:var(--green);">Voice 4</span>
+              <div class="toggle" style="margin-left:auto;" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="slider-row">
+              <div class="slider-item"><label>Interval</label>
+                <select style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:4px;border-radius:4px;font-size:11px;">
+                  <option selected>Unison</option><option>Minor 3rd</option>
+                  <option>Major 3rd</option><option>Perfect 5th</option><option>Octave Down</option>
+                </select>
+              </div>
+              <div class="slider-item"><label>Volume</label><input type="range" min="0" max="100" value="45" style="flex:1;accent-color:var(--green);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv">45</span></div>
+              <div class="slider-item"><label>Pan</label><input type="range" min="-100" max="100" value="60" style="flex:1;accent-color:var(--green);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv">60</span></div>
+              <div class="slider-item"><label>Humanize</label><input type="range" min="0" max="100" value="65" style="flex:1;accent-color:var(--green);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv">65</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:16px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Quick Harmony Stacks</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <button class="tb-btn" style="font-size:11px;">3rd + 5th</button>
+            <button class="tb-btn" style="font-size:11px;">Choir (8-Voice)</button>
+            <button class="tb-btn" style="font-size:11px;">Octave Double</button>
+            <button class="tb-btn" style="font-size:11px;">Barbershop</button>
+            <button class="tb-btn" style="font-size:11px;">Trap Stack</button>
+            <button class="tb-btn" style="font-size:11px;">Wide Spread</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMANT TAB -->
+    <div class="view-panel" id="tab-formant" style="flex-direction:column;">
+      <div style="padding:20px;overflow-y:auto;flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px;letter-spacing:2px;text-transform:uppercase;">Formant & Throat Modeling</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">Formant Shift</div>
+            <div class="slider-row">
+              <div class="slider-item"><label>Formant</label><input type="range" min="-12" max="12" value="0" style="flex:1;accent-color:var(--blue);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv">0</span></div>
+              <div class="slider-item"><label>Throat</label><input type="range" min="-100" max="100" value="0" style="flex:1;accent-color:var(--blue);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv">0</span></div>
+              <div class="slider-item"><label>Gender</label><input type="range" min="-100" max="100" value="0" style="flex:1;accent-color:var(--purple);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--purple);">0</span></div>
+              <div class="slider-item"><label>Age</label><input type="range" min="-100" max="100" value="0" style="flex:1;accent-color:var(--cyan);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--cyan);">0</span></div>
+            </div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--purple);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">Vocal Character</div>
+            <div class="slider-row">
+              <div class="slider-item"><label>Brightness</label><input type="range" min="0" max="100" value="50" style="flex:1;accent-color:var(--gold);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--gold);">50</span></div>
+              <div class="slider-item"><label>Warmth</label><input type="range" min="0" max="100" value="50" style="flex:1;accent-color:var(--red);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--red);">50</span></div>
+              <div class="slider-item"><label>Air</label><input type="range" min="0" max="100" value="30" style="flex:1;accent-color:var(--cyan);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--cyan);">30</span></div>
+              <div class="slider-item"><label>Body</label><input type="range" min="0" max="100" value="60" style="flex:1;accent-color:var(--green);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--green);">60</span></div>
+            </div>
+          </div>
+          <div style="grid-column:1/-1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Formant Spectrum</div>
+            <canvas id="formantCanvas" height="120" style="width:100%;border-radius:6px;background:var(--bg);"></canvas>
+          </div>
+          <div style="grid-column:1/-1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Throat Model Presets</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <button class="tb-btn active" style="font-size:11px;" onclick="selectThroat(this)">Natural</button>
+              <button class="tb-btn" style="font-size:11px;" onclick="selectThroat(this)">Child</button>
+              <button class="tb-btn" style="font-size:11px;" onclick="selectThroat(this)">Teen</button>
+              <button class="tb-btn" style="font-size:11px;" onclick="selectThroat(this)">Adult Male</button>
+              <button class="tb-btn" style="font-size:11px;" onclick="selectThroat(this)">Adult Female</button>
+              <button class="tb-btn" style="font-size:11px;" onclick="selectThroat(this)">Deep Bass</button>
+              <button class="tb-btn" style="font-size:11px;" onclick="selectThroat(this)">Soprano</button>
+              <button class="tb-btn" style="font-size:11px;" onclick="selectThroat(this)">Robotic</button>
+              <button class="tb-btn" style="font-size:11px;" onclick="selectThroat(this)">Alien</button>
+              <button class="tb-btn" style="font-size:11px;" onclick="selectThroat(this)">Monster</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIBRATO TAB -->
+    <div class="view-panel" id="tab-vibrato" style="flex-direction:column;">
+      <div style="padding:20px;overflow-y:auto;flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px;letter-spacing:2px;text-transform:uppercase;">Vibrato & Modulation</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--cyan);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">Vibrato Shape</div>
+            <div style="display:flex;gap:6px;margin-bottom:12px;">
+              <button class="tb-btn active" style="font-size:10px;flex:1;" onclick="selectVibShape(this,'sine')">Sine</button>
+              <button class="tb-btn" style="font-size:10px;flex:1;" onclick="selectVibShape(this,'triangle')">Triangle</button>
+              <button class="tb-btn" style="font-size:10px;flex:1;" onclick="selectVibShape(this,'saw')">Sawtooth</button>
+              <button class="tb-btn" style="font-size:10px;flex:1;" onclick="selectVibShape(this,'random')">Random</button>
+            </div>
+            <canvas id="vibratoCanvas" height="80" style="width:100%;background:var(--bg);border-radius:6px;margin-bottom:12px;"></canvas>
+            <div class="slider-row">
+              <div class="slider-item"><label>Rate</label><input type="range" min="1" max="20" value="6" style="flex:1;accent-color:var(--cyan);" oninput="this.nextElementSibling.textContent=this.value+'Hz';drawVibratoWave()"><span class="sv" style="color:var(--cyan);">6Hz</span></div>
+              <div class="slider-item"><label>Depth</label><input type="range" min="0" max="100" value="30" style="flex:1;accent-color:var(--cyan);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--cyan);">30</span></div>
+              <div class="slider-item"><label>Onset</label><input type="range" min="0" max="500" value="100" style="flex:1;accent-color:var(--cyan);" oninput="this.nextElementSibling.textContent=this.value+'ms'"><span class="sv" style="color:var(--cyan);">100ms</span></div>
+              <div class="slider-item"><label>Sensitivity</label><input type="range" min="0" max="100" value="50" style="flex:1;accent-color:var(--cyan);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--cyan);">50</span></div>
+            </div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">Natural Vibrato Correction</div>
+            <div class="slider-row">
+              <div class="slider-item"><label>Preserve</label><input type="range" min="0" max="100" value="80" style="flex:1;accent-color:var(--gold);" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="sv" style="color:var(--gold);">80%</span></div>
+              <div class="slider-item"><label>Speed Tol.</label><input type="range" min="0" max="100" value="40" style="flex:1;accent-color:var(--gold);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--gold);">40</span></div>
+              <div class="slider-item"><label>Depth Tol.</label><input type="range" min="0" max="100" value="35" style="flex:1;accent-color:var(--gold);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--gold);">35</span></div>
+            </div>
+            <div style="margin-top:12px;font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Pitch LFO</div>
+            <div class="slider-row">
+              <div class="slider-item"><label>LFO Rate</label><input type="range" min="0" max="100" value="20" style="flex:1;accent-color:var(--purple);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--purple);">20</span></div>
+              <div class="slider-item"><label>LFO Depth</label><input type="range" min="0" max="100" value="10" style="flex:1;accent-color:var(--purple);" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--purple);">10</span></div>
+              <div class="slider-item"><label>Sync</label>
+                <select style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:4px;border-radius:4px;font-size:11px;">
+                  <option>Free</option><option>1/4</option><option>1/8</option><option>1/16</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EFFECTS TAB -->
+    <div class="view-panel" id="tab-effects" style="flex-direction:column;">
+      <div style="padding:16px;overflow-y:auto;flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px;letter-spacing:2px;text-transform:uppercase;">Effects Chain</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;">
+          <div class="fx-item">
+            <div class="fx-header">
+              <span style="width:8px;height:8px;background:var(--gold);border-radius:50%;display:inline-block;"></span>
+              <span class="fx-name">EQ — 5 Band Parametric</span>
+              <div class="fx-toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <canvas id="eqCanvas" height="60" style="width:100%;background:var(--bg);border-radius:4px;margin-bottom:6px;"></canvas>
+            <div class="slider-row">
+              <div class="slider-item" style="gap:4px;"><label style="width:30px;">LF</label><input type="range" min="-12" max="12" value="0" style="flex:1;accent-color:var(--gold);height:3px;" oninput="this.nextElementSibling.textContent=this.value;drawEQ()"><span class="sv" style="width:22px;">0</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:30px;">LMF</label><input type="range" min="-12" max="12" value="2" style="flex:1;accent-color:var(--gold);height:3px;" oninput="this.nextElementSibling.textContent=this.value;drawEQ()"><span class="sv" style="width:22px;">+2</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:30px;">MF</label><input type="range" min="-12" max="12" value="0" style="flex:1;accent-color:var(--gold);height:3px;" oninput="this.nextElementSibling.textContent=this.value;drawEQ()"><span class="sv" style="width:22px;">0</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:30px;">HMF</label><input type="range" min="-12" max="12" value="3" style="flex:1;accent-color:var(--gold);height:3px;" oninput="this.nextElementSibling.textContent=this.value;drawEQ()"><span class="sv" style="width:22px;">+3</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:30px;">HF</label><input type="range" min="-12" max="12" value="1" style="flex:1;accent-color:var(--gold);height:3px;" oninput="this.nextElementSibling.textContent=this.value;drawEQ()"><span class="sv" style="width:22px;">+1</span></div>
+            </div>
+          </div>
+          <div class="fx-item">
+            <div class="fx-header">
+              <span style="width:8px;height:8px;background:var(--blue);border-radius:50%;display:inline-block;"></span>
+              <span class="fx-name">Compressor</span>
+              <div class="fx-toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <span style="font-size:10px;color:var(--text2);">GR</span>
+              <div style="flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;border:1px solid var(--border);">
+                <div id="grMeter" style="height:100%;background:var(--blue);width:0%;transition:width .1s;border-radius:4px;"></div>
+              </div>
+              <span id="grVal" style="font-size:10px;color:var(--blue);width:24px;">0dB</span>
+            </div>
+            <div class="slider-row">
+              <div class="slider-item" style="gap:4px;"><label style="width:50px;">Threshold</label><input type="range" min="-60" max="0" value="-18" style="flex:1;accent-color:var(--blue);height:3px;" oninput="this.nextElementSibling.textContent=this.value+'dB'"><span class="sv" style="width:32px;">-18dB</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:50px;">Ratio</label><input type="range" min="1" max="20" value="4" style="flex:1;accent-color:var(--blue);height:3px;" oninput="this.nextElementSibling.textContent=this.value+':1'"><span class="sv" style="width:32px;">4:1</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:50px;">Attack</label><input type="range" min="0" max="200" value="10" style="flex:1;accent-color:var(--blue);height:3px;" oninput="this.nextElementSibling.textContent=this.value+'ms'"><span class="sv" style="width:32px;">10ms</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:50px;">Release</label><input type="range" min="0" max="500" value="50" style="flex:1;accent-color:var(--blue);height:3px;" oninput="this.nextElementSibling.textContent=this.value+'ms'"><span class="sv" style="width:32px;">50ms</span></div>
+            </div>
+          </div>
+          <div class="fx-item">
+            <div class="fx-header">
+              <span style="width:8px;height:8px;background:var(--purple);border-radius:50%;display:inline-block;"></span>
+              <span class="fx-name">Reverb — Hall / Room</span>
+              <div class="fx-toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:8px;">
+              <button class="tb-btn active" style="font-size:10px;flex:1;" onclick="selectRvb(this,'hall')">Hall</button>
+              <button class="tb-btn" style="font-size:10px;flex:1;" onclick="selectRvb(this,'room')">Room</button>
+              <button class="tb-btn" style="font-size:10px;flex:1;" onclick="selectRvb(this,'plate')">Plate</button>
+              <button class="tb-btn" style="font-size:10px;flex:1;" onclick="selectRvb(this,'spring')">Spring</button>
+            </div>
+            <div class="slider-row">
+              <div class="slider-item" style="gap:4px;"><label style="width:40px;">Size</label><input type="range" min="0" max="100" value="45" style="flex:1;accent-color:var(--purple);height:3px;" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--purple);width:22px;">45</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:40px;">Decay</label><input type="range" min="0" max="100" value="60" style="flex:1;accent-color:var(--purple);height:3px;" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--purple);width:22px;">60</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:40px;">Mix</label><input type="range" min="0" max="100" value="25" style="flex:1;accent-color:var(--purple);height:3px;" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="sv" style="color:var(--purple);width:22px;">25%</span></div>
+            </div>
+          </div>
+          <div class="fx-item">
+            <div class="fx-header">
+              <span style="width:8px;height:8px;background:var(--cyan);border-radius:50%;display:inline-block;"></span>
+              <span class="fx-name">Delay</span>
+              <div class="fx-toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="slider-row">
+              <div class="slider-item" style="gap:4px;"><label style="width:40px;">Time</label>
+                <select style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:2px;border-radius:4px;font-size:10px;">
+                  <option>1/4</option><option>1/8</option><option selected>1/8 dot</option><option>1/16</option>
+                </select>
+              </div>
+              <div class="slider-item" style="gap:4px;"><label style="width:40px;">Feedback</label><input type="range" min="0" max="100" value="30" style="flex:1;accent-color:var(--cyan);height:3px;" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="sv" style="color:var(--cyan);width:28px;">30%</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:40px;">Mix</label><input type="range" min="0" max="100" value="20" style="flex:1;accent-color:var(--cyan);height:3px;" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="sv" style="color:var(--cyan);width:28px;">20%</span></div>
+            </div>
+          </div>
+          <div class="fx-item">
+            <div class="fx-header">
+              <span style="width:8px;height:8px;background:var(--red);border-radius:50%;display:inline-block;"></span>
+              <span class="fx-name">Saturation / Drive</span>
+              <div class="fx-toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="slider-row">
+              <div class="slider-item" style="gap:4px;"><label style="width:40px;">Drive</label><input type="range" min="0" max="100" value="10" style="flex:1;accent-color:var(--red);height:3px;" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--red);width:22px;">10</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:40px;">Tone</label><input type="range" min="0" max="100" value="50" style="flex:1;accent-color:var(--red);height:3px;" oninput="this.nextElementSibling.textContent=this.value"><span class="sv" style="color:var(--red);width:22px;">50</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:40px;">Mix</label><input type="range" min="0" max="100" value="30" style="flex:1;accent-color:var(--red);height:3px;" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="sv" style="color:var(--red);width:22px;">30%</span></div>
+            </div>
+          </div>
+          <div class="fx-item">
+            <div class="fx-header">
+              <span style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block;"></span>
+              <span class="fx-name">De-Esser</span>
+              <div class="fx-toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="slider-row">
+              <div class="slider-item" style="gap:4px;"><label style="width:40px;">Freq</label><input type="range" min="4000" max="16000" value="7000" style="flex:1;accent-color:var(--green);height:3px;" oninput="this.nextElementSibling.textContent=Math.round(this.value/1000)+'kHz'"><span class="sv" style="color:var(--green);width:28px;">7kHz</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:40px;">Thresh</label><input type="range" min="-40" max="0" value="-12" style="flex:1;accent-color:var(--green);height:3px;" oninput="this.nextElementSibling.textContent=this.value+'dB'"><span class="sv" style="color:var(--green);width:28px;">-12dB</span></div>
+              <div class="slider-item" style="gap:4px;"><label style="width:40px;">Reduce</label><input type="range" min="0" max="24" value="6" style="flex:1;accent-color:var(--green);height:3px;" oninput="this.nextElementSibling.textContent=this.value+'dB'"><span class="sv" style="color:var(--green);width:28px;">6dB</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYZER TAB -->
+    <div class="view-panel" id="tab-analyze" style="flex-direction:column;">
+      <div style="padding:16px;flex:1;display:flex;flex-direction:column;gap:12px;overflow-y:auto;">
+        <div style="font-size:14px;font-weight:700;color:var(--gold);letter-spacing:2px;text-transform:uppercase;">Spectrum Analyzer</div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;flex:1;min-height:200px;">
+          <canvas id="analyzerCanvas" style="width:100%;height:100%;min-height:200px;border-radius:6px;"></canvas>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--gold);" id="statPitch">C4</div>
+            <div style="font-size:10px;color:var(--text2);text-transform:uppercase;">Current Pitch</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--green);" id="statCents">+2c</div>
+            <div style="font-size:10px;color:var(--text2);text-transform:uppercase;">Cents Off</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--blue);" id="statHz">261 Hz</div>
+            <div style="font-size:10px;color:var(--text2);text-transform:uppercase;">Frequency</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--purple);" id="statCorrect">-2c</div>
+            <div style="font-size:10px;color:var(--text2);text-transform:uppercase;">Correction Applied</div>
+          </div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Correction History (last 16 notes)</div>
+          <div style="display:flex;gap:4px;align-items:flex-end;height:50px;" id="correctionHistory">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="rp-section">
+      <div class="rp-title">Output Routing</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:11px;color:var(--text2);">Main Out</span>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:11px;color:var(--text2);">Harmony Out</span>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:11px;color:var(--text2);">Dry Mix</span>
+          <div class="toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:11px;color:var(--text2);">Send to Rack</span>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+    </div>
+    <div class="rp-section">
+      <div class="rp-title">Master Output</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:10px;color:var(--text2);width:28px;">L</span>
+          <div class="level-meter" style="flex:1;"><div class="level-fill" id="masterL" style="width:65%;"></div></div>
+          <span style="font-size:10px;color:var(--green);width:24px;">-6</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:10px;color:var(--text2);width:28px;">R</span>
+          <div class="level-meter" style="flex:1;"><div class="level-fill" id="masterR" style="width:58%;"></div></div>
+          <span style="font-size:10px;color:var(--green);width:24px;">-7</span>
+        </div>
+        <div style="margin-top:4px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:10px;color:var(--text2);width:28px;">VOL</span>
+            <input type="range" min="0" max="100" value="85" style="flex:1;accent-color:var(--gold);" oninput="this.nextElementSibling.textContent=this.value">
+            <span style="font-size:10px;color:var(--gold);width:24px;">85</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="rp-section">
+      <div class="rp-title">MIDI Control</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:11px;color:var(--text2);">MIDI Enable</span>
+          <div class="toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <select class="input-device" style="font-size:11px;">
+          <option>No MIDI Device</option>
+          <option>Akai MPK Mini</option>
+          <option>Arturia KeyLab</option>
+        </select>
+        <div style="font-size:10px;color:var(--text2);">Channel: <select style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:10px;padding:2px 4px;border-radius:3px;"><option>1</option><option>2</option><option>ALL</option></select></div>
+      </div>
+    </div>
+    <div class="rp-section">
+      <div class="rp-title">Quick Presets</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <button class="tb-btn" style="font-size:11px;text-align:left;" onclick="loadPreset('natural')">Natural Correction</button>
+        <button class="tb-btn" style="font-size:11px;text-align:left;" onclick="loadPreset('trap')">Trap Auto</button>
+        <button class="tb-btn" style="font-size:11px;text-align:left;" onclick="loadPreset('hard')">Hard Tune</button>
+        <button class="tb-btn" style="font-size:11px;text-align:left;" onclick="loadPreset('robot')">Robot Voice</button>
+        <button class="tb-btn" style="font-size:11px;text-align:left;" onclick="loadPreset('harmony4')">4-Voice Harmony</button>
+      </div>
+    </div>
+    <div class="rp-section">
+      <div class="rp-title">Send to Studio</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <a href="goat-plugin-rack.html" style="text-decoration:none;"><button class="tb-btn" style="font-size:11px;width:100%;text-align:left;">Plugin Rack</button></a>
+        <a href="goat-channel-strip.html" style="text-decoration:none;"><button class="tb-btn" style="font-size:11px;width:100%;text-align:left;">Channel Strip</button></a>
+        <a href="vocal-studio.html" style="text-decoration:none;"><button class="tb-btn" style="font-size:11px;width:100%;text-align:left;">Vocal Studio</button></a>
+        <a href="ssl-mixer.html" style="text-decoration:none;"><button class="tb-btn" style="font-size:11px;width:100%;text-align:left;">SSL Mixer</button></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+const state = {
+  bypass: false,
+  inputActive: false,
+  recording: false,
+  currentMode: 'auto',
+  showScale: true,
+  showGrid: true,
+  zoom: 1,
+  retune: 'instant',
+  vibratoShape: 'sine',
+  pitchHistory: [],
+  graphOffset: 0,
+  notes: ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],
+  noteFreqs: [261.63,277.18,293.66,311.13,329.63,349.23,369.99,392.00,415.30,440.00,466.16,493.88],
+  simPitch: 261.63,
+  simNote: 'C4',
+  simCents: 0
+};
+
+// ===== TABS =====
+function switchTab(t) {
+  document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.mode-tab').forEach(m => m.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  event.target.classList.add('active');
+  if (t === 'effects') { setTimeout(drawEQ, 100); }
+  if (t === 'vibrato') { setTimeout(drawVibratoWave, 100); }
+  if (t === 'analyze') { setTimeout(drawAnalyzer, 100); }
+  if (t === 'formant') { setTimeout(drawFormantSpectrum, 100); }
+  if (t === 'harmony') { setTimeout(drawHarmonyKeyboard, 100); }
+}
+
+// ===== KNOBS =====
+document.querySelectorAll('.knob').forEach(knob => {
+  let dragging = false, startY = 0, startVal = 0;
+  const getVal = () => parseInt(knob.dataset.value || 50);
+  const min = parseInt(knob.dataset.min || 0);
+  const max = parseInt(knob.dataset.max || 100);
+  function updateKnob(val) {
+    val = Math.max(min, Math.min(max, val));
+    knob.dataset.value = val;
+    const pct = (val - min) / (max - min);
+    const deg = pct * 270;
+    const color = knob.classList.contains('blue') ? '#00aaff' : knob.classList.contains('purple') ? '#aa44ff' : knob.classList.contains('green') ? '#00ff88' : '#f5a623';
+    knob.style.background = `conic-gradient(${color} ${deg}deg, #141420 ${deg}deg)`;
+    knob.style.transform = `rotate(${(pct - 0.5) * 270}deg)`;
+    const id = knob.id.replace('knob-', 'kv-');
+    const vEl = document.getElementById(id);
+    if (vEl) vEl.textContent = val;
+  }
+  knob.addEventListener('mousedown', e => { dragging = true; startY = e.clientY; startVal = getVal(); e.preventDefault(); });
+  document.addEventListener('mousemove', e => { if (!dragging) return; const d = startY - e.clientY; updateKnob(startVal + Math.round(d * 0.7)); });
+  document.addEventListener('mouseup', () => { dragging = false; });
+  knob.addEventListener('touchstart', e => { dragging = true; startY = e.touches[0].clientY; startVal = getVal(); e.preventDefault(); }, {passive:false});
+  document.addEventListener('touchmove', e => { if (!dragging) return; const d = startY - e.touches[0].clientY; updateKnob(startVal + Math.round(d * 0.7)); }, {passive:true});
+  document.addEventListener('touchend', () => { dragging = false; });
+  updateKnob(getVal());
+});
+
+// ===== CONTROLS =====
+function setMode(m) {
+  state.currentMode = m;
+  document.querySelectorAll('.topbar .tb-btn').forEach(b => {
+    if (['AUTO','GRAPH','FLEX TUNE'].includes(b.textContent)) b.classList.remove('active');
+  });
+  event.target.classList.add('active');
+}
+
+function toggleBypass() {
+  state.bypass = !state.bypass;
+  const btn = document.getElementById('bypassBtn');
+  btn.classList.toggle('on', state.bypass);
+  btn.textContent = state.bypass ? 'BYPASSED' : 'BYPASS';
+}
+
+function toggleInput() {
+  state.inputActive = !state.inputActive;
+  const btn = document.getElementById('inputBtn');
+  btn.classList.toggle('active', state.inputActive);
+  btn.textContent = state.inputActive ? 'MIC ON' : 'MIC INPUT';
+}
+
+function toggleRecord() {
+  state.recording = !state.recording;
+  const btn = document.getElementById('recBtn');
+  btn.classList.toggle('active', state.recording);
+  btn.classList.toggle('recording', state.recording);
+}
+
+function setRetune(el, speed) {
+  document.querySelectorAll('.rt-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  state.retune = speed;
+}
+
+function updateKeyDisplay() {
+  const key = document.getElementById('keySelect').value;
+  const scale = document.getElementById('scaleSelect2').value;
+  document.getElementById('badgeKey').textContent = key + ' ' + scale;
+  document.getElementById('badgeScale').textContent = scale + ' Scale';
+}
+
+function loadPreset(p) {
+  if (!p) return;
+  const presets = {
+    natural: {retune:80, flex:70, humanize:60},
+    trap: {retune:0, flex:0, humanize:5},
+    hard: {retune:0, flex:10, humanize:0},
+    robot: {retune:0, flex:0, humanize:0},
+    choir: {retune:60, flex:50, humanize:80},
+    harmony4: {retune:30, flex:40, humanize:50}
+  };
+  const pr = presets[p];
+  if (!pr) return;
+  ['retune','flex','humanize'].forEach(k => {
+    const knob = document.getElementById('knob-' + k);
+    if (knob && pr[k] !== undefined) {
+      knob.dataset.value = pr[k];
+      knob.dispatchEvent(new Event('mousedown'));
+      document.dispatchEvent(new Event('mouseup'));
+      const vEl = document.getElementById('kv-' + k);
+      if (vEl) vEl.textContent = pr[k];
+    }
+  });
+  showToast('Preset: ' + p.charAt(0).toUpperCase() + p.slice(1) + ' loaded');
+}
+
+function savePreset() { showToast('Preset saved to library'); }
+function copyPreset() { showToast('Preset settings copied'); }
+function clearGraph() { state.pitchHistory = []; }
+function toggleShowScale() { state.showScale = !state.showScale; }
+function toggleShowGrid() { state.showGrid = !state.showGrid; }
+function zoomGraph(d) { state.zoom = Math.max(0.5, Math.min(3, state.zoom + d * 0.25)); }
+function selectThroat(el) { document.querySelectorAll('#tab-formant .tb-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); }
+function selectVibShape(el, s) { state.vibratoShape = s; document.querySelectorAll('#tab-vibrato .tb-btn[onclick*="selectVibShape"]').forEach(b => b.classList.remove('active')); el.classList.add('active'); drawVibratoWave(); }
+function selectRvb(el, t) { const parent = el.closest('.fx-item'); parent.querySelectorAll('.tb-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); }
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#f5a623;color:#000;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;z-index:9999;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2000);
+}
+
+// ===== GRAPH CANVAS =====
+function initGraph() {
+  const canvas = document.getElementById('graphCanvas');
+  if (!canvas) return;
+  const resizeCanvas = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+}
+
+function drawGraph() {
+  const canvas = document.getElementById('graphCanvas');
+  if (!canvas || canvas.width === 0) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0f0f1a';
+  ctx.fillRect(0, 0, W, H);
+
+  const noteNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const numNotes = 24;
+  const noteH = H / numNotes;
+
+  if (state.showGrid) {
+    ctx.strokeStyle = 'rgba(42,42,62,0.8)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= numNotes; i++) {
+      const y = i * noteH;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    for (let x = 0; x < W; x += 50) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+  }
+
+  if (state.showScale) {
+    ['C','D','E','F','G','A','B'].forEach((n, i) => {
+      const noteIdx = noteNames.indexOf(n);
+      if (noteIdx >= 0) {
+        const y = H - (noteIdx / 12) * (H / 2);
+        ctx.fillStyle = 'rgba(245,166,35,0.06)';
+        ctx.fillRect(0, y - noteH/2, W, noteH);
+        ctx.fillStyle = 'rgba(245,166,35,0.4)';
+        ctx.font = '9px monospace';
+        ctx.fillText(n, 4, y + 3);
+      }
+    });
+  }
+
+  // Note lines for current key
+  for (let oct = 0; oct < 2; oct++) {
+    for (let ni = 0; ni < 12; ni++) {
+      const y = H - ((oct * 12 + ni) / numNotes) * H;
+      const isSharp = [1,3,6,8,10].includes(ni);
+      ctx.strokeStyle = isSharp ? 'rgba(90,90,120,0.5)' : 'rgba(150,150,180,0.6)';
+      ctx.lineWidth = isSharp ? 0.5 : 1;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+  }
+
+  // Pitch history
+  if (state.pitchHistory.length > 1) {
+    ctx.beginPath();
+    ctx.strokeStyle = '#00aaff';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#00aaff';
+    ctx.shadowBlur = 8;
+    state.pitchHistory.forEach((p, i) => {
+      const x = (i / state.pitchHistory.length) * W;
+      const y = H - (p / (numNotes * 100)) * H;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Corrected pitch line
+    ctx.beginPath();
+    ctx.strokeStyle = '#00ff88';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#00ff88';
+    ctx.shadowBlur = 6;
+    state.pitchHistory.forEach((p, i) => {
+      const x = (i / state.pitchHistory.length) * W;
+      const corrected = Math.round(p / 100) * 100;
+      const y = H - (corrected / (numNotes * 100)) * H;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // Current pitch indicator
+  const pitchPos = H - (state.simPitch / 880) * H;
+  ctx.fillStyle = '#f5a623';
+  ctx.shadowColor = '#f5a623';
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.arc(W - 20, pitchPos, 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+}
+
+// ===== PITCH SIMULATION =====
+const noteFreqsFull = [
+  261.63,277.18,293.66,311.13,329.63,349.23,369.99,392.00,415.30,440.00,466.16,493.88,
+  523.25,554.37,587.33,622.25,659.26,698.46,739.99,783.99,830.61,880.00,932.33,987.77
+];
+const noteNamesFull = ['C4','C#4','D4','D#4','E4','F4','F#4','G4','G#4','A4','A#4','B4','C5','C#5','D5','D#5','E5','F5','F#5','G5','G#5','A5','A#5','B5'];
+
+let simT = 0;
+function simulatePitch() {
+  simT += 0.03;
+  const idx = Math.floor((Math.sin(simT * 0.15) * 0.5 + 0.5) * noteNamesFull.length);
+  const baseFreq = noteFreqsFull[Math.max(0, Math.min(idx, noteFreqsFull.length - 1))];
+  const jitter = (Math.random() - 0.5) * 20;
+  state.simPitch = baseFreq + jitter;
+  state.simNote = noteNamesFull[Math.max(0, Math.min(idx, noteNamesFull.length - 1))];
+  state.simCents = Math.round(jitter / (baseFreq * 0.005777));
+
+  document.getElementById('currentNote').textContent = state.simNote;
+  document.getElementById('centsDisplay').textContent = (state.simCents >= 0 ? '+' : '') + state.simCents + 'c';
+  document.getElementById('piFreq').textContent = Math.round(baseFreq) + '';
+  document.getElementById('piCorrection').textContent = -state.simCents + 'c';
+  document.getElementById('piTarget').textContent = state.simNote;
+
+  const pitchBar = document.getElementById('pitchBar');
+  const pct = 50 + (state.simCents / 100) * 45;
+  pitchBar.style.left = pct + '%';
+  pitchBar.className = 'pitch-bar' + (state.simCents > 5 ? ' sharp' : state.simCents < -5 ? ' flat' : '');
+
+  state.pitchHistory.push(noteFreqsFull.indexOf(baseFreq) * 100 + 50 + state.simCents);
+  if (state.pitchHistory.length > 200) state.pitchHistory.shift();
+
+  // Level meters animation
+  const lv = 30 + Math.sin(simT * 3) * 20 + Math.random() * 15;
+  const lvOut = lv * 0.9 + 5;
+  document.getElementById('inputLevel').style.width = lv + '%';
+  document.getElementById('outputLevel').style.width = lvOut + '%';
+  document.getElementById('masterL').style.width = (55 + Math.random() * 20) + '%';
+  document.getElementById('masterR').style.width = (50 + Math.random() * 20) + '%';
+
+  // GR meter
+  const gr = Math.random() * 30;
+  document.getElementById('grMeter').style.width = gr + '%';
+  document.getElementById('grVal').textContent = '-' + Math.round(gr / 5) + 'dB';
+
+  // CPU
+  document.getElementById('cpuMeter').textContent = Math.round(10 + Math.random() * 8) + '%';
+
+  // Analyze stats
+  if (document.getElementById('statPitch')) {
+    document.getElementById('statPitch').textContent = state.simNote;
+    document.getElementById('statCents').textContent = (state.simCents >= 0 ? '+' : '') + state.simCents + 'c';
+    document.getElementById('statHz').textContent = Math.round(baseFreq) + ' Hz';
+    document.getElementById('statCorrect').textContent = -state.simCents + 'c';
+  }
+}
+
+// ===== CANVAS DRAWS =====
+function drawVibratoWave() {
+  const canvas = document.getElementById('vibratoCanvas');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth || 400;
+  canvas.height = 80;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#0a0a0f';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = '#00ffcc';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#00ffcc';
+  ctx.shadowBlur = 6;
+  ctx.beginPath();
+  for (let x = 0; x < canvas.width; x++) {
+    const t = (x / canvas.width) * Math.PI * 8;
+    let y;
+    switch (state.vibratoShape) {
+      case 'triangle': y = (2 / Math.PI) * Math.asin(Math.sin(t)); break;
+      case 'saw': y = ((t % (Math.PI * 2)) / Math.PI) - 1; break;
+      case 'random': y = (Math.random() - 0.5) * 2; break;
+      default: y = Math.sin(t);
+    }
+    const py = canvas.height / 2 - y * (canvas.height * 0.35);
+    x === 0 ? ctx.moveTo(x, py) : ctx.lineTo(x, py);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function drawFormantSpectrum() {
+  const canvas = document.getElementById('formantCanvas');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth || 800;
+  canvas.height = 120;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0a0a0f';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const formants = [
+    {freq: 0.1, amp: 0.9, color: '#00aaff'},
+    {freq: 0.25, amp: 0.7, color: '#aa44ff'},
+    {freq: 0.45, amp: 0.5, color: '#f5a623'},
+    {freq: 0.65, amp: 0.3, color: '#00ff88'},
+    {freq: 0.82, amp: 0.15, color: '#ff3366'}
+  ];
+  formants.forEach(f => {
+    const cx = f.freq * canvas.width;
+    const w = canvas.width * 0.08;
+    const h = f.amp * canvas.height * 0.85;
+    const grad = ctx.createLinearGradient(cx, canvas.height, cx, canvas.height - h);
+    grad.addColorStop(0, f.color + '88');
+    grad.addColorStop(1, f.color);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(cx - w, canvas.height);
+    ctx.quadraticCurveTo(cx, canvas.height - h - 10, cx + w, canvas.height);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = f.color;
+    ctx.font = '10px monospace';
+    ctx.fillText('F' + (formants.indexOf(f) + 1), cx - 5, canvas.height - h - 15);
+  });
+}
+
+function drawHarmonyKeyboard() {
+  const canvas = document.getElementById('harmonyKeyboard');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth || 700;
+  canvas.height = 80;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0a0a0f';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const numKeys = 28;
+  const keyW = canvas.width / numKeys;
+  const sharps = [1,3,6,8,10,13,15,18,20,22,25,27];
+  for (let i = 0; i < numKeys; i++) {
+    const isSharp = sharps.includes(i % 12);
+    ctx.fillStyle = isSharp ? '#1a1a2e' : '#e0e0f0';
+    ctx.strokeStyle = '#2a2a3e';
+    ctx.lineWidth = 1;
+    ctx.fillRect(i * keyW + 1, 0, keyW - 2, isSharp ? 50 : canvas.height - 2);
+    ctx.strokeRect(i * keyW + 1, 0, keyW - 2, isSharp ? 50 : canvas.height - 2);
+  }
+  // Highlight active notes
+  const activeNotes = [0, 4, 7]; // C major chord
+  const colors = ['#f5a623','#00aaff','#aa44ff','#00ff88'];
+  activeNotes.forEach((n, vi) => {
+    ctx.fillStyle = colors[vi] + 'cc';
+    ctx.fillRect(n * keyW + 1, 0, keyW - 2, canvas.height - 2);
+  });
+}
+
+function drawEQ() {
+  const canvas = document.getElementById('eqCanvas');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth || 400;
+  canvas.height = 60;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0a0a0f';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = '#f5a623';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#f5a623';
+  ctx.shadowBlur = 4;
+  ctx.beginPath();
+  const bands = [0, 2, 0, 3, 1].map(v => v / 12);
+  for (let x = 0; x < canvas.width; x++) {
+    const t = x / canvas.width;
+    const i = t * (bands.length - 1);
+    const lo = Math.floor(i), hi = Math.min(lo + 1, bands.length - 1);
+    const frac = i - lo;
+    const val = bands[lo] * (1 - frac) + bands[hi] * frac;
+    const y = canvas.height / 2 - val * canvas.height * 0.4;
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = 'rgba(245,166,35,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, canvas.height / 2);
+  ctx.lineTo(canvas.width, canvas.height / 2);
+  ctx.stroke();
+}
+
+function drawAnalyzer() {
+  const canvas = document.getElementById('analyzerCanvas');
+  if (!canvas || !canvas.offsetWidth) return;
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight || 200;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0a0a0f';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const bars = 64;
+  const barW = canvas.width / bars;
+  for (let i = 0; i < bars; i++) {
+    const freq = Math.pow(i / bars, 2);
+    const h = (Math.sin(i * 0.3 + simT * 2) * 0.3 + 0.4 + freq * 0.3) * canvas.height * 0.85;
+    const hue = 120 + i * 2;
+    const grad = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - h);
+    grad.addColorStop(0, '#00aaff');
+    grad.addColorStop(0.6, '#00ff88');
+    grad.addColorStop(1, '#f5a623');
+    ctx.fillStyle = grad;
+    ctx.fillRect(i * barW + 1, canvas.height - h, barW - 2, h);
+  }
+}
+
+// ===== CORRECTION HISTORY =====
+function initCorrectionHistory() {
+  const el = document.getElementById('correctionHistory');
+  if (!el) return;
+  for (let i = 0; i < 16; i++) {
+    const bar = document.createElement('div');
+    bar.style.cssText = 'flex:1;background:var(--bg3);border-radius:2px;min-height:2px;transition:height .2s;border:1px solid var(--border);';
+    el.appendChild(bar);
+  }
+}
+
+function updateCorrectionHistory() {
+  const el = document.getElementById('correctionHistory');
+  if (!el) return;
+  const bars = el.children;
+  for (let i = 0; i < bars.length - 1; i++) {
+    bars[i].style.height = bars[i+1].style.height;
+    bars[i].style.background = bars[i+1].style.background;
+  }
+  const h = Math.abs(state.simCents) / 100 * 50;
+  const last = bars[bars.length - 1];
+  last.style.height = h + 'px';
+  last.style.background = Math.abs(state.simCents) > 20 ? '#ff3366' : Math.abs(state.simCents) > 10 ? '#f5a623' : '#00ff88';
+}
+
+// ===== MAIN LOOP =====
+let frameCount = 0;
+function mainLoop() {
+  frameCount++;
+  simulatePitch();
+  drawGraph();
+  if (frameCount % 2 === 0) {
+    drawAnalyzer();
+    updateCorrectionHistory();
+  }
+  if (frameCount % 5 === 0) {
+    drawFormantSpectrum();
+  }
+  requestAnimationFrame(mainLoop);
+}
+
+// ===== INIT =====
+window.addEventListener('load', () => {
+  initGraph();
+  initCorrectionHistory();
+  drawVibratoWave();
+  drawHarmonyKeyboard();
+  drawEQ();
+  setTimeout(mainLoop, 100);
+});
+</script>
+</body>
+</html>

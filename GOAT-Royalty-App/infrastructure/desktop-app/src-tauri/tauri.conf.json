@@ -1,0 +1,98 @@
+{
+  "build": {
+    "beforeBuildCommand": "npm run build:web",
+    "beforeDevCommand": "npm run dev:web",
+    "devPath": "http://localhost:8080",
+    "distDir": "../web-app"
+  },
+  "package": {
+    "productName": "GOAT Royalty",
+    "version": "4.0.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": true,
+      "shell": {
+        "open": true
+      },
+      "http": {
+        "scope": ["https://*", "http://localhost:*"]
+      },
+      "fs": {
+        "scope": ["$APPDATA/*", "$DOCUMENT/*", "$DOWNLOAD/*"],
+        "readFile": true,
+        "writeFile": true,
+        "readDir": true,
+        "exists": true
+      },
+      "notification": {
+        "all": true
+      },
+      "clipboard": {
+        "all": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "category": "Entertainment",
+      "copyright": "Copyright © 2024 GOAT Royalty. All rights reserved.",
+      "deb": {
+        "depends": []
+      },
+      "externalBin": [],
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "com.goatroyalty.app",
+      "longDescription": "The Ultimate Platform for Fashion, Entertainment, Music & Celebrity Tools",
+      "macOS": {
+        "entitlements": null,
+        "exceptionDomain": "",
+        "frameworks": [],
+        "providerShortName": null,
+        "signingIdentity": null
+      },
+      "resources": [],
+      "shortDescription": "GOAT Royalty App",
+      "targets": "all",
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
+      }
+    },
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.stripe.com https://*.goatroyalty.app wss://* http://localhost:*"
+    },
+    "updater": {
+      "active": true,
+      "dialog": true,
+      "endpoints": ["https://updates.goatroyalty.app/{{target}}/{{arch}}/{{current_version}}"],
+      "pubkey": "YOUR_PUBLIC_KEY_HERE"
+    },
+    "windows": [
+      {
+        "title": "GOAT Royalty",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 1024,
+        "minHeight": 700,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false,
+        "center": true,
+        "theme": "dark"
+      }
+    ],
+    "systemTray": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true,
+      "menuOnLeftClick": false
+    }
+  }
+}

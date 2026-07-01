@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fan Database | GOAT Royalty App</title>
+<style>
+  :root { --gold:#FFD700; --red:#CC0000; --cream:#FFF8DC; --green:#00FF88; --dark:#0a0a0a; --card:#111; --border:#2a2a2a; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--dark); color: var(--cream); font-family: 'Segoe UI', sans-serif; }
+  .hero { background: linear-gradient(135deg, #1a1a0d, #0a0a0a 60%); padding: 40px 20px; text-align: center; border-bottom: 2px solid var(--gold); }
+  .hero h1 { font-size: 2.2rem; color: var(--gold); font-weight: 900; }
+  nav { background: #111; border-bottom: 1px solid var(--border); padding: 0 20px; display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; }
+  nav a { color: #888; text-decoration: none; font-size: 13px; padding: 14px 12px; border-bottom: 2px solid transparent; }
+  nav a:hover, nav a.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-top: 3px solid var(--gold); border-radius: 12px; padding: 20px; text-align: center; }
+  .stat-v { font-size: 2rem; font-weight: 900; color: var(--gold); display: block; }
+  .stat-l { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+  .toolbar { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 13px; }
+  .btn-gold { background: var(--gold); color: #000; }
+  .btn-gold:hover { filter: brightness(1.1); }
+  .btn-red { background: var(--red); color: white; }
+  .btn-green { background: var(--green); color: #000; }
+  .btn-ghost { background: transparent; border: 1px solid #444; color: #ccc; }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+  input { padding: 10px; background: #0d0d0d; border: 1px solid var(--border); color: var(--cream); border-radius: 8px; font-size: 13px; }
+  input:focus { outline: none; border-color: var(--gold); }
+  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #1a1a1a; color: var(--gold); padding: 12px 14px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 12px 14px; border-bottom: 1px solid #1a1a1a; font-size: 13px; color: #ccc; }
+  tr:hover { background: rgba(255,215,0,0.03); }
+  .tag { display: inline-block; background: rgba(255,215,0,0.15); color: var(--gold); padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; margin-right: 4px; }
+  .tag-src { background: rgba(0,191,255,0.15); color: #00BFFF; }
+  .placeholder { padding: 60px 20px; text-align: center; color: #555; }
+  .add-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; }
+  .modal-bg.on { display: flex; }
+  .modal { background: #111; border: 1px solid var(--gold); border-radius: 16px; padding: 28px; max-width: 500px; width: 90%; }
+  .modal h2 { color: var(--gold); margin-bottom: 16px; }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<div class="hero">
+  <h1>👥 Fan Database</h1>
+  <p style="color:#aaa;margin-top:8px;">Your fans. Your data. 100% local. Zero 3rd-parties.</p>
+</div>
+
+<nav>
+  <a href="powerhouse.html">🏠 Powerhouse</a>
+  <a href="network.html">🔗 Network</a>
+  <a href="spotify-dashboard.html">📊 Spotify Dashboard</a>
+  <a href="fan-db.html" class="active">👥 Fan DB</a>
+  <a href="smart-links.html">🔗 Smart Links</a>
+  <a href="campaigns.html">📣 Campaigns</a>
+  <a href="funnel.html">🎯 TikTok Funnel</a>
+</nav>
+
+<div class="container">
+
+  <div class="stats-grid">
+    <div class="stat-card"><span class="stat-v" id="total">—</span><span class="stat-l">Total Fans</span></div>
+    <div class="stat-card"><span class="stat-v" id="last7">—</span><span class="stat-l">Last 7 Days</span></div>
+    <div class="stat-card"><span class="stat-v" id="artists">—</span><span class="stat-l">Artists</span></div>
+    <div class="stat-card"><span class="stat-v" id="sources">—</span><span class="stat-l">Sources</span></div>
+  </div>
+
+  <div class="toolbar">
+    <input id="search" type="text" placeholder="Search by email, name, artist..." style="flex:1;min-width:200px;" oninput="filterTable()" />
+    <select id="artist-filter" onchange="loadFans()" style="padding:10px;background:#0d0d0d;border:1px solid var(--border);color:var(--cream);border-radius:8px;">
+      <option value="">All Artists</option>
+      <option value="djspeedy">DJ Speedy</option>
+      <option value="wakaflocka">Waka Flocka</option>
+      <option value="goat-force">GOAT Force</option>
+    </select>
+    <button class="btn btn-gold" onclick="toggleAddModal(true)">➕ Add Fan</button>
+    <button class="btn btn-green" onclick="exportCSV()">📥 Export CSV</button>
+    <button class="btn btn-ghost" onclick="loadFans()">🔄 Refresh</button>
+  </div>
+
+  <div id="info-banner" style="background:rgba(0,191,255,0.1);border:1px solid rgba(0,191,255,0.3);border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:#ccc;display:none;">
+    💡 <strong style="color:#00BFFF">Pro tip:</strong> Build your list via <a href="smart-links.html" style="color:var(--gold)">Smart Links</a> + <a href="funnel.html" style="color:var(--gold)">TikTok funnel</a>. Waka's 826.7K TikTok followers × 2% opt-in = 16,500 emails in your DB.
+  </div>
+
+  <div class="table-wrap">
+    <table id="fan-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Email</th><th>Name</th><th>Artist</th><th>Source</th><th>TikTok</th><th>Phone</th><th>Location</th><th>Joined</th><th>Consent</th>
+        </tr>
+      </thead>
+      <tbody id="fan-body">
+        <tr><td colspan="10" class="placeholder">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADD FAN MODAL -->
+<div class="modal-bg" id="modal-add">
+  <div class="modal">
+    <h2>➕ Add Fan Manually</h2>
+    <div class="add-form">
+      <input id="m-email" type="email" placeholder="Email *" required />
+      <input id="m-name" type="text" placeholder="Name" />
+      <input id="m-phone" type="tel" placeholder="Phone" />
+      <input id="m-tiktok" type="text" placeholder="@tiktok_handle" />
+      <input id="m-city" type="text" placeholder="City" />
+      <input id="m-country" type="text" placeholder="Country" />
+      <select id="m-artist" style="padding:10px;background:#0d0d0d;border:1px solid var(--border);color:var(--cream);border-radius:8px;">
+        <option value="djspeedy">DJ Speedy</option>
+        <option value="wakaflocka">Waka Flocka</option>
+        <option value="goat-force">GOAT Force (both)</option>
+      </select>
+      <input id="m-source" type="text" placeholder="Source (e.g. manual)" value="manual" />
+    </div>
+    <div style="margin-top:18px;display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="toggleAddModal(false)">Cancel</button>
+      <button class="btn btn-gold" onclick="saveFan()">💾 Add Fan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const INTEL = 'http://localhost:5500';
+let ALL_FANS = [];
+
+async function loadStats() {
+  try {
+    const res = await fetch(INTEL + '/fans/stats');
+    const d = await res.json();
+    if (d.ok) {
+      document.getElementById('total').textContent = d.total_fans || 0;
+      document.getElementById('last7').textContent = d.last_7_days || 0;
+      document.getElementById('artists').textContent = (d.by_artist || []).length;
+      document.getElementById('sources').textContent = (d.by_source || []).length;
+      if (d.total_fans === 0) document.getElementById('info-banner').style.display = 'block';
+    }
+  } catch(e) { console.error(e); }
+}
+
+async function loadFans() {
+  const artist = document.getElementById('artist-filter').value;
+  try {
+    const res = await fetch(INTEL + '/fans/list' + (artist ? '?artist='+artist : ''));
+    const d = await res.json();
+    if (d.ok) {
+      ALL_FANS = d.fans || [];
+      renderTable(ALL_FANS);
+    }
+  } catch(e) {
+    document.getElementById('fan-body').innerHTML = '<tr><td colspan="10" class="placeholder">⚠️ Intel server offline (port 5500). Start it: <code>cd goat-intel-server && python3 goat_intel.py</code></td></tr>';
+  }
+}
+
+function renderTable(fans) {
+  const body = document.getElementById('fan-body');
+  if (!fans.length) {
+    body.innerHTML = '<tr><td colspan="10" class="placeholder">No fans yet. Build your list via <a href="smart-links.html" style="color:var(--gold)">Smart Links</a> or <a href="funnel.html" style="color:var(--gold)">TikTok Funnel</a> →</td></tr>';
+    return;
+  }
+  body.innerHTML = fans.map(f => `
+    <tr>
+      <td style="color:#555;font-family:monospace;">${f.id}</td>
+      <td style="font-weight:600;color:var(--cream);">${f.email}</td>
+      <td>${f.name || '—'}</td>
+      <td><span class="tag">${f.artist || '—'}</span></td>
+      <td><span class="tag tag-src">${f.source || '—'}</span></td>
+      <td>${f.tiktok_handle || '—'}</td>
+      <td>${f.phone || '—'}</td>
+      <td>${[f.city, f.country].filter(Boolean).join(', ') || '—'}</td>
+      <td style="color:#888;font-size:11px;">${f.created_at?.split(' ')[0] || '—'}</td>
+      <td>${f.consent_marketing ? '📧' : ''} ${f.consent_sms ? '📱' : ''}</td>
+    </tr>
+  `).join('');
+}
+
+function filterTable() {
+  const q = document.getElementById('search').value.toLowerCase();
+  if (!q) { renderTable(ALL_FANS); return; }
+  renderTable(ALL_FANS.filter(f =>
+    (f.email||'').toLowerCase().includes(q) ||
+    (f.name||'').toLowerCase().includes(q) ||
+    (f.artist||'').toLowerCase().includes(q) ||
+    (f.tiktok_handle||'').toLowerCase().includes(q)
+  ));
+}
+
+function toggleAddModal(on) {
+  document.getElementById('modal-add').classList.toggle('on', on);
+}
+
+async function saveFan() {
+  const payload = {
+    email: document.getElementById('m-email').value.trim(),
+    name: document.getElementById('m-name').value.trim(),
+    phone: document.getElementById('m-phone').value.trim(),
+    tiktok_handle: document.getElementById('m-tiktok').value.trim(),
+    city: document.getElementById('m-city').value.trim(),
+    country: document.getElementById('m-country').value.trim(),
+    artist: document.getElementById('m-artist').value,
+    source: document.getElementById('m-source').value.trim() || 'manual',
+  };
+  if (!payload.email || !payload.email.includes('@')) { alert('Valid email required'); return; }
+  try {
+    const res = await fetch(INTEL + '/fans/add', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+    });
+    const d = await res.json();
+    if (d.ok) {
+      toggleAddModal(false);
+      ['m-email','m-name','m-phone','m-tiktok','m-city','m-country'].forEach(id => document.getElementById(id).value = '');
+      await loadStats(); await loadFans();
+    } else alert('Error: ' + d.error);
+  } catch(e) { alert('Server error: ' + e.message); }
+}
+
+function exportCSV() {
+  window.open(INTEL + '/fans/export', '_blank');
+}
+
+loadStats();
+loadFans();
+</script>
+
+</body>
+</html>
