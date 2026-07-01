@@ -1,0 +1,124 @@
+name: Build Super GOAT Ninja Launcher
+
+on:
+  push:
+    tags:
+      - 'launcher-v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        working-directory: launcher
+        run: npm install
+      - name: Build Windows
+        working-directory: launcher
+        run: npm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: launcher-windows
+          path: |
+            launcher/dist/*.exe
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        working-directory: launcher
+        run: npm install
+      - name: Build macOS
+        working-directory: launcher
+        run: npm run build:mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: launcher-macos
+          path: |
+            launcher/dist/*.zip
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        working-directory: launcher
+        run: npm install
+      - name: Build Linux
+        working-directory: launcher
+        run: npm run build:linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: launcher-linux
+          path: |
+            launcher/dist/*.AppImage
+            launcher/dist/*.deb
+
+  create-release:
+    needs: [build-windows, build-mac, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Super GOAT Ninja Launcher ${{ github.ref_name }}
+          body: |
+            ## 🐐⚡ Super GOAT Ninja Launcher ${{ github.ref_name }}
+
+            Your unified desktop hub for ALL GOAT Royalty tools — one launcher to rule them all.
+
+            ### 📥 Downloads
+            - **Windows**: Super-GOAT-Ninja-Launcher-Setup.exe (Installer) or Portable.exe
+            - **macOS**: Super-GOAT-Ninja-Launcher.zip (x64 + arm64)
+            - **Linux**: Super-GOAT-Ninja-Launcher.AppImage or .deb
+
+            ### 🚀 Features
+            - **20+ Tool Panels** — All GOAT Royalty tools in one place
+            - **AI Chat** — Multi-LLM (Gemini, GPT-4o, Claude)
+            - **Music Dashboard** — 346 tracks, 1.2B+ streams, $865K+ royalties
+            - **Royalty Calculator** — Real-time earnings across 6 platforms
+            - **Browser Automation** — Axiom-powered bots
+            - **Terminal** — Built-in command line
+            - **Code Editor** — Multi-file editor
+            - **File Manager** — Browse project files
+            - **NVIDIA DGX Cloud** — GPU compute
+            - **Cinema Camera Suite** — Video production
+            - **Fashion Forge Studio** — Fashion design
+            - **Sora AI Studio** — AI video generation
+            - **Security Vault** — IP protection
+            - **System Tray** — Runs in background
+            - **Global Shortcut** — Ctrl+Shift+G to show/hide
+            - **Server Status** — Live connection monitoring
+
+            Built by Harvey Miller (DJ Speedy) | GOAT Royalty © 2025
+          files: |
+            launcher-windows/*
+            launcher-macos/*
+            launcher-linux/*
+          draft: false
+          prerelease: false
