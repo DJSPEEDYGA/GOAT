@@ -117,6 +117,24 @@
     return new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.6, metalness: 0.2 }, opts || {}));
   }
 
+  // Capsule-like limb built from a cylinder + rounded end caps, so it works on
+  // any three.js build (CapsuleGeometry only exists in r140+).
+  function capsule(radius, length, material) {
+    const grp = new THREE.Group();
+    const cyl = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, length, 12), material);
+    cyl.castShadow = true;
+    grp.add(cyl);
+    const capGeo = new THREE.SphereGeometry(radius, 12, 8);
+    const top = new THREE.Mesh(capGeo, material);
+    top.position.y = length / 2;
+    top.castShadow = true;
+    const bot = new THREE.Mesh(capGeo, material);
+    bot.position.y = -length / 2;
+    bot.castShadow = true;
+    grp.add(top); grp.add(bot);
+    return grp;
+  }
+
   function buildAvatar(def) {
     const g = new THREE.Group();
     const bodyMat = mat(def.color);
@@ -124,17 +142,15 @@
     const skinMat = mat(def.skin, { metalness: 0.05, roughness: 0.7 });
 
     // Legs
-    const legGeo = new THREE.CapsuleGeometry(0.16, 0.8, 4, 8);
-    const legL = new THREE.Mesh(legGeo, bodyMat);
-    const legR = new THREE.Mesh(legGeo, bodyMat);
+    const legL = capsule(0.16, 0.8, bodyMat);
+    const legR = capsule(0.16, 0.8, bodyMat);
     legL.position.set(-0.2, 0.6, 0);
     legR.position.set(0.2, 0.6, 0);
-    [legL, legR].forEach((l) => { l.castShadow = true; g.add(l); });
+    g.add(legL); g.add(legR);
 
     // Torso
-    const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 0.7, 6, 12), bodyMat);
+    const torso = capsule(0.42, 0.7, bodyMat);
     torso.position.y = 1.55;
-    torso.castShadow = true;
     g.add(torso);
 
     // Chest accent (belt/tie)
@@ -149,9 +165,8 @@
     function makeArm(side) {
       const pivot = new THREE.Group();
       pivot.position.set(side * 0.55, 1.85, 0);
-      const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.13, 0.7, 4, 8), bodyMat);
+      const arm = capsule(0.13, 0.7, bodyMat);
       arm.position.y = -0.4;
-      arm.castShadow = true;
       pivot.add(arm);
       g.add(pivot);
       return pivot;
