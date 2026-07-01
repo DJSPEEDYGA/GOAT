@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOAT Royalty - Analytics Module</title>
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-bottom: 2px solid #00ff88;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .logo span {
+            color: #ff6b6b;
+        }
+
+        .main-content {
+            padding: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #00ff88;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(0, 255, 136, 0.2);
+            transform: translateX(-5px);
+        }
+
+        .section-title {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #00ff88;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: #00ff88;
+        }
+
+        .stat-icon {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ff88;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        .stat-change {
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
+
+        .stat-change.positive {
+            color: #00ff88;
+        }
+
+        .stat-change.negative {
+            color: #ff4444;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 6px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8em;
+        }
+
+        .control-btn:hover, .control-btn.active {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .forecast-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .forecast-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .forecast-title {
+            font-size: 1.5em;
+            color: #00ff88;
+        }
+
+        .forecast-options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .forecast-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .forecast-btn:hover, .forecast-btn.active {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+        }
+
+        .prediction-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .prediction-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #00ff88;
+        }
+
+        .prediction-label {
+            color: #aaa;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .prediction-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #00ff88;
+            margin-bottom: 5px;
+        }
+
+        .prediction-confidence {
+            font-size: 0.85em;
+            color: #aaa;
+        }
+
+        .territory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .territory-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .territory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .territory-name {
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .territory-flag {
+            font-size: 1.5em;
+        }
+
+        .territory-metrics {
+            margin-top: 15px;
+        }
+
+        .territory-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .territory-metric-label {
+            color: #aaa;
+            font-size: 0.85em;
+        }
+
+        .territory-metric-value {
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .forecast-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">GOAT <span>Royalty</span> - Analytics</div>
+        <div style="color: #aaa;">Advanced Analytics & Predictions</div>
+    </div>
+
+    <div class="main-content">
+        <a href="goat-royalty-enhanced.html" class="back-button">← Back to Enhanced Dashboard</a>
+
+        <h1 class="section-title">📊 Revenue Analytics Dashboard</h1>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-value">$1.2M</div>
+                <div class="stat-label">Total Revenue (YTD)</div>
+                <div class="stat-change positive">↑ 23.5% vs last year</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-value">$45.6K</div>
+                <div class="stat-label">Monthly Average</div>
+                <div class="stat-change positive">↑ 12.3% vs last month</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value">94.2%</div>
+                <div class="stat-label">Forecast Accuracy</div>
+                <div class="stat-change positive">↑ 3.1% improvement</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value">1.2M</div>
+                <div class="stat-label">Data Points Analyzed</div>
+                <div class="stat-change positive">↑ 156K new this month</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Revenue Trend</div>
+                    <div class="chart-controls">
+                        <button class="control-btn active">6M</button>
+                        <button class="control-btn">1Y</button>
+                        <button class="control-btn">All</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Streaming Revenue by Platform</div>
+                    <div class="chart-controls">
+                        <button class="control-btn active">Current</button>
+                        <button class="control-btn">Previous</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="platformChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Revenue by Territory</div>
+                    <div class="chart-controls">
+                        <button class="control-btn active">Q4</button>
+                        <button class="control-btn">Q3</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="territoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Genre Performance</div>
+                    <div class="chart-controls">
+                        <button class="control-btn active">Streams</button>
+                        <button class="control-btn">Revenue</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="genreChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="forecast-section">
+            <div class="forecast-header">
+                <h2 class="forecast-title">🔮 Revenue Forecasting</h2>
+                <div class="forecast-options">
+                    <button class="forecast-btn active">30 Days</button>
+                    <button class="forecast-btn">90 Days</button>
+                    <button class="forecast-btn">6 Months</button>
+                    <button class="forecast-btn">1 Year</button>
+                </div>
+            </div>
+            
+            <div style="height: 300px; margin-bottom: 25px;">
+                <canvas id="forecastChart"></canvas>
+            </div>
+
+            <div class="prediction-cards">
+                <div class="prediction-card">
+                    <div class="prediction-label">Forecasted Revenue (Next 90 Days)</div>
+                    <div class="prediction-value">$142,500</div>
+                    <div class="prediction-confidence">Confidence: 94.2% | Model: qwen2.5:14b</div>
+                </div>
+                <div class="prediction-card">
+                    <div class="prediction-label">Expected Growth Rate</div>
+                    <div class="prediction-value">+18.7%</div>
+                    <div class="prediction-confidence">Based on historical trends & seasonal patterns</div>
+                </div>
+                <div class="prediction-card">
+                    <div class="prediction-label">Top Performing Territory</div>
+                    <div class="prediction-value">United States 🇺🇸</div>
+                    <div class="prediction-confidence">Projected: $67,200 (47.2% of total)</div>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 20px; color: #00ff88;">🌍 Territory Performance Analysis</h3>
+        <div class="territory-grid">
+            <div class="territory-card">
+                <div class="territory-header">
+                    <div class="territory-name">United States</div>
+                    <div class="territory-flag">🇺🇸</div>
+                </div>
+                <div class="territory-metrics">
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Revenue</span>
+                        <span class="territory-metric-value">$67,200</span>
+                    </div>
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Streams</span>
+                        <span class="territory-metric-value">12.4M</span>
+                    </div>
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Growth</span>
+                        <span class="territory-metric-value">+24.3%</span>
+                    </div>
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Market Share</span>
+                        <span class="territory-metric-value">47.2%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="territory-card">
+                <div class="territory-header">
+                    <div class="territory-name">United Kingdom</div>
+                    <div class="territory-flag">🇬🇧</div>
+                </div>
+                <div class="territory-metrics">
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Revenue</span>
+                        <span class="territory-metric-value">$28,450</span>
+                    </div>
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Streams</span>
+                        <span class="territory-metric-value">5.8M</span>
+                    </div>
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Growth</span>
+                        <span class="territory-metric-value">+19.7%</span>
+                    </div>
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Market Share</span>
+                        <span class="territory-metric-value">19.9%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="territory-card">
+                <div class="territory-header">
+                    <div class="territory-name">Germany</div>
+                    <div class="territory-flag">🇩🇪</div>
+                </div>
+                <div class="territory-metrics">
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Revenue</span>
+                        <span class="territory-metric-value">$15,820</span>
+                    </div>
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Streams</span>
+                        <span class="territory-metric-value">3.2M</span>
+                    </div>
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Growth</span>
+                        <span class="territory-metric-value">+15.2%</span>
+                    </div>
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Market Share</span>
+                        <span class="territory-metric-value">11.1%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="territory-card">
+                <div class="territory-header">
+                    <div class="territory-name">Canada</div>
+                    <div class="territory-flag">🇨🇦</div>
+                </div>
+                <div class="territory-metrics">
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Revenue</span>
+                        <span class="territory-metric-value">$12,340</span>
+                    </div>
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Streams</span>
+                        <span class="territory-metric-value">2.5M</span>
+                    </div>
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Growth</span>
+                        <span class="territory-metric-value">+12.8%</span>
+                    </div>
+                    <div class="territory-metric">
+                        <span class="territory-metric-label">Market Share</span>
+                        <span class="territory-metric-value">8.7%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Revenue Trend Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: [38500, 42300, 41800, 47200, 51400, 45600],
+                    borderColor: '#00ff88',
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#aaa'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#aaa'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Platform Chart
+        const platformCtx = document.getElementById('platformChart').getContext('2d');
+        new Chart(platformCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Spotify', 'Apple Music', 'YouTube', 'Amazon', 'Others'],
+                datasets: [{
+                    data: [45, 25, 15, 10, 5],
+                    backgroundColor: [
+                        '#00ff88',
+                        '#ff6b6b',
+                        '#4a90d9',
+                        '#ffaa00',
+                        '#888888'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#aaa',
+                            padding: 15
+                        }
+                    }
+                }
+            }
+        });
+
+        // Territory Chart
+        const territoryCtx = document.getElementById('territoryChart').getContext('2d');
+        new Chart(territoryCtx, {
+            type: 'bar',
+            data: {
+                labels: ['USA', 'UK', 'Germany', 'Canada', 'France', 'Japan'],
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: [67200, 28450, 15820, 12340, 9800, 8500],
+                    backgroundColor: [
+                        '#00ff88',
+                        '#00cc6a',
+                        '#00a550',
+                        '#ff6b6b',
+                        '#ffaa00',
+                        '#4a90d9'
+                    ],
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#aaa'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#aaa'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Genre Chart
+        const genreCtx = document.getElementById('genreChart').getContext('2d');
+        new Chart(genreCtx, {
+            type: 'polarArea',
+            data: {
+                labels: ['Hip-Hop', 'R&B', 'Pop', 'Electronic', 'Latin'],
+                datasets: [{
+                    data: [35, 25, 20, 12, 8],
+                    backgroundColor: [
+                        'rgba(0, 255, 136, 0.7)',
+                        'rgba(255, 107, 107, 0.7)',
+                        'rgba(74, 144, 217, 0.7)',
+                        'rgba(255, 170, 0, 0.7)',
+                        'rgba(150, 100, 255, 0.7)'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#aaa',
+                            padding: 15
+                        }
+                    }
+                },
+                scales: {
+                    r: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#aaa',
+                            backdropColor: 'transparent'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Forecast Chart
+        const forecastCtx = document.getElementById('forecastChart').getContext('2d');
+        new Chart(forecastCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+                datasets: [{
+                    label: 'Historical Revenue',
+                    data: [42500, 44300, 46800, null, null, null, null, null, null],
+                    borderColor: '#00ff88',
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Forecasted Revenue',
+                    data: [null, null, null, 48500, 51200, 49800, 53100, 54500, 55800],
+                    borderColor: '#ffaa00',
+                    backgroundColor: 'rgba(255, 170, 0, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderDash: [5, 5]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#aaa',
+                            padding: 15
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#aaa'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#aaa'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Button interactions
+        document.querySelectorAll('.control-btn, .forecast-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const siblings = this.parentElement.querySelectorAll('button');
+                siblings.forEach(s => s.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
