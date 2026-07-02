@@ -11,7 +11,7 @@
 #   3. Gets a free HTTPS certificate (Let's Encrypt)
 # ============================================================
 set -u
-DOMAIN="goatroyaltyapp.org"
+DOMAIN="app.goatroyaltyapp.org"
 CONF_URL="https://raw.githubusercontent.com/DJSPEEDYGA/GOAT/devin/1782948937-merge-all-repos/deploy/goatroyaltyapp.org.conf"
 
 step() { printf "\n\033[1;33m==> %s\033[0m\n" "$1"; }
@@ -32,10 +32,10 @@ systemctl reload nginx
 step "3/4 Getting HTTPS certificate (Let's Encrypt)"
 command -v certbot >/dev/null 2>&1 || { apt-get update -qq && apt-get install -y -qq certbot python3-certbot-nginx; }
 certbot --nginx --non-interactive --agree-tos --register-unsafely-without-email \
-  -d "$DOMAIN" -d "www.$DOMAIN" --redirect \
-  || printf "\n\033[1;31mHTTPS setup failed — usually means DNS isn't pointed here yet.\nPoint A records for %s and www.%s to this server, wait a few minutes, and re-run me.\nThe app still works over http://%s meanwhile.\033[0m\n" "$DOMAIN" "$DOMAIN" "$DOMAIN"
+  -d "$DOMAIN" --redirect \
+  || printf "\n\033[1;31mHTTPS setup failed — usually means DNS isn't pointed here yet.\nAdd an A record named 'app' for goatroyaltyapp.org pointing to this server, wait a few minutes, and re-run me.\nThe app still works over http://%s meanwhile.\033[0m\n" "$DOMAIN"
 
 step "4/4 Checking"
 curl -s -o /dev/null -w "Local app (:3000) responded: %{http_code}\n" http://127.0.0.1:3000/ || true
 echo
-echo "Done. The GOAT Royalty App is at: https://www.goatroyaltyapp.org"
+echo "Done. The GOAT Royalty App is at: https://app.goatroyaltyapp.org"
