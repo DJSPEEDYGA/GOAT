@@ -1,0 +1,79 @@
+{
+  "name": "Scrape HTML to Markdown",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "edd59fdd-04b4-46a7-b0b4-9452fc0f1c59",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://python.langchain.com/docs/introduction/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "ce836237-02dd-42eb-9cf2-2ed350355357",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ],
+      "id": "ae6f130d-cb58-43da-a7c5-0666759f25fb",
+      "name": "Markdown"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "46df24bc-d391-4c04-a4ae-55d7b9881c14",
+  "meta": {
+    "instanceId": "89d6b5241e3d0c6b62682a09a72213abeeffd34a6110f442c15fc0b560f12919"
+  },
+  "id": "1wMH4NtEICjyCCsP",
+  "tags": []
+}
