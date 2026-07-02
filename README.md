@@ -25,6 +25,7 @@ Static, dependency-free web platform. Open `index.html` in any browser or serve 
 | `goat-cinema-forge.html` | Hollywood studio router |
 | `goat-virtual-world-rp.html` | GOAT City RP (Cfx.re / FiveM) hub |
 | `halito-chat.html` | Halito Chat — offline mesh messaging |
+| `goat-royalty-force.html` | GOAT Royalty Force — the team, the lore, the series pitch |
 
 ## Structure
 

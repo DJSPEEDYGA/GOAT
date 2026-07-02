@@ -15,6 +15,7 @@ Fresh end-to-end evaluation of every deliverable now committed to this repo, plu
 | JavaScript modules (19 files in `js/`) | PASS | All pass `node --check` syntax validation |
 | Shared CSS (`css/`) | FIXED | 6 stylesheets referenced by pages were missing 404s — all created |
 | PWA manifest | FIXED | `manifest.json` was referenced but absent — created |
+| GOAT Royalty Force lore page (`goat-royalty-force.html`) | PASS | New page built from the series brief; linked from the store topline and featured stack |
 | Placeholder modules | PARTIAL | 60 pages linked from the store had no HTML; branded placeholder pages added so no link dead-ends |
 
 ## Fixes applied in this pass
