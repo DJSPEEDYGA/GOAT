@@ -1,0 +1,14 @@
+#!/bin/bash
+# GOAT Royalty App launch button.
+# Opens the app at its friendly domain; falls back to the direct
+# server address if the domain isn't set up / reachable yet.
+set -u
+
+PRIMARY_URL="https://www.goatroyaltyapp.org"
+FALLBACK_URL="http://goat.72.61.193.184.nip.io/"
+
+if curl -s -o /dev/null --max-time 6 "$PRIMARY_URL"; then
+  open "$PRIMARY_URL"
+else
+  open "$FALLBACK_URL"
+fi
