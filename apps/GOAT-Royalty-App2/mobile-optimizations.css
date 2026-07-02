@@ -1,0 +1,254 @@
+/* 🍎 iPhone-Specific CSS Optimizations */
+
+/* iOS Safari Web App Capable */
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GOAT Royalty">
+
+/* iPhone Touch Optimizations */
+.iphone-touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 12px;
+  -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+}
+
+/* Smooth Scrolling for iOS */
+.iphone-smooth-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* iPhone Safe Areas */
+.iphone-safe-area {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* iPhone Notch Compatibility */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .iphone-header {
+    padding-top: calc(env(safe-area-inset-top) + 20px);
+  }
+}
+
+/* iOS Form Elements */
+.iphone-input {
+  -webkit-appearance: none;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.1);
+  color: white;
+  padding: 12px 16px;
+  font-size: 16px; /* Prevents zoom on focus */
+}
+
+.iphone-input:focus {
+  outline: none;
+  border-color: #a855f7;
+  box-shadow: 0 0 0 3px rgba(168,85,247,0.2);
+}
+
+/* iPhone Button Optimizations */
+.iphone-button {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: transform 0.1s ease, background 0.2s ease;
+}
+
+.iphone-button:active {
+  transform: scale(0.98);
+}
+
+/* iPhone Audio Player */
+.iphone-audio-player {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.8));
+  backdrop-filter: blur(20px);
+  padding: 20px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+  z-index: 1000;
+}
+
+/* iPhone Gestures */
+.iphone-swipe-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.iphone-swipe-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* iPhone Performance Optimizations */
+.iphone-gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* iPhone Modal */
+.iphone-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 2000;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.iphone-modal-content {
+  margin: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
+  max-width: calc(100% - 40px);
+}
+
+/* iPhone Loading States */
+.iphone-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.iphone-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top: 3px solid #a855f7;
+  border-radius: 50%;
+  animation: iphone-spin 1s linear infinite;
+}
+
+@keyframes iphone-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* iPhone Grid Optimizations */
+@media (max-width: 768px) {
+  .iphone-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .iphone-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .iphone-full-width {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* iPhone Typography */
+.iphone-text {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.iphone-heading {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.iphone-body {
+  font-size: clamp(0.875rem, 2.5vw, 1rem);
+  line-height: 1.6;
+}
+
+/* iPhone Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .iphone-adaptive {
+    background: #000;
+    color: #fff;
+  }
+}
+
+/* iPhone Landscape Mode */
+@media (orientation: landscape) and (max-height: 500px) {
+  .iphone-landscape-compact {
+    padding: 10px;
+  }
+  
+  .iphone-landscape-hide {
+    display: none;
+  }
+}
+
+/* iPhone Animation Performance */
+.iphone-animation {
+  animation-fill-mode: both;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* iPhone Status Bar */
+.iphone-status-bar {
+  height: env(safe-area-inset-top);
+  background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3000;
+}
+
+/* iPhone Keyboard Handling */
+.iphone-keyboard-padding {
+  padding-bottom: 300px; /* Space for iOS keyboard */
+}
+
+@media (max-height: 500px) {
+  .iphone-keyboard-padding {
+    padding-bottom: 200px;
+  }
+}
+
+/* iPhone Accessibility */
+.iphone-accessible {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* iPhone PWA Support */
+.iphone-pwa-icon {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* iPhone Error States */
+.iphone-error {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 12px;
+  padding: 16px;
+  color: #fca5a5;
+}
+
+/* iPhone Success States */
+.iphone-success {
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.3);
+  border-radius: 12px;
+  padding: 16px;
+  color: #86efac;
+}

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📈 Earnings Dashboard | GOAT Royalty</title>
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <link rel="stylesheet" href="css/goat-brand.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: rgba(212, 160, 60, 0.1);
+            border: 2px solid #d4a03c;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-value {
+            font-size: 2.5em;
+            color: #d4a03c;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .stat-label {
+            color: #d4a03c;
+            font-size: 1.1em;
+        }
+        .stat-card.highlight {
+            background: linear-gradient(135deg, rgba(212, 160, 60, 0.3), rgba(184, 134, 11, 0.2));
+        }
+        .chart-container {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #d4a03c;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            height: 200px;
+            margin-top: 20px;
+        }
+        .bar {
+            flex: 1;
+            background: linear-gradient(to top, #d4a03c, #b8860b);
+            border-radius: 5px 5px 0 0;
+            transition: height 0.3s;
+            position: relative;
+        }
+        .bar:hover {
+            background: linear-gradient(to top, #ffd700, #d4a03c);
+        }
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #d4a03c;
+            font-size: 0.8em;
+            white-space: nowrap;
+        }
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #d4a03c;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .artist-list {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #d4a03c;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .artist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(212, 160, 60, 0.1);
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+        .artist-item:hover {
+            transform: translateX(5px);
+            background: rgba(212, 160, 60, 0.2);
+        }
+        .artist-name {
+            font-weight: bold;
+            color: #d4a03c;
+        }
+        .artist-earnings {
+            color: #d4a03c;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .filter-bar {
+            background: rgba(212, 160, 60, 0.1);
+            border: 2px solid #d4a03c;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-bar label {
+            color: #d4a03c;
+            margin-right: 10px;
+        }
+        .filter-bar select, .filter-bar input {
+            padding: 10px;
+            border: 1px solid #d4a03c;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.5);
+            color: #d4a03c;
+        }
+        .filter-bar button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #d4a03c, #b8860b);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .filter-bar button:hover {
+            transform: scale(1.05);
+        }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #d4a03c, #ffd700);
+            transition: width 0.3s;
+        }
+    </style>
+    <script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="goat-bg"></div>
+    <div class="goat-bg-overlay"></div>
+
+    <nav class="top-nav">
+        <a href="index.html" class="logo">
+            <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+            <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+            <span>Ms. Money Penny</span>
+            <span class="crown-badge">👑 GOAT</span>
+        </a>
+    </nav>
+
+    <div class="container" style="max-width: 1400px; margin: 40px auto; padding: 20px;">
+        <h1 style="text-align: center; color: #d4a03c; font-size: 3em;">📈 Earnings Dashboard</h1>
+        <p style="text-align: center; color: #d4a03c; margin-bottom: 30px;">Track revenue, royalties, and payments in real-time</p>
+
+        <!-- Date Filter -->
+        <div class="filter-bar">
+            <label>📅 Period:</label>
+            <select id="periodSelect">
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month" selected>This Month</option>
+                <option value="quarter">This Quarter</option>
+                <option value="year">This Year</option>
+                <option value="all">All Time</option>
+            </select>
+            <label style="margin-left: 20px;">🔍 Custom Range:</label>
+            <input type="date" id="startDate">
+            <span style="color: #d4a03c;">to</span>
+            <input type="date" id="endDate">
+            <button onclick="loadEarnings()">🔄 Update</button>
+        </div>
+
+        <!-- Main Stats -->
+        <div class="dashboard-grid">
+            <div class="stat-card highlight">
+                <div class="stat-value">$<span id="totalRevenue">0.00</span></div>
+                <div class="stat-label">💰 Total Revenue</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">$<span id="totalRoyalties">0.00</span></div>
+                <div class="stat-label">👑 Total Royalties</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">$<span id="paidAmount">0.00</span></div>
+                <div class="stat-label">✅ Paid to Artists</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">$<span id="pendingAmount">0.00</span></div>
+                <div class="stat-label">⏳ Pending Payment</div>
+            </div>
+        </div>
+
+        <!-- Secondary Stats -->
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalContracts">0</div>
+                <div class="stat-label">📄 Active Contracts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalArtists">0</div>
+                <div class="stat-label">🎤 Active Artists</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalTracks">0</div>
+                <div class="stat-label">🎵 Total Tracks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalStreams">0</div>
+                <div class="stat-label">🎧 Total Streams</div>
+            </div>
+        </div>
+
+        <!-- Revenue by Source -->
+        <div class="chart-container">
+            <h2 style="color: #d4a03c; margin-bottom: 20px;">💰 Revenue by Source</h2>
+            <div class="bar-chart" id="revenueChart">
+                <!-- Bars will be dynamically loaded -->
+            </div>
+        </div>
+
+        <!-- Top Performing Artists -->
+        <div class="artist-list">
+            <h2 style="color: #d4a03c; margin-bottom: 20px;">🏆 Top Performing Artists</h2>
+            <div id="topArtistsList">
+                <p style="color: #d4a03c; text-align: center;">Loading artist data...</p>
+            </div>
+        </div>
+
+        <!-- Payment Progress -->
+        <div class="chart-container">
+            <h2 style="color: #d4a03c; margin-bottom: 20px;">📊 Payment Distribution</h2>
+            <div style="margin: 20px 0;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #d4a03c;">Total Assigned: $<span id="assignedTotal">0.00</span></span>
+                    <span style="color: #28a745;">Paid: $<span id="paidPercentage">0</span>%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="paidProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div style="margin: 20px 0;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #d4a03c;">Pending Approval: $<span id="pendingApproval">0.00</span></span>
+                    <span style="color: #ffc107;">Approved: $<span id="approvedAmount">0.00</span></span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="pendingProgressBar" style="width: 0%; background: linear-gradient(90deg, #ffc107, #ffeb3b);"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="artist-list">
+            <h2 style="color: #d4a03c; margin-bottom: 20px;">📋 Recent Transactions</h2>
+            <div id="recentTransactions">
+                <p style="color: #d4a03c; text-align: center;">Loading transactions...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load earnings data
+        async function loadEarnings() {
+            let startDate = null;
+            let endDate = null;
+            
+            const period = document.getElementById('periodSelect').value;
+            
+            if (period !== 'all') {
+                const dates = getDateRange(period);
+                startDate = dates.start;
+                endDate = dates.end;
+            } else {
+                startDate = document.getElementById('startDate').value;
+                endDate = document.getElementById('endDate').value;
+            }
+            
+            // Load royalty analytics
+            await loadRoyaltyAnalytics(startDate, endDate);
+            
+            // Load payment analytics
+            await loadPaymentAnalytics(startDate, endDate);
+            
+            // Load artists data
+            await loadArtistsData(startDate, endDate);
+            
+            // Load recent transactions
+            await loadRecentTransactions();
+        }
+        
+        function getDateRange(period) {
+            const today = new Date();
+            let start, end;
+            
+            switch(period) {
+                case 'today':
+                    start = new Date(today.setHours(0, 0, 0, 0));
+                    end = new Date(today.setHours(23, 59, 59, 999));
+                    break;
+                case 'week':
+                    start = new Date(today.setDate(today.getDate() - today.getDay()));
+                    end = new Date();
+                    break;
+                case 'month':
+                    start = new Date(today.getFullYear(), today.getMonth(), 1);
+                    end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    break;
+                case 'quarter':
+                    const quarter = Math.floor(today.getMonth() / 3);
+                    start = new Date(today.getFullYear(), quarter * 3, 1);
+                    end = new Date(today.getFullYear(), quarter * 3 + 3, 0);
+                    break;
+                case 'year':
+                    start = new Date(today.getFullYear(), 0, 1);
+                    end = new Date(today.getFullYear(), 11, 31);
+                    break;
+                default:
+                    start = null;
+                    end = null;
+            }
+            
+            return { start, end };
+        }
+        
+        async function loadRoyaltyAnalytics(startDate, endDate) {
+            try {
+                let url = '/api/royalties/analytics';
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                if (params.toString()) url += '?' + params.toString();
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const summary = data.data.summary;
+                    
+                    document.getElementById('totalRevenue').textContent = summary.totalRoyalties.toFixed(2);
+                    document.getElementById('totalRoyalties').textContent = summary.totalRoyalties.toFixed(2);
+                    document.getElementById('paidAmount').textContent = summary.totalPaid.toFixed(2);
+                    document.getElementById('pendingAmount').textContent = summary.totalPending.toFixed(2);
+                    
+                    // Update progress bars
+                    const totalAssigned = summary.totalRoyalties;
+                    const paidAmount = summary.totalPaid;
+                    const paidPercentage = totalAssigned > 0 ? (paidAmount / totalAssigned * 100).toFixed(1) : 0;
+                    
+                    document.getElementById('assignedTotal').textContent = totalAssigned.toFixed(2);
+                    document.getElementById('paidPercentage').textContent = paidPercentage;
+                    document.getElementById('paidProgressBar').style.width = paidPercentage + '%';
+                    document.getElementById('pendingApproval').textContent = summary.totalPending.toFixed(2);
+                    document.getElementById('approvedAmount').textContent = summary.totalPaid.toFixed(2);
+                    document.getElementById('pendingProgressBar').style.width = (totalAssigned > 0 ? (summary.totalPending / totalAssigned * 100).toFixed(1) : 0) + '%';
+                    
+                    // Update revenue chart
+                    updateRevenueChart(data.data.bySource);
+                }
+            } catch (error) {
+                console.error('Error loading royalty analytics:', error);
+            }
+        }
+        
+        async function loadPaymentAnalytics(startDate, endDate) {
+            try {
+                let url = '/api/payments/analytics';
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                if (params.toString()) url += '?' + params.toString();
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const summary = data.data.summary;
+                    
+                    document.getElementById('paidAmount').textContent = summary.completedPayments.toFixed(2);
+                }
+            } catch (error) {
+                console.error('Error loading payment analytics:', error);
+            }
+        }
+        
+        async function loadArtistsData(startDate, endDate) {
+            try {
+                let url = '/api/artists';
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                if (params.toString()) url += '?' + params.toString();
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const artists = data.data.artists;
+                    
+                    document.getElementById('totalArtists').textContent = artists.length;
+                    
+                    // Calculate totals
+                    let totalEarnings = 0;
+                    let totalTracks = 0;
+                    let totalStreams = 0;
+                    
+                    // Sort by earnings and display top artists
+                    const sortedArtists = artists
+                        .sort((a, b) => (b.totalEarnings || 0) - (a.totalEarnings || 0))
+                        .slice(0, 10);
+                    
+                    const artistsList = document.getElementById('topArtistsList');
+                    artistsList.innerHTML = sortedArtists.map(artist => `
+                        <div class="artist-item">
+                            <div>
+                                <div class="artist-name">${artist.name}</div>
+                                <div style="color: #d4a03c; font-size: 0.9em;">
+                                    ${artist.genre || 'No genre'} • ${artist.location || 'Unknown location'}
+                                </div>
+                            </div>
+                            <div class="artist-earnings">$${(artist.totalEarnings || 0).toFixed(2)}</div>
+                        </div>
+                    `).join('');
+                    
+                    artists.forEach(artist => {
+                        totalEarnings += artist.totalEarnings || 0;
+                        totalTracks += artist.totalTracks || 0;
+                        totalStreams += artist.totalStreams || 0;
+                    });
+                    
+                    document.getElementById('totalTracks').textContent = totalTracks;
+                    document.getElementById('totalStreams').textContent = totalStreams.toLocaleString();
+                }
+            } catch (error) {
+                console.error('Error loading artists data:', error);
+            }
+        }
+        
+        async function loadRecentTransactions() {
+            try {
+                const response = await fetch('/api/payments?limit=10');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const transactions = data.data.payments;
+                    
+                    const transactionsList = document.getElementById('recentTransactions');
+                    
+                    if (transactions.length === 0) {
+                        transactionsList.innerHTML = '<p style="color: #d4a03c; text-align: center;">No recent transactions</p>';
+                        return;
+                    }
+                    
+                    transactionsList.innerHTML = transactions.slice(0, 5).map(payment => `
+                        <div class="artist-item">
+                            <div>
+                                <div class="artist-name">${payment.artist?.name || 'Unknown'}</div>
+                                <div style="color: #d4a03c; font-size: 0.9em;">
+                                    ${getPaymentMethodLabel(payment.method)} • ${new Date(payment.paymentDate).toLocaleDateString()}
+                                </div>
+                            </div>
+                            <div style="color: ${getStatusColor(payment.status)}; font-weight: bold;">
+                                $${payment.totalAmount.toFixed(2)} - ${payment.status.toUpperCase()}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading recent transactions:', error);
+            }
+        }
+        
+        function updateRevenueChart(bySource) {
+            const chart = document.getElementById('revenueChart');
+            chart.innerHTML = '';
+            
+            const sources = {
+                spotify: { name: 'Spotify', icon: '🎵' },
+                apple: { name: 'Apple Music', icon: '🍎' },
+                youtube: { name: 'YouTube', icon: '▶️' },
+                amazon: { name: 'Amazon', icon: '📦' },
+                physical: { name: 'Physical', icon: '💿' },
+                digital: { name: 'Digital', icon: '💾' },
+                other: { name: 'Other', icon: '📊' }
+            };
+            
+            const maxValue = Math.max(...Object.values(bySource)) || 1;
+            
+            Object.entries(bySource).forEach(([source, amount]) => {
+                const sourceInfo = sources[source] || { name: source, icon: '📊' };
+                const height = (amount / maxValue * 100);
+                
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = height + '%';
+                
+                bar.innerHTML = `
+                    <div class="bar-value">$${amount.toFixed(0)}</div>
+                    <div class="bar-label">${sourceInfo.icon} ${sourceInfo.name}</div>
+                `;
+                
+                chart.appendChild(bar);
+            });
+        }
+        
+        function getPaymentMethodLabel(method) {
+            const labels = {
+                'bank_transfer': 'Bank Transfer',
+                'paypal': 'PayPal',
+                'crypto': 'Cryptocurrency',
+                'check': 'Check'
+            };
+            return labels[method] || method;
+        }
+        
+        function getStatusColor(status) {
+            const colors = {
+                'completed': '#28a745',
+                'pending': '#ffc107',
+                'processing': '#17a2b8',
+                'failed': '#dc3545'
+            };
+            return colors[status] || '#d4a03c';
+        }
+        
+        // Event listeners
+        document.getElementById('periodSelect').addEventListener('change', loadEarnings);
+        
+        // Load on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Set default dates
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            document.getElementById('startDate').valueAsDate = firstDay;
+            document.getElementById('endDate').valueAsDate = lastDay;
+            
+            loadEarnings();
+        });
+    </script>
+</body>
+</html>

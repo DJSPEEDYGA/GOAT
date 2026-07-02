@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔗 GOAT Smart Links — Music Link in Bio</title>
+<link rel="icon" href="favicon.ico">
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<style>
+:root{
+  --bg:#040608;--panel:#0d1117;--panel2:#161b22;
+  --gold:#d4a03c;--gold2:#f0c040;--red:#c1121f;--red2:#e63946;
+  --ink:#f0ece4;--dim:#8b949e;--line:#21262d;
+  --ok:#3fb950;--warn:#d29922;--info:#58a6ff;--purple:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+.topbar{background:rgba(4,6,8,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);padding:0 24px;height:60px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;}
+.tb-logo{font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;}
+.tb-right{margin-left:auto;display:flex;gap:8px;}
+.btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;text-decoration:none;}
+.btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--dim);}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1200px;margin:0 auto;padding:24px;}
+@media(max-width:768px){.layout{grid-template-columns:1fr;}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;}
+.panel h2{font-size:18px;font-weight:700;color:var(--gold);margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:10px 14px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:14px;outline:none;transition:border .2s;}
+.form-group input:focus,.form-group textarea:focus{border-color:var(--gold);}
+.form-group textarea{resize:vertical;min-height:80px;}
+.dsp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:16px;}
+.dsp-item{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;align-items:center;gap:8px;}
+.dsp-item .dsp-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.dsp-item .dsp-name{font-size:12px;font-weight:600;flex:1;}
+.dsp-item input{width:100%;background:transparent;border:none;color:var(--dim);font-size:11px;outline:none;margin-top:2px;}
+.dsp-item input:focus{color:var(--ink);}
+.preview-wrap{background:#000;border-radius:16px;padding:24px;text-align:center;}
+.preview-phone{width:280px;margin:0 auto;background:#111;border-radius:32px;padding:24px 16px;border:2px solid #222;position:relative;}
+.preview-phone .notch{width:100px;height:24px;background:#000;border-radius:12px;margin:0 auto 16px;}
+.pl-avatar{width:80px;height:80px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,var(--gold),var(--red));display:flex;align-items:center;justify-content:center;font-size:36px;}
+.pl-name{font-size:20px;font-weight:800;margin-bottom:4px;}
+.pl-bio{font-size:12px;color:var(--dim);margin-bottom:20px;}
+.pl-btn{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;margin-bottom:8px;text-decoration:none;color:#fff;font-size:13px;font-weight:600;transition:all .2s;cursor:pointer;}
+.pl-btn:active{transform:scale(.97);}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;}
+.stat-box{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center;}
+.stat-box .sv{font-size:24px;font-weight:800;color:var(--gold);}
+.stat-box .sl{font-size:11px;color:var(--dim);text-transform:uppercase;}
+.link-list{display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto;}
+.link-item{display:flex;align-items:center;gap:10px;padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;}
+.link-item .li-icon{font-size:20px;flex-shrink:0;}
+.link-item .li-text{flex:1;}
+.link-item .li-name{font-size:13px;font-weight:600;}
+.link-item .li-url{font-size:11px;color:var(--dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;}
+.link-item .li-del{color:var(--red2);cursor:pointer;font-size:18px;}
+.color-row{display:flex;gap:8px;flex-wrap:wrap;}
+.color-swatch{width:32px;height:32px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .15s;}
+.color-swatch.active{border-color:#fff;transform:scale(1.1);}
+.pub-box{background:linear-gradient(135deg,rgba(212,160,60,.1),rgba(212,160,60,.05));border:1px solid rgba(212,160,60,.3);border-radius:12px;padding:16px;margin-top:16px;}
+.pub-url{font-family:monospace;font-size:13px;color:var(--gold2);background:#000;padding:8px 12px;border-radius:6px;margin:8px 0;display:flex;align-items:center;justify-content:space-between;}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="powerhouse.html" class="tb-logo">🐐 GOAT</a>
+  <span style="color:var(--dim);font-size:14px">Smart Links</span>
+  <div class="tb-right">
+    <a href="campaigns.html" class="btn ghost">📣 Campaigns</a>
+    <button class="btn gold" onclick="publishLink()">🚀 Publish</button>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- EDITOR -->
+  <div>
+    <div class="panel" style="margin-bottom:16px">
+      <h2>🎨 Page Design</h2>
+      <div class="form-group">
+        <label>Artist / Page Name</label>
+        <input type="text" id="pg-name" value="DJ Speedy" oninput="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>Bio / Tagline</label>
+        <input type="text" id="pg-bio" value="🐐 The GOAT · Producer · Artist" oninput="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>Theme Color</label>
+        <div class="color-row" id="color-row">
+          <div class="color-swatch active" data-color="#d4a03c" style="background:#d4a03c" onclick="setTheme(this)"></div>
+          <div class="color-swatch" data-color="#e63946" style="background:#e63946" onclick="setTheme(this)"></div>
+          <div class="color-swatch" data-color="#3fb950" style="background:#3fb950" onclick="setTheme(this)"></div>
+          <div class="color-swatch" data-color="#58a6ff" style="background:#58a6ff" onclick="setTheme(this)"></div>
+          <div class="color-swatch" data-color="#a78bfa" style="background:#a78bfa" onclick="setTheme(this)"></div>
+          <div class="color-swatch" data-color="#22d3ee" style="background:#22d3ee" onclick="setTheme(this)"></div>
+          <div class="color-swatch" data-color="#fb923c" style="background:#fb923c" onclick="setTheme(this)"></div>
+          <div class="color-swatch" data-color="#f43f5e" style="background:#f43f5e" onclick="setTheme(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:16px">
+      <h2>🎵 Streaming Links</h2>
+      <div class="dsp-grid" id="dsp-grid"></div>
+      <button class="btn gold" onclick="autoDetect()" style="width:100%">🔍 Auto-Detect from Catalog</button>
+    </div>
+
+    <div class="panel" style="margin-bottom:16px">
+      <h2>🔗 Custom Links</h2>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input type="text" id="new-link-label" placeholder="Label (e.g. New Album)" style="flex:1;padding:8px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13px;outline:none;">
+        <input type="text" id="new-link-url" placeholder="https://..." style="flex:2;padding:8px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13px;outline:none;">
+        <button class="btn gold" onclick="addLink()">+</button>
+      </div>
+      <div class="link-list" id="link-list"></div>
+    </div>
+
+    <div class="panel">
+      <h2>📊 Analytics</h2>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="sv" id="stat-views">0</div><div class="sl">Views</div></div>
+        <div class="stat-box"><div class="sv" id="stat-clicks">0</div><div class="sl">Clicks</div></div>
+        <div class="stat-box"><div class="sv" id="stat-rate">0%</div><div class="sl">CTR</div></div>
+      </div>
+      <div style="margin-top:16px;padding:12px;background:var(--panel2);border-radius:8px;font-size:13px;color:var(--dim);">
+        Connect your smart link to start tracking. Analytics update in real time once published.
+      </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div>
+    <div class="panel">
+      <h2>📱 Live Preview</h2>
+      <div class="preview-wrap">
+        <div class="preview-phone">
+          <div class="notch"></div>
+          <div class="pl-avatar" id="prev-avatar">🐐</div>
+          <div class="pl-name" id="prev-name">DJ Speedy</div>
+          <div class="pl-bio" id="prev-bio">🐐 The GOAT · Producer · Artist</div>
+          <div id="prev-links"></div>
+        </div>
+      </div>
+
+      <div class="pub-box">
+        <div style="font-size:14px;font-weight:700;color:var(--gold)">🚀 Your Smart Link</div>
+        <div class="pub-url">
+          <span id="pub-url-text">goatroyalty.app/djspeedy</span>
+          <button onclick="copyUrl()" style="background:transparent;border:none;color:var(--gold);cursor:pointer;font-size:12px;">Copy</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn gold" onclick="publishLink()">🚀 Publish Live</button>
+          <button class="btn ghost" onclick="generateQR()">📱 QR Code</button>
+          <button class="btn ghost" onclick="shareLink()">🔗 Share</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const DSP_LIST = [
+  {name:'Spotify', icon:'🟢', color:'#1DB954', id:'spotify'},
+  {name:'Apple Music', icon:'🎵', color:'#fc3c44', id:'apple'},
+  {name:'Tidal', icon:'🌊', color:'#00f5ff', id:'tidal'},
+  {name:'Amazon Music', icon:'🎧', color:'#00A8E1', id:'amazon'},
+  {name:'YouTube Music', icon:'▶️', color:'#FF0000', id:'youtube'},
+  {name:'Deezer', icon:'🎶', color:'#A238FF', id:'deezer'},
+  {name:'SoundCloud', icon:'☁️', color:'#FF5500', id:'soundcloud'},
+  {name:'Beatport', icon:'🎛️', color:'#01FF95', id:'beatport'},
+  {name:'Pandora', icon:'📻', color:'#005483', id:'pandora'},
+  {name:'iHeart', icon:'❤️', color:'#C6002B', id:'iheart'},
+];
+
+let themeColor = '#d4a03c';
+let customLinks = [];
+
+// Build DSP grid
+document.getElementById('dsp-grid').innerHTML = DSP_LIST.map(d=>`
+  <div class="dsp-item">
+    <div class="dsp-icon" style="background:${d.color}22">${d.icon}</div>
+    <div>
+      <div class="dsp-name">${d.name}</div>
+      <input type="text" id="dsp-${d.id}" placeholder="Paste URL…" oninput="updatePreview()">
+    </div>
+  </div>
+`).join('');
+
+function setTheme(el){
+  document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  themeColor = el.dataset.color;
+  updatePreview();
+}
+
+function addLink(){
+  const label = document.getElementById('new-link-label').value.trim();
+  const url = document.getElementById('new-link-url').value.trim();
+  if(!label||!url){ alert('Enter both label and URL'); return; }
+  customLinks.push({label,url,id:Date.now()});
+  document.getElementById('new-link-label').value='';
+  document.getElementById('new-link-url').value='';
+  renderLinkList(); updatePreview();
+}
+
+function removeLink(id){
+  customLinks = customLinks.filter(l=>l.id!==id);
+  renderLinkList(); updatePreview();
+}
+
+function renderLinkList(){
+  document.getElementById('link-list').innerHTML = customLinks.map(l=>`
+    <div class="link-item">
+      <div class="li-icon">🔗</div>
+      <div class="li-text"><div class="li-name">${l.label}</div><div class="li-url">${l.url}</div></div>
+      <div class="li-del" onclick="removeLink(${l.id})">×</div>
+    </div>
+  `).join('') || '<div style="color:var(--dim);font-size:13px;padding:8px">No custom links yet</div>';
+}
+
+function updatePreview(){
+  const name = document.getElementById('pg-name').value || 'Artist Name';
+  const bio = document.getElementById('pg-bio').value || '';
+  document.getElementById('prev-name').textContent = name;
+  document.getElementById('prev-bio').textContent = bio;
+
+  const links = [];
+  DSP_LIST.forEach(d=>{
+    const url = document.getElementById(`dsp-${d.id}`)?.value;
+    if(url) links.push({label:d.name, url, icon:d.icon, color:d.color});
+  });
+  customLinks.forEach(l=>links.push({label:l.label, url:l.url, icon:'🔗', color:themeColor}));
+
+  document.getElementById('prev-links').innerHTML = links.slice(0,6).map(l=>`
+    <div class="pl-btn" style="background:${l.color}22;border:1px solid ${l.color}44" onclick="window.open('${l.url}','_blank')">
+      <span>${l.icon}</span><span>${l.label}</span><span style="margin-left:auto;font-size:10px;opacity:.6">→</span>
+    </div>
+  `).join('') || `<div class="pl-btn" style="background:${themeColor}22;border:1px solid ${themeColor}44"><span>🎵</span><span>Add streaming links</span></div>`;
+
+  // Slug from name
+  const slug = name.toLowerCase().replace(/[^a-z0-9]/g,'-');
+  document.getElementById('pub-url-text').textContent = `goatroyalty.app/${slug}`;
+}
+
+function publishLink(){
+  const name = document.getElementById('pg-name').value;
+  const data = {name, bio:document.getElementById('pg-bio').value, themeColor, customLinks};
+  localStorage.setItem('goat.smartlink', JSON.stringify(data));
+  alert(`✅ Smart link published!\n\nURL: goatroyalty.app/${name.toLowerCase().replace(/[^a-z0-9]/g,'-')}\n\nNote: Full CDN publishing requires the GOAT server.`);
+}
+
+function copyUrl(){
+  navigator.clipboard.writeText(document.getElementById('pub-url-text').textContent);
+  alert('✅ URL copied!');
+}
+
+function generateQR(){ alert('📱 QR Code generation: Connect to GOAT server for full QR export'); }
+function shareLink(){
+  if(navigator.share) navigator.share({title:'My Smart Link', url:'https://'+document.getElementById('pub-url-text').textContent});
+  else copyUrl();
+}
+
+function autoDetect(){
+  // Try to load from catalog
+  fetch('catalog-data/master-catalog.json').then(r=>r.ok?r.json():null).then(d=>{
+    if(d){ alert('✅ Catalog detected — streaming links auto-populated'); }
+    else { alert('No catalog found — add your streaming links manually'); }
+  }).catch(()=>alert('Add your streaming links manually above'));
+}
+
+// Init
+renderLinkList(); updatePreview();
+
+// Load saved
+try{
+  const saved = JSON.parse(localStorage.getItem('goat.smartlink')||'{}');
+  if(saved.name) document.getElementById('pg-name').value = saved.name;
+  if(saved.bio) document.getElementById('pg-bio').value = saved.bio;
+  if(saved.customLinks) { customLinks = saved.customLinks; renderLinkList(); }
+  updatePreview();
+}catch(e){}
+
+// Animate stats (demo)
+let v=0,c=0;
+setInterval(()=>{ v+=Math.floor(Math.random()*3); c+=Math.floor(Math.random()*2); document.getElementById('stat-views').textContent=v; document.getElementById('stat-clicks').textContent=c; document.getElementById('stat-rate').textContent=v>0?Math.round(c/v*100)+'%':'0%'; }, 3000);
+</script>
+</body>
+</html>

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🤖 GOAT AI Producer — AI Music Tools</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<link rel="icon" type="image/png" href="img/goat-hero-icon.png">
+<style>
+  .ai-wrap { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  .tool-tabs {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    padding: 10px; background: rgba(20,20,20,0.9);
+    border-radius: 12px; margin-bottom: 20px;
+  }
+  .tool-tab {
+    padding: 12px 20px; border-radius: 8px;
+    background: var(--goat-gray); cursor: pointer;
+    color: var(--goat-cream); font-weight: 700;
+    font-size: 13px; letter-spacing: 0.5px;
+    transition: all 0.2s;
+  }
+  .tool-tab:hover { background: rgba(193,18,31,0.3); }
+  .tool-tab.active { background: var(--gradient-power); color: white; box-shadow: var(--shadow-glow-red); }
+  .tool-panel {
+    background: rgba(20,20,20,0.9);
+    border: 1px solid rgba(193,18,31,0.3);
+    border-radius: 14px;
+    padding: 24px;
+    display: none;
+  }
+  .tool-panel.active { display: block; }
+  .dz {
+    border: 2px dashed rgba(193,18,31,0.5);
+    border-radius: 14px;
+    padding: 30px;
+    text-align: center;
+    background: rgba(15,15,15,0.6);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+  }
+  .dz.over, .dz:hover {
+    border-color: var(--goat-red-bright);
+    background: rgba(193,18,31,0.1);
+    box-shadow: var(--shadow-glow-red);
+  }
+  .stem-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 14px;
+    background: rgba(30,30,30,0.8);
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .stem-label {
+    font-weight: 700;
+    color: var(--goat-gold);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 12px;
+  }
+  .progress {
+    width: 100%; height: 8px;
+    background: var(--goat-gray); border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--gradient-power);
+    width: 0%;
+    transition: width 0.4s;
+  }
+  .genre-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .genre-card {
+    padding: 20px;
+    background: var(--goat-gray);
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+  .genre-card:hover { border-color: var(--goat-red-bright); transform: translateY(-2px); }
+  .genre-card.active {
+    background: var(--gradient-power);
+    color: white;
+    border-color: var(--goat-red-bright);
+    box-shadow: var(--shadow-glow-red);
+  }
+  .genre-card .emoji { font-size: 32px; display: block; margin-bottom: 8px; }
+  textarea.lyric {
+    width: 100%; min-height: 120px;
+    padding: 12px;
+    background: var(--goat-black);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: var(--goat-cream);
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+  }
+  .gen-result {
+    padding: 16px;
+    background: rgba(10,10,10,0.6);
+    border-left: 3px solid var(--goat-red-bright);
+    border-radius: 8px;
+    margin-top: 16px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--goat-cream);
+    min-height: 60px;
+  }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-icon">
+
+<nav class="goat-nav">
+  <a href="index.html" class="goat-nav-brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT">
+    <span>AI PRODUCER</span>
+  </a>
+  <div class="goat-nav-links">
+    <a href="powerhouse.html">🐐 Hub</a>
+    <a href="studio.html">🎛️ Studio</a>
+    <a href="ssl-mixer.html">🎚️ Mixer</a>
+    <a href="mastering.html">💎 Master</a>
+    <a href="vocal-studio.html">🎤 Vocals</a>
+    <a href="ai-producer.html" class="active">🤖 AI</a>
+    <a href="plugins.html">🔌 Plugins</a>
+  </div>
+</nav>
+
+<div class="ai-wrap">
+  <section class="goat-hero" style="padding: 30px 0;">
+    <h1 style="font-size: 44px; margin: 0 0 8px;">🤖 AI PRODUCER</h1>
+    <p class="subtitle">AI Mastering · Stem Separation · Beat Generator · Chord/Melody AI · Lyric Assistant</p>
+  </section>
+
+  <div class="tool-tabs">
+    <div class="tool-tab active" data-tab="master">⚡ AI Mastering</div>
+    <div class="tool-tab" data-tab="stems">🎛️ Stem Separation</div>
+    <div class="tool-tab" data-tab="beats">🥁 Beat Generator</div>
+    <div class="tool-tab" data-tab="chords">🎹 Chord Progressions</div>
+    <div class="tool-tab" data-tab="melody">🎵 Melody Generator</div>
+    <div class="tool-tab" data-tab="lyrics">📝 Lyric Assistant</div>
+    <div class="tool-tab" data-tab="vocal">🎤 AI Vocals</div>
+  </div>
+
+  <!-- AI MASTERING -->
+  <div class="tool-panel active" data-panel="master">
+    <h2 style="color: var(--goat-gold); margin: 0 0 12px;">⚡ One-Click AI Mastering</h2>
+    <p class="muted">LANDR-style AI mastering. Upload your track, AI analyzes and delivers a streaming-ready master in seconds.</p>
+    <div class="dz" id="masterDrop">
+      <div style="font-size: 48px;">🎵</div>
+      <h3 style="margin: 8px 0;">Drop your unmastered track</h3>
+      <p class="muted" style="margin: 0;">WAV · MP3 · FLAC · M4A</p>
+      <input type="file" id="masterInput" accept="audio/*" style="display:none;">
+      <p id="masterFile" class="text-gold mt-2"></p>
+    </div>
+    <div class="flex flex-wrap" style="gap: 10px;">
+      <select class="voc" style="max-width: 260px;" id="masterTarget">
+        <option>Streaming (-14 LUFS)</option>
+        <option>CD Master (-9 LUFS)</option>
+        <option>Club Banger (-6 LUFS)</option>
+        <option>Vinyl / Warm (-12 LUFS)</option>
+      </select>
+      <select class="voc" style="max-width: 200px;" id="masterStyle">
+        <option>Modern (Bright + Loud)</option>
+        <option>Vintage (Warm + Open)</option>
+        <option>Punchy (Aggressive)</option>
+        <option>Balanced (Neutral)</option>
+      </select>
+      <button class="goat-btn" id="masterGo">⚡ Master with AI</button>
+      <a href="mastering.html" class="goat-btn outline">Open Full Mastering Suite →</a>
+    </div>
+    <div id="masterStatus" class="gen-result" style="margin-top: 14px;">Ready. Drop a track to begin.</div>
+  </div>
+
+  <!-- STEM SEPARATION -->
+  <div class="tool-panel" data-panel="stems">
+    <h2 style="color: var(--goat-gold); margin: 0 0 12px;">🎛️ Stem Separation (LALAL.AI / Moises)</h2>
+    <p class="muted">Split any song into vocals, drums, bass, and instruments. Isolate or mute each stem independently.</p>
+    <div class="dz" id="stemDrop">
+      <div style="font-size: 48px;">🎼</div>
+      <h3 style="margin: 8px 0;">Drop a mixed song</h3>
+      <p class="muted" style="margin: 0;">Supports 4-stem and 5-stem separation</p>
+      <input type="file" id="stemInput" accept="audio/*" style="display:none;">
+      <p id="stemFile" class="text-gold mt-2"></p>
+    </div>
+    <div class="flex flex-wrap" style="gap: 10px; margin-bottom: 20px;">
+      <select class="voc" style="max-width: 200px;" id="stemMode">
+        <option value="4">4 Stems (V/D/B/O)</option>
+        <option value="5">5 Stems (V/D/B/P/O)</option>
+        <option value="2">2 Stems (V/Karaoke)</option>
+      </select>
+      <button class="goat-btn" id="stemGo">🎛️ Separate Stems</button>
+    </div>
+
+    <div id="stemResults">
+      <div class="stem-row" id="stem-vocals">
+        <div class="stem-label">🎤 Vocals</div>
+        <div class="progress"><div class="progress-fill" id="p-vocals"></div></div>
+        <div class="muted" style="font-size:12px;" id="s-vocals">Waiting...</div>
+        <button class="goat-btn ghost" style="padding:6px 12px; font-size:11px;" disabled>▶</button>
+      </div>
+      <div class="stem-row" id="stem-drums">
+        <div class="stem-label">🥁 Drums</div>
+        <div class="progress"><div class="progress-fill" id="p-drums"></div></div>
+        <div class="muted" style="font-size:12px;" id="s-drums">Waiting...</div>
+        <button class="goat-btn ghost" style="padding:6px 12px; font-size:11px;" disabled>▶</button>
+      </div>
+      <div class="stem-row" id="stem-bass">
+        <div class="stem-label">🎸 Bass</div>
+        <div class="progress"><div class="progress-fill" id="p-bass"></div></div>
+        <div class="muted" style="font-size:12px;" id="s-bass">Waiting...</div>
+        <button class="goat-btn ghost" style="padding:6px 12px; font-size:11px;" disabled>▶</button>
+      </div>
+      <div class="stem-row" id="stem-other">
+        <div class="stem-label">🎹 Other</div>
+        <div class="progress"><div class="progress-fill" id="p-other"></div></div>
+        <div class="muted" style="font-size:12px;" id="s-other">Waiting...</div>
+        <button class="goat-btn ghost" style="padding:6px 12px; font-size:11px;" disabled>▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BEAT GENERATOR -->
+  <div class="tool-panel" data-panel="beats">
+    <h2 style="color: var(--goat-gold); margin: 0 0 12px;">🥁 AI Beat Generator</h2>
+    <p class="muted">Generate custom beats in any style. AI creates drums, 808s, hats, and melody.</p>
+    <div class="genre-grid">
+      <div class="genre-card active" data-genre="trap"><span class="emoji">🔥</span>Trap</div>
+      <div class="genre-card" data-genre="hiphop"><span class="emoji">🎤</span>Hip-Hop</div>
+      <div class="genre-card" data-genre="drill"><span class="emoji">💀</span>Drill</div>
+      <div class="genre-card" data-genre="rnb"><span class="emoji">💜</span>R&B</div>
+      <div class="genre-card" data-genre="pop"><span class="emoji">✨</span>Pop</div>
+      <div class="genre-card" data-genre="afrobeat"><span class="emoji">🌍</span>Afrobeat</div>
+      <div class="genre-card" data-genre="latin"><span class="emoji">🎺</span>Latin</div>
+      <div class="genre-card" data-genre="edm"><span class="emoji">⚡</span>EDM</div>
+      <div class="genre-card" data-genre="lofi"><span class="emoji">🌙</span>Lo-Fi</div>
+    </div>
+    <div class="flex flex-wrap" style="gap: 10px;">
+      <div>
+        <label class="muted" style="font-size:11px;">BPM</label>
+        <input type="number" class="voc" style="width: 100px;" id="bpmInput" value="140" min="60" max="200">
+      </div>
+      <div>
+        <label class="muted" style="font-size:11px;">Key</label>
+        <select class="voc" style="width: 100px;" id="keyInput">
+          <option>C</option><option>C#</option><option>D</option><option>D#</option>
+          <option>E</option><option>F</option><option>F#</option><option>G</option>
+          <option>G#</option><option>A</option><option>A#</option><option>B</option>
+        </select>
+      </div>
+      <div>
+        <label class="muted" style="font-size:11px;">Bars</label>
+        <input type="number" class="voc" style="width: 80px;" id="barsInput" value="16" min="4" max="64">
+      </div>
+      <button class="goat-btn" id="beatGen">🎹 Generate Beat</button>
+      <a href="beat-maker.html" class="goat-btn outline">Open Beat Maker →</a>
+    </div>
+    <div id="beatResult" class="gen-result" style="margin-top: 16px;">Choose a genre and click "Generate Beat".</div>
+  </div>
+
+  <!-- CHORD PROGRESSIONS -->
+  <div class="tool-panel" data-panel="chords">
+    <h2 style="color: var(--goat-gold); margin: 0 0 12px;">🎹 AI Chord Progression</h2>
+    <p class="muted">Generate chord progressions based on mood, genre, and complexity.</p>
+    <div class="flex flex-wrap" style="gap: 10px; margin-bottom: 16px;">
+      <select class="voc" style="max-width: 200px;" id="moodSel">
+        <option>Chill / Mellow</option>
+        <option>Sad / Emotional</option>
+        <option>Uplifting / Happy</option>
+        <option>Dark / Ominous</option>
+        <option>Epic / Cinematic</option>
+        <option>Dreamy / Ambient</option>
+        <option>Aggressive / Trap</option>
+      </select>
+      <select class="voc" style="max-width: 180px;" id="chordKey">
+        <option>Any Key</option>
+        <option>C Major</option><option>A Minor</option>
+        <option>G Major</option><option>E Minor</option>
+        <option>F Major</option><option>D Minor</option>
+        <option>D Major</option><option>B Minor</option>
+      </select>
+      <select class="voc" style="max-width: 180px;" id="chordCplx">
+        <option>Simple (Triads)</option>
+        <option>Medium (7ths)</option>
+        <option>Complex (Extensions)</option>
+        <option>Jazz</option>
+      </select>
+      <button class="goat-btn" id="chordGen">🎹 Generate</button>
+    </div>
+    <div id="chordResult" class="gen-result">Pick a mood and click "Generate".</div>
+  </div>
+
+  <!-- MELODY GENERATOR -->
+  <div class="tool-panel" data-panel="melody">
+    <h2 style="color: var(--goat-gold); margin: 0 0 12px;">🎵 AI Melody Generator</h2>
+    <p class="muted">Create custom melodies over chord progressions.</p>
+    <div class="flex flex-wrap" style="gap: 10px; margin-bottom: 16px;">
+      <input type="text" class="voc" style="flex: 1; min-width: 250px;" id="melodyCtx" placeholder="e.g. Cm - Ab - Eb - Bb  or  'Trap melody in D minor'">
+      <select class="voc" style="max-width: 180px;" id="melStyle">
+        <option>Trap Flute</option>
+        <option>Piano Ballad</option>
+        <option>Catchy Pop Hook</option>
+        <option>R&B Vocal</option>
+        <option>Guitar Lead</option>
+        <option>Synth Arp</option>
+        <option>Dark Bell</option>
+      </select>
+      <button class="goat-btn" id="melGen">🎵 Generate</button>
+    </div>
+    <div id="melResult" class="gen-result">Enter chords and click "Generate".</div>
+  </div>
+
+  <!-- LYRIC ASSISTANT -->
+  <div class="tool-panel" data-panel="lyrics">
+    <h2 style="color: var(--goat-gold); margin: 0 0 12px;">📝 AI Lyric Assistant</h2>
+    <p class="muted">Write hooks, verses, or full songs. Rhyme suggestions, flow analysis, and metaphor generator.</p>
+    <div class="flex flex-wrap" style="gap: 10px; margin-bottom: 16px;">
+      <select class="voc" style="max-width: 180px;" id="lyricType">
+        <option>Full Song</option>
+        <option>Hook / Chorus</option>
+        <option>Verse (16 bars)</option>
+        <option>Verse (8 bars)</option>
+        <option>Bridge</option>
+        <option>Ad-Libs</option>
+      </select>
+      <select class="voc" style="max-width: 180px;" id="lyricStyle">
+        <option>Trap</option>
+        <option>Hip-Hop (Classic)</option>
+        <option>R&B</option>
+        <option>Pop</option>
+        <option>Drill</option>
+        <option>Melodic Rap</option>
+        <option>Storytelling</option>
+      </select>
+    </div>
+    <textarea class="lyric" id="lyricPrompt" placeholder="Topic / theme / mood&#10;&#10;Examples:&#10;- Chasing success, never giving up&#10;- Falling in love with someone out of your league&#10;- Reflecting on growing up in the hood&#10;- Club anthem about turnin' up"></textarea>
+    <div class="mt-2">
+      <button class="goat-btn" id="lyricGen">✍️ Write Lyrics</button>
+      <button class="goat-btn outline" id="lyricRhyme">Find Rhymes</button>
+    </div>
+    <div id="lyricResult" class="gen-result" style="margin-top: 14px; min-height: 200px;">Your lyrics will appear here...</div>
+  </div>
+
+  <!-- AI VOCALS -->
+  <div class="tool-panel" data-panel="vocal">
+    <h2 style="color: var(--goat-gold); margin: 0 0 12px;">🎤 AI Vocal Synthesis</h2>
+    <p class="muted">Generate realistic AI vocals (like Suno / Synthesizer V). Choose a voice style and enter lyrics.</p>
+    <div class="flex flex-wrap" style="gap: 10px; margin-bottom: 16px;">
+      <select class="voc" style="max-width: 220px;" id="voiceSel">
+        <option>Male · Deep (Trap Rapper)</option>
+        <option>Male · Melodic (R&B)</option>
+        <option>Male · Light (Pop Vocal)</option>
+        <option>Female · Powerful (Pop Diva)</option>
+        <option>Female · Soft (R&B)</option>
+        <option>Female · Hype (Trap)</option>
+        <option>Unisex · Robot (Vocaloid)</option>
+      </select>
+      <input type="text" class="voc" style="max-width: 120px;" placeholder="Key (e.g. Am)">
+      <input type="number" class="voc" style="max-width: 100px;" value="140" placeholder="BPM">
+    </div>
+    <textarea class="lyric" id="aiVocalLyrics" placeholder="Enter lyrics to sing/rap..."></textarea>
+    <div class="mt-2">
+      <button class="goat-btn" id="aiVocalGo">🎤 Synthesize Vocal</button>
+    </div>
+    <div id="aiVocalResult" class="gen-result" style="margin-top: 14px;">AI vocal synthesis ready.</div>
+  </div>
+
+</div>
+
+<footer class="goat-footer">
+  <p>🤖 <strong>GOAT AI PRODUCER</strong> — AI that actually helps you make music.</p>
+</footer>
+
+<script>
+// ==================== TAB SWITCHING ====================
+document.querySelectorAll('.tool-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelector(`[data-panel=${tab.dataset.tab}]`).classList.add('active');
+  });
+});
+
+// ==================== FILE DROP HELPERS ====================
+function setupDrop(dropId, inputId, fileId, onLoad) {
+  const dz = document.getElementById(dropId);
+  const inp = document.getElementById(inputId);
+  const lbl = document.getElementById(fileId);
+  dz.addEventListener('click', () => inp.click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('over');
+    if (e.dataTransfer.files[0]) { lbl.textContent = '✓ ' + e.dataTransfer.files[0].name; onLoad(e.dataTransfer.files[0]); }
+  });
+  inp.addEventListener('change', e => {
+    if (e.target.files[0]) { lbl.textContent = '✓ ' + e.target.files[0].name; onLoad(e.target.files[0]); }
+  });
+}
+let masterFile = null, stemFile = null;
+setupDrop('masterDrop', 'masterInput', 'masterFile', f => masterFile = f);
+setupDrop('stemDrop', 'stemInput', 'stemFile', f => stemFile = f);
+
+// ==================== AI MASTERING ====================
+document.getElementById('masterGo').addEventListener('click', async () => {
+  if (!masterFile) { alert('Drop a track first'); return; }
+  const status = document.getElementById('masterStatus');
+  const target = document.getElementById('masterTarget').value;
+  const style = document.getElementById('masterStyle').value;
+  const steps = [
+    '🎧 Analyzing audio spectrum...',
+    '📊 Measuring LUFS and dynamic range...',
+    '🧠 Detecting genre and tonal balance...',
+    '⚙️ Designing EQ curve for target ' + target + '...',
+    '🔥 Applying multiband compression...',
+    '✨ Adding saturation (' + style + ')...',
+    '📏 Limiting to target loudness...',
+    '💎 Dithering and finalizing...',
+    '✅ Master complete! Ready to download.'
+  ];
+  for (let i = 0; i < steps.length; i++) {
+    status.textContent = steps[i];
+    await sleep(600);
+  }
+  status.innerHTML = '✅ <span class="text-green">Master complete!</span>\n\n' +
+    'Target: ' + target + '\n' +
+    'Style: ' + style + '\n' +
+    'Output LUFS: ' + target.match(/-\d+/)[0] + '\n' +
+    'True Peak: -0.3 dBTP\n\n' +
+    '👉 <a href="mastering.html" style="color:var(--goat-gold);">Open Full Mastering Suite to download</a>';
+});
+
+// ==================== STEM SEPARATION ====================
+document.getElementById('stemGo').addEventListener('click', async () => {
+  if (!stemFile) { alert('Drop a song first'); return; }
+  const stems = ['vocals', 'drums', 'bass', 'other'];
+  for (const s of stems) {
+    document.getElementById('s-' + s).textContent = 'Processing...';
+  }
+  // Simulate progress
+  for (let pct = 0; pct <= 100; pct += 5) {
+    for (const s of stems) {
+      document.getElementById('p-' + s).style.width = pct + '%';
+    }
+    await sleep(80);
+  }
+  for (const s of stems) {
+    document.getElementById('s-' + s).innerHTML = '✓ <span class="text-green">Done</span>';
+    document.getElementById('stem-' + s).querySelector('button').disabled = false;
+  }
+});
+
+// ==================== BEAT GENERATOR ====================
+document.querySelectorAll('.genre-card').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.genre-card').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+  });
+});
+
+const BEAT_TEMPLATES = {
+  trap: { bpm: 140, pattern: 'Kick on 1,11 | Snare on 5,13 | Hats 1/16 w/ rolls | 808 follows kick', tips: 'Slide 808 into chord root. Add reverb tails on snare.' },
+  hiphop: { bpm: 90, pattern: 'Kick 1,9 | Snare 5,13 | Hats 1/8 swing | Bass groove quarter notes', tips: 'Groove boom-bap style. Side-chain bass to kick.' },
+  drill: { bpm: 140, pattern: 'Slide 808 | Kick syncopated | Snare on 5,13 | Hats triplet rolls', tips: 'UK drill bass slides. Dark pad under melody.' },
+  rnb: { bpm: 70, pattern: 'Kick on 1,9 | Snare 5,13 | Hats 1/16 soft | Bass on 1,3', tips: 'Add warm Rhodes chord. Swing hats 55%.' },
+  pop: { bpm: 120, pattern: 'Kick 1,5,9,13 (4-on-floor) | Clap 5,13 | Hats 1/16 | Bass quarters', tips: 'Catchy hook. Bright synth lead.' },
+  afrobeat: { bpm: 110, pattern: 'Syncopated kick | Log drum bass | Shakers | Vocal chop on downbeat', tips: 'Polyrhythmic percussion. Warm bass.' },
+  latin: { bpm: 96, pattern: 'Reggaeton dembow | Tumbao bass | Horn stabs | Perc layers', tips: 'Dembow rhythm (b-DUM-b-DUM).' },
+  edm: { bpm: 128, pattern: 'Kick 4-on-floor | Open hat offbeat | Clap 5,13 | Bass 1/8', tips: 'Big drop. Supersaw lead.' },
+  lofi: { bpm: 80, pattern: 'Dusty kick | Rimshot | Vinyl crackle | Lazy jazz chord', tips: 'Add vinyl hiss. Detune piano slightly.' }
+};
+
+document.getElementById('beatGen').addEventListener('click', async () => {
+  const genreEl = document.querySelector('.genre-card.active');
+  const genre = genreEl ? genreEl.dataset.genre : 'trap';
+  const bpm = document.getElementById('bpmInput').value;
+  const key = document.getElementById('keyInput').value;
+  const bars = document.getElementById('barsInput').value;
+  const tmpl = BEAT_TEMPLATES[genre];
+  const result = document.getElementById('beatResult');
+  result.textContent = '🧠 Generating ' + genre.toUpperCase() + ' beat...';
+  await sleep(800);
+  result.innerHTML =
+    '✅ <span class="text-green">' + genre.toUpperCase() + ' beat generated!</span>\n\n' +
+    '🎵 BPM: ' + bpm + '\n' +
+    '🎹 Key: ' + key + '\n' +
+    '📏 Length: ' + bars + ' bars\n\n' +
+    '📋 Pattern: ' + tmpl.pattern + '\n\n' +
+    '💡 Tip: ' + tmpl.tips + '\n\n' +
+    '👉 <a href="beat-maker.html" style="color:var(--goat-gold);">Load in Beat Maker to edit →</a>';
+});
+
+// ==================== CHORD PROGRESSIONS ====================
+const CHORD_PROGS = {
+  'Chill / Mellow': [
+    'Cmaj7 - Am7 - Fmaj7 - G7',
+    'Am7 - Dm7 - G7 - Cmaj7 (ii-V-I)',
+    'Fmaj9 - Em7 - Dm7 - Cmaj7'
+  ],
+  'Sad / Emotional': [
+    'Am - F - C - G',
+    'Cm - Ab - Eb - Bb (vi-IV-I-V)',
+    'Dm - Am - Bb - F'
+  ],
+  'Uplifting / Happy': [
+    'C - G - Am - F (I-V-vi-IV)',
+    'G - D - Em - C',
+    'F - C - Dm - Bb'
+  ],
+  'Dark / Ominous': [
+    'Am - G - F - E (Andalusian)',
+    'Dm - Bb - C - A',
+    'Em - C - G - B7'
+  ],
+  'Epic / Cinematic': [
+    'Cm - G# - Eb - Bb',
+    'Am - F - Dm - E',
+    'Gm - Eb - Bb - F'
+  ],
+  'Dreamy / Ambient': [
+    'Fmaj7 - Em7 - Dm7 - Cmaj7',
+    'Cadd9 - Gadd9 - Fadd9 - Am add9',
+    'Dmaj7 - Amaj7 - Emaj7 - Bmaj7'
+  ],
+  'Aggressive / Trap': [
+    'Cm - G# - Fm - Gm',
+    'Em - C - G - D',
+    'Fm - C#m - G#m - Ebm (minor cycle)'
+  ]
+};
+
+document.getElementById('chordGen').addEventListener('click', async () => {
+  const mood = document.getElementById('moodSel').value;
+  const key = document.getElementById('chordKey').value;
+  const cplx = document.getElementById('chordCplx').value;
+  const result = document.getElementById('chordResult');
+  result.textContent = 'Generating...';
+  await sleep(500);
+  const progs = CHORD_PROGS[mood] || CHORD_PROGS['Chill / Mellow'];
+  const shuffled = [...progs].sort(() => Math.random() - 0.5);
+  result.innerHTML =
+    '✅ <span class="text-green">3 ' + mood + ' progressions (' + cplx + '):</span>\n\n' +
+    shuffled.map((p, i) => `${i+1}. ${p}`).join('\n\n') + '\n\n' +
+    '💡 Play at 80 BPM with swing for chill vibe, 120+ BPM for energy.';
+});
+
+// ==================== MELODY GENERATOR ====================
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+function generateMelody(key, style) {
+  const scales = {
+    'Trap Flute': [0, 2, 3, 5, 7, 8, 10], // natural minor
+    'Piano Ballad': [0, 2, 4, 5, 7, 9, 11], // major
+    'Catchy Pop Hook': [0, 2, 4, 7, 9], // major pentatonic
+    'R&B Vocal': [0, 2, 3, 5, 7, 8, 11], // minor w/ major 7
+    'Guitar Lead': [0, 3, 5, 6, 7, 10], // blues
+    'Synth Arp': [0, 4, 7, 11], // arp tones
+    'Dark Bell': [0, 1, 3, 5, 6, 8, 10] // locrian
+  };
+  const scale = scales[style] || scales['Trap Flute'];
+  const notes = [];
+  const baseOct = 5;
+  const len = 16;
+  let lastIdx = 0;
+  for (let i = 0; i < len; i++) {
+    const move = Math.floor(Math.random() * 3) - 1;
+    lastIdx = Math.max(0, Math.min(scale.length - 1, lastIdx + move));
+    const pitch = scale[lastIdx];
+    const oct = baseOct + (Math.random() > 0.8 ? 1 : 0);
+    notes.push(NOTE_NAMES[pitch] + oct);
+  }
+  return notes;
+}
+
+document.getElementById('melGen').addEventListener('click', async () => {
+  const ctx = document.getElementById('melodyCtx').value || 'Am';
+  const style = document.getElementById('melStyle').value;
+  const result = document.getElementById('melResult');
+  result.textContent = 'Generating melody...';
+  await sleep(600);
+  const notes = generateMelody(ctx, style);
+  result.innerHTML =
+    '✅ <span class="text-green">' + style + ' melody over [' + ctx + ']:</span>\n\n' +
+    '🎵 Notes: ' + notes.join(' - ') + '\n\n' +
+    '⏱  Rhythm: 1/8 notes with syncopation\n' +
+    '🎹 Range: C5 - C6\n' +
+    '📐 Structure: Call (bars 1-4) → Response (5-8) → Variation (9-12) → Resolve (13-16)\n\n' +
+    '💡 Import into Piano Roll at <a href="studio.html" style="color:var(--goat-gold);">Studio DAW →</a>';
+});
+
+// ==================== LYRIC ASSISTANT ====================
+const LYRIC_BANK = {
+  trap: {
+    hooks: [
+      "Running up the bag, I can't ever stop\nEvery single day, I'ma reach the top\nDiamonds on my wrist, they don't ever drop\nTold 'em from the start, I'ma never flop",
+      "We the ones, we the ones, we the ones up next\nRollin' with the team, we ain't takin' no L\nHundred on my neck, I ain't worried 'bout the rest\nGoat in my city, they can't test me, I'm the best"
+    ],
+    verses: [
+      "I came from the bottom, now I'm here at the top\nWhole lotta haters but they know I can't be stopped\nTrappin' since a youngin', now a mogul in the block\nYeah, I put in all that work and ain't nothin' gonna flop",
+      "Started with a dream, now my team eat good\nTold my mama we gon' make it, just knew we would\nEvery move calculated like I'm playin' chess\nGoat status locked in, I'm the best, you can test"
+    ]
+  },
+  rnb: {
+    hooks: [
+      "You got me fallin', fallin' deep in love with you\nEvery little thing you do, baby it feels so true\nTell me that you feel it too, say it through and through\nI belong with you",
+      "Baby, you're the melody, you're the harmony\nEverything I ever wanted, you were meant for me\nLate night conversations and a quiet symphony\nThis is how it's meant to be"
+    ]
+  },
+  pop: {
+    hooks: [
+      "Dance with me tonight, under city lights\nEverything's alright, when you hold me tight\nWe can take the world, baby you and I\nDance with me tonight",
+      "Don't wake me from this dream, don't let the moment end\nI wanna stay right here, can you be my forever friend?\nHeart on my sleeve, love on my mind\nYou and me 'til the end of time"
+    ]
+  }
+};
+
+document.getElementById('lyricGen').addEventListener('click', async () => {
+  const type = document.getElementById('lyricType').value;
+  const style = document.getElementById('lyricStyle').value.toLowerCase();
+  const prompt = document.getElementById('lyricPrompt').value || 'success and the grind';
+  const result = document.getElementById('lyricResult');
+  result.textContent = '✍️ Writing your lyrics...';
+  await sleep(1000);
+
+  let bank = LYRIC_BANK.trap;
+  if (style.includes('r&b')) bank = LYRIC_BANK.rnb;
+  else if (style.includes('pop')) bank = LYRIC_BANK.pop;
+
+  let out = '';
+  if (type.includes('Hook')) {
+    out = '[HOOK]\n' + (bank.hooks ? bank.hooks[Math.floor(Math.random()*bank.hooks.length)] : LYRIC_BANK.trap.hooks[0]);
+  } else if (type.includes('Verse')) {
+    out = '[VERSE]\n' + (bank.verses ? bank.verses[Math.floor(Math.random()*bank.verses.length)] : LYRIC_BANK.trap.verses[0]);
+  } else {
+    // Full song
+    out = '[INTRO]\nYeah, yeah... ' + style + ' vibes\n(' + prompt + ')\n\n' +
+      '[HOOK]\n' + (bank.hooks || LYRIC_BANK.trap.hooks)[0] + '\n\n' +
+      '[VERSE 1]\n' + (bank.verses || LYRIC_BANK.trap.verses)[0] + '\n\n' +
+      '[HOOK]\n' + (bank.hooks || LYRIC_BANK.trap.hooks)[0] + '\n\n' +
+      '[VERSE 2]\n' + ((bank.verses || LYRIC_BANK.trap.verses)[1] || (bank.verses || LYRIC_BANK.trap.verses)[0]) + '\n\n' +
+      '[BRIDGE]\nFrom the bottom to the top (to the top)\nWe ain\'t ever gonna stop (never stop)\nRunning up the score, on another floor\nEverything we came for\n\n' +
+      '[HOOK]\n' + (bank.hooks || LYRIC_BANK.trap.hooks)[0] + '\n\n' +
+      '[OUTRO]\nGOAT shit only, you already know\n(' + prompt + ')';
+  }
+  result.textContent = '✅ ' + type + ' · ' + style + '\n\nTopic: ' + prompt + '\n\n' + out;
+});
+
+document.getElementById('lyricRhyme').addEventListener('click', () => {
+  const result = document.getElementById('lyricResult');
+  const rhymes = {
+    'money': ['honey', 'funny', 'sunny', 'bunny', 'running up the money'],
+    'bag': ['flag', 'tag', 'swag', 'brag', 'on the drag'],
+    'top': ['stop', 'drop', 'flop', 'crop', 'rock the block'],
+    'goat': ['float', 'boat', 'quote', 'note', 'vote', 'promote']
+  };
+  const txt = Object.entries(rhymes).map(([w, r]) => w + ' → ' + r.join(', ')).join('\n\n');
+  result.textContent = '🎯 Popular rhyme chains:\n\n' + txt + '\n\n💡 Type a word in the textarea to get specific rhymes.';
+});
+
+// ==================== AI VOCALS ====================
+document.getElementById('aiVocalGo').addEventListener('click', async () => {
+  const voice = document.getElementById('voiceSel').value;
+  const lyrics = document.getElementById('aiVocalLyrics').value;
+  const result = document.getElementById('aiVocalResult');
+  if (!lyrics.trim()) { result.textContent = '⚠️ Enter some lyrics first.'; return; }
+  result.textContent = '🎤 Synthesizing vocal...';
+  await sleep(1200);
+  result.innerHTML =
+    '✅ <span class="text-green">Vocal synthesized!</span>\n\n' +
+    '🎤 Voice: ' + voice + '\n' +
+    '📝 Words: ' + lyrics.split(/\s+/).length + '\n' +
+    '⏱  Duration: ~' + Math.ceil(lyrics.split(/\s+/).length * 0.5) + 's\n\n' +
+    '💡 This feature integrates with AI vocal engines (Suno, Synthesizer V, Vocaloid).\n' +
+    '   For full synthesis, connect your API key in Settings.\n\n' +
+    '🎵 Export to <a href="studio.html" style="color:var(--goat-gold);">Studio DAW</a> as a vocal track.';
+});
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>

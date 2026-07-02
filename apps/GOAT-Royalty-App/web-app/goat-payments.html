@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💳 GOAT Payments | GOAT Royalty</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <link rel="stylesheet" href="css/goat-brand.css">
+    <style>
+        :root {
+            --bg: #040608; --panel: #0d1117; --panel2: #161b22;
+            --gold: #d4a03c; --gold2: #f0c040; --gold3: #ffd700;
+            --red: #c1121f; --green: #3fb950; --blue: #58a6ff;
+            --ink: #f0ece4; --dim: #8b949e; --line: #21262d;
+            --glow: rgba(212,160,60,.25);
+        }
+        body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .payments-dashboard { max-width: 1400px; margin: 0 auto; padding: 80px 20px 40px; width: 100%; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .dashboard-title h1 { font-size: 28px; font-weight: 700; color: var(--gold); margin: 0; display: flex; align-items: center; gap: 12px; }
+        .dashboard-title span { font-size: 14px; color: var(--dim); font-weight: 400; }
+        
+        .tabs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+        .tab-btn { padding: 16px; border: 1px solid var(--line); background: var(--panel2); color: var(--dim); border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; text-align: center; }
+        .tab-btn:hover { border-color: var(--gold); color: var(--ink); }
+        .tab-btn.active { border-color: var(--gold3); background: rgba(212,160,60,.1); color: var(--gold3); }
+        .tab-btn span { display: block; font-size: 24px; margin-bottom: 4px; }
+        
+        .payment-section { display: none; }
+        .payment-section.active { display: block; }
+        
+        /* Send Money */
+        .send-money-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .send-form-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+        .form-title { font-size: 18px; font-weight: 600; color: var(--gold3); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 6px; }
+        .form-input { width: 100%; padding: 12px 16px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); border-radius: 8px; font-size: 14px; transition: all .2s; }
+        .form-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,160,60,.1); }
+        .form-input::placeholder { color: var(--dim); }
+        
+        .input-with-icon { position: relative; }
+        .input-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 20px; }
+        .input-with-icon .form-input { padding-right: 44px; }
+        
+        .coin-selector { display: flex; gap: 8px; margin-bottom: 16px; }
+        .coin-option { padding: 8px 16px; border: 1px solid var(--line); background: var(--panel2); color: var(--dim); border-radius: 20px; font-size: 12px; cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 6px; }
+        .coin-option:hover { border-color: var(--gold); }
+        .coin-option.active { border-color: var(--gold3); background: rgba(212,160,60,.15); color: var(--gold3); }
+        .coin-icon { width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--gold3)); }
+        
+        .send-btn { width: 100%; padding: 16px; border: none; background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #040608; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s; margin-top: 8px; }
+        .send-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(212,160,60,.3); }
+        
+        .recent-contacts { background: var(--panel2); border-radius: 12px; padding: 16px; }
+        .contacts-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 12px; }
+        .contacts-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .contact-item { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 12px; text-align: center; cursor: pointer; transition: all .2s; }
+        .contact-item:hover { border-color: var(--gold); transform: translateY(-2px); }
+        .contact-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--gold3)); margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .contact-name { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+        .contact-handle { font-size: 11px; color: var(--dim); }
+        
+        /* Bills */
+        .bills-header-actions { display: flex; gap: 12px; margin-bottom: 16px; }
+        .action-card { flex: 1; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; cursor: pointer; transition: all .2s; }
+        .action-card:hover { border-color: var(--gold); }
+        .action-card-icon { font-size: 32px; margin-bottom: 8px; }
+        .action-card h3 { font-size: 14px; font-weight: 600; margin: 0; color: var(--ink); }
+        .action-card p { font-size: 12px; color: var(--dim); margin: 4px 0 0; }
+        
+        .bills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 16px; }
+        .bill-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; position: relative; overflow: hidden; }
+        .bill-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .bill-card.urgent::before { background: var(--red); }
+        .bill-card.due-soon::before { background: var(--gold3); }
+        .bill-card.upcoming::before { background: var(--blue); }
+        
+        .bill-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .bill-info h3 { font-size: 16px; font-weight: 600; margin: 0 0 4px; color: var(--ink); }
+        .bill-category { font-size: 12px; color: var(--dim); display: flex; align-items: center; gap: 4px; }
+        .bill-status { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .bill-status.overdue { background: rgba(193,18,31,.2); color: var(--red); }
+        .bill-status.due { background: rgba(212,160,60,.2); color: var(--gold3); }
+        .bill-status.paid { background: rgba(63,185,80,.2); color: var(--green); }
+        
+        .bill-amount { font-size: 28px; font-weight: 700; color: var(--gold3); margin-bottom: 8px; }
+        .bill-due-date { font-size: 13px; color: var(--dim); margin-bottom: 16px; }
+        
+        .bill-actions { display: flex; gap: 8px; }
+        .bill-btn { flex: 1; padding: 10px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; }
+        .bill-btn:hover { border-color: var(--gold); }
+        .bill-btn.primary { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #040608; border-color: var(--gold); }
+        
+        /* Transfers */
+        .transfer-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+        .transfer-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; cursor: pointer; transition: all .2s; text-align: center; }
+        .transfer-card:hover { border-color: var(--gold); }
+        .transfer-card.selected { border-color: var(--gold3); background: rgba(212,160,60,.1); }
+        .transfer-icon { font-size: 36px; margin-bottom: 12px; }
+        .transfer-label { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+        .transfer-desc { font-size: 12px; color: var(--dim); }
+        
+        /* Payment History */
+        .history-filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-btn { padding: 8px 16px; border: 1px solid var(--line); background: var(--panel2); color: var(--dim); border-radius: 20px; font-size: 12px; cursor: pointer; transition: all .2s; }
+        .filter-btn:hover { border-color: var(--gold); }
+        .filter-btn.active { border-color: var(--gold3); background: rgba(212,160,60,.15); color: var(--gold3); }
+        
+        .history-list { display: flex; flex-direction: column; gap: 12px; }
+        .history-item { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px; transition: all .2s; }
+        .history-item:hover { border-color: var(--gold); }
+        
+        .history-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--panel2); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .history-icon.sent { background: rgba(212,160,60,.15); color: var(--gold3); }
+        .history-icon.received { background: rgba(63,185,80,.15); color: var(--green); }
+        .history-icon.bill { background: rgba(88,166,255,.15); color: var(--blue); }
+        
+        .history-details { flex: 1; }
+        .history-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+        .history-subtitle { font-size: 12px; color: var(--dim); }
+        
+        .history-amount { text-align: right; }
+        .history-value { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+        .history-value.plus { color: var(--green); }
+        .history-value.minus { color: var(--ink); }
+        .history-date { font-size: 11px; color: var(--dim); }
+        
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 18px; font-weight: 600; color: var(--gold3); }
+        .modal-close { background: none; border: none; color: var(--dim); font-size: 24px; cursor: pointer; }
+        
+        .confirm-details { background: var(--panel2); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+        .confirm-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+        .confirm-row:last-child { margin-bottom: 0; }
+        .confirm-label { color: var(--dim); }
+        .confirm-value { font-weight: 600; color: var(--ink); text-align: right; }
+        .confirm-value.gold { color: var(--gold3); }
+        
+        .modal-actions { display: flex; gap: 12px; }
+        .modal-btn { flex: 1; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; }
+        .modal-btn.cancel { border: 1px solid var(--line); background: var(--panel2); color: var(--ink); }
+        .modal-btn.confirm { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #040608; border: none; }
+        
+        @media (max-width: 768px) {
+            .send-money-grid { grid-template-columns: 1fr; }
+            .tabs-grid { grid-template-columns: repeat(2, 1fr); }
+            .transfer-options { grid-template-columns: 1fr; }
+            .contacts-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-emoji">🐐</span>
+            <span class="brand-name">GOAT Royalty</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="goat-bank.html" class="nav-link">Bank</a>
+            <a href="goat-crypto-wallet.html" class="nav-link">Wallet</a>
+            <a href="goat-payments.html" class="nav-link active">Payments</a>
+            <a href="settings.html" class="nav-link">Settings</a>
+        </div>
+    </nav>
+
+    <div class="payments-dashboard">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>💳 Payments</h1>
+                <span>Send, receive, and manage your money</span>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 13px; color: var(--dim);">Available Balance</div>
+                <div style="font-size: 24px; font-weight: 700; color: var(--gold3);">$847,392.15</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-grid">
+            <div class="tab-btn active" data-tab="send">
+                <span>💸</span>
+                Send Money
+            </div>
+            <div class="tab-btn" data-tab="bills">
+                <span>📄</span>
+                Pay Bills
+            </div>
+            <div class="tab-btn" data-tab="transfers">
+                <span>🔄</span>
+                Transfers
+            </div>
+            <div class="tab-btn" data-tab="history">
+                <span>📊</span>
+                History
+            </div>
+        </div>
+
+        <!-- Send Money Section -->
+        <div class="payment-section active" id="send-section">
+            <div class="send-money-grid">
+                <!-- Send Form -->
+                <div class="send-form-card">
+                    <div class="form-title">
+                        <span>🚀</span> Send Money
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Recipient</label>
+                        <div class="input-with-icon">
+                            <input type="text" class="form-input" placeholder="Enter wallet address, email, or phone" id="send-recipient">
+                            <span class="input-icon">👤</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Amount</label>
+                        <div class="input-with-icon">
+                            <input type="number" class="form-input" placeholder="0.00" id="send-amount">
+                            <span class="input-icon">💵</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Select Cryptocurrency</label>
+                        <div class="coin-selector" id="coin-selector">
+                            <div class="coin-option active" data-coin="USDC">
+                                <div class="coin-icon"></div>
+                                USDC
+                            </div>
+                            <div class="coin-option" data-coin="USDT">
+                                <div class="coin-icon"></div>
+                                USDT
+                            </div>
+                            <div class="coin-option" data-coin="ETH">
+                                <div class="coin-icon"></div>
+                                ETH
+                            </div>
+                            <div class="coin-option" data-coin="BTC">
+                                <div class="coin-icon"></div>
+                                BTC
+                            </div>
+                            <div class="coin-option" data-coin="SOL">
+                                <div class="coin-icon"></div>
+                                SOL
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Note (optional)</label>
+                        <input type="text" class="form-input" placeholder="Add a message..." id="send-note">
+                    </div>
+
+                    <div class="form-group" style="background: var(--panel2); border-radius: 8px; padding: 12px;">
+                        <div class="confirm-row">
+                            <span class="confirm-label">Network Fee</span>
+                            <span class="confirm-value">$2.50</span>
+                        </div>
+                        <div class="confirm-row">
+                            <span class="confirm-label">Estimated Time</span>
+                            <span class="confirm-value">2-5 minutes</span>
+                        </div>
+                        <div class="confirm-row">
+                            <span class="confirm-label">Total</span>
+                            <span class="confirm-value gold" id="send-total">$0.00</span>
+                        </div>
+                    </div>
+
+                    <button class="send-btn" onclick="openSendModal()">Send Now</button>
+                </div>
+
+                <!-- Recent Contacts -->
+                <div>
+                    <div class="recent-contacts">
+                        <div class="contacts-title">Recent Contacts</div>
+                        <div class="contacts-grid" id="contacts-grid">
+                            <div class="contact-item" onclick="fillContact('waka@crypto.com')">
+                                <div class="contact-avatar">🐐</div>
+                                <div class="contact-name">Waka Flocka</div>
+                                <div class="contact-handle">@waka</div>
+                            </div>
+                            <div class="contact-item" onclick="fillContact('producer@beats.io')">
+                                <div class="contact-avatar">🎵</div>
+                                <div class="contact-name">Metro Boomin</div>
+                                <div class="contact-handle">@metro</div>
+                            </div>
+                            <div class="contact-item" onclick="fillContact('manager@royal.fm')">
+                                <div class="contact-avatar">💼</div>
+                                <div class="contact-name">Manager</div>
+                                <div class="contact-handle">@management</div>
+                            </div>
+                            <div class="contact-item" onclick="fillContact('engineer@studio.co')">
+                                <div class="contact-avatar">🎧</div>
+                                <div class="contact-name">Engineer</div>
+                                <div class="contact-handle">@engineer</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recent-contacts" style="margin-top: 16px;">
+                        <div class="contacts-title">Quick Actions</div>
+                        <div class="contacts-grid" style="grid-template-columns: repeat(2, 1fr);">
+                            <div class="contact-item" onclick="location.href='goat-bank.html'">
+                                <div class="contact-avatar">🏦</div>
+                                <div class="contact-name">Deposits</div>
+                            </div>
+                            <div class="contact-item" onclick="location.href='goat-crypto-wallet.html'">
+                                <div class="contact-avatar">💰</div>
+                                <div class="contact-name">Withdraw</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bills Section -->
+        <div class="payment-section" id="bills-section">
+            <div class="bills-header-actions">
+                <div class="action-card" onclick="openAddBillModal()">
+                    <div class="action-card-icon">➕</div>
+                    <h3>Add New Bill</h3>
+                    <p>Set up recurring payments</p>
+                </div>
+                <div class="action-card" onclick="openAutoPayModal()">
+                    <div class="action-card-icon">🤖</div>
+                    <h3>Auto-Pay</h3>
+                    <p>Enable AI-powered payments</p>
+                </div>
+                <div class="action-card" onclick="location.href='goat-bank.html'">
+                    <div class="action-card-icon">📋</div>
+                    <h3>View All Bills</h3>
+                    <p>See your bank accounts</p>
+                </div>
+            </div>
+
+            <div class="bills-grid" id="bills-grid">
+                <div class="bill-card urgent">
+                    <div class="bill-header">
+                        <div class="bill-info">
+                            <h3>Electric Bill</h3>
+                            <div class="bill-category"><span>⚡</span> Utilities • City Power Co</div>
+                        </div>
+                        <span class="bill-status overdue">OVERDUE</span>
+                    </div>
+                    <div class="bill-amount">$247.50</div>
+                    <div class="bill-due-date">Due: Jan 15, 2024 (3 days overdue)</div>
+                    <div class="bill-actions">
+                        <button class="bill-btn primary" onclick="payBill('electric')">Pay $247.50</button>
+                        <button class="bill-btn" onclick="skipBill('electric')">Skip</button>
+                    </div>
+                </div>
+
+                <div class="bill-card due-soon">
+                    <div class="bill-header">
+                        <div class="bill-info">
+                            <h3>Spotify Publishing</h3>
+                            <div class="bill-category"><span>🎵</span> Entertainment • Spotify</div>
+                        </div>
+                        <span class="bill-status due">DUE SOON</span>
+                    </div>
+                    <div class="bill-amount">$1,250.00</div>
+                    <div class="bill-due-date">Due: Jan 22, 2024 (4 days)</div>
+                    <div class="bill-actions">
+                        <button class="bill-btn primary" onclick="payBill('spotify')">Pay $1,250.00</button>
+                        <button class="bill-btn" onclick="skipBill('spotify')">Schedule</button>
+                    </div>
+                </div>
+
+                <div class="bill-card upcoming">
+                    <div class="bill-header">
+                        <div class="bill-info">
+                            <h3>Studio Rent</h3>
+                            <div class="bill-category"><span>🏠</span> Housing • 1010 ATL Studios</div>
+                        </div>
+                        <span class="bill-status paid">PAID</span>
+                    </div>
+                    <div class="bill-amount">$5,000.00</div>
+                    <div class="bill-due-date">Due: Feb 1, 2024 (14 days)</div>
+                    <div class="bill-actions">
+                        <button class="bill-btn" onclick="viewBillDetails('studio')">View Details</button>
+                    </div>
+                </div>
+
+                <div class="bill-card upcoming">
+                    <div class="bill-header">
+                        <div class="bill-info">
+                            <h3>ASCAP Membership</h3>
+                            <div class="bill-category"><span>📝</span> Education • ASCAP</div>
+                        </div>
+                        <span class="bill-status due">DUE SOON</span>
+                    </div>
+                    <div class="bill-amount">$150.00</div>
+                    <div class="bill-due-date">Due: Jan 25, 2024 (7 days)</div>
+                    <div class="bill-actions">
+                        <button class="bill-btn primary" onclick="payBill('ascap')">Pay $150.00</button>
+                        <button class="bill-btn" onclick="skipBill('ascap')">Auto-Pay</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transfers Section -->
+        <div class="payment-section" id="transfers-section">
+            <div class="transfer-options">
+                <div class="transfer-card selected">
+                    <div class="transfer-icon">🏦</div>
+                    <div class="transfer-label">Bank Transfer</div>
+                    <div class="transfer-desc">ACH/Wire to bank</div>
+                </div>
+                <div class="transfer-card">
+                    <div class="transfer-icon">💳</div>
+                    <div class="transfer-label">Crypto Off-Ramp</div>
+                    <div class="transfer-desc">Sell crypto for USD</div>
+                </div>
+                <div class="transfer-card">
+                    <div class="transfer-icon">🔄</div>
+                    <div class="transfer-label">Internal Transfer</div>
+                    <div class="transfer-desc">Between accounts</div>
+                </div>
+            </div>
+
+            <div class="send-form-card">
+                <div class="form-title">
+                    <span>🏦</span> Bank Transfer (ACH)
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">From Account</label>
+                    <select class="form-input">
+                        <option>Checking •••• 4582 ($847,392.15)</option>
+                        <option>Savings •••• 7891 ($2,500,000.00)</option>
+                        <option>Business •••• 1234 ($5,200,000.00)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">To Bank Account</label>
+                    <div class="input-with-icon">
+                        <input type="text" class="form-input" placeholder="Routing Number" style="margin-bottom: 8px;">
+                        <input type="text" class="form-input" placeholder="Account Number">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <div class="input-with-icon">
+                        <input type="number" class="form-input" placeholder="0.00">
+                        <span class="input-icon">💵</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Transfer Speed</label>
+                    <select class="form-input">
+                        <option>Standard ACH (2-3 business days) - Free</option>
+                        <option>Same Day ACH (1 business day) - $5.00</option>
+                        <option>Wire Transfer (same day) - $25.00</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="background: var(--panel2); border-radius: 8px; padding: 12px;">
+                    <div class="confirm-row">
+                        <span class="confirm-label">Transfer Fee</span>
+                        <span class="confirm-value" id="transfer-fee">$0.00</span>
+                    </div>
+                    <div class="confirm-row">
+                        <span class="confirm-label">Estimated Arrival</span>
+                        <span class="confirm-value" id="transfer-arrival">2-3 business days</span>
+                    </div>
+                </div>
+
+                <button class="send-btn">Initiate Transfer</button>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div class="payment-section" id="history-section">
+            <div class="history-filters">
+                <div class="filter-btn active">All</div>
+                <div class="filter-btn">Sent</div>
+                <div class="filter-btn">Received</div>
+                <div class="filter-btn">Bills</div>
+                <div class="filter-btn">Transfers</div>
+            </div>
+
+            <div class="history-list" id="history-list">
+                <div class="history-item">
+                    <div class="history-icon sent">💸</div>
+                    <div class="history-details">
+                        <div class="history-title">Sent to Waka Flocka</div>
+                        <div class="history-subtitle">USDC • Jan 18, 2024</div>
+                    </div>
+                    <div class="history-amount">
+                        <div class="history-value minus">-$5,000.00</div>
+                        <div class="history-date">2:45 PM</div>
+                    </div>
+                </div>
+
+                <div class="history-item">
+                    <div class="history-icon received">💰</div>
+                    <div class="history-details">
+                        <div class="history-title">Received from Spotify</div>
+                        <div class="history-subtitle">USD • Jan 15, 2024</div>
+                    </div>
+                    <div class="history-amount">
+                        <div class="history-value plus">+$12,450.00</div>
+                        <div class="history-date">9:30 AM</div>
+                    </div>
+                </div>
+
+                <div class="history-item">
+                    <div class="history-icon bill">📄</div>
+                    <div class="history-details">
+                        <div class="history-title">Electric Bill</div>
+                        <div class="history-subtitle">Utilities • Jan 15, 2024</div>
+                    </div>
+                    <div class="history-amount">
+                        <div class="history-value minus">-$247.50</div>
+                        <div class="history-date">8:15 AM</div>
+                    </div>
+                </div>
+
+                <div class="history-item">
+                    <div class="history-icon sent">💸</div>
+                    <div class="history-details">
+                        <div class="history-title">Sent to Metro Boomin</div>
+                        <div class="history-subtitle">USDC • Jan 12, 2024</div>
+                    </div>
+                    <div class="history-amount">
+                        <div class="history-value minus">-$2,500.00</div>
+                        <div class="history-date">4:20 PM</div>
+                    </div>
+                </div>
+
+                <div class="history-item">
+                    <div class="history-icon received">💰</div>
+                    <div class="history-details">
+                        <div class="history-title">Received from Apple Music</div>
+                        <div class="history-subtitle">USD • Jan 10, 2024</div>
+                    </div>
+                    <div class="history-amount">
+                        <div class="history-value plus">+$8,920.00</div>
+                        <div class="history-date">11:00 AM</div>
+                    </div>
+                </div>
+
+                <div class="history-item">
+                    <div class="history-icon bill">📄</div>
+                    <div class="history-details">
+                        <div class="history-title">ASCAP Membership</div>
+                        <div class="history-subtitle">Education • Jan 8, 2024</div>
+                    </div>
+                    <div class="history-amount">
+                        <div class="history-value minus">-$150.00</div>
+                        <div class="history-date">3:00 PM</div>
+                    </div>
+                </div>
+
+                <div class="history-item">
+                    <div class="history-icon sent">💸</div>
+                    <div class="history-details">
+                        <div class="history-title">Bank Transfer</div>
+                        <div class="history-subtitle">ACH • Jan 5, 2024</div>
+                    </div>
+                    <div class="history-amount">
+                        <div class="history-value minus">-$10,000.00</div>
+                        <div class="history-date">1:00 PM</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Confirmation Modal -->
+    <div class="modal-overlay" id="send-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Confirm Payment</div>
+                <button class="modal-close" onclick="closeSendModal()">✕</button>
+            </div>
+            
+            <div class="confirm-details">
+                <div class="confirm-row">
+                    <span class="confirm-label">Recipient</span>
+                    <span class="confirm-value" id="modal-recipient">waka@crypto.com</span>
+                </div>
+                <div class="confirm-row">
+                    <span class="confirm-label">Amount</span>
+                    <span class="confirm-value" id="modal-amount">$5,000.00</span>
+                </div>
+                <div class="confirm-row">
+                    <span class="confirm-label">Cryptocurrency</span>
+                    <span class="confirm-value" id="modal-coin">USDC</span>
+                </div>
+                <div class="confirm-row">
+                    <span class="confirm-label">Network Fee</span>
+                    <span class="confirm-value">$2.50</span>
+                </div>
+                <div class="confirm-row" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line);">
+                    <span class="confirm-label">Total</span>
+                    <span class="confirm-value gold" id="modal-total">$5,002.50</span>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label">Security PIN</label>
+                <input type="password" class="form-input" placeholder="Enter your 6-digit PIN" maxlength="6">
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeSendModal()">Cancel</button>
+                <button class="modal-btn confirm" onclick="confirmSend()">Confirm & Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="lib/payments/bill-payments.js"></script>
+    <script>
+        // Tab navigation
+        const tabs = document.querySelectorAll('.tab-btn');
+        const sections = document.querySelectorAll('.payment-section');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                sections.forEach(s => s.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-section`).classList.add('active');
+            });
+        });
+
+        // Coin selector
+        const coinOptions = document.querySelectorAll('.coin-option');
+        coinOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                coinOptions.forEach(o => o.classList.remove('active'));
+                option.classList.add('active');
+            });
+        });
+
+        // Update send total
+        const sendAmountInput = document.getElementById('send-amount');
+        const sendTotal = document.getElementById('send-total');
+
+        sendAmountInput.addEventListener('input', (e) => {
+            const amount = parseFloat(e.target.value) || 0;
+            const fee = 2.50;
+            sendTotal.textContent = `$${(amount + fee).toFixed(2)}`;
+        });
+
+        // Fill contact
+        function fillContact(contact) {
+            document.getElementById('send-recipient').value = contact;
+        }
+
+        // Modal functions
+        function openSendModal() {
+            const recipient = document.getElementById('send-recipient').value || 'waka@crypto.com';
+            const amount = document.getElementById('send-amount').value || '5000.00';
+            const coin = document.querySelector('.coin-option.active').dataset.coin;
+            
+            document.getElementById('modal-recipient').textContent = recipient;
+            document.getElementById('modal-amount').textContent = `$${parseFloat(amount).toFixed(2)}`;
+            document.getElementById('modal-coin').textContent = coin;
+            document.getElementById('modal-total').textContent = `$${(parseFloat(amount) + 2.50).toFixed(2)}`;
+            
+            document.getElementById('send-modal').classList.add('active');
+        }
+
+        function closeSendModal() {
+            document.getElementById('send-modal').classList.remove('active');
+        }
+
+        function confirmSend() {
+            alert('Payment sent successfully! 🎉');
+            closeSendModal();
+            document.getElementById('send-recipient').value = '';
+            document.getElementById('send-amount').value = '';
+            document.getElementById('send-total').textContent = '$0.00';
+        }
+
+        // Bill functions
+        function payBill(billId) {
+            alert(`Paying bill: ${billId}...`);
+        }
+
+        function skipBill(billId) {
+            alert(`Bill ${billId} scheduled for later.`);
+        }
+
+        function viewBillDetails(billId) {
+            alert(`Viewing details for: ${billId}`);
+        }
+
+        // Transfer card selection
+        const transferCards = document.querySelectorAll('.transfer-card');
+        transferCards.forEach(card => {
+            card.addEventListener('click', () => {
+                transferCards.forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+            });
+        });
+
+        // History filters
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

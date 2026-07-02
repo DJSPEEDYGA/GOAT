@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOAT World Property | Cyber Real Estate Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --goat-gold: #FFD700;
+            --goat-purple: #8B5CF6;
+            --neon-green: #00FF88;
+            --neon-blue: #00BFFF;
+            --neon-pink: #FF00FF;
+            --miami-pink: #FF6B9D;
+            --atlanta-gold: #FFB800;
+            --nyc-blue: #1E90FF;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #0a1a0a 50%, #0a0a1a 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        
+        .glow-gold { text-shadow: 0 0 10px var(--goat-gold), 0 0 20px var(--goat-gold); }
+        .glow-green { text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green); }
+        .glow-pink { text-shadow: 0 0 10px var(--miami-pink), 0 0 20px var(--miami-pink); }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(10, 30, 10, 0.9), rgba(5, 15, 5, 0.95));
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(0, 255, 136, 0.5);
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.1);
+        }
+        
+        .city-card {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .city-card.miami { border-color: rgba(255, 107, 157, 0.3); }
+        .city-card.miami:hover { border-color: var(--miami-pink); box-shadow: 0 0 30px rgba(255, 107, 157, 0.3); }
+        
+        .city-card.atlanta { border-color: rgba(255, 184, 0, 0.3); }
+        .city-card.atlanta:hover { border-color: var(--atlanta-gold); box-shadow: 0 0 30px rgba(255, 184, 0, 0.3); }
+        
+        .city-card.newyork { border-color: rgba(30, 144, 255, 0.3); }
+        .city-card.newyork:hover { border-color: var(--nyc-blue); box-shadow: 0 0 30px rgba(30, 144, 255, 0.3); }
+        
+        .property-card {
+            background: linear-gradient(145deg, rgba(20, 20, 30, 0.9), rgba(10, 10, 20, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .property-image {
+            height: 160px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .property-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-featured { background: linear-gradient(135deg, var(--goat-gold), var(--atlanta-gold)); color: black; }
+        .badge-new { background: linear-gradient(135deg, var(--neon-green), #00cc6a); color: black; }
+        .badge-hot { background: linear-gradient(135deg, var(--miami-pink), var(--neon-pink)); color: white; }
+        
+        .btn-buy {
+            background: linear-gradient(135deg, var(--neon-green), var(--goat-gold));
+            color: black;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        .btn-buy:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(0, 255, 136, 0.4);
+        }
+        
+        .btn-bid {
+            background: linear-gradient(135deg, var(--goat-purple), var(--neon-pink));
+            color: white;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-bid:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(139, 92, 246, 0.4);
+        }
+        
+        .server-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-online { background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+        .status-offline { background: #ff4444; box-shadow: 0 0 10px #ff4444; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .map-preview {
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-city {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .map-city:hover {
+            transform: scale(1.5);
+        }
+        
+        .map-city::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid currentColor;
+            opacity: 0.3;
+            animation: ping 2s infinite;
+        }
+        
+        @keyframes ping {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--neon-green), var(--goat-gold));
+            color: black;
+        }
+        
+        .tab-btn:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab-btn:not(.active):hover {
+            border-color: var(--neon-green);
+        }
+        
+        .owned-property {
+            border: 2px solid var(--neon-green);
+            position: relative;
+        }
+        
+        .owned-badge {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--neon-green);
+            color: black;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .crypto-price {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .eth-icon {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #627eea, #8c9eff);
+            border-radius: 50%;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(145deg, rgba(0, 255, 136, 0.05), rgba(139, 92, 246, 0.05));
+            border: 1px solid rgba(0, 255, 136, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .nft-preview {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+        
+        .nft-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.1) 50%, transparent 60%);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .connect-server {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px dashed var(--neon-green);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .agent-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div class="flex items-center gap-4">
+            <div class="text-4xl">🌍</div>
+            <div>
+                <h1 class="font-orbitron text-2xl md:text-3xl font-bold glow-green">GOAT WORLD RP</h1>
+                <p class="text-gray-400 text-sm">Cyber Real Estate Marketplace</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-6">
+            <div class="server-status">
+                <div class="status-dot status-online"></div>
+                <span class="text-sm">Server Online</span>
+                <span class="text-xs text-gray-400">72.61.193.184:30120</span>
+            </div>
+            <div class="card px-4 py-2">
+                <span class="text-xs text-gray-400">Your Balance</span>
+                <div class="font-orbitron text-lg text-green-400">$12,450.00</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- City Selector -->
+    <section class="mb-8">
+        <h2 class="font-orbitron text-xl mb-4 flex items-center gap-2">
+            <span>🏙️</span> Select Your City
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Miami -->
+            <div class="city-card miami card p-6" onclick="selectCity('miami')">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="text-4xl">🌴</div>
+                    <div>
+                        <h3 class="font-orbitron text-xl font-bold" style="color: var(--miami-pink)">MIAMI</h3>
+                        <p class="text-sm text-gray-400">South Beach • Little Havana • Downtown</p>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-400">24 Properties Available</span>
+                    <span class="text-pink-400">From 0.5 ETH</span>
+                </div>
+                <div class="mt-4 h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-pink-500 to-pink-400" style="width: 75%"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">75% Owned by Players</p>
+            </div>
+            
+            <!-- Atlanta -->
+            <div class="city-card atlanta card p-6" onclick="selectCity('atlanta')">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="text-4xl">🍑</div>
+                    <div>
+                        <h3 class="font-orbitron text-xl font-bold" style="color: var(--atlanta-gold)">ATLANTA</h3>
+                        <p class="text-sm text-gray-400">Buckhead • Trap City • Downtown</p>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-400">18 Properties Available</span>
+                    <span class="text-yellow-400">From 0.3 ETH</span>
+                </div>
+                <div class="mt-4 h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-yellow-500 to-yellow-400" style="width: 45%"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">45% Owned by Players</p>
+            </div>
+            
+            <!-- New York -->
+            <div class="city-card newyork card p-6" onclick="selectCity('newyork')">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="text-4xl">🗽</div>
+                    <div>
+                        <h3 class="font-orbitron text-xl font-bold" style="color: var(--nyc-blue)">NEW YORK</h3>
+                        <p class="text-sm text-gray-400">Harlem • Brooklyn • Times Square</p>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-400">32 Properties Available</span>
+                    <span class="text-blue-400">From 0.8 ETH</span>
+                </div>
+                <div class="mt-4 h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-blue-500 to-blue-400" style="width: 30%"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">30% Owned by Players</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats & Actions -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- World Stats -->
+        <div class="lg:col-span-2 card p-6">
+            <h3 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                <span>📊</span> World Statistics
+            </h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="text-3xl font-orbitron font-bold text-green-400">74</div>
+                    <div class="text-sm text-gray-400">Total Properties</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-3xl font-orbitron font-bold text-yellow-400">42</div>
+                    <div class="text-sm text-gray-400">Properties Owned</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-3xl font-orbitron font-bold text-pink-400">1,247</div>
+                    <div class="text-sm text-gray-400">Active Players</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-3xl font-orbitron font-bold text-purple-400">$2.4M</div>
+                    <div class="text-sm text-gray-400">Total Value</div>
+                </div>
+            </div>
+            
+            <!-- Map Preview -->
+            <div class="map-preview h-48 mt-6 relative">
+                <div class="absolute inset-0 opacity-20" style="background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"grid\" width=\"10\" height=\"10\" patternUnits=\"userSpaceOnUse\"><path d=\"M 10 0 L 0 0 0 10\" fill=\"none\" stroke=\"rgba(0,255,136,0.3)\" stroke-width=\"0.5\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23grid)\"/></svg>')"></div>
+                <p class="absolute top-2 left-2 text-xs text-gray-500">Interactive World Map</p>
+                <!-- City markers -->
+                <div class="map-city" style="top: 70%; left: 20%; background: var(--miami-pink); color: var(--miami-pink);" title="Miami"></div>
+                <div class="map-city" style="top: 45%; left: 35%; background: var(--atlanta-gold); color: var(--atlanta-gold);" title="Atlanta"></div>
+                <div class="map-city" style="top: 30%; left: 80%; background: var(--nyc-blue); color: var(--nyc-blue);" title="New York"></div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card p-6">
+            <h3 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                <span>⚡</span> Quick Actions
+            </h3>
+            <div class="space-y-3">
+                <button class="w-full btn-buy" onclick="connectToServer()">
+                    🎮 Connect to Server
+                </button>
+                <button class="w-full btn-bid" onclick="showMyProperties()">
+                    🏠 My Properties (5)
+                </button>
+                <button class="w-full tab-btn" onclick="showTransactions()">
+                    💳 Transaction History
+                </button>
+                <button class="w-full tab-btn" onclick="showLeaderboard()">
+                    🏆 Top Property Owners
+                </button>
+            </div>
+            
+            <!-- Agent Holdings -->
+            <div class="mt-6 pt-6 border-t border-gray-800">
+                <h4 class="text-sm text-gray-400 mb-3">Agent Property Holdings</h4>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="agent-avatar bg-gradient-to-br from-purple-500 to-pink-600">💜</div>
+                            <span class="text-sm">Nexus</span>
+                        </div>
+                        <span class="text-sm text-green-400">3 Properties</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="agent-avatar bg-gradient-to-br from-blue-500 to-cyan-400">💙</div>
+                            <span class="text-sm">Money Penny</span>
+                        </div>
+                        <span class="text-sm text-green-400">2 Properties</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="agent-avatar bg-gradient-to-br from-green-500 to-emerald-400">💚</div>
+                            <span class="text-sm">Codex</span>
+                        </div>
+                        <span class="text-sm text-green-400">1 Property</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Property Tabs -->
+    <section class="mb-6">
+        <div class="flex flex-wrap gap-2 mb-6">
+            <button class="tab-btn active" onclick="filterProperties('all')">All Properties</button>
+            <button class="tab-btn" onclick="filterProperties('miami')">🌴 Miami</button>
+            <button class="tab-btn" onclick="filterProperties('atlanta')">🍑 Atlanta</button>
+            <button class="tab-btn" onclick="filterProperties('newyork')">🗽 New York</button>
+            <button class="tab-btn" onclick="filterProperties('owned')">✅ My Properties</button>
+            <button class="tab-btn" onclick="filterProperties('auction')">🔥 Auctions</button>
+        </div>
+    </section>
+
+    <!-- Properties Grid -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="propertiesGrid">
+        <!-- Miami - South Beach Mansion -->
+        <div class="property-card" data-city="miami">
+            <div class="property-image" style="background: linear-gradient(135deg, #ff6b9d33, #ff6b9d11), url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400');">
+                <span class="property-badge badge-featured">Featured</span>
+            </div>
+            <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-pink-400 text-xs">🌴 MIAMI</span>
+                    <span class="text-gray-500 text-xs">•</span>
+                    <span class="text-gray-400 text-xs">South Beach</span>
+                </div>
+                <h4 class="font-bold text-lg mb-1">Ocean Drive Mansion</h4>
+                <p class="text-sm text-gray-400 mb-3">Luxury waterfront property with private dock</p>
+                <div class="flex justify-between items-center mb-3 text-xs text-gray-500">
+                    <span>🏠 8 Beds • 12 Baths</span>
+                    <span>📐 12,000 sqft</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="crypto-price">
+                        <div class="eth-icon"></div>
+                        <span class="font-orbitron font-bold text-lg">2.5 ETH</span>
+                    </div>
+                    <button class="btn-buy text-sm" onclick="buyProperty('miami-mansion')">Buy Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Atlanta - Buckhead Estate -->
+        <div class="property-card" data-city="atlanta">
+            <div class="property-image" style="background: linear-gradient(135deg, #ffb80033, #ffb80011), url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400');">
+                <span class="property-badge badge-new">New</span>
+            </div>
+            <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-yellow-400 text-xs">🍑 ATLANTA</span>
+                    <span class="text-gray-500 text-xs">•</span>
+                    <span class="text-gray-400 text-xs">Buckhead</span>
+                </div>
+                <h4 class="font-bold text-lg mb-1">Buckhead Estate</h4>
+                <p class="text-sm text-gray-400 mb-3">Modern smart home with recording studio</p>
+                <div class="flex justify-between items-center mb-3 text-xs text-gray-500">
+                    <span>🏠 6 Beds • 8 Baths</span>
+                    <span>📐 8,500 sqft</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="crypto-price">
+                        <div class="eth-icon"></div>
+                        <span class="font-orbitron font-bold text-lg">1.2 ETH</span>
+                    </div>
+                    <button class="btn-buy text-sm" onclick="buyProperty('atlanta-estate')">Buy Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- New York - Harlem Brownstone -->
+        <div class="property-card owned-property" data-city="newyork">
+            <span class="owned-badge">✅ You Own This</span>
+            <div class="property-image" style="background: linear-gradient(135deg, #1e90ff33, #1e90ff11), url('https://images.unsplash.com/photo-1555424221-250de2a343ad?w=400');">
+            </div>
+            <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-blue-400 text-xs">🗽 NEW YORK</span>
+                    <span class="text-gray-500 text-xs">•</span>
+                    <span class="text-gray-400 text-xs">Harlem</span>
+                </div>
+                <h4 class="font-bold text-lg mb-1">Historic Brownstone</h4>
+                <p class="text-sm text-gray-400 mb-3">Classic NYC brownstone with modern interior</p>
+                <div class="flex justify-between items-center mb-3 text-xs text-gray-500">
+                    <span>🏠 4 Beds • 3 Baths</span>
+                    <span>📐 3,200 sqft</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="crypto-price">
+                        <div class="eth-icon"></div>
+                        <span class="font-orbitron font-bold text-lg">0.8 ETH</span>
+                    </div>
+                    <button class="btn-bid text-sm" onclick="sellProperty('nyc-brownstone')">Sell</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Miami - Little Havana Studio -->
+        <div class="property-card" data-city="miami">
+            <div class="property-image" style="background: linear-gradient(135deg, #ff6b9d33, #ff6b9d11), url('https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400');">
+                <span class="property-badge badge-hot">Hot</span>
+            </div>
+            <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-pink-400 text-xs">🌴 MIAMI</span>
+                    <span class="text-gray-500 text-xs">•</span>
+                    <span class="text-gray-400 text-xs">Little Havana</span>
+                </div>
+                <h4 class="font-bold text-lg mb-1">Calle Ocho Studio</h4>
+                <p class="text-sm text-gray-400 mb-3">Prime commercial space, perfect for business</p>
+                <div class="flex justify-between items-center mb-3 text-xs text-gray-500">
+                    <span>🏪 Commercial</span>
+                    <span>📐 1,800 sqft</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="crypto-price">
+                        <div class="eth-icon"></div>
+                        <span class="font-orbitron font-bold text-lg">0.5 ETH</span>
+                    </div>
+                    <button class="btn-buy text-sm" onclick="buyProperty('miami-studio')">Buy Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Atlanta - Trap City Warehouse -->
+        <div class="property-card" data-city="atlanta">
+            <div class="property-image" style="background: linear-gradient(135deg, #ffb80033, #ffb80011), url('https://images.unsplash.com/photo-1587293852726-70cdb56c2866?w=400');">
+            </div>
+            <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-yellow-400 text-xs">🍑 ATLANTA</span>
+                    <span class="text-gray-500 text-xs">•</span>
+                    <span class="text-gray-400 text-xs">Bankhead</span>
+                </div>
+                <h4 class="font-bold text-lg mb-1">The Warehouse</h4>
+                <p class="text-sm text-gray-400 mb-3">Industrial space, great for events or storage</p>
+                <div class="flex justify-between items-center mb-3 text-xs text-gray-500">
+                    <span>🏭 Industrial</span>
+                    <span>📐 15,000 sqft</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="crypto-price">
+                        <div class="eth-icon"></div>
+                        <span class="font-orbitron font-bold text-lg">0.9 ETH</span>
+                    </div>
+                    <button class="btn-buy text-sm" onclick="buyProperty('atlanta-warehouse')">Buy Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- New York - Times Square Penthouse -->
+        <div class="property-card" data-city="newyork">
+            <div class="property-image" style="background: linear-gradient(135deg, #1e90ff33, #1e90ff11), url('https://images.unsplash.com/photo-1522708323538-dbf0e2b9e597?w=400');">
+                <span class="property-badge badge-featured">Featured</span>
+            </div>
+            <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-blue-400 text-xs">🗽 NEW YORK</span>
+                    <span class="text-gray-500 text-xs">•</span>
+                    <span class="text-gray-400 text-xs">Times Square</span>
+                </div>
+                <h4 class="font-bold text-lg mb-1">Times Square Penthouse</h4>
+                <p class="text-sm text-gray-400 mb-3">Luxury penthouse with NYC skyline views</p>
+                <div class="flex justify-between items-center mb-3 text-xs text-gray-500">
+                    <span>🏠 5 Beds • 6 Baths</span>
+                    <span>📐 6,500 sqft</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="crypto-price">
+                        <div class="eth-icon"></div>
+                        <span class="font-orbitron font-bold text-lg">5.0 ETH</span>
+                    </div>
+                    <button class="btn-buy text-sm" onclick="buyProperty('nyc-penthouse')">Buy Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Miami - Downtown Penthouse -->
+        <div class="property-card" data-city="miami">
+            <div class="property-image" style="background: linear-gradient(135deg, #ff6b9d33, #ff6b9d11), url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400');">
+                <span class="property-badge badge-new">New</span>
+            </div>
+            <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-pink-400 text-xs">🌴 MIAMI</span>
+                    <span class="text-gray-500 text-xs">•</span>
+                    <span class="text-gray-400 text-xs">Downtown</span>
+                </div>
+                <h4 class="font-bold text-lg mb-1">Brickell Heights Penthouse</h4>
+                <p class="text-sm text-gray-400 mb-3">Modern penthouse in Miami's financial district</p>
+                <div class="flex justify-between items-center mb-3 text-xs text-gray-500">
+                    <span>🏠 3 Beds • 4 Baths</span>
+                    <span>📐 4,200 sqft</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="crypto-price">
+                        <div class="eth-icon"></div>
+                        <span class="font-orbitron font-bold text-lg">1.8 ETH</span>
+                    </div>
+                    <button class="btn-buy text-sm" onclick="buyProperty('miami-penthouse')">Buy Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Atlanta - Downtown Studio (Auction) -->
+        <div class="property-card" data-city="atlanta" data-auction="true">
+            <div class="property-image" style="background: linear-gradient(135deg, #ffb80033, #ffb80011), url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400');">
+                <span class="property-badge badge-hot">Auction</span>
+            </div>
+            <div class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-yellow-400 text-xs">🍑 ATLANTA</span>
+                    <span class="text-gray-500 text-xs">•</span>
+                    <span class="text-gray-400 text-xs">Downtown</span>
+                </div>
+                <h4 class="font-bold text-lg mb-1">Music Row Studio</h4>
+                <p class="text-sm text-gray-400 mb-3">Professional recording studio, fully equipped</p>
+                <div class="flex justify-between items-center mb-3 text-xs text-gray-500">
+                    <span>🎵 Studio</span>
+                    <span>📐 2,500 sqft</span>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-2 mb-3">
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-gray-400">Current Bid</span>
+                        <span class="text-yellow-400">Ends in 2h 34m</span>
+                    </div>
+                    <div class="font-orbitron font-bold text-lg">0.75 ETH</div>
+                </div>
+                <button class="w-full btn-bid" onclick="placeBid('atlanta-studio')">Place Bid</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Connect Server Modal -->
+    <div id="connectModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+        <div class="card p-8 max-w-md w-full mx-4">
+            <h3 class="font-orbitron text-xl mb-4 text-center">🎮 Connect to GOAT World RP</h3>
+            <div class="connect-server mb-6">
+                <p class="text-sm text-gray-400 mb-2">FiveM Server Address:</p>
+                <code class="font-orbitron text-lg text-green-400">72.61.193.184:30120</code>
+            </div>
+            <div class="space-y-3 mb-6">
+                <p class="text-sm text-gray-400">To connect:</p>
+                <ol class="text-sm space-y-2 text-gray-300 list-decimal list-inside">
+                    <li>Open FiveM client</li>
+                    <li>Press F8 to open console</li>
+                    <li>Type: <code class="text-green-400">connect 72.61.193.184:30120</code></li>
+                    <li>Press Enter and enjoy!</li>
+                </ol>
+            </div>
+            <button class="w-full btn-primary" onclick="closeModal()">Got It!</button>
+        </div>
+    </div>
+
+    <!-- Buy Property Modal -->
+    <div id="buyModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+        <div class="card p-8 max-w-md w-full mx-4">
+            <h3 class="font-orbitron text-xl mb-4 text-center">🏠 Purchase Property</h3>
+            <div id="buyPropertyDetails" class="mb-6">
+                <!-- Dynamic content -->
+            </div>
+            <div class="bg-gray-800 rounded-lg p-4 mb-6">
+                <div class="flex justify-between mb-2">
+                    <span class="text-gray-400">Property Price</span>
+                    <span id="propertyPrice" class="font-orbitron">0.0 ETH</span>
+                </div>
+                <div class="flex justify-between mb-2">
+                    <span class="text-gray-400">Network Fee</span>
+                    <span class="text-gray-500">~0.001 ETH</span>
+                </div>
+                <div class="border-t border-gray-700 my-2 pt-2">
+                    <div class="flex justify-between">
+                        <span class="font-bold">Total</span>
+                        <span id="totalPrice" class="font-orbitron font-bold text-green-400">0.0 ETH</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button class="flex-1 tab-btn" onclick="closeBuyModal()">Cancel</button>
+                <button class="flex-1 btn-buy" onclick="confirmPurchase()">Confirm Purchase</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // City selection
+        function selectCity(city) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.city-card').style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                event.target.closest('.city-card').style.transform = '';
+            }, 150);
+            filterProperties(city);
+        }
+        
+        // Filter properties
+        function filterProperties(filter) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event?.target?.classList.add('active');
+            
+            const cards = document.querySelectorAll('.property-card');
+            cards.forEach(card => {
+                if (filter === 'all') {
+                    card.style.display = 'block';
+                } else if (filter === 'owned') {
+                    card.style.display = card.classList.contains('owned-property') ? 'block' : 'none';
+                } else if (filter === 'auction') {
+                    card.style.display = card.dataset.auction === 'true' ? 'block' : 'none';
+                } else {
+                    card.style.display = card.dataset.city === filter ? 'block' : 'none';
+                }
+            });
+        }
+        
+        // Connect to server
+        function connectToServer() {
+            document.getElementById('connectModal').classList.remove('hidden');
+        }
+        
+        function closeModal() {
+            document.getElementById('connectModal').classList.add('hidden');
+        }
+        
+        // Buy property
+        function buyProperty(propertyId) {
+            document.getElementById('buyModal').classList.remove('hidden');
+            document.getElementById('buyPropertyDetails').innerHTML = `
+                <div class="text-center">
+                    <div class="text-4xl mb-2">🏠</div>
+                    <p class="text-gray-300">You are about to purchase this property</p>
+                    <p class="font-bold mt-2">Property ID: ${propertyId}</p>
+                </div>
+            `;
+        }
+        
+        function closeBuyModal() {
+            document.getElementById('buyModal').classList.add('hidden');
+        }
+        
+        function confirmPurchase() {
+            alert('🎉 Property purchased successfully! Check your inventory.');
+            closeBuyModal();
+        }
+        
+        // Place bid
+        function placeBid(propertyId) {
+            const bid = prompt('Enter your bid amount (ETH):');
+            if (bid) {
+                alert(` Bid of ${bid} ETH placed successfully!`);
+            }
+        }
+        
+        // Show my properties
+        function showMyProperties() {
+            filterProperties('owned');
+        }
+        
+        // Show transactions
+        function showTransactions() {
+            alert('Transaction History:\n\n✅ Harlem Brownstone - 0.8 ETH\n✅ Miami Condo - 0.5 ETH\n✅ Atlanta Studio - 0.3 ETH');
+        }
+        
+        // Show leaderboard
+        function showLeaderboard() {
+            alert('🏆 Top Property Owners:\n\n1. DJSpeedyGA - 12 properties\n2. WakaFlocka - 8 properties\n3. Nexus (AI) - 3 properties\n4. MoneyPenny (AI) - 2 properties\n5. Codex (AI) - 1 property');
+        }
+        
+        // Sell property
+        function sellProperty(propertyId) {
+            if (confirm('Are you sure you want to list this property for sale?')) {
+                alert(' Property listed for sale!');
+            }
+        }
+        
+        // Close modals on outside click
+        document.querySelectorAll('.fixed').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

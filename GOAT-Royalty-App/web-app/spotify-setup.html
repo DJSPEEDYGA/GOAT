@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spotify Developer Setup | GOAT Royalty App</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<style>
+  :root { --gold:#FFD700; --red:#CC0000; --cream:#FFF8DC; --spotify:#1DB954; --dark:#0a0a0a; --card:#111; --border:#2a2a2a; --green:#00FF88; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--dark); color: var(--cream); font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+  .hero { background: linear-gradient(135deg, #0a1a0a, #0a0a0a 60%); padding: 40px 20px; text-align: center; border-bottom: 2px solid var(--spotify); }
+  .hero h1 { font-size: 2.2rem; color: var(--spotify); font-weight: 900; }
+  .hero h1 span { color: var(--gold); }
+  .hero p { color: #aaa; margin-top: 8px; }
+  nav { background: #111; border-bottom: 1px solid var(--border); padding: 0 20px; display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; }
+  nav a { color: #888; text-decoration: none; font-size: 13px; padding: 14px 12px; border-bottom: 2px solid transparent; }
+  nav a:hover, nav a.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .container { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
+  .step { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin-bottom: 20px; position: relative; }
+  .step-num { position: absolute; top: -15px; left: 20px; width: 40px; height: 40px; background: var(--spotify); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; }
+  .step h2 { color: var(--spotify); margin-top: 8px; font-size: 1.3rem; }
+  .step p, .step li { color: #ccc; line-height: 1.8; font-size: 14px; }
+  .step ol, .step ul { margin: 12px 0 12px 24px; }
+  .step a { color: var(--gold); }
+  .step-btn { display: inline-block; background: var(--spotify); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; margin-top: 14px; transition: transform 0.2s; }
+  .step-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  @media(max-width:600px){ .form-row{grid-template-columns:1fr;} }
+  input[type=text], input[type=password] { width: 100%; padding: 12px; background: #0d0d0d; border: 1px solid var(--border); color: var(--cream); border-radius: 8px; font-size: 13px; font-family: monospace; }
+  input:focus { outline: none; border-color: var(--spotify); }
+  label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px; }
+  .save-btn { background: var(--spotify); color: white; border: none; padding: 14px 32px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+  .save-btn:hover { filter: brightness(1.1); }
+  .save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .status { margin-top: 14px; padding: 12px 16px; border-radius: 8px; font-size: 13px; display: none; }
+  .status.ok { background: rgba(29,185,84,0.15); border: 1px solid var(--spotify); color: #7FE99E; display:block; }
+  .status.err { background: rgba(255,80,80,0.1); border: 1px solid #FF6666; color: #FF9999; display:block; }
+  .warning { background: rgba(255,215,0,0.05); border: 1px solid rgba(255,215,0,0.3); padding: 14px; border-radius: 8px; color: #FFD700; font-size: 13px; margin-top: 12px; }
+  code { background: #222; color: var(--gold); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  .screenshot { border: 2px solid var(--border); border-radius: 8px; margin: 12px 0; max-width: 100%; }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<div class="hero">
+  <h1><span>🎵</span> Spotify Developer Setup</h1>
+  <p>Get your free API credentials in 5 minutes — no credit card required</p>
+</div>
+
+<nav>
+  <a href="powerhouse.html">🏠 Powerhouse</a>
+  <a href="network.html">🔗 Network</a>
+  <a href="spotify-dashboard.html">📊 Spotify Dashboard</a>
+  <a href="fan-db.html">👥 Fan DB</a>
+  <a href="smart-links.html">🔗 Smart Links</a>
+  <a href="campaigns.html">📣 Campaigns</a>
+  <a href="spotify-setup.html" class="active">🎵 Spotify Setup</a>
+</nav>
+
+<div class="container">
+
+  <div class="warning">
+    ⚠️ <strong>IMPORTANT:</strong> Your keys are stored ONLY on your local machine in <code>goat-intel-server/local_keys.json</code>.
+    They are <strong>NEVER</strong> transmitted to any 3rd party. <code>.gitignore</code> excludes them from version control.
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <h2>Go to Spotify Developer Dashboard</h2>
+    <p>Log in with your personal Spotify account (the one you already have) — no separate developer account needed.</p>
+    <a href="https://developer.spotify.com/dashboard" target="_blank" class="step-btn">
+      Open Spotify Dashboard →
+    </a>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <h2>Accept the Terms (one-time)</h2>
+    <p>If it's your first time, Spotify shows a "Developer Terms" popup. Check the boxes and continue. This is free — no paid tier, no credit card.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <h2>Create an App</h2>
+    <ol>
+      <li>Click <strong style="color:var(--spotify)">"Create app"</strong> button</li>
+      <li><strong>App name:</strong> <code>GOAT Royalty App</code></li>
+      <li><strong>App description:</strong> <code>Personal artist analytics & royalty tracking</code></li>
+      <li><strong>Website:</strong> <code>https://github.com/DJSPEEDYGA/GOAT-Royalty-App</code></li>
+      <li><strong>Redirect URI:</strong> <code>http://localhost:5500/spotify/callback</code>  (important!)</li>
+      <li><strong>APIs used:</strong> Check <em>Web API</em></li>
+      <li>Accept terms → Save</li>
+    </ol>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <h2>Get Your Credentials</h2>
+    <p>On your new app page, click <strong style="color:var(--spotify)">"Settings"</strong> (top right).</p>
+    <p>You'll see:</p>
+    <ul>
+      <li><strong>Client ID</strong> — copy it (safe to share, ~32 chars)</li>
+      <li><strong>Client secret</strong> — click "View client secret" and copy it (KEEP SECRET)</li>
+    </ul>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <h2>Paste Your Keys Here</h2>
+    <p>Both fields below save directly to your local machine. Nothing leaves your workstation.</p>
+    <div class="form-row">
+      <div>
+        <label>Spotify Client ID</label>
+        <input id="client_id" type="text" placeholder="e.g. 1a2b3c4d5e6f7g8h..." autocomplete="off" />
+      </div>
+      <div>
+        <label>Spotify Client Secret</label>
+        <input id="client_secret" type="password" placeholder="keep secret" autocomplete="off" />
+      </div>
+    </div>
+    <button class="save-btn" onclick="saveKeys()" id="save-btn">💾 Save Keys Locally</button>
+    <button class="save-btn" onclick="testConnection()" style="background:#444;margin-left:10px;">🧪 Test Connection</button>
+    <div id="status" class="status"></div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <h2>You're Live! Here's What Unlocks</h2>
+    <ul>
+      <li>✅ Real follower counts for DJ Speedy + Waka Flocka</li>
+      <li>✅ Top 10 tracks per market (US, UK, EU, etc.)</li>
+      <li>✅ Complete catalog with audio features (tempo, energy, danceability)</li>
+      <li>✅ Related artists (expand your audience)</li>
+      <li>✅ Playlist data (see who's featuring your music)</li>
+      <li>✅ Opens up the Spotify Dashboard, Smart Links, and Pre-Save features</li>
+    </ul>
+    <a href="spotify-dashboard.html" class="step-btn" style="margin-top:20px;">Go to Spotify Dashboard →</a>
+  </div>
+
+  <div class="step">
+    <div class="step-num">💡</div>
+    <h2>What You'll NOT Get (and Why)</h2>
+    <p>The Spotify API <strong style="color:#FF6666">does not expose</strong>:</p>
+    <ul>
+      <li>❌ Individual listener names / emails / phones</li>
+      <li>❌ Who streamed your song (no listener list)</li>
+      <li>❌ Listener IP addresses or devices</li>
+    </ul>
+    <p>This is federal privacy law (GDPR, CCPA) — <strong style="color:var(--gold)">no platform can give this</strong>. The legal way to build your fan list is via <a href="smart-links.html">Smart Links + opt-in capture</a> — which is what we've built into the GOAT App.</p>
+  </div>
+
+</div>
+
+<script>
+  const INTEL = 'http://localhost:5500';
+
+  async function saveKeys() {
+    const cid = document.getElementById('client_id').value.trim();
+    const csec = document.getElementById('client_secret').value.trim();
+    const status = document.getElementById('status');
+    if (!cid || !csec) {
+      status.className = 'status err';
+      status.textContent = '❌ Please paste both Client ID and Client Secret';
+      return;
+    }
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    try {
+      const res = await fetch(INTEL + '/keys/save', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({spotify_client_id: cid, spotify_client_secret: csec})
+      });
+      const d = await res.json();
+      if (d.ok) {
+        status.className = 'status ok';
+        status.textContent = '✅ Saved! Now test the connection below, then head to the Spotify Dashboard.';
+      } else {
+        status.className = 'status err';
+        status.textContent = '❌ ' + (d.error || 'Save failed');
+      }
+    } catch (e) {
+      status.className = 'status err';
+      status.textContent = '❌ ' + e.message + ' — is the Intel server running? (port 5500)';
+    }
+    btn.disabled = false; btn.textContent = '💾 Save Keys Locally';
+  }
+
+  async function testConnection() {
+    const status = document.getElementById('status');
+    status.className = 'status';
+    status.style.display = 'block';
+    status.textContent = '🧪 Testing Spotify auth...';
+    try {
+      const res = await fetch(INTEL + '/spotify/artist-real?id=6f4XkbvYlXMH0QgVRzW0sM', {signal: AbortSignal.timeout(10000)});
+      const d = await res.json();
+      if (d.ok && d.artist) {
+        status.className = 'status ok';
+        status.innerHTML = `✅ <strong>SUCCESS!</strong> Waka Flocka has <strong>${(d.artist.followers?.total || 0).toLocaleString()}</strong> Spotify followers. Popularity: ${d.artist.popularity}/100. Genres: ${(d.artist.genres || []).join(', ')}.`;
+      } else {
+        status.className = 'status err';
+        status.textContent = '❌ ' + (d.error || 'Connection failed — check your keys');
+      }
+    } catch (e) {
+      status.className = 'status err';
+      status.textContent = '❌ ' + e.message;
+    }
+  }
+</script>
+
+</body>
+</html>

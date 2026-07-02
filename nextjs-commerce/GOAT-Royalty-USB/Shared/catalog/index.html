@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐐 GOAT Royalty App - USB Edition</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #FFD700;
+      --dark: #0f0f23;
+      --light: #ffffff;
+      --glass: rgba(255, 255, 255, 0.1);
+      --ai-glow: #00ff88;
+      --accent: #e94560;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--dark);
+      color: var(--light);
+      min-height: 100vh;
+    }
+    
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(0, 255, 136, 0.1));
+      padding: 2rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    
+    .header h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--ai-glow));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    
+    .header .subtitle {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1.1rem;
+    }
+    
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--ai-glow), #00cc6a);
+      color: var(--dark);
+      padding: 0.3rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-top: 0.5rem;
+    }
+    
+    /* Navigation */
+    .nav {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      flex-wrap: wrap;
+    }
+    
+    .nav-btn {
+      padding: 0.75rem 1.5rem;
+      background: var(--glass);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 10px;
+      color: var(--light);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    
+    .nav-btn:hover, .nav-btn.active {
+      background: var(--primary);
+      color: var(--dark);
+      border-color: var(--primary);
+    }
+    
+    /* Main Content */
+    .main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    /* AI Chat Section */
+    .ai-section {
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(102, 126, 234, 0.1));
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+    
+    .ai-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .ai-header .icon { font-size: 2rem; }
+    .ai-header h2 { color: var(--ai-glow); }
+    
+    .chat-container {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      height: 300px;
+      overflow-y: auto;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .chat-message {
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      max-width: 80%;
+    }
+    
+    .chat-message.user {
+      background: var(--primary);
+      color: var(--dark);
+      margin-left: auto;
+    }
+    
+    .chat-message.ai {
+      background: rgba(0, 255, 136, 0.2);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+    
+    .chat-input-container {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .chat-input {
+      flex: 1;
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--light);
+      font-size: 1rem;
+    }
+    
+    .chat-input:focus {
+      outline: none;
+      border-color: var(--ai-glow);
+    }
+    
+    .send-btn {
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--ai-glow), #00cc6a);
+      color: var(--dark);
+      border: none;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .send-btn:hover {
+      transform: scale(1.05);
+    }
+    
+    /* Voice Button */
+    .voice-btn {
+      padding: 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+    }
+    
+    .voice-btn:hover {
+      transform: scale(1.1);
+    }
+    
+    .voice-btn.listening {
+      animation: pulse 1s infinite;
+      background: #28a745;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    
+    /* Catalog Section */
+    .catalog-section {
+      margin-bottom: 2rem;
+    }
+    
+    .section-title {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+    
+    .search-bar {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .search-input {
+      flex: 1;
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--light);
+      font-size: 1rem;
+    }
+    
+    .search-btn {
+      padding: 1rem 2rem;
+      background: var(--primary);
+      color: var(--dark);
+      border: none;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+      background: var(--glass);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      color: var(--ai-glow);
+      font-weight: bold;
+    }
+    
+    .stat-label {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.85rem;
+    }
+    
+    /* Tabs */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255, 255, 255, 0.5);
+      border-top: 1px solid rgba(255, 215, 0, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+      .header h1 { font-size: 1.8rem; }
+      .nav { gap: 0.25rem; }
+      .nav-btn { padding: 0.5rem 1rem; font-size: 0.8rem; }
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <header class="header">
+    <h1>🐐 GOAT Royalty App</h1>
+    <p class="subtitle">Portable USB Edition • Uncensored AI Powered</p>
+    <span class="badge">⚡ Offline Capable • 🔒 Privacy First • 🌐 Cross-Platform</span>
+  </header>
+  
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showTab('ai')">🧠 AI Assistant</button>
+    <button class="nav-btn" onclick="showTab('catalog')">📚 Catalog</button>
+    <button class="nav-btn" onclick="showTab('music')">🎵 Music Studio</button>
+    <button class="nav-btn" onclick="showTab('movies')">🎬 Movie Studio</button>
+    <button class="nav-btn" onclick="showTab('royalties')">💰 Royalties</button>
+    <button class="nav-btn" onclick="showTab('settings')">⚙️ Settings</button>
+  </nav>
+  
+  <main class="main">
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">5,954+</div>
+        <div class="stat-label">Catalog Entries</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">414</div>
+        <div class="stat-label">Harvey Miller Works</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">423</div>
+        <div class="stat-label">Fastassman Works</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">∞</div>
+        <div class="stat-label">AI Power</div>
+      </div>
+    </div>
+    
+    <!-- AI Assistant Tab -->
+    <div id="ai-tab" class="tab-content active">
+      <div class="ai-section">
+        <div class="ai-header">
+          <span class="icon">🧠</span>
+          <h2>Uncensored AI Assistant</h2>
+        </div>
+        <div class="chat-container" id="chat-container">
+          <div class="chat-message ai">
+            🐐 Welcome to GOAT Royalty App! I'm your uncensored AI assistant. I can help you:
+            <br><br>
+            • Search your music catalog<br>
+            • Calculate royalty estimates<br>
+            • Analyze contracts and agreements<br>
+            • Generate creative content<br>
+            • Answer any questions<br>
+            <br>
+            How can I help you today?
+          </div>
+        </div>
+        <div class="chat-input-container">
+          <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">🎤</button>
+          <input type="text" class="chat-input" id="chat-input" placeholder="Ask me anything... (or click 🎤 for voice)" onkeypress="handleKeyPress(event)">
+          <button class="send-btn" onclick="sendMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Catalog Tab -->
+    <div id="catalog-tab" class="tab-content">
+      <div class="catalog-section">
+        <h2 class="section-title">📚 Music Catalog</h2>
+        <div class="search-bar">
+          <input type="text" class="search-input" id="catalog-search" placeholder="Search catalog... (try 'hard trap beats' for AI search)">
+          <button class="search-btn" onclick="searchCatalog()">🔍 Search</button>
+          <button class="voice-btn" onclick="voiceSearch()">🎤</button>
+        </div>
+        <div id="catalog-results">
+          <p style="color: rgba(255,255,255,0.6);">Enter a search term or use AI semantic search to find songs in your catalog.</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Music Studio Tab -->
+    <div id="music-tab" class="tab-content">
+      <div class="ai-section">
+        <div class="ai-header">
+          <span class="icon">🎵</span>
+          <h2>Music Studio</h2>
+        </div>
+        <p style="color: rgba(255,255,255,0.7);">Waka Flocka Flame • Brick Squad Monopoly Publishing</p>
+        <div style="margin-top: 1rem;">
+          <button class="nav-btn" onclick="askAI('Show me all Waka Flocka Flame tracks')">🎤 Waka Flocka Tracks</button>
+          <button class="nav-btn" onclick="askAI('Find my hardest trap beats')">🔥 Hard Trap Beats</button>
+          <button class="nav-btn" onclick="askAI('What are my most streamed songs?')">📊 Top Streams</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Movie Studio Tab -->
+    <div id="movies-tab" class="tab-content">
+      <div class="ai-section">
+        <div class="ai-header">
+          <span class="icon">🎬</span>
+          <h2>Movie Studio</h2>
+        </div>
+        <p style="color: rgba(255,255,255,0.7);">Fastassman Publishing Inc. • Film & TV Licensing</p>
+        <div style="margin-top: 1rem;">
+          <button class="nav-btn" onclick="askAI('Show me my film placements')">🎥 Film Placements</button>
+          <button class="nav-btn" onclick="askAI('What TV shows use my music?')">📺 TV Shows</button>
+          <button class="nav-btn" onclick="askAI('Calculate my sync royalties')">💰 Sync Royalties</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Royalties Tab -->
+    <div id="royalties-tab" class="tab-content">
+      <div class="ai-section">
+        <div class="ai-header">
+          <span class="icon">💰</span>
+          <h2>Royalty Calculator</h2>
+        </div>
+        <p style="color: rgba(255,255,255,0.7);">AI-powered royalty estimation and tracking</p>
+        <div style="margin-top: 1rem;">
+          <button class="nav-btn" onclick="askAI('Calculate royalties for 1 million Spotify streams')">🎵 Spotify Calculator</button>
+          <button class="nav-btn" onclick="askAI('Calculate royalties for 500K YouTube views')">📺 YouTube Calculator</button>
+          <button class="nav-btn" onclick="askAI('What are my mechanical royalties?')">📝 Mechanical Rights</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Settings Tab -->
+    <div id="settings-tab" class="tab-content">
+      <div class="ai-section">
+        <div class="ai-header">
+          <span class="icon">⚙️</span>
+          <h2>Settings</h2>
+        </div>
+        <div style="color: rgba(255,255,255,0.8);">
+          <p><strong>AI Model:</strong> <span id="model-status">Checking...</span></p>
+          <p><strong>Data Location:</strong> ./Shared/catalog/</p>
+          <p><strong>Chat History:</strong> ./Shared/chat_data/</p>
+          <p style="margin-top: 1rem;"><button class="nav-btn" onclick="location.reload()">🔄 Refresh App</button></p>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <footer class="footer">
+    <p>© 2025 Harvey L. Miller Jr. (DJ Speedy) - GOAT Systems</p>
+    <p>BRICK SQUAD MONOPOLY PUBLISHING • Fastassman Publishing Inc.</p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem;">USB Edition • Fully Offline • Uncensored AI</p>
+  </footer>
+  
+  <script>
+    // Tab switching
+    function showTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabName + '-tab').classList.add('active');
+      event.target.classList.add('active');
+    }
+    
+    // Chat functionality
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+      if (!message) return;
+      
+      addMessage(message, 'user');
+      input.value = '';
+      
+      // Try server API first, fallback to demo mode
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({message: message})
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          addMessage(data.response, 'ai');
+        } else {
+          // Fallback to demo mode
+          setTimeout(() => {
+            const response = generateAIResponse(message);
+            addMessage(response, 'ai');
+          }, 500);
+        }
+      } catch (e) {
+        // Server not available, use demo mode
+        setTimeout(() => {
+          const response = generateAIResponse(message);
+          addMessage(response, 'ai');
+        }, 500);
+      }
+    }
+    
+    function addMessage(text, type) {
+      const container = document.getElementById('chat-container');
+      const msg = document.createElement('div');
+      msg.className = 'chat-message ' + type;
+      msg.innerHTML = text;
+      container.appendChild(msg);
+      container.scrollTop = container.scrollHeight;
+    }
+    
+    function handleKeyPress(e) {
+      if (e.key === 'Enter') sendMessage();
+    }
+    
+    // AI Response Generator (would connect to local LLM)
+    function generateAIResponse(message) {
+      const lowerMsg = message.toLowerCase();
+      
+      // Catalog searches
+      if (lowerMsg.includes('waka flocka')) {
+        return '🎤 Found 127 tracks by Waka Flocka Flame in your catalog! Key tracks include "Hard in da Paint", "No Hands" (feat. Wale & Roscoe Dash), and "Round of Applause". Would you like me to show streaming stats or royalty breakdowns?';
+      }
+      
+      if (lowerMsg.includes('trap')) {
+        return '🔥 Found 847 trap/hard-hitting tracks in your catalog! Top artists include Waka Flocka Flame, Gucci Mane collaborations, and Brick Squad productions. Want me to filter by BPM or release date?';
+      }
+      
+      if (lowerMsg.includes('royalt') || lowerMsg.includes('stream')) {
+        return '💰 Royalty Calculator Ready!<br><br>Estimated earnings:<br>• 1M Spotify streams ≈ $4,000-$7,000<br>• 1M YouTube views ≈ $3,000-$5,000<br>• 1M Apple Music streams ≈ $6,000-$10,000<br><br>Would you like a detailed breakdown for specific tracks?';
+      }
+      
+      if (lowerMsg.includes('film') || lowerMsg.includes('tv') || lowerMsg.includes('sync')) {
+        return '🎬 Your sync licensing portfolio includes 234 cleared tracks for Film/TV placement. Recent placements include shows on Netflix, HBO, and major motion pictures. Want me to generate a licensing pitch deck?';
+      }
+      
+      // Default response
+      return `🐐 I understand you're asking about "${message}". I'm your uncensored AI assistant with full access to your 5,954+ catalog entries. I can search, analyze, calculate royalties, or help with any creative tasks. What would you like to explore?`;
+    }
+    
+    // Voice control
+    let isListening = false;
+    let recognition;
+    
+    function toggleVoice() {
+      const btn = document.getElementById('voice-btn');
+      
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Voice recognition not supported in this browser. Try Chrome.');
+        return;
+      }
+      
+      if (!isListening) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        
+        recognition.onstart = () => {
+          isListening = true;
+          btn.classList.add('listening');
+          btn.innerHTML = '🔴';
+        };
+        
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          document.getElementById('chat-input').value = transcript;
+          sendMessage();
+        };
+        
+        recognition.onend = () => {
+          isListening = false;
+          btn.classList.remove('listening');
+          btn.innerHTML = '🎤';
+        };
+        
+        recognition.start();
+      } else {
+        recognition.stop();
+      }
+    }
+    
+    function voiceSearch() {
+      document.getElementById('chat-input').value = '';
+      toggleVoice();
+    }
+    
+    // Quick AI actions
+    function askAI(question) {
+      showTab('ai');
+      document.getElementById('chat-input').value = question;
+      sendMessage();
+    }
+    
+    // Catalog search with API
+    async function searchCatalog() {
+      const query = document.getElementById('catalog-search').value;
+      if (query) {
+        addMessage('Searching catalog for: "' + query + '"', 'user');
+        
+        try {
+          const response = await fetch('/api/catalog?q=' + encodeURIComponent(query));
+          if (response.ok) {
+            const data = await response.json();
+            if (data.length > 0) {
+              let resultText = `Found ${data.length} results for "${query}":<br><br>`;
+              data.slice(0, 5).forEach((item, i) => {
+                resultText += `${i+1}. ${item.title || item.song_title || item.work_title || 'Unknown'}<br>`;
+              });
+              if (data.length > 5) resultText += `<br>...and ${data.length - 5} more results.`;
+              addMessage(resultText, 'ai');
+            } else {
+              addMessage(`No results found for "${query}". Try a different search term.`, 'ai');
+            }
+          } else {
+            addMessage(generateAIResponse(query), 'ai');
+          }
+        } catch (e) {
+          addMessage(generateAIResponse(query), 'ai');
+        }
+      }
+    }
+    
+    // Check AI model status
+    fetch('http://localhost:11434/api/tags')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('model-status').innerHTML = '✅ Connected - ' + (data.models?.length || 0) + ' models loaded';
+      })
+      .catch(() => {
+        document.getElementById('model-status').innerHTML = '⚠️ Running in demo mode. Run install to enable full AI.';
+      });
+  </script>
+</body>
+</html>

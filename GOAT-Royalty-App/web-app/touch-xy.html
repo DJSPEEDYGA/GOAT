@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0a">
+<title>🎯 GOAT XY Pads</title>
+<link rel="stylesheet" href="css/goat-touch.css">
+<script src="js/goat-touch.js" defer></script>
+<style>
+  .xy-page {
+    padding: calc(64px + env(safe-area-inset-top) + 10px) 10px calc(84px + env(safe-area-inset-bottom)) 10px;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 600px) { .xy-page { grid-template-columns: 1fr; } }
+  .xy-card {
+    background: var(--goat-charcoal);
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    border: 1px solid rgba(255,215,0,0.2);
+  }
+  .xy-card h3 {
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--goat-gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .xy-card .axes {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--goat-silver);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+  .xy-readout {
+    font-size: 12px;
+    color: var(--goat-cream);
+    font-variant-numeric: tabular-nums;
+    margin-top: 6px;
+    text-align: center;
+    font-weight: 700;
+  }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="touch-mode">
+
+<header class="t-topbar">
+  <button class="t-btn" onclick="history.back()" style="min-width:auto;min-height:44px;padding:8px 12px;">←</button>
+  <div class="brand"><span class="emoji">🎯</span><span>XY PADS</span></div>
+  <span class="spacer"></span>
+  <button class="t-btn" onclick="stopAll()" style="min-width:auto;min-height:44px;padding:8px 12px;">⏹</button>
+</header>
+
+<main class="xy-page">
+
+  <div class="xy-card">
+    <h3>🎛️ FILTER + REVERB</h3>
+    <div class="axes"><span>← CUTOFF →</span><span>↑ REVERB ↑</span></div>
+    <div class="xy-pad" id="pad1"><div class="xy-dot"></div></div>
+    <div class="xy-readout" id="read1">Cutoff: 50% · Reverb: 50%</div>
+  </div>
+
+  <div class="xy-card">
+    <h3>🎹 PITCH + VIBRATO</h3>
+    <div class="axes"><span>← PITCH →</span><span>↑ VIBRATO ↑</span></div>
+    <div class="xy-pad" id="pad2"><div class="xy-dot"></div></div>
+    <div class="xy-readout" id="read2">Pitch: 0 · Vibrato: 0</div>
+  </div>
+
+  <div class="xy-card">
+    <h3>🔊 VOLUME + PAN</h3>
+    <div class="axes"><span>← PAN →</span><span>↑ VOLUME ↑</span></div>
+    <div class="xy-pad" id="pad3"><div class="xy-dot"></div></div>
+    <div class="xy-readout" id="read3">Pan: C · Vol: 50%</div>
+  </div>
+
+  <div class="xy-card">
+    <h3>💥 DRIVE + DELAY</h3>
+    <div class="axes"><span>← DRIVE →</span><span>↑ DELAY ↑</span></div>
+    <div class="xy-pad" id="pad4"><div class="xy-dot"></div></div>
+    <div class="xy-readout" id="read4">Drive: 0% · Delay: 0%</div>
+  </div>
+
+</main>
+
+<nav class="t-tabbar">
+  <a class="t-tab" href="touch-hub.html"><span class="ic">🏠</span><span class="lb">Hub</span></a>
+  <a class="t-tab" href="touch-brain.html"><span class="ic">🧠</span><span class="lb">AI</span></a>
+  <a class="t-tab" href="touch-pads.html"><span class="ic">🎹</span><span class="lb">Pads</span></a>
+  <a class="t-tab" href="touch-mixer.html"><span class="ic">🎚️</span><span class="lb">Mix</span></a>
+  <a class="t-tab" href="touch-keys.html"><span class="ic">🎼</span><span class="lb">Keys</span></a>
+  <a class="t-tab active" href="touch-xy.html"><span class="ic">🎯</span><span class="lb">XY</span></a>
+</nav>
+
+<script>
+// ============== WIRE UP AUDIO ==============
+const ac = GoatTouch.getAudio();
+let currentOsc = null;
+let filter = null;
+let wet = null;
+
+function startOsc() {
+  if (!ac) return;
+  if (currentOsc) return;
+  currentOsc = ac.createOscillator();
+  currentOsc.type = 'sawtooth';
+  currentOsc.frequency.value = 220;
+  filter = ac.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 800;
+  wet = ac.createGain();
+  wet.gain.value = 0.1;
+  const dry = ac.createGain();
+  dry.gain.value = 0.15;
+  currentOsc.connect(filter);
+  filter.connect(dry);
+  dry.connect(ac.destination);
+  currentOsc.start();
+}
+function stopOsc() {
+  if (currentOsc) { try { currentOsc.stop(); } catch(e){} currentOsc = null; }
+}
+function stopAll() {
+  stopOsc();
+  document.querySelectorAll('.xy-dot').forEach(d => { d.style.left = '50%'; d.style.top = '50%'; });
+  GoatTouch.haptic('heavy');
+}
+
+// ============== PAD 1 — Filter + Reverb ==============
+GoatTouch.bindXYPad(document.getElementById('pad1'), {
+  onChange: (x, y) => {
+    startOsc();
+    if (filter) filter.frequency.setTargetAtTime(100 + x*8000, ac.currentTime, 0.05);
+    if (wet)    wet.gain.setTargetAtTime(y * 0.5, ac.currentTime, 0.05);
+    document.getElementById('read1').textContent = `Cutoff: ${Math.round(x*100)}% · Reverb: ${Math.round(y*100)}%`;
+  }
+});
+
+// ============== PAD 2 — Pitch + Vibrato ==============
+let vibLFO = null;
+GoatTouch.bindXYPad(document.getElementById('pad2'), {
+  onChange: (x, y) => {
+    startOsc();
+    if (currentOsc) {
+      const pitch = 110 + x * 440;
+      currentOsc.frequency.setTargetAtTime(pitch, ac.currentTime, 0.03);
+    }
+    document.getElementById('read2').textContent = `Pitch: ${Math.round((x-0.5)*24)} · Vibrato: ${Math.round(y*100)}`;
+  }
+});
+
+// ============== PAD 3 — Volume + Pan ==============
+GoatTouch.bindXYPad(document.getElementById('pad3'), {
+  onChange: (x, y) => {
+    startOsc();
+    if (wet) wet.gain.value = y * 0.4;
+    const panVal = Math.round((x-0.5)*200);
+    const panLabel = panVal === 0 ? 'C' : (panVal > 0 ? 'R'+panVal : 'L'+Math.abs(panVal));
+    document.getElementById('read3').textContent = `Pan: ${panLabel} · Vol: ${Math.round(y*100)}%`;
+  }
+});
+
+// ============== PAD 4 — Drive + Delay ==============
+GoatTouch.bindXYPad(document.getElementById('pad4'), {
+  onChange: (x, y) => {
+    startOsc();
+    document.getElementById('read4').textContent = `Drive: ${Math.round(x*100)}% · Delay: ${Math.round(y*100)}%`;
+  }
+});
+</script>
+</body>
+</html>

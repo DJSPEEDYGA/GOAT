@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐐 GOAT Powerhouse — Command Center</title>
+<link rel="icon" href="favicon.ico">
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<style>
+:root {
+  --bg:#040608; --panel:#0d1117; --panel2:#161b22; --panel3:#1f2937;
+  --gold:#d4a03c; --gold2:#f0c040; --red:#c1121f; --red2:#e63946;
+  --ink:#f0ece4; --dim:#8b949e; --line:#21262d;
+  --ok:#3fb950; --warn:#d29922; --info:#58a6ff; --purple:#a78bfa;
+  --glow:rgba(212,160,60,.2);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;}
+
+/* TOP BAR */
+.topbar{background:rgba(4,6,8,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);padding:0 24px;height:60px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;}
+.tb-logo{font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;}
+.tb-links{display:flex;gap:2px;flex:1;overflow-x:auto;}
+.tb-links::-webkit-scrollbar{display:none;}
+.tb-links a{padding:6px 12px;border-radius:6px;text-decoration:none;color:var(--dim);font-size:13px;white-space:nowrap;transition:all .15s;}
+.tb-links a:hover{color:var(--ink);background:var(--panel2);}
+.tb-right{display:flex;gap:8px;margin-left:auto;flex-shrink:0;}
+.tb-btn{padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;border:none;}
+.tb-btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;}
+.tb-btn.ghost{background:transparent;border:1px solid var(--line);color:var(--dim);}
+
+/* STATUS BAR */
+.statusbar{background:var(--panel);border-bottom:1px solid var(--line);padding:8px 24px;display:flex;align-items:center;gap:20px;overflow-x:auto;}
+.sb-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);white-space:nowrap;}
+.sb-dot{width:7px;height:7px;border-radius:50%;}
+.sb-dot.ok{background:var(--ok);box-shadow:0 0 6px var(--ok);}
+.sb-dot.warn{background:var(--warn);}
+.sb-dot.off{background:#333;}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:220px 1fr 280px;min-height:calc(100vh - 100px);}
+@media(max-width:1100px){.layout{grid-template-columns:1fr;}}
+
+/* SIDEBAR */
+.sidebar{background:var(--panel);border-right:1px solid var(--line);padding:16px 0;overflow-y:auto;}
+.sb-section{margin-bottom:4px;}
+.sb-head{padding:6px 16px;font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;}
+.sb-link{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--dim);font-size:13px;border-left:2px solid transparent;transition:all .15s;}
+.sb-link:hover{background:var(--panel2);color:var(--ink);}
+.sb-link.active{background:rgba(212,160,60,.08);color:var(--gold);border-left-color:var(--gold);}
+.sb-link .ico{font-size:15px;width:20px;text-align:center;}
+.sb-link .badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:4px;font-weight:700;}
+
+/* MAIN */
+.main{overflow-y:auto;padding:24px;}
+.welcome-band{background:linear-gradient(135deg,rgba(212,160,60,.08),rgba(193,18,31,.05));border:1px solid rgba(212,160,60,.2);border-radius:16px;padding:24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.welcome-band h1{font-size:24px;font-weight:800;}
+.welcome-band h1 span{background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.welcome-band p{color:var(--dim);font-size:14px;margin-top:4px;}
+.wb-actions{display:flex;gap:8px;}
+
+/* METRIC CARDS */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
+.metric{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+.metric::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.metric.gold::after{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.metric.green::after{background:var(--ok);}
+.metric.blue::after{background:var(--info);}
+.metric.red::after{background:var(--red2);}
+.metric.purple::after{background:var(--purple);}
+.metric .label{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.metric .val{font-size:28px;font-weight:800;line-height:1;}
+.metric .sub{font-size:11px;color:var(--dim);margin-top:6px;}
+.metric .trend{font-size:11px;margin-top:4px;}
+.metric .trend.up{color:var(--ok);}
+.metric .trend.dn{color:var(--red2);}
+
+/* SECTIONS */
+.sec{margin-bottom:28px;}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sec-hd h2{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.sec-hd a{font-size:12px;color:var(--gold);text-decoration:none;}
+
+/* TOOL GRID */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.tcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;text-decoration:none;color:var(--ink);transition:all .18s;display:flex;flex-direction:column;gap:8px;}
+.tcard:hover{border-color:var(--gold);background:var(--panel2);transform:translateY(-2px);box-shadow:0 8px 24px var(--glow);}
+.tcard .ticon{font-size:26px;}
+.tcard .tname{font-size:14px;font-weight:600;}
+.tcard .tdesc{font-size:12px;color:var(--dim);line-height:1.5;}
+.tcard .ttag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700;text-transform:uppercase;width:fit-content;}
+.tcard.feat{border-color:rgba(212,160,60,.3);background:linear-gradient(135deg,rgba(212,160,60,.06),var(--panel));}
+.tcard.wide{grid-column:span 2;}
+@media(max-width:500px){.tcard.wide{grid-column:span 1;}}
+
+/* QUICK ACTIONS */
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.qa{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;text-decoration:none;color:var(--ink);transition:all .15s;}
+.qa:hover{border-color:var(--gold);background:var(--panel2);}
+.qa .qi{font-size:22px;margin-bottom:6px;}
+.qa .ql{font-size:11px;color:var(--dim);}
+
+/* ACTIVITY FEED */
+.activity{display:flex;flex-direction:column;gap:8px;}
+.act-item{display:flex;align-items:center;gap:12px;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:8px;}
+.act-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.act-text{flex:1;font-size:13px;}
+.act-time{font-size:11px;color:var(--dim);}
+
+/* RIGHT PANEL */
+.rpanel{background:var(--panel);border-left:1px solid var(--line);padding:20px;overflow-y:auto;}
+.rp-section{margin-bottom:24px;}
+.rp-title{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--gold);font-weight:700;margin-bottom:12px;}
+.ai-status{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:8px;}
+.ai-status .ai-name{font-size:14px;font-weight:600;margin-bottom:4px;}
+.ai-status .ai-model{font-size:11px;color:var(--dim);}
+.ai-status .ai-dot{width:8px;height:8px;border-radius:50%;float:right;margin-top:3px;}
+.mini-chat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;}
+.mc-msgs{min-height:80px;max-height:160px;overflow-y:auto;margin-bottom:10px;font-size:12px;color:var(--dim);}
+.mc-inp{display:flex;gap:6px;}
+.mc-inp input{flex:1;padding:8px 10px;background:#000;border:1px solid var(--line);border-radius:6px;color:var(--ink);font-size:12px;}
+.mc-inp button{padding:8px 12px;background:var(--gold);color:#000;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;}
+.disk-bar{height:8px;background:var(--panel3);border-radius:4px;overflow:hidden;margin:6px 0;}
+.disk-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--ok),var(--gold));}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a class="tb-logo" href="index.html">🐐 GOAT</a>
+  <div class="tb-links">
+    <a href="studio.html">🎙️ Studio</a>
+    <a href="beat-maker.html">🎵 Beats</a>
+    <a href="ssl-mixer.html">🎚️ Mixer</a>
+    <a href="goat-mpc.html">🥁 MPC</a>
+    <a href="goat-sampler.html">🎛️ Sampler</a>
+    <a href="goat-autotune.html">🎤 AutoTune</a>
+    <a href="goat-plugin-rack.html">🔌 Plugins</a>
+    <a href="mastering.html">💿 Master</a>
+    <a href="film-score.html">🎬 Film</a>
+    <a href="catalog.html">📁 Catalog</a>
+    <a href="distribution.html">🌍 Distro</a>
+    <a href="agents-brain.html">🤖 AI</a>
+    <a href="touch-hub.html">📱 Touch</a>
+  </div>
+  <div class="tb-right">
+    <a href="touch-hub.html" class="tb-btn ghost">📱 Touch</a>
+    <a href="agents-brain.html" class="tb-btn gold">🤖 AI Brain</a>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+  <div class="sb-item"><div class="sb-dot ok" id="ollama-dot"></div><span>Ollama <span id="ollama-txt">Checking…</span></span></div>
+  <div class="sb-item"><div class="sb-dot warn" id="nvidia-dot"></div><span>NVIDIA</span></div>
+  <div class="sb-item"><div class="sb-dot ok"></div><span>Gemini Ready</span></div>
+  <div class="sb-item" style="margin-left:auto"><div class="sb-dot ok"></div><span id="clock"></span></div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-section">
+    <div class="sb-head">🎛️ Studio</div>
+    <a href="studio.html" class="sb-link"><span class="ico">🎙️</span> Recording Studio</a>
+    <a href="beat-maker.html" class="sb-link"><span class="ico">🎵</span> Beat Maker</a>
+    <a href="ssl-mixer.html" class="sb-link"><span class="ico">🎚️</span> SSL Mixer</a>
+    <a href="mastering.html" class="sb-link"><span class="ico">💿</span> Mastering</a>
+    <a href="vocal-studio.html" class="sb-link"><span class="ico">🎤</span> Vocal Studio</a>
+    <a href="sample-library.html" class="sb-link"><span class="ico">📦</span> Sample Library</a>
+    <a href="plugins.html" class="sb-link"><span class="ico">🔌</span> Plugins</a>
+  </div>
+  <div class="sb-section">
+    <div class="sb-head">⚡ Music Weapons</div>
+    <a href="goat-mpc.html" class="sb-link active"><span class="ico">🥁</span> GOAT MPC</a>
+    <a href="goat-sampler.html" class="sb-link"><span class="ico">🎛️</span> Sampler</a>
+    <a href="goat-autotune.html" class="sb-link"><span class="ico">🎼</span> Auto-Tune</a>
+    <a href="goat-plugin-rack.html" class="sb-link"><span class="ico">🔌</span> Plugin Rack</a>
+    <a href="goat-channel-strip.html" class="sb-link"><span class="ico">🎚️</span> Channel Strip</a>
+    <a href="goat-sound-library.html" class="sb-link"><span class="ico">📚</span> Sound Library</a>
+  </div>
+  <div class="sb-section">
+    <div class="sb-head">📱 Touch UI</div>
+    <a href="touch-hub.html" class="sb-link"><span class="ico">🏠</span> Touch Hub</a>
+    <a href="touch-pads.html" class="sb-link"><span class="ico">🥁</span> Touch Pads</a>
+    <a href="touch-mixer.html" class="sb-link"><span class="ico">🎚️</span> Touch Mixer</a>
+    <a href="touch-keys.html" class="sb-link"><span class="ico">🎹</span> Touch Keys</a>
+    <a href="touch-brain.html" class="sb-link"><span class="ico">🤖</span> Touch Brain</a>
+    <a href="touch-transport.html" class="sb-link"><span class="ico">▶️</span> Transport</a>
+    <a href="touch-xy.html" class="sb-link"><span class="ico">🕹️</span> XY Pads</a>
+    <a href="touch-deck.html" class="sb-link"><span class="ico">🎛️</span> Macro Deck</a>
+  </div>
+  <div class="sb-section">
+    <div class="sb-head">💼 Business</div>
+    <a href="catalog.html" class="sb-link"><span class="ico">📁</span> Catalog</a>
+    <a href="royalty-calc.html" class="sb-link"><span class="ico">💰</span> Royalties</a>
+    <a href="distribution.html" class="sb-link"><span class="ico">🌍</span> Distribution</a>
+    <a href="sync-catalog.html" class="sb-link"><span class="ico">🎬</span> Sync</a>
+    <a href="fan-db.html" class="sb-link"><span class="ico">👥</span> Fan DB</a>
+    <a href="release.html" class="sb-link"><span class="ico">🚀</span> Release</a>
+    <a href="network.html" class="sb-link"><span class="ico">🌐</span> Network</a>
+    <a href="intel.html" class="sb-link"><span class="ico">📊</span> Intel</a>
+  </div>
+  <div class="sb-section">
+    <div class="sb-head">🎬 Film</div>
+    <a href="film-score.html" class="sb-link"><span class="ico">🎼</span> Film Score</a>
+    <a href="movie-studio.html" class="sb-link"><span class="ico">🎬</span> Movie Studio</a>
+    <a href="screenwriting.html" class="sb-link"><span class="ico">📝</span> Screenwriting</a>
+  </div>
+  <div class="sb-section">
+    <div class="sb-head">🤖 AI</div>
+    <a href="agents-brain.html" class="sb-link"><span class="ico">🧠</span> AI Brain</a>
+    <a href="autopilot.html" class="sb-link"><span class="ico">🤖</span> Autopilot</a>
+    <a href="ai-producer.html" class="sb-link"><span class="ico">🎛️</span> AI Producer</a>
+    <a href="command-center.html" class="sb-link"><span class="ico">⚡</span> Command Center</a>
+    <a href="models.html" class="sb-link"><span class="ico">🧬</span> Models</a>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- WELCOME -->
+  <div class="welcome-band">
+    <div>
+      <h1>Welcome back, <span>DJ Speedy 🐐</span></h1>
+      <p>Your music empire dashboard — everything you need, right here.</p>
+    </div>
+    <div class="wb-actions">
+      <a href="studio.html" class="tb-btn gold">🎙️ Open Studio</a>
+      <a href="touch-hub.html" class="tb-btn ghost">📱 Touch Mode</a>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics">
+    <div class="metric gold">
+      <div class="label">Total Royalties</div>
+      <div class="val">$0.00</div>
+      <div class="sub">Connect DSPs to track</div>
+      <div class="trend up">↑ Set up Spotify</div>
+    </div>
+    <div class="metric green">
+      <div class="label">Catalog Tracks</div>
+      <div class="val" id="m-tracks">—</div>
+      <div class="sub">ISRC registered</div>
+      <div class="trend up">↑ Add tracks</div>
+    </div>
+    <div class="metric blue">
+      <div class="label">AI Sessions</div>
+      <div class="val" id="m-ai">0</div>
+      <div class="sub">Brain sessions today</div>
+    </div>
+    <div class="metric red">
+      <div class="label">Active Projects</div>
+      <div class="val">—</div>
+      <div class="sub">In progress</div>
+    </div>
+    <div class="metric purple">
+      <div class="label">Sound Library</div>
+      <div class="val" id="m-sounds">—</div>
+      <div class="sub">Run scanner to index</div>
+    </div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="sec">
+    <div class="sec-hd"><h2>⚡ Quick Actions</h2></div>
+    <div class="qa-grid">
+      <a href="studio.html" class="qa"><div class="qi">🎙️</div><div class="ql">New Session</div></a>
+      <a href="beat-maker.html" class="qa"><div class="qi">🎵</div><div class="ql">New Beat</div></a>
+      <a href="goat-mpc.html" class="qa"><div class="qi">🥁</div><div class="ql">Open MPC</div></a>
+      <a href="agents-brain.html" class="qa"><div class="qi">🤖</div><div class="ql">Ask AI</div></a>
+      <a href="catalog.html" class="qa"><div class="qi">📁</div><div class="ql">Add to Catalog</div></a>
+      <a href="distribution.html" class="qa"><div class="qi">🌍</div><div class="ql">Distribute</div></a>
+      <a href="goat-sound-library.html" class="qa"><div class="qi">📚</div><div class="ql">Sound Library</div></a>
+      <a href="touch-hub.html" class="qa"><div class="qi">📱</div><div class="ql">Touch Mode</div></a>
+    </div>
+  </div>
+
+  <!-- STUDIO TOOLS -->
+  <div class="sec">
+    <div class="sec-hd"><h2>🎛️ Studio Production</h2><a href="studio.html">View all →</a></div>
+    <div class="tgrid">
+      <a href="studio.html" class="tcard feat wide">
+        <div class="ticon">🎙️</div><div class="tname">Recording Studio</div>
+        <div class="tdesc">Full DAW-style recording with multi-track, real-time monitoring, and SSL signal chain.</div>
+        <div class="ttag" style="background:rgba(193,18,31,.2);color:var(--red2)">FLAGSHIP</div>
+      </a>
+      <a href="beat-maker.html" class="tcard">
+        <div class="ticon">🎵</div><div class="tname">Beat Maker</div>
+        <div class="tdesc">FL Studio-style with step seq + piano roll</div>
+        <div class="ttag" style="background:rgba(212,160,60,.15);color:var(--gold)">PRO</div>
+      </a>
+      <a href="ssl-mixer.html" class="tcard">
+        <div class="ticon">🎚️</div><div class="tname">SSL Mixer</div>
+        <div class="tdesc">32-channel SSL 9000 console</div>
+        <div class="ttag" style="background:rgba(212,160,60,.15);color:var(--gold)">PRO</div>
+      </a>
+      <a href="mastering.html" class="tcard">
+        <div class="ticon">💿</div><div class="tname">Mastering Suite</div>
+        <div class="tdesc">AI + Ozone-style, loudness targeting</div>
+        <div class="ttag" style="background:rgba(212,160,60,.15);color:var(--gold)">PRO</div>
+      </a>
+      <a href="vocal-studio.html" class="tcard">
+        <div class="ticon">🎤</div><div class="tname">Vocal Studio</div>
+        <div class="tdesc">Auto-Tune + harmony + vocal chain</div>
+        <div class="ttag" style="background:rgba(212,160,60,.15);color:var(--gold)">PRO</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- MUSIC WEAPONS -->
+  <div class="sec">
+    <div class="sec-hd"><h2>⚡ Ultimate Music Weapons</h2><a href="goat-mpc.html">View all →</a></div>
+    <div class="tgrid">
+      <a href="goat-mpc.html" class="tcard feat">
+        <div class="ticon">🥁</div><div class="tname">GOAT MPC</div>
+        <div class="tdesc">64 pads · 8 banks · Piano Roll · Song Mode</div>
+        <div class="ttag" style="background:rgba(193,18,31,.2);color:var(--red2)">NEW</div>
+      </a>
+      <a href="goat-sampler.html" class="tcard feat">
+        <div class="ticon">🎛️</div><div class="tname">GOAT Sampler</div>
+        <div class="tdesc">Serato × MPC × Koala · Slice · AI Stems</div>
+        <div class="ttag" style="background:rgba(193,18,31,.2);color:var(--red2)">NEW</div>
+      </a>
+      <a href="goat-autotune.html" class="tcard feat">
+        <div class="ticon">🎼</div><div class="tname">Auto-Tune Pro</div>
+        <div class="tdesc">Live pitch · Graph mode · Harmony engine</div>
+        <div class="ttag" style="background:rgba(193,18,31,.2);color:var(--red2)">NEW</div>
+      </a>
+      <a href="goat-plugin-rack.html" class="tcard feat">
+        <div class="ticon">🔌</div><div class="tname">Plugin Rack</div>
+        <div class="tdesc">20 pro plugins: 1176, SSL, Pultec, Ozone</div>
+        <div class="ttag" style="background:rgba(193,18,31,.2);color:var(--red2)">NEW</div>
+      </a>
+      <a href="goat-channel-strip.html" class="tcard feat">
+        <div class="ticon">🎚️</div><div class="tname">Channel Strip</div>
+        <div class="tdesc">SSL VMR · HPF · EQ · Comp · Saturate</div>
+        <div class="ttag" style="background:rgba(193,18,31,.2);color:var(--red2)">NEW</div>
+      </a>
+      <a href="goat-sound-library.html" class="tcard feat">
+        <div class="ticon">📚</div><div class="tname">Sound Library</div>
+        <div class="tdesc">NI Kontakt · EastWest · Waves · all RAID</div>
+        <div class="ttag" style="background:rgba(63,185,80,.15);color:var(--ok)">SCAN</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- FILM & SCORE -->
+  <div class="sec">
+    <div class="sec-hd"><h2>🎬 Film & Score Studio</h2><a href="film-score.html">View all →</a></div>
+    <div class="tgrid">
+      <a href="film-score.html" class="tcard feat wide">
+        <div class="ticon">🎼</div><div class="tname">Film Score Composer</div>
+        <div class="tdesc">Hollywood Orchestra · MIDI export · Cue sheets · Sync licensing</div>
+        <div class="ttag" style="background:rgba(139,92,246,.15);color:var(--purple)">CINEMATIC</div>
+      </a>
+      <a href="movie-studio.html" class="tcard">
+        <div class="ticon">🎬</div><div class="tname">Movie Studio</div>
+        <div class="tdesc">AI video editor · Timeline · FFmpeg export</div>
+        <div class="ttag" style="background:rgba(139,92,246,.15);color:var(--purple)">VIDEO</div>
+      </a>
+      <a href="screenwriting.html" class="tcard">
+        <div class="ticon">📝</div><div class="tname">Screenwriting</div>
+        <div class="tdesc">Industry format · AI co-writer · PDF export</div>
+        <div class="ttag" style="background:rgba(88,166,255,.15);color:var(--info)">SCRIPT</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- BUSINESS TOOLS -->
+  <div class="sec">
+    <div class="sec-hd"><h2>💼 Business & Royalties</h2><a href="catalog.html">View all →</a></div>
+    <div class="tgrid">
+      <a href="royalty-calc.html" class="tcard"><div class="ticon">💰</div><div class="tname">Royalty Calculator</div><div class="tdesc">All DSPs · Sync · Mechanical</div></a>
+      <a href="catalog.html" class="tcard"><div class="ticon">📁</div><div class="tname">Catalog Manager</div><div class="tdesc">ISRC · ISWC · UPC · CWR</div></a>
+      <a href="distribution.html" class="tcard"><div class="ticon">🌍</div><div class="tname">Distribution</div><div class="tdesc">50+ DSPs in one dashboard</div></a>
+      <a href="sync-catalog.html" class="tcard"><div class="ticon">🎬</div><div class="tname">Sync Licensing</div><div class="tdesc">TV · Film · Ads · Games</div></a>
+      <a href="fan-db.html" class="tcard"><div class="ticon">👥</div><div class="tname">Fan Database</div><div class="tdesc">CRM · Email · Analytics</div></a>
+      <a href="release.html" class="tcard"><div class="ticon">🚀</div><div class="tname">Release Manager</div><div class="tdesc">Full release workflow</div></a>
+    </div>
+  </div>
+
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="rpanel">
+  <div class="rp-section">
+    <div class="rp-title">🤖 AI Brain Status</div>
+    <div class="ai-status">
+      <div class="ai-dot ok" id="r-ollama" style="float:right;width:8px;height:8px;border-radius:50%;background:#333;margin-top:3px;"></div>
+      <div class="ai-name">Ollama</div>
+      <div class="ai-model" id="r-ollama-txt">Checking connection…</div>
+    </div>
+    <div class="ai-status">
+      <div style="float:right;width:8px;height:8px;border-radius:50%;background:var(--warn);margin-top:3px;"></div>
+      <div class="ai-name">NVIDIA / Gemini</div>
+      <div class="ai-model">Configure in settings</div>
+    </div>
+    <a href="agents-brain.html" style="display:block;padding:10px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border-radius:8px;text-align:center;text-decoration:none;font-weight:700;font-size:13px;margin-top:10px;">Open AI Brain →</a>
+  </div>
+
+  <div class="rp-section">
+    <div class="rp-title">💬 Quick Ask</div>
+    <div class="mini-chat">
+      <div class="mc-msgs" id="mc-msgs"><div style="color:var(--dim);font-style:italic">Ask Moneypenny anything…</div></div>
+      <div class="mc-inp">
+        <input id="mc-inp" type="text" placeholder="Ask AI…" onkeydown="if(event.key==='Enter')mcSend()">
+        <button onclick="mcSend()">→</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="rp-section">
+    <div class="rp-title">📱 Touch Interface</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <a href="touch-hub.html" style="padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;text-align:center;text-decoration:none;color:var(--ink);">
+        <div style="font-size:20px">🏠</div><div style="font-size:11px;color:var(--dim);margin-top:4px">Hub</div>
+      </a>
+      <a href="touch-pads.html" style="padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;text-align:center;text-decoration:none;color:var(--ink);">
+        <div style="font-size:20px">🥁</div><div style="font-size:11px;color:var(--dim);margin-top:4px">Pads</div>
+      </a>
+      <a href="touch-mixer.html" style="padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;text-align:center;text-decoration:none;color:var(--ink);">
+        <div style="font-size:20px">🎚️</div><div style="font-size:11px;color:var(--dim);margin-top:4px">Mixer</div>
+      </a>
+      <a href="touch-keys.html" style="padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;text-align:center;text-decoration:none;color:var(--ink);">
+        <div style="font-size:20px">🎹</div><div style="font-size:11px;color:var(--dim);margin-top:4px">Keys</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="rp-section">
+    <div class="rp-title">💿 Recent Activity</div>
+    <div class="activity" id="activity">
+      <div class="act-item"><div class="act-icon" style="background:rgba(212,160,60,.15)">🐐</div><div class="act-text">Welcome to GOAT Royalty</div><div class="act-time">now</div></div>
+      <div class="act-item"><div class="act-icon" style="background:rgba(63,185,80,.15)">✅</div><div class="act-text">Vercel build fix pushed</div><div class="act-time">today</div></div>
+      <div class="act-item"><div class="act-icon" style="background:rgba(88,166,255,.15)">📚</div><div class="act-text">Sound Library scanner ready</div><div class="act-time">today</div></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /layout -->
+
+<script>
+// Clock
+function tick(){ document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }
+setInterval(tick, 1000); tick();
+
+// AI status check
+async function checkAI(){
+  const hosts = ['http://localhost:5500','http://127.0.0.1:5500'];
+  for (const h of hosts) {
+    try {
+      const r = await fetch(h+'/health', {signal: AbortSignal.timeout(2000)});
+      if (r.ok) {
+        document.getElementById('ollama-dot').className = 'sb-dot ok';
+        document.getElementById('ollama-txt').textContent = 'Connected';
+        document.getElementById('r-ollama').style.background = 'var(--ok)';
+        document.getElementById('r-ollama-txt').textContent = h;
+        return;
+      }
+    } catch(e){}
+  }
+  document.getElementById('ollama-txt').textContent = 'Offline';
+  document.getElementById('r-ollama-txt').textContent = 'Start with: ollama serve';
+}
+checkAI();
+
+// Sound library catalog check
+async function checkCatalog(){
+  try {
+    const r = await fetch('catalog-data/master-catalog.json');
+    if (r.ok) {
+      const d = await r.json();
+      const t = d.grandTotals?.instruments || 0;
+      document.getElementById('m-sounds').textContent = t.toLocaleString();
+    }
+  } catch(e){ document.getElementById('m-sounds').textContent = 'Scan needed'; }
+}
+checkCatalog();
+
+// AI session counter
+const sess = parseInt(localStorage.getItem('goat.aiSessions')||'0');
+document.getElementById('m-ai').textContent = sess;
+
+// Mini chat
+let API_URL = localStorage.getItem('goat.apiUrl') || 'http://localhost:5500';
+async function mcSend(){
+  const inp = document.getElementById('mc-inp');
+  const msg = inp.value.trim(); if (!msg) return;
+  inp.value = '';
+  const msgs = document.getElementById('mc-msgs');
+  msgs.innerHTML += `<div style="color:var(--ink);margin:4px 0"><b>You:</b> ${msg}</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  try {
+    const r = await fetch(API_URL+'/brain/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message:msg, agent:'moneypenny'}),
+      signal: AbortSignal.timeout(30000)
+    });
+    const d = await r.json();
+    msgs.innerHTML += `<div style="color:var(--gold);margin:4px 0"><b>AI:</b> ${d.response||d.message||'...'}</div>`;
+    localStorage.setItem('goat.aiSessions', (sess+1).toString());
+  } catch(e){
+    msgs.innerHTML += `<div style="color:var(--red2);margin:4px 0">AI offline — start Ollama</div>`;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+</script>
+</body>
+</html>

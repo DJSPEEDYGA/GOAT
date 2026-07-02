@@ -1,0 +1,659 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Halito Chat">
+  <link rel="manifest" href="/manifest.json">
+  <title>Halito Chat</title>
+  <style>
+	    :root {
+	      color-scheme: dark;
+	      --bg: #07090c;
+	      --panel: #10161b;
+	      --panel-2: #141b22;
+	      --line: rgba(255,255,255,.13);
+	      --text: #f8fafc;
+	      --muted: #9aa7b6;
+	      --mint: #4ee2a0;
+	      --green: #08c58d;
+	      --gold: #ffd24a;
+	      --sky: #59b8ff;
+	      --pink: #ff6fae;
+	      --red: #ff5a62;
+	    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font: 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+	    }
+		    .shell {
+		      min-height: 100vh;
+		      background: #07090c;
+		    }
+	    header {
+	      position: sticky;
+	      top: 0;
+	      z-index: 5;
+	      border-bottom: 1px solid var(--line);
+	      background: rgba(7,9,12,.82);
+	      backdrop-filter: blur(16px);
+    }
+    .topbar {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      min-height: 66px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(78,226,160,.42);
+      border-radius: 8px;
+      color: var(--mint);
+      background: rgba(78,226,160,.12);
+      font-weight: 950;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    .brand span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+	    .status-pill {
+	      border: 1px solid rgba(255,210,74,.36);
+	      color: var(--gold);
+	      background: rgba(255,210,74,.10);
+	      border-radius: 999px;
+	      padding: 8px 10px;
+	      font-size: 12px;
+	      font-weight: 900;
+	      white-space: nowrap;
+	      text-decoration: none;
+	    }
+	    main {
+	      width: min(1180px, calc(100% - 28px));
+	      margin: 0 auto;
+	      padding: 0 0 34px;
+	    }
+			    .hero {
+			      width: 100vw;
+			      min-height: clamp(560px, 78vh, 720px);
+			      margin-left: calc(50% - 50vw);
+			      display: flex;
+			      align-items: flex-end;
+			      padding: clamp(58px, 10vh, 112px) 0 clamp(36px, 7vh, 72px);
+		      position: relative;
+		      overflow: hidden;
+		      background:
+		        linear-gradient(90deg, rgba(3,7,9,.94) 0%, rgba(3,7,9,.72) 42%, rgba(3,7,9,.44) 70%, rgba(3,7,9,.84) 100%),
+		        linear-gradient(0deg, #07090c 0%, rgba(7,9,12,.22) 24%, rgba(7,9,12,0) 58%),
+		        url("/landing-assets/halito-field-hero.png") center bottom / cover no-repeat;
+		    }
+		    .hero::after {
+		      content: "";
+		      position: absolute;
+		      left: 0;
+		      right: 0;
+		      bottom: 0;
+		      height: 210px;
+		      pointer-events: none;
+		      background: linear-gradient(0deg, #07090c 0%, rgba(7,9,12,0) 100%);
+		    }
+		    .headline {
+		      width: min(1180px, calc(100% - 28px));
+		      max-width: none;
+		      margin: 0 auto;
+		      position: relative;
+		      z-index: 1;
+		    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--mint);
+      font-size: 12px;
+      font-weight: 950;
+      text-transform: uppercase;
+      border: 1px solid rgba(78,226,160,.32);
+      border-radius: 999px;
+      padding: 8px 10px;
+      background: rgba(8,13,17,.72);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      background: var(--mint);
+      box-shadow: 0 0 18px rgba(78,226,160,.9);
+    }
+		    h2 {
+		      margin: 18px 0 12px;
+		      font-size: clamp(54px, 11vw, 116px);
+		      line-height: .92;
+		      letter-spacing: 0;
+		      text-shadow: 0 20px 54px rgba(0,0,0,.44);
+		    }
+	    .deck {
+	      max-width: 720px;
+	      color: #d8e3ee;
+	      font-size: clamp(17px, 2vw, 23px);
+	      line-height: 1.3;
+      margin: 0;
+    }
+    .launch-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    .launch-button,
+    .secondary-button {
+      min-height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 16px;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 950;
+      background: rgba(16,22,27,.84);
+      cursor: pointer;
+      font: inherit;
+    }
+	    .launch-button {
+	      border-color: rgba(78,226,160,.52);
+	      color: #06100c;
+	      background: var(--mint);
+      min-width: 236px;
+      box-shadow: 0 18px 48px rgba(0,0,0,.32);
+	    }
+		    .scroll-cue {
+		      margin-top: 22px;
+		      color: rgba(216,227,238,.76);
+		      font-size: 12px;
+		      font-weight: 900;
+		      letter-spacing: 0;
+		    }
+		    .hero-lanes {
+		      display: flex;
+		      flex-wrap: wrap;
+		      gap: 8px;
+		      margin-top: 18px;
+		    }
+		    .hero-lanes span {
+		      border: 1px solid rgba(255,255,255,.18);
+		      border-radius: 999px;
+		      padding: 8px 10px;
+		      color: #e8f4ef;
+		      background: rgba(7,9,12,.58);
+		      font-size: 12px;
+		      font-weight: 900;
+		    }
+			    .section-band {
+			      padding: clamp(36px, 6vw, 68px) 0;
+		    }
+	    .section-kicker {
+	      color: var(--sky);
+	      font-size: 12px;
+	      font-weight: 950;
+	      text-transform: uppercase;
+	      letter-spacing: 0;
+	      margin-bottom: 10px;
+	    }
+	    .section-title {
+	      margin: 0 0 14px;
+	      font-size: clamp(32px, 6vw, 66px);
+	      line-height: 1;
+	      letter-spacing: 0;
+	    }
+		    .section-copy {
+		      max-width: 740px;
+		      color: #cbd7e5;
+		      line-height: 1.45;
+		      font-size: clamp(16px, 2vw, 20px);
+		      margin: 0;
+		    }
+		    .dead-zone {
+		      display: grid;
+		      grid-template-columns: minmax(0, .92fr) minmax(320px, .68fr);
+		      gap: clamp(18px, 4vw, 48px);
+		      align-items: center;
+		      border-bottom: 1px solid var(--line);
+		    }
+		    .dead-points {
+		      display: grid;
+		      grid-template-columns: repeat(3, minmax(0, 1fr));
+		      gap: 10px;
+		      margin-top: 22px;
+		      grid-column: 1 / -1;
+		    }
+		    .dead-point {
+		      min-height: 108px;
+		      border: 1px solid rgba(78,226,160,.22);
+		      border-radius: 8px;
+		      padding: 14px;
+		      background: rgba(14,20,24,.74);
+		    }
+		    .dead-point b {
+		      display: block;
+		      color: var(--text);
+		      font-size: 15px;
+		    }
+		    .dead-point span {
+		      display: block;
+		      margin-top: 7px;
+		      color: var(--muted);
+		      font-size: 13px;
+		      line-height: 1.3;
+		    }
+		    .dead-image {
+		      border: 1px solid rgba(78,226,160,.24);
+		      border-radius: 8px;
+		      overflow: hidden;
+		      aspect-ratio: 5 / 6;
+		      min-height: 520px;
+		      background: #081114;
+		      box-shadow: 0 26px 72px rgba(0,0,0,.42);
+		    }
+		    .dead-image img {
+		      width: 100%;
+		      height: 100%;
+		      object-fit: cover;
+		      display: block;
+		    }
+		    .scenario-grid,
+		    .capability-grid,
+		    .steps-grid {
+	      display: grid;
+	      grid-template-columns: repeat(3, minmax(0, 1fr));
+	      gap: 12px;
+	      margin-top: 22px;
+	    }
+	    .scenario-card,
+	    .capability-card,
+	    .step-card {
+	      border: 1px solid rgba(78,226,160,.22);
+	      border-radius: 8px;
+	      background: rgba(12,18,22,.88);
+	      min-height: 188px;
+	      padding: 18px;
+	      box-shadow: 0 20px 58px rgba(0,0,0,.24);
+	    }
+	    .scenario-card:nth-child(2),
+	    .capability-card:nth-child(2),
+	    .step-card:nth-child(2) {
+	      border-color: rgba(89,184,255,.28);
+	    }
+	    .scenario-card:nth-child(3),
+	    .capability-card:nth-child(3),
+	    .step-card:nth-child(3) {
+	      border-color: rgba(255,210,74,.28);
+	    }
+	    .card-mark {
+	      width: 44px;
+	      height: 44px;
+	      display: grid;
+	      place-items: center;
+	      border-radius: 8px;
+	      background: rgba(78,226,160,.16);
+	      color: var(--mint);
+	      font-weight: 950;
+	      margin-bottom: 18px;
+	    }
+	    .scenario-card h3,
+	    .capability-card h3,
+	    .step-card h3 {
+	      margin: 0;
+	      font-size: clamp(22px, 3vw, 31px);
+	      line-height: 1.03;
+	    }
+	    .scenario-card p,
+	    .capability-card p,
+	    .step-card p {
+	      margin: 11px 0 0;
+	      color: #c4cfdd;
+	      line-height: 1.35;
+	    }
+	    .proof-wall {
+	      display: grid;
+	      grid-template-columns: minmax(0, .82fr) minmax(330px, 1fr);
+	      gap: 18px;
+	      align-items: center;
+	      padding: clamp(40px, 7vw, 82px) 0;
+	      border-top: 1px solid var(--line);
+	      border-bottom: 1px solid var(--line);
+	    }
+    .secondary-button {
+      color: var(--sky);
+      border-color: rgba(89,184,255,.38);
+    }
+    .button-mark {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: rgba(7,9,12,.12);
+      font-weight: 950;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 26px;
+      max-width: 660px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 13px;
+      background: rgba(16,22,27,.82);
+      min-width: 0;
+    }
+    .metric b {
+      display: block;
+      font-size: 25px;
+      color: var(--gold);
+      line-height: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .metric span {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+	    .device-wall {
+	      display: grid;
+	      gap: 10px;
+	      align-content: center;
+	      min-width: 0;
+	    }
+    .shot {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #0b1015;
+      box-shadow: 0 22px 60px rgba(0,0,0,.38);
+    }
+    .shot.main {
+      aspect-ratio: 16 / 10;
+    }
+    .shot-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .shot.small {
+      aspect-ratio: 4 / 5;
+    }
+    .shot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+	    .strip {
+	      display: grid;
+	      grid-template-columns: repeat(4, minmax(0, 1fr));
+	      gap: 10px;
+	      margin-top: 22px;
+	    }
+	    .tile {
+	      min-height: 94px;
+	      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: rgba(16,22,27,.88);
+    }
+    .tile b {
+      display: block;
+      font-size: 15px;
+      color: var(--text);
+    }
+    .tile span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+	      line-height: 1.3;
+	    }
+	    .cta-band {
+	      margin: clamp(28px, 6vw, 70px) 0 0;
+	      min-height: 360px;
+	      display: grid;
+	      place-items: center;
+	      text-align: center;
+	      padding: 34px 18px;
+	      background: var(--green);
+	      color: #03130f;
+	    }
+	    .cta-band h2 {
+	      margin: 0;
+	      color: #03130f;
+	      font-size: clamp(36px, 7vw, 78px);
+	      line-height: 1;
+	    }
+	    .cta-band p {
+	      max-width: 680px;
+	      margin: 14px auto 22px;
+	      font-size: clamp(16px, 2vw, 21px);
+	      line-height: 1.35;
+	      color: rgba(3,19,15,.82);
+	      font-weight: 800;
+	    }
+	    .cta-band .launch-button {
+	      background: #f7fbff;
+	      color: #071014;
+	      border-color: rgba(0,0,0,.08);
+	    }
+	    .cta-band .launch-row {
+	      justify-content: center;
+	    }
+	    .cta-band .secondary-button {
+	      background: rgba(3,19,15,.12);
+	      color: #03130f;
+	      border-color: rgba(3,19,15,.28);
+	    }
+	    .cta-band .button-mark {
+	      background: rgba(3,19,15,.10);
+	    }
+	    .footer-note {
+	      padding: 28px 0 4px;
+	      color: var(--muted);
+	      text-align: center;
+	      border-top: 1px solid var(--line);
+	      margin-top: 34px;
+	    }
+	    .footer-note b {
+	      color: var(--text);
+	    }
+	    .toast {
+	      min-height: 18px;
+	      color: var(--gold);
+      font-size: 12px;
+      font-weight: 900;
+      margin-top: 10px;
+    }
+		    @media (max-width: 860px) {
+			      .hero {
+			        min-height: clamp(570px, 76vh, 650px);
+			        padding-top: 58px;
+			        background-position: center bottom;
+		      }
+		      .dead-zone,
+		      .proof-wall,
+		      .scenario-grid,
+		      .capability-grid,
+		      .steps-grid {
+		        grid-template-columns: 1fr;
+		      }
+		      .dead-points {
+		        grid-template-columns: 1fr;
+		      }
+			      .dead-image {
+			        min-height: 400px;
+		      }
+		      .device-wall {
+			margin-top: 10px;
+		      }
+      .shot.main {
+        aspect-ratio: 16 / 9;
+      }
+      h2 {
+        font-size: clamp(40px, 12vw, 60px);
+      }
+	      .metrics,
+	      .strip {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	      }
+      .status-pill {
+        display: none;
+      }
+    }
+    @media (max-width: 520px) {
+      .topbar {
+        width: min(100% - 20px, 1180px);
+      }
+	      main {
+	        width: min(100% - 20px, 1180px);
+	        padding-top: 0;
+	      }
+      .launch-row,
+      .launch-button,
+      .secondary-button {
+        width: 100%;
+      }
+      .metrics,
+      .strip,
+      .shot-row {
+        grid-template-columns: 1fr;
+      }
+      .shot-row .shot:nth-child(2) {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+	      <div class="topbar">
+	        <div class="brand">
+	          <div class="mark">H</div>
+	          <div>
+	            <h1>Halito Chat</h1>
+	            <span>Offline-first local mesh</span>
+	          </div>
+	        </div>
+	        <a class="status-pill" href="/command-center.html">Command Center</a>
+	      </div>
+    </header>
+	    <main>
+		      <section class="hero">
+		        <div class="headline">
+			          <div class="eyebrow"><span class="dot"></span><span>Local mesh network</span></div>
+			          <h2>Halito Chat</h2>
+			          <p class="deck">A local mesh for festivals, disaster response, and teams working where signal cannot be trusted.</p>
+		          <div class="hero-lanes">
+		            <span>Festival command</span>
+		            <span>Storm response</span>
+		            <span>Dead-zone field teams</span>
+		          </div>
+			          <div class="launch-row">
+			            <a class="launch-button" href="/command-center.html">
+			              <span class="button-mark">H</span>
+		              <span>Open Command Center</span>
+		            </a>
+		            <a class="secondary-button" href="/pilot.html">Request Field Kit</a>
+		          </div>
+			          <div class="scroll-cue">No tower required for the first hop.</div>
+			        </div>
+		      </section>
+		      <section class="dead-zone section-band">
+		        <div>
+		          <div class="section-kicker">Tactical utility</div>
+		          <h2 class="section-title">Engineered for dead zones.</h2>
+		          <p class="section-copy">Halito keeps the first line of communication local. Nearby devices advertise, browse, relay, and report so a team can keep moving through overloaded venues, storm outages, and remote work zones.</p>
+		        </div>
+		        <div class="dead-image">
+		          <img src="/landing-assets/halito-dead-zone-phone.png" alt="Phone showing a glowing local mesh in a field kit">
+		        </div>
+			        <div class="dead-points">
+			          <div class="dead-point"><b>Mesh-Hopping</b><span>Packets can move through active peers instead of needing a cell tower first.</span></div>
+			          <div class="dead-point"><b>Private Groups</b><span>Shared-key spaces help teams keep sensitive traffic separate.</span></div>
+			          <div class="dead-point"><b>Chirp + Media</b><span>Quick voice and image updates carry context when typing is too slow.</span></div>
+			        </div>
+			      </section>
+		      <section class="section-band">
+		        <div class="section-kicker">Built for the moments signal fails</div>
+		        <h2 class="section-title">A local network in everybody's pocket.</h2>
+	        <p class="section-copy">Halito turns nearby phones, Android devices, and a Mac command center into a practical local mesh for rooms, chirps, images, alerts, and field checks.</p>
+	        <div class="scenario-grid">
+	          <div class="scenario-card">
+	            <div class="card-mark">01</div>
+	            <h3>Festivals & Events</h3>
+	            <p>Gate teams, runners, security, medics, vendors, and stage crews can keep moving when towers are overloaded.</p>
+	          </div>
+	          <div class="scenario-card">
+	            <div class="card-mark">02</div>
+	            <h3>Storms & Disasters</h3>
+	            <p>Shelters, neighborhoods, supply crews, and volunteer teams can pass updates locally when normal service is down.</p>
+	          </div>
+	          <div class="scenario-card">
+	            <div class="card-mark">03</div>
+	            <h3>Field Operations</h3>
+	            <p>Campuses, job sites, film sets, farms, and pop-up teams get a command layer without waiting on infrastructure.</p>
+		          </div>
+		        </div>
+		      </section>
+		      <section class="cta-band">
+		        <div>
+		          <div class="section-kicker">Ready when the network gets loud</div>
+		          <h2 class="section-title">Open the field console.</h2>
+		          <p class="section-copy">Launch the local command layer for rooms, alerts, chirps, private keys, and live peer status when the team is on site.</p>
+		        </div>
+		        <div class="launch-row">
+		          <a class="launch-button" href="/command-center.html">
+		            <span class="button-mark">H</span>
+		            <span>Open Command Center</span>
+		          </a>
+		          <a class="secondary-button" href="/pilot.html">Request Field Kit</a>
+		        </div>
+		      </section>
+			      <footer class="footer-note"><b>Halito Chat</b> - offline-first mesh coordination for real-world crowds, storms, and field teams.<br/><span style="font-size:12px;opacity:.85"><a href="/legal/terms">Terms</a> &middot; <a href="/legal/privacy">Privacy</a> &middot; <a href="/legal/cookies">Cookies</a></span></footer>
+		    </main>
+		  </div>
+	</body>
+	</html>

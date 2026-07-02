@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💪 GOAT Health & Wellness — Celebrity Fitness</title>
+<link rel="stylesheet" href="css/goat-theme.css">
+<style>
+:root{--bg:#040608;--panel:#0d1117;--panel2:#161b22;--gold:#d4a03c;--gold2:#f0c040;--ink:#f0ece4;--dim:#8b949e;--line:#21262d;--ok:#3fb950;--warn:#d29922;--info:#58a6ff;--red2:#e63946;--cyan:#22d3ee;--purple:#a78bfa;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+nav{position:sticky;top:0;z-index:100;background:rgba(4,6,8,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);padding:0 24px;height:64px;display:flex;align-items:center;gap:16px;}
+.nav-logo{font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--ok),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;}
+.nav-links a{padding:6px 12px;border-radius:6px;text-decoration:none;color:var(--dim);font-size:13px;transition:all .2s;margin:0 2px;}
+.nav-links a:hover,.nav-links a.active{color:var(--ok);}
+.nav-btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;background:linear-gradient(135deg,var(--ok),var(--cyan));color:#000;}
+
+.hero{background:linear-gradient(135deg,rgba(63,185,80,.1),rgba(34,211,238,.08));padding:60px 24px;text-align:center;border-bottom:1px solid var(--line);}
+.hero h1{font-size:clamp(32px,5vw,60px);font-weight:900;background:linear-gradient(135deg,var(--ok),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;}
+.hero p{color:var(--dim);font-size:18px;max-width:600px;margin:0 auto 30px;}
+
+.content{max-width:1400px;margin:0 auto;padding:40px 24px;}
+
+/* Vitals Dashboard */
+.vitals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:40px;}
+.vital-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center;transition:all .3s;cursor:pointer;}
+.vital-card:hover{transform:translateY(-3px);border-color:var(--ok);}
+.vital-icon{font-size:2rem;margin-bottom:8px;display:block;}
+.vital-value{font-size:1.8rem;font-weight:800;margin-bottom:4px;}
+.vital-label{font-size:12px;color:var(--dim);}
+.vital-status{font-size:11px;font-weight:600;margin-top:6px;}
+.status-good{color:var(--ok);}
+.status-warn{color:var(--warn);}
+.status-info{color:var(--info);}
+
+/* Progress rings */
+.ring-container{display:flex;justify-content:center;margin:10px 0;}
+.ring{width:80px;height:80px;position:relative;}
+.ring svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:var(--line);stroke-width:6;}
+.ring-fill{fill:none;stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset 1s ease;}
+.ring-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:14px;font-weight:700;text-align:center;}
+
+/* Activity chart */
+.activity-chart{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:24px;}
+.chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.chart-title{font-size:16px;font-weight:700;}
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:120px;}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bar{border-radius:4px 4px 0 0;transition:height .6s ease;cursor:pointer;min-height:4px;}
+.bar:hover{opacity:.8;}
+.bar-label{font-size:10px;color:var(--dim);}
+.bar-val{font-size:10px;font-weight:600;color:var(--ok);}
+
+/* Workout plans */
+.workout-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:40px;}
+.workout-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;cursor:pointer;transition:all .3s;}
+.workout-card:hover{transform:translateY(-4px);border-color:var(--ok);box-shadow:0 12px 40px rgba(63,185,80,.15);}
+.wk-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:14px;}
+.wk-icon{font-size:2.5rem;}
+.wk-difficulty{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.diff-easy{background:rgba(63,185,80,.15);color:var(--ok);}
+.diff-medium{background:rgba(210,153,34,.15);color:var(--warn);}
+.diff-hard{background:rgba(230,57,70,.15);color:var(--red2);}
+.diff-elite{background:rgba(167,139,250,.15);color:var(--purple);}
+.wk-title{font-size:16px;font-weight:700;margin-bottom:6px;}
+.wk-desc{font-size:13px;color:var(--dim);line-height:1.5;margin-bottom:14px;}
+.wk-meta{display:flex;gap:12px;flex-wrap:wrap;}
+.wk-tag{font-size:11px;color:var(--dim);display:flex;align-items:center;gap:4px;}
+.wk-btn{width:100%;margin-top:14px;background:linear-gradient(135deg,var(--ok),var(--cyan));color:#000;border:none;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;transition:all .2s;}
+.wk-btn:hover{opacity:.85;}
+
+/* Nutrition */
+.nutrition-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.nutr-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center;}
+.nutr-val{font-size:1.5rem;font-weight:800;color:var(--gold);}
+.nutr-label{font-size:11px;color:var(--dim);margin-top:4px;}
+.nutr-bar{height:4px;background:var(--panel2);border-radius:2px;margin-top:8px;overflow:hidden;}
+.nutr-fill{height:100%;border-radius:2px;}
+
+/* Health AI */
+.health-ai{background:linear-gradient(135deg,rgba(63,185,80,.08),rgba(34,211,238,.08));border:1px solid rgba(63,185,80,.2);border-radius:20px;padding:30px;margin-bottom:40px;}
+.ai-chat{background:var(--panel);border-radius:12px;padding:16px;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin:16px 0;}
+.ai-msg{padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;max-width:80%;}
+.ai-msg.bot{background:var(--panel2);color:var(--ink);align-self:flex-start;border-top-left-radius:4px;}
+.ai-msg.user{background:linear-gradient(135deg,rgba(63,185,80,.8),rgba(34,211,238,.8));color:#000;align-self:flex-end;border-top-right-radius:4px;}
+.ai-input{display:flex;gap:8px;}
+.ai-input input{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:10px 14px;border-radius:10px;font-size:13px;}
+.ai-input input:focus{outline:none;border-color:var(--ok);}
+.ai-send{background:linear-gradient(135deg,var(--ok),var(--cyan));color:#000;border:none;padding:10px 18px;border-radius:10px;font-weight:700;cursor:pointer;}
+
+.sec-title{font-size:24px;font-weight:800;margin-bottom:8px;}
+.sec-sub{color:var(--dim);margin-bottom:24px;font-size:14px;}
+
+@media(max-width:768px){.nutrition-grid{grid-template-columns:repeat(2,1fr);}vitals-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">💪 GOAT Health</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="goat-health.html" class="active">Health</a>
+    <a href="goat-fitness.html">Fitness</a>
+    <a href="agents-brain.html">AI Coach</a>
+  </div>
+  <a href="goat-celebrity-lounge.html" class="nav-btn">👑 VIP</a>
+</nav>
+
+<div class="hero">
+  <h1>💪 GOAT Health & Wellness</h1>
+  <p>Celebrity-grade health tracking, AI personal trainer, nutrition planning, and wellness optimization — all private and secure.</p>
+</div>
+
+<div class="content">
+  <!-- Vitals -->
+  <div class="sec-title">Today's Vitals</div>
+  <div class="sec-sub">Real-time health monitoring powered by wearable integration</div>
+  <div class="vitals-grid">
+    <div class="vital-card">
+      <span class="vital-icon">❤️</span>
+      <div class="vital-value" style="color:var(--red2);" id="heartRate">72</div>
+      <div class="vital-label">Heart Rate (BPM)</div>
+      <div class="vital-status status-good">Normal</div>
+    </div>
+    <div class="vital-card">
+      <span class="vital-icon">🔥</span>
+      <div class="vital-value" style="color:var(--warn);">2,847</div>
+      <div class="vital-label">Calories Burned</div>
+      <div class="vital-status status-good">On Track</div>
+    </div>
+    <div class="vital-card">
+      <span class="vital-icon">👟</span>
+      <div class="vital-value" style="color:var(--ok);">8,420</div>
+      <div class="vital-label">Steps Today</div>
+      <div class="vital-status status-warn">84% of goal</div>
+    </div>
+    <div class="vital-card">
+      <span class="vital-icon">😴</span>
+      <div class="vital-value" style="color:var(--info);">7.5h</div>
+      <div class="vital-label">Sleep Quality</div>
+      <div class="vital-status status-good">Excellent</div>
+    </div>
+    <div class="vital-card">
+      <span class="vital-icon">💧</span>
+      <div class="vital-value" style="color:var(--cyan);">1.8L</div>
+      <div class="vital-label">Hydration</div>
+      <div class="vital-status status-warn">Need 700ml more</div>
+    </div>
+    <div class="vital-card">
+      <span class="vital-icon">🧘</span>
+      <div class="vital-value" style="color:var(--purple);">82</div>
+      <div class="vital-label">Stress Score</div>
+      <div class="vital-status status-info">Low Stress</div>
+    </div>
+  </div>
+
+  <!-- Activity Chart -->
+  <div class="activity-chart">
+    <div class="chart-header">
+      <div class="chart-title">📊 Weekly Activity</div>
+      <select style="background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:8px;font-size:13px;">
+        <option>This Week</option><option>Last Week</option><option>This Month</option>
+      </select>
+    </div>
+    <div class="chart-bars" id="activityBars"></div>
+  </div>
+
+  <!-- Nutrition -->
+  <div class="sec-title">Today's Nutrition</div>
+  <div class="sec-sub">AI-optimized meal plan tailored to your fitness goals</div>
+  <div class="nutrition-grid">
+    <div class="nutr-card">
+      <div class="nutr-val">2,847</div>
+      <div class="nutr-label">Calories</div>
+      <div class="nutr-bar"><div class="nutr-fill" style="width:71%;background:var(--warn);"></div></div>
+    </div>
+    <div class="nutr-card">
+      <div class="nutr-val">185g</div>
+      <div class="nutr-label">Protein</div>
+      <div class="nutr-bar"><div class="nutr-fill" style="width:85%;background:var(--ok);"></div></div>
+    </div>
+    <div class="nutr-card">
+      <div class="nutr-val">240g</div>
+      <div class="nutr-label">Carbs</div>
+      <div class="nutr-bar"><div class="nutr-fill" style="width:60%;background:var(--info);"></div></div>
+    </div>
+    <div class="nutr-card">
+      <div class="nutr-val">78g</div>
+      <div class="nutr-label">Fat</div>
+      <div class="nutr-bar"><div class="nutr-fill" style="width:52%;background:var(--purple);"></div></div>
+    </div>
+  </div>
+
+  <!-- Workout Plans -->
+  <div class="sec-title">Workout Programs</div>
+  <div class="sec-sub">Celebrity trainer-designed programs powered by AI</div>
+  <div class="workout-grid">
+    <div class="workout-card">
+      <div class="wk-header">
+        <span class="wk-icon">🏋️</span>
+        <span class="wk-difficulty diff-elite">ELITE</span>
+      </div>
+      <div class="wk-title">GOAT Body Transformation</div>
+      <div class="wk-desc">12-week total body transformation program used by pro athletes and celebrities. Build muscle, burn fat, elevate performance.</div>
+      <div class="wk-meta">
+        <span class="wk-tag">⏱ 60 min/day</span>
+        <span class="wk-tag">📅 5x/week</span>
+        <span class="wk-tag">🎯 Full Body</span>
+      </div>
+      <button class="wk-btn" onclick="startWorkout('GOAT Body Transformation')">Start Program</button>
+    </div>
+    <div class="workout-card">
+      <div class="wk-header">
+        <span class="wk-icon">🧘</span>
+        <span class="wk-difficulty diff-medium">MEDIUM</span>
+      </div>
+      <div class="wk-title">Celebrity Mindset & Mobility</div>
+      <div class="wk-desc">Combines yoga, meditation, and mobility work. Used by A-list celebrities to manage stress, improve focus, and maintain peak mental health.</div>
+      <div class="wk-meta">
+        <span class="wk-tag">⏱ 45 min/day</span>
+        <span class="wk-tag">📅 7x/week</span>
+        <span class="wk-tag">🎯 Mind & Body</span>
+      </div>
+      <button class="wk-btn" onclick="startWorkout('Celebrity Mindset')">Start Program</button>
+    </div>
+    <div class="workout-card">
+      <div class="wk-header">
+        <span class="wk-icon">🏃</span>
+        <span class="wk-difficulty diff-hard">HARD</span>
+      </div>
+      <div class="wk-title">Red Carpet Cardio Blast</div>
+      <div class="wk-desc">High-intensity cardio program designed to get you red-carpet ready in 6 weeks. Maximum results with minimum time investment.</div>
+      <div class="wk-meta">
+        <span class="wk-tag">⏱ 30 min/day</span>
+        <span class="wk-tag">📅 6x/week</span>
+        <span class="wk-tag">🎯 Cardio & Tone</span>
+      </div>
+      <button class="wk-btn" onclick="startWorkout('Red Carpet Cardio')">Start Program</button>
+    </div>
+  </div>
+
+  <!-- Health AI -->
+  <div class="health-ai">
+    <div class="sec-title">🤖 AI Health Coach</div>
+    <div class="sec-sub" style="margin-bottom:0;">Ask your personal AI health coach anything about nutrition, fitness, recovery, or wellness.</div>
+    <div class="ai-chat" id="healthChat">
+      <div class="ai-msg bot">Hey! I've analyzed your health data today. Your heart rate looks great and you're close to your step goal. I recommend adding 20 mins of cardio to hit your targets. What can I help you with? 💪</div>
+    </div>
+    <div class="ai-input">
+      <input type="text" id="healthInput" placeholder="Ask your AI health coach...">
+      <button class="ai-send" onclick="sendHealthMsg()">Ask AI</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Activity bars
+const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const acts = [75,90,60,85,95,50,70];
+const colors = ['var(--ok)','var(--cyan)','var(--warn)','var(--ok)','var(--purple)','var(--info)','var(--gold)'];
+document.getElementById('activityBars').innerHTML = days.map((d,i)=>`
+  <div class="bar-wrap">
+    <div class="bar-val">${acts[i]}%</div>
+    <div class="bar" style="height:${acts[i]}%;background:${colors[i]};width:100%;"></div>
+    <div class="bar-label">${d}</div>
+  </div>`).join('');
+
+// Heart rate animation
+setInterval(()=>{
+  const hr = 68 + Math.floor(Math.random()*12);
+  document.getElementById('heartRate').textContent = hr;
+},2000);
+
+// Health AI
+const healthAnswers = [
+  "Great question! Based on your vitals, I recommend 2 hours of sleep more tonight and a protein shake post-workout. Your recovery score will improve by 15%. 😴",
+  "Your nutrition looks solid today! You're 15g short on protein — a chicken breast or shake will fix that. Keep it up! 🥗",
+  "For red carpet prep, I recommend cutting sodium 3 days before and increasing water intake to 3L/day. You'll look your best! ✨",
+  "Your stress levels are low today — perfect for a high-intensity workout! Try the GOAT Body Transformation session now. 🔥",
+  "Based on your sleep data, your peak performance window is 10 AM - 2 PM. Schedule important creative work during this time. 📊"
+];
+let hIdx = 0;
+
+function sendHealthMsg(){
+  const input = document.getElementById('healthInput');
+  const chat = document.getElementById('healthChat');
+  const msg = input.value.trim();
+  if(!msg) return;
+  const user = document.createElement('div');
+  user.className='ai-msg user';user.textContent=msg;
+  chat.appendChild(user);input.value='';
+  setTimeout(()=>{
+    const bot=document.createElement('div');
+    bot.className='ai-msg bot';
+    bot.textContent=healthAnswers[hIdx%healthAnswers.length];hIdx++;
+    chat.appendChild(bot);chat.scrollTop=chat.scrollHeight;
+  },800);
+  chat.scrollTop=chat.scrollHeight;
+}
+document.getElementById('healthInput').addEventListener('keypress',e=>{if(e.key==='Enter')sendHealthMsg();});
+
+function startWorkout(name){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;top:70px;right:16px;background:linear-gradient(135deg,#3fb950,#22d3ee);color:#000;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;';
+  t.textContent='💪 Starting: '+name;document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},2500);
+}
+</script>
+</body>
+</html>

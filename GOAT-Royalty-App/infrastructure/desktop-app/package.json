@@ -1,0 +1,220 @@
+{
+  "name": "goat-royalty-app",
+  "version": "4.0.0",
+  "description": "GOAT Royalty - The Ultimate Platform for Fashion, Entertainment, Music & Celebrity Tools",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "build:web": "cd ../web-app && npm run build",
+    "dev:web": "cd ../web-app && npm run dev",
+    "build:win": "electron-builder --win --x64 --ia32",
+    "build:win:x64": "electron-builder --win --x64",
+    "build:win:ia32": "electron-builder --win --ia32",
+    "build:mac": "electron-builder --mac --universal",
+    "build:mac:x64": "electron-builder --mac --x64",
+    "build:mac:arm64": "electron-builder --mac --arm64",
+    "build:linux": "electron-builder --linux",
+    "build:portable": "electron-builder --win portable",
+    "build:all": "npm run build:win && npm run build:mac && npm run build:linux",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "tauri:build:win": "tauri build --target x86_64-pc-windows-msvc",
+    "tauri:build:mac": "tauri build --target universal-apple-darwin",
+    "tauri:build:linux": "tauri build --target x86_64-unknown-linux-gnu",
+    "postinstall": "electron-builder install-app-deps",
+    "dist": "npm run build:all",
+    "release": "electron-builder --publish always"
+  },
+  "keywords": [
+    "goat",
+    "royalty",
+    "celebrity",
+    "fashion",
+    "entertainment",
+    "music",
+    "nft",
+    "3d",
+    "ai",
+    "desktop-app"
+  ],
+  "author": "GOAT Royalty Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/goatroyalty/goat-app"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0",
+    "electron-updater": "^6.1.7"
+  },
+  "devDependencies": {
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1",
+    "@tauri-apps/cli": "^1.5.9"
+  },
+  "build": {
+    "appId": "com.goatroyalty.app",
+    "productName": "GOAT Royalty",
+    "copyright": "Copyright © 2024 GOAT Royalty. All rights reserved.",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "../web-app/**/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!.editorconfig",
+      "!**/._*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/{appveyor.yml,.travis.yml,circle.yml}",
+      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+    ],
+    "extraResources": [
+      {
+        "from": "../web-app",
+        "to": "web-app",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "${productName}-${version}-${arch}-setup.${ext}",
+      "publisherName": "GOAT Royalty",
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "GOAT Royalty",
+      "license": "LICENSE",
+      "installerSidebar": "build/installerSidebar.bmp",
+      "deleteAppDataOnUninstall": false,
+      "displayLanguageSelector": false,
+      "installerLanguages": ["en_US"],
+      "language": "1033"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portable.${ext}"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64", "universal"]
+        },
+        {
+          "target": "zip",
+          "arch": ["universal"]
+        }
+      ],
+      "icon": "build/icon.icns",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "category": "public.app-category.entertainment",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "type": "distribution",
+      "minimumSystemVersion": "10.13.0"
+    },
+    "dmg": {
+      "background": "build/dmg-background.png",
+      "iconSize": 100,
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        },
+        {
+          "target": "snap",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icons",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "category": "AudioVideo;Video;AudioVideoEditing;Graphics;2DGraphics;3DGraphics",
+      "maintainer": "GOAT Royalty Team <team@goatroyalty.app>",
+      "desktop": {
+        "Name": "GOAT Royalty",
+        "Comment": "The Ultimate Platform for Fashion, Entertainment, Music & Celebrity Tools",
+        "Categories": "AudioVideo;Graphics;Entertainment;",
+        "StartupWMClass": "goat-royalty"
+      },
+      "synopsis": "Ultimate celebrity platform",
+      "description": "GOAT Royalty is the ultimate platform for fashion, entertainment, music, and celebrity tools."
+    },
+    "appImage": {
+      "systemIntegration": {
+        "ask": true
+      }
+    },
+    "snap": {
+      "confinement": "strict",
+      "grade": "stable",
+      "plugs": [
+        "default",
+        "removable-media",
+        "unity7",
+        "wayland",
+        "x11"
+      ]
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "goatroyalty",
+      "repo": "goat-app",
+      "releaseType": "release"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "browserslist": [
+    "Electron/28.0"
+  ]
+}

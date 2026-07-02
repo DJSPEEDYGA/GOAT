@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royalty Calculator Pro | GOAT Royalty App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --goat-gold: #FFD700;
+            --goat-purple: #8B5CF6;
+            --goat-dark: #0a0a0a;
+            --calc-green: #00FF88;
+            --calc-blue: #00BFFF;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        
+        .glow-gold { text-shadow: 0 0 10px var(--goat-gold), 0 0 20px var(--goat-gold); }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(20, 20, 40, 0.9), rgba(10, 10, 20, 0.95));
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .input-field {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            width: 100%;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--goat-gold);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+        
+        .btn-calculate {
+            background: linear-gradient(135deg, var(--goat-gold), #FF6B00);
+            color: black;
+            font-weight: 700;
+            padding: 14px 28px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 16px;
+        }
+        
+        .btn-calculate:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(255, 215, 0, 0.4);
+        }
+        
+        .result-card {
+            background: linear-gradient(145deg, rgba(0, 255, 136, 0.1), rgba(0, 191, 255, 0.1));
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+        
+        .slider-container {
+            position: relative;
+            padding: 10px 0;
+        }
+        
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--calc-green), var(--goat-gold));
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--goat-gold);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--goat-gold);
+        }
+        
+        .platform-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .platform-tag:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: var(--goat-gold);
+        }
+        
+        .platform-tag.active {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: var(--goat-gold);
+        }
+        
+        .big-number {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--calc-green), var(--goat-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .split-bar {
+            height: 32px;
+            border-radius: 8px;
+            transition: width 0.5s ease;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Header -->
+    <header class="mb-8">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-yellow-500 flex items-center justify-center">
+                <span class="text-2xl">💰</span>
+            </div>
+            <div>
+                <h1 class="text-3xl md:text-4xl font-orbitron font-bold glow-gold">ROYALTY CALCULATOR PRO</h1>
+                <p class="text-gray-400">Calculate your streaming & royalty earnings</p>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Calculator Input -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Streaming Calculator -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-6 glow-gold">🎵 STREAMING CALCULATOR</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Spotify Streams</label>
+                        <input type="text" id="spotify-streams" class="input-field" placeholder="e.g., 1,000,000" value="1000000">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Apple Music Streams</label>
+                        <input type="text" id="apple-streams" class="input-field" placeholder="e.g., 500,000" value="500000">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">YouTube Music Streams</label>
+                        <input type="text" id="youtube-streams" class="input-field" placeholder="e.g., 250,000" value="250000">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Amazon Music Streams</label>
+                        <input type="text" id="amazon-streams" class="input-field" placeholder="e.g., 100,000" value="100000">
+                    </div>
+                </div>
+                
+                <button class="btn-calculate w-full" onclick="calculateStreaming()">
+                    🧮 CALCULATE STREAMING ROYALTIES
+                </button>
+            </div>
+            
+            <!-- Performance Royalties -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-6 glow-gold">📻 PERFORMANCE ROYALTIES</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Radio Plays (estimated)</label>
+                        <input type="text" id="radio-plays" class="input-field" placeholder="e.g., 10,000" value="10000">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">TV/Film Placements</label>
+                        <input type="text" id="tv-placements" class="input-field" placeholder="e.g., 5" value="5">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Live Performances</label>
+                        <input type="text" id="live-performances" class="input-field" placeholder="e.g., 20" value="20">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Venue Capacity (avg)</label>
+                        <input type="text" id="venue-capacity" class="input-field" placeholder="e.g., 500" value="500">
+                    </div>
+                </div>
+                
+                <button class="btn-calculate w-full" onclick="calculatePerformance()">
+                    🧮 CALCULATE PERFORMANCE ROYALTIES
+                </button>
+            </div>
+            
+            <!-- Split Calculator -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-6 glow-gold">📊 ROYALTY SPLIT CALCULATOR</h2>
+                
+                <div class="mb-6">
+                    <label class="block text-sm text-gray-400 mb-2">Total Royalty Amount ($)</label>
+                    <input type="text" id="total-royalty" class="input-field" placeholder="e.g., 10000" value="10000">
+                </div>
+                
+                <div class="space-y-4 mb-6" id="split-holders">
+                    <div class="flex items-center gap-4">
+                        <input type="text" class="input-field flex-1" placeholder="Name" value="Artist">
+                        <input type="number" class="input-field w-24" placeholder="%" value="50" min="0" max="100">
+                        <button class="text-red-400 hover:text-red-300" onclick="removeSplit(this)">✕</button>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <input type="text" class="input-field flex-1" placeholder="Name" value="Producer">
+                        <input type="number" class="input-field w-24" placeholder="%" value="25" min="0" max="100">
+                        <button class="text-red-400 hover:text-red-300" onclick="removeSplit(this)">✕</button>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <input type="text" class="input-field flex-1" placeholder="Name" value="Label">
+                        <input type="number" class="input-field w-24" placeholder="%" value="25" min="0" max="100">
+                        <button class="text-red-400 hover:text-red-300" onclick="removeSplit(this)">✕</button>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <button class="btn-calculate flex-1" onclick="addSplitHolder()">
+                        + ADD SPLIT HOLDER
+                    </button>
+                    <button class="btn-calculate flex-1" onclick="calculateSplits()">
+                        CALCULATE SPLITS
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Panel -->
+        <div class="space-y-6">
+            <!-- Streaming Results -->
+            <div class="card result-card p-6">
+                <h2 class="font-orbitron text-lg mb-4">💵 STREAMING RESULTS</h2>
+                <div class="text-center mb-4">
+                    <div class="big-number" id="streaming-total">$1,850</div>
+                    <div class="text-gray-400 text-sm">Estimated Earnings</div>
+                </div>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Spotify</span>
+                        <span id="spotify-earnings">$4,000</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Apple Music</span>
+                        <span id="apple-earnings">$3,500</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">YouTube Music</span>
+                        <span id="youtube-earnings">$750</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Amazon Music</span>
+                        <span id="amazon-earnings">$500</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Performance Results -->
+            <div class="card result-card p-6">
+                <h2 class="font-orbitron text-lg mb-4">📻 PERFORMANCE RESULTS</h2>
+                <div class="text-center mb-4">
+                    <div class="big-number" id="performance-total">$12,500</div>
+                    <div class="text-gray-400 text-sm">Estimated Earnings</div>
+                </div>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Radio</span>
+                        <span id="radio-earnings">$5,000</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">TV/Film</span>
+                        <span id="tv-earnings">$7,500</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Split Results -->
+            <div class="card result-card p-6">
+                <h2 class="font-orbitron text-lg mb-4">📊 SPLIT BREAKDOWN</h2>
+                <div class="space-y-3" id="split-results">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Artist</span>
+                            <span>$5,000 (50%)</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-4 overflow-hidden">
+                            <div class="split-bar bg-gradient-to-r from-green-400 to-yellow-500" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Producer</span>
+                            <span>$2,500 (25%)</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-4 overflow-hidden">
+                            <div class="split-bar bg-gradient-to-r from-purple-400 to-pink-500" style="width: 25%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Label</span>
+                            <span>$2,500 (25%)</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-4 overflow-hidden">
+                            <div class="split-bar bg-gradient-to-r from-cyan-400 to-blue-500" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Rate Reference -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-lg mb-4">📈 RATE REFERENCE</h2>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between text-gray-400">
+                        <span>Spotify</span>
+                        <span class="text-green-400">$0.003-0.005/stream</span>
+                    </div>
+                    <div class="flex justify-between text-gray-400">
+                        <span>Apple Music</span>
+                        <span class="text-green-400">$0.007-0.01/stream</span>
+                    </div>
+                    <div class="flex justify-between text-gray-400">
+                        <span>YouTube Music</span>
+                        <span class="text-green-400">$0.002-0.004/stream</span>
+                    </div>
+                    <div class="flex justify-between text-gray-400">
+                        <span>Amazon Music</span>
+                        <span class="text-green-400">$0.004-0.007/stream</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="mt-8 text-center text-gray-500 text-sm">
+        <p>🐐 GOAT Royalty App | Royalty Calculator Pro</p>
+        <p class="text-xs mt-1">Estimates based on average industry rates. Actual payouts may vary.</p>
+    </footer>
+    
+    <script>
+        // Rate constants (average per stream)
+        const RATES = {
+            spotify: 0.004,
+            apple: 0.007,
+            youtube: 0.003,
+            amazon: 0.005
+        };
+        
+        function parseNumber(str) {
+            return parseFloat(str.replace(/[^0-9.-]/g, '')) || 0;
+        }
+        
+        function formatCurrency(num) {
+            return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+        
+        function calculateStreaming() {
+            const spotify = parseNumber(document.getElementById('spotify-streams').value);
+            const apple = parseNumber(document.getElementById('apple-streams').value);
+            const youtube = parseNumber(document.getElementById('youtube-streams').value);
+            const amazon = parseNumber(document.getElementById('amazon-streams').value);
+            
+            const spotifyEarnings = spotify * RATES.spotify;
+            const appleEarnings = apple * RATES.apple;
+            const youtubeEarnings = youtube * RATES.youtube;
+            const amazonEarnings = amazon * RATES.amazon;
+            
+            const total = spotifyEarnings + appleEarnings + youtubeEarnings + amazonEarnings;
+            
+            document.getElementById('spotify-earnings').textContent = formatCurrency(spotifyEarnings);
+            document.getElementById('apple-earnings').textContent = formatCurrency(appleEarnings);
+            document.getElementById('youtube-earnings').textContent = formatCurrency(youtubeEarnings);
+            document.getElementById('amazon-earnings').textContent = formatCurrency(amazonEarnings);
+            document.getElementById('streaming-total').textContent = formatCurrency(total);
+        }
+        
+        function calculatePerformance() {
+            const radioPlays = parseNumber(document.getElementById('radio-plays').value);
+            const tvPlacements = parseNumber(document.getElementById('tv-placements').value);
+            const livePerformances = parseNumber(document.getElementById('live-performances').value);
+            const venueCapacity = parseNumber(document.getElementById('venue-capacity').value);
+            
+            // Simplified estimates
+            const radioEarnings = radioPlays * 0.50; // Average per play
+            const tvEarnings = tvPlacements * 1500; // Average sync fee
+            const liveEarnings = livePerformances * venueCapacity * 0.05; // Performance royalty estimate
+            
+            const total = radioEarnings + tvEarnings + liveEarnings;
+            
+            document.getElementById('radio-earnings').textContent = formatCurrency(radioEarnings);
+            document.getElementById('tv-earnings').textContent = formatCurrency(tvEarnings);
+            document.getElementById('performance-total').textContent = formatCurrency(total);
+        }
+        
+        function addSplitHolder() {
+            const container = document.getElementById('split-holders');
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-4';
+            div.innerHTML = `
+                <input type="text" class="input-field flex-1" placeholder="Name">
+                <input type="number" class="input-field w-24" placeholder="%" min="0" max="100" value="0">
+                <button class="text-red-400 hover:text-red-300" onclick="removeSplit(this)">✕</button>
+            `;
+            container.appendChild(div);
+        }
+        
+        function removeSplit(btn) {
+            btn.parentElement.remove();
+        }
+        
+        function calculateSplits() {
+            const total = parseNumber(document.getElementById('total-royalty').value);
+            const holders = document.querySelectorAll('#split-holders > div');
+            const results = document.getElementById('split-results');
+            
+            let html = '';
+            const colors = [
+                'from-green-400 to-yellow-500',
+                'from-purple-400 to-pink-500',
+                'from-cyan-400 to-blue-500',
+                'from-orange-400 to-red-500',
+                'from-teal-400 to-green-500'
+            ];
+            
+            holders.forEach((holder, index) => {
+                const name = holder.querySelector('input[type="text"]').value || 'Unknown';
+                const percent = parseFloat(holder.querySelector('input[type="number"]').value) || 0;
+                const amount = total * (percent / 100);
+                
+                html += `
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>${name}</span>
+                            <span>${formatCurrency(amount)} (${percent}%)</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-4 overflow-hidden">
+                            <div class="split-bar bg-gradient-to-r ${colors[index % colors.length]}" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            results.innerHTML = html;
+        }
+        
+        // Initial calculation
+        calculateStreaming();
+        calculatePerformance();
+        calculateSplits();
+    </script>
+</body>
+</html>

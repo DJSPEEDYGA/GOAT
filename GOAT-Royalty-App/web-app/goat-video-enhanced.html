@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Video Enhanced | 4K Studio & Sora 2 Engine</title>
+<style>
+  :root{--gold:#d4a03c;--bg:#040608;--panel:#0d1117;--panel2:#131920;--pink:#f472b6;--purple:#a78bfa;--green:#22c55e;--red:#ef4444;--blue:#38bdf8;--text:#e2e8f0;--muted:#64748b;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden;}
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:rgba(4,6,8,.97);border-bottom:1px solid rgba(212,160,60,.25);position:sticky;top:0;z-index:100;}
+  .nav-logo span{font-size:20px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .nav-links a{color:var(--muted);text-decoration:none;padding:5px 12px;border-radius:16px;font-size:12px;transition:.3s;margin:0 2px;}
+  .nav-links a:hover,.nav-links a.active{background:rgba(212,160,60,.12);color:var(--gold);}
+  .btn-sm{padding:7px 18px;border:none;border-radius:16px;font-weight:700;cursor:pointer;font-size:12px;}
+  .btn-gold{background:linear-gradient(135deg,var(--gold),#b8860b);color:#000;}
+  .btn-purple{background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff;}
+
+  /* LAYOUT */
+  .studio-layout{display:grid;grid-template-columns:260px 1fr 280px;grid-template-rows:auto 1fr auto;height:calc(100vh - 53px);gap:0;}
+
+  /* TOP BAR */
+  .studio-topbar{grid-column:1/-1;background:var(--panel);border-bottom:1px solid rgba(255,255,255,.06);padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .project-name{font-size:14px;font-weight:700;color:var(--gold);}
+  .topbar-sep{width:1px;height:24px;background:rgba(255,255,255,.08);}
+  .quality-badge{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3);color:var(--blue);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;}
+  .engine-badge{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);color:var(--purple);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;}
+  .engine-dot{width:6px;height:6px;border-radius:50%;background:var(--purple);animation:pulse .8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .topbar-actions{margin-left:auto;display:flex;gap:8px;}
+
+  /* LEFT PANEL */
+  .left-panel{background:var(--panel);border-right:1px solid rgba(255,255,255,.05);overflow-y:auto;padding:14px;}
+  .panel-sec{margin-bottom:20px;}
+  .panel-sec-title{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:700;margin-bottom:10px;}
+
+  /* MEDIA BIN */
+  .media-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .media-item{border-radius:8px;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.06);transition:.3s;background:var(--panel2);}
+  .media-item:hover{border-color:var(--gold);}
+  .media-thumb{height:54px;display:flex;align-items:center;justify-content:center;font-size:22px;position:relative;}
+  .media-dur{position:absolute;bottom:3px;right:4px;background:rgba(0,0,0,.8);font-size:9px;padding:1px 5px;border-radius:3px;}
+  .media-name{font-size:10px;padding:4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;}
+  .media-type{font-size:9px;color:var(--muted);padding:0 6px 4px;}
+
+  /* EFFECTS */
+  .effect-list{display:flex;flex-direction:column;gap:5px;}
+  .effect-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:.3s;background:var(--panel2);border:1px solid rgba(255,255,255,.04);}
+  .effect-item:hover,.effect-item.active{background:rgba(212,160,60,.08);border-color:rgba(212,160,60,.2);}
+  .effect-icon{font-size:16px;flex-shrink:0;}
+  .effect-name{font-size:12px;font-weight:600;flex:1;}
+  .effect-badge{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;}
+  .eb-ai{background:rgba(167,139,250,.2);color:var(--purple);}
+  .eb-4k{background:rgba(56,189,248,.2);color:var(--blue);}
+  .eb-new{background:rgba(34,197,94,.2);color:var(--green);}
+
+  /* CENTER: VIEWPORT */
+  .viewport{background:#000;position:relative;display:flex;flex-direction:column;}
+  .video-canvas{flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;}
+  .vc-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(30,20,60,.8) 0%,#000 70%);}
+  .vc-scene{position:relative;z-index:2;text-align:center;}
+  .vc-emoji{font-size:100px;filter:drop-shadow(0 0 30px rgba(212,160,60,.6));animation:float 3s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+  .vc-label{font-size:13px;color:rgba(255,255,255,.6);margin-top:12px;}
+  .vc-overlay{position:absolute;inset:0;z-index:3;pointer-events:none;}
+  /* Scan lines effect */
+  .scanlines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;opacity:.3;}
+  /* Letterbox */
+  .letterbox{position:absolute;left:0;right:0;height:40px;background:#000;pointer-events:none;}
+  .letterbox.top{top:0;}
+  .letterbox.bottom{bottom:0;}
+  /* HUD */
+  .hud-tl{position:absolute;top:50px;left:16px;z-index:4;font-size:10px;color:rgba(255,255,255,.6);font-family:monospace;}
+  .hud-tr{position:absolute;top:50px;right:16px;z-index:4;text-align:right;font-size:10px;color:rgba(255,255,255,.6);font-family:monospace;}
+  .hud-br{position:absolute;bottom:50px;right:16px;z-index:4;font-size:10px;color:rgba(255,255,255,.6);font-family:monospace;}
+  .rec-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--red);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;}
+  .rec-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse .8s infinite;}
+  /* Controls overlay */
+  .vc-controls{position:absolute;bottom:50px;left:50%;transform:translateX(-50%);z-index:4;display:flex;gap:8px;align-items:center;background:rgba(0,0,0,.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:8px 16px;}
+  .vc-btn{background:none;border:none;color:var(--text);font-size:18px;cursor:pointer;transition:.3s;padding:4px 8px;}
+  .vc-btn:hover{color:var(--gold);}
+  .vc-play{background:linear-gradient(135deg,var(--gold),#b8860b);color:#000;width:36px;height:36px;border-radius:50%;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .timecode{font-family:monospace;font-size:13px;color:var(--gold);min-width:80px;text-align:center;}
+
+  /* SORA 2 AI PANEL */
+  .sora-panel{position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:5;background:rgba(13,17,23,.92);backdrop-filter:blur(16px);border:1px solid rgba(167,139,250,.3);border-radius:14px;padding:14px 20px;min-width:340px;display:none;}
+  .sora-panel.active{display:block;}
+  .sora-title{font-size:13px;font-weight:700;color:var(--purple);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+  .sora-input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;outline:none;margin-bottom:8px;}
+  .sora-btns{display:flex;gap:6px;}
+  .sora-btn{padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none;}
+  .sora-generate{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;}
+  .sora-cancel{background:rgba(255,255,255,.1);color:var(--text);}
+  .sora-progress-wrap{margin-top:8px;display:none;}
+  .sora-prog{height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;}
+  .sora-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--pink));width:0%;transition:width .3s;}
+  .sora-status{font-size:10px;color:var(--muted);margin-top:4px;}
+
+  /* RIGHT PANEL */
+  .right-panel{background:var(--panel);border-left:1px solid rgba(255,255,255,.05);overflow-y:auto;padding:14px;}
+  .prop-group{margin-bottom:18px;}
+  .prop-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:700;margin-bottom:10px;}
+  .prop-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .prop-name{font-size:12px;color:var(--muted);min-width:80px;}
+  .prop-val{font-size:12px;font-weight:600;}
+  .prop-slider{flex:1;accent-color:var(--gold);height:3px;}
+  .prop-num{font-size:11px;color:var(--gold);min-width:36px;text-align:right;}
+  .color-swatch{width:24px;height:24px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,.1);}
+  .color-row{display:flex;gap:6px;flex-wrap:wrap;}
+
+  /* RENDER OPTIONS */
+  .render-opts{display:flex;flex-direction:column;gap:6px;}
+  .render-opt{background:var(--panel2);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px;cursor:pointer;transition:.3s;}
+  .render-opt:hover,.render-opt.selected{border-color:var(--gold);background:rgba(212,160,60,.05);}
+  .ro-label{font-size:12px;font-weight:700;}
+  .ro-sub{font-size:10px;color:var(--muted);}
+
+  /* EXPORT */
+  .export-section{background:linear-gradient(135deg,rgba(212,160,60,.08),rgba(167,139,250,.08));border:1px solid rgba(212,160,60,.2);border-radius:12px;padding:14px;margin-top:8px;}
+  .export-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+  .export-fmt{padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid rgba(212,160,60,.2);color:var(--gold);background:rgba(212,160,60,.05);transition:.3s;}
+  .export-fmt:hover,.export-fmt.selected{background:rgba(212,160,60,.15);}
+  .export-btn{width:100%;padding:11px;background:linear-gradient(135deg,var(--gold),#b8860b);border:none;border-radius:10px;color:#000;font-size:13px;font-weight:700;cursor:pointer;}
+
+  /* TIMELINE */
+  .timeline{grid-column:1/-1;background:var(--panel);border-top:1px solid rgba(255,255,255,.05);padding:14px 16px;height:160px;display:flex;flex-direction:column;}
+  .tl-header{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .tl-title{font-size:12px;font-weight:700;color:var(--gold);}
+  .tl-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--text);padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;transition:.3s;}
+  .tl-btn:hover{background:rgba(212,160,60,.1);border-color:rgba(212,160,60,.2);}
+  .timeline-tracks{flex:1;display:flex;flex-direction:column;gap:4px;overflow-x:auto;}
+  .tl-track{display:flex;align-items:center;gap:8px;height:28px;}
+  .tl-track-label{font-size:10px;color:var(--muted);min-width:80px;text-align:right;font-weight:600;}
+  .tl-track-area{flex:1;background:rgba(255,255,255,.03);border-radius:4px;height:100%;position:relative;overflow:hidden;}
+  .tl-clip{position:absolute;top:2px;height:calc(100% - 4px);border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:9px;font-weight:700;overflow:hidden;white-space:nowrap;cursor:pointer;transition:.3s;}
+  .tl-clip:hover{filter:brightness(1.2);}
+  .tl-playhead{position:absolute;top:0;bottom:0;width:2px;background:var(--red);z-index:2;pointer-events:none;}
+  .tl-ruler{display:flex;gap:0;height:16px;border-bottom:1px solid rgba(255,255,255,.05);margin-bottom:4px;}
+  .tl-mark{flex:1;font-size:8px;color:var(--muted);font-family:monospace;border-left:1px solid rgba(255,255,255,.05);padding-left:3px;}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="nav-logo"><span>👑 GOAT</span></a>
+  <div class="nav-links">
+    <a href="index.html">Dashboard</a>
+    <a href="goat-video-enhanced.html" class="active">Video Studio</a>
+    <a href="goat-3d-studio.html">3D Studio</a>
+    <a href="goat-ai-video.html">AI Video</a>
+    <a href="goat-3d-effects.html">3D Effects</a>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn-sm btn-purple" onclick="toggleSora()">🤖 Sora 2 AI</button>
+    <button class="btn-sm btn-gold">Export 4K</button>
+  </div>
+</nav>
+
+<!-- STUDIO LAYOUT -->
+<div class="studio-layout">
+
+  <!-- TOP BAR -->
+  <div class="studio-topbar">
+    <span class="project-name">🎬 Crown Dynasty - Music Video Cut v3.4</span>
+    <div class="topbar-sep"></div>
+    <span class="quality-badge">4K UHD</span>
+    <span class="engine-badge"><div class="engine-dot"></div>Sora 2 Active</span>
+    <span style="font-size:12px;color:var(--muted)">Duration: 3:47</span>
+    <span style="font-size:12px;color:var(--muted)">|</span>
+    <span style="font-size:12px;color:var(--muted)">FPS: 60</span>
+    <span style="font-size:12px;color:var(--muted)">|</span>
+    <span style="font-size:12px;color:var(--muted)">Codec: H.265</span>
+    <div class="topbar-actions">
+      <button class="btn-sm" style="background:rgba(255,255,255,.06);color:var(--text);border:1px solid rgba(255,255,255,.08)">↩ Undo</button>
+      <button class="btn-sm" style="background:rgba(255,255,255,.06);color:var(--text);border:1px solid rgba(255,255,255,.08)">↪ Redo</button>
+      <button class="btn-sm btn-gold">💾 Save</button>
+    </div>
+  </div>
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <!-- Media Bin -->
+    <div class="panel-sec">
+      <div class="panel-sec-title">📁 Media Bin</div>
+      <div class="media-grid" id="mediaBin"></div>
+      <button style="width:100%;margin-top:8px;padding:7px;background:rgba(212,160,60,.08);border:1px dashed rgba(212,160,60,.3);border-radius:8px;color:var(--gold);font-size:11px;cursor:pointer;font-weight:600">+ Import Media</button>
+    </div>
+
+    <!-- Audio Tracks -->
+    <div class="panel-sec">
+      <div class="panel-sec-title">🎵 Audio</div>
+      <div class="effect-list">
+        <div class="effect-item active"><div class="effect-icon">🎵</div><div class="effect-name">Main Track</div><div class="effect-badge eb-4k">WAV</div></div>
+        <div class="effect-item"><div class="effect-icon">🎤</div><div class="effect-name">Vocals</div><div class="effect-badge eb-4k">48KHz</div></div>
+        <div class="effect-item"><div class="effect-icon">🥁</div><div class="effect-name">Drum Loop</div><div class="effect-badge eb-4k">WAV</div></div>
+        <div class="effect-item"><div class="effect-icon">🎹</div><div class="effect-name">Synth Layer</div><div class="effect-badge eb-4k">MIDI</div></div>
+      </div>
+    </div>
+
+    <!-- Effects -->
+    <div class="panel-sec">
+      <div class="panel-sec-title">✨ Video Effects</div>
+      <div class="effect-list" id="effectList"></div>
+    </div>
+
+    <!-- Transitions -->
+    <div class="panel-sec">
+      <div class="panel-sec-title">🔄 Transitions</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="background:var(--panel2);border-radius:8px;padding:8px;text-align:center;cursor:pointer;font-size:18px;border:1px solid rgba(255,255,255,.04)" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(255,255,255,.04)'">⚡<div style="font-size:9px;color:var(--muted);margin-top:3px">Flash</div></div>
+        <div style="background:var(--panel2);border-radius:8px;padding:8px;text-align:center;cursor:pointer;font-size:18px;border:1px solid rgba(255,255,255,.04)" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(255,255,255,.04)'">🌊<div style="font-size:9px;color:var(--muted);margin-top:3px">Warp</div></div>
+        <div style="background:var(--panel2);border-radius:8px;padding:8px;text-align:center;cursor:pointer;font-size:18px;border:1px solid rgba(255,255,255,.04)" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(255,255,255,.04)'">🎭<div style="font-size:9px;color:var(--muted);margin-top:3px">Morph</div></div>
+        <div style="background:var(--panel2);border-radius:8px;padding:8px;text-align:center;cursor:pointer;font-size:18px;border:1px solid rgba(255,255,255,.04)" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(255,255,255,.04)'">✨<div style="font-size:9px;color:var(--muted);margin-top:3px">Glitch</div></div>
+        <div style="background:var(--panel2);border-radius:8px;padding:8px;text-align:center;cursor:pointer;font-size:18px;border:1px solid rgba(255,255,255,.04)" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(255,255,255,.04)'">🌅<div style="font-size:9px;color:var(--muted);margin-top:3px">Dissolve</div></div>
+        <div style="background:var(--panel2);border-radius:8px;padding:8px;text-align:center;cursor:pointer;font-size:18px;border:1px solid rgba(255,255,255,.04)" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(255,255,255,.04)'">💫<div style="font-size:9px;color:var(--muted);margin-top:3px">Zoom</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEWPORT -->
+  <div class="viewport">
+    <!-- SORA 2 AI PANEL -->
+    <div class="sora-panel" id="soraPanel">
+      <div class="sora-title">🤖 Sora 2 AI Video Generator</div>
+      <input class="sora-input" id="soraPrompt" placeholder="Describe the scene you want to generate...">
+      <div class="sora-btns">
+        <button class="sora-btn sora-generate" onclick="generateSora()">⚡ Generate Scene</button>
+        <button class="sora-btn sora-cancel" onclick="toggleSora()">Cancel</button>
+      </div>
+      <div class="sora-progress-wrap" id="soraProgress">
+        <div class="sora-prog"><div class="sora-fill" id="soraFill"></div></div>
+        <div class="sora-status" id="soraStatus">Initializing Sora 2...</div>
+      </div>
+    </div>
+
+    <div class="video-canvas" id="videoCanvas">
+      <div class="vc-bg"></div>
+      <div class="scanlines"></div>
+      <div class="letterbox top"></div>
+      <div class="letterbox bottom"></div>
+
+      <!-- HUD -->
+      <div class="hud-tl">
+        <div class="rec-badge"><div class="rec-dot"></div>REC</div>
+        <div style="margin-top:6px">00:01:24:08</div>
+        <div>4K UHD 60fps</div>
+      </div>
+      <div class="hud-tr">
+        <div style="color:var(--gold);font-weight:700">GOAT STUDIO</div>
+        <div id="fpsCounter">FPS: 60</div>
+        <div>SORA 2 ENGINE</div>
+      </div>
+      <div class="hud-br">
+        <div>SCENE 4 / TAKE 2</div>
+        <div>ISO 400</div>
+      </div>
+
+      <!-- Main Scene -->
+      <div class="vc-scene" id="vcScene">
+        <div class="vc-emoji" id="sceneEmoji">🎬</div>
+        <div class="vc-label" id="sceneLabel">Crown Dynasty — Music Video v3.4</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:6px" id="sceneDesc">Sora 2 Enhanced • 4K HDR Active</div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="vc-controls">
+        <button class="vc-btn">⏮</button>
+        <button class="vc-btn">⏪</button>
+        <button class="vc-play" id="playBtn" onclick="togglePlay()">▶</button>
+        <button class="vc-btn">⏩</button>
+        <button class="vc-btn">⏭</button>
+        <div class="topbar-sep" style="width:1px;height:20px;background:rgba(255,255,255,.08)"></div>
+        <span class="timecode" id="timecode">00:01:24</span>
+        <div class="topbar-sep" style="width:1px;height:20px;background:rgba(255,255,255,.08)"></div>
+        <button class="vc-btn" title="Mute">🔊</button>
+        <button class="vc-btn" title="Fullscreen">⛶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <!-- Video Properties -->
+    <div class="prop-group">
+      <div class="prop-label">Video Properties</div>
+      <div class="prop-row">
+        <span class="prop-name">Brightness</span>
+        <input type="range" class="prop-slider" min="0" max="200" value="105" oninput="this.nextElementSibling.textContent=this.value+'%'">
+        <span class="prop-num">105%</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-name">Contrast</span>
+        <input type="range" class="prop-slider" min="0" max="200" value="115" oninput="this.nextElementSibling.textContent=this.value+'%'">
+        <span class="prop-num">115%</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-name">Saturation</span>
+        <input type="range" class="prop-slider" min="0" max="200" value="120" oninput="this.nextElementSibling.textContent=this.value+'%'">
+        <span class="prop-num">120%</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-name">Sharpness</span>
+        <input type="range" class="prop-slider" min="0" max="100" value="65" oninput="this.nextElementSibling.textContent=this.value">
+        <span class="prop-num">65</span>
+      </div>
+      <div class="prop-row">
+        <span class="prop-name">Temp (K)</span>
+        <input type="range" class="prop-slider" min="2000" max="8000" value="5600" oninput="this.nextElementSibling.textContent=this.value+'K'">
+        <span class="prop-num">5600K</span>
+      </div>
+    </div>
+
+    <!-- Color Grade -->
+    <div class="prop-group">
+      <div class="prop-label">Color Grading</div>
+      <div style="margin-bottom:8px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">LUT Preset</div>
+        <select style="width:100%;background:var(--panel2);border:1px solid rgba(255,255,255,.08);color:var(--text);padding:8px;border-radius:8px;font-size:12px;outline:none">
+          <option>Golden Hour</option>
+          <option>Neon Noir</option>
+          <option>Cinematic Teal</option>
+          <option>Royal Purple</option>
+          <option>GOAT Signature</option>
+          <option>B&W Classic</option>
+        </select>
+      </div>
+      <div class="color-row">
+        <div class="color-swatch" style="background:#d4a03c" title="Shadows"></div>
+        <div class="color-swatch" style="background:#a78bfa" title="Midtones"></div>
+        <div class="color-swatch" style="background:#38bdf8" title="Highlights"></div>
+        <div class="color-swatch" style="background:#f472b6" title="Custom"></div>
+        <div class="color-swatch" style="background:#22c55e" title="Green"></div>
+        <div class="color-swatch" style="background:#ef4444" title="Red"></div>
+      </div>
+    </div>
+
+    <!-- AI Enhancement -->
+    <div class="prop-group">
+      <div class="prop-label">🤖 AI Enhancement</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--panel2);border-radius:8px;font-size:12px">
+          <span>4K Upscale</span>
+          <div style="width:36px;height:20px;background:linear-gradient(135deg,var(--green),#16a34a);border-radius:10px;cursor:pointer;position:relative"><div style="position:absolute;right:2px;top:2px;width:16px;height:16px;background:#fff;border-radius:50%"></div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--panel2);border-radius:8px;font-size:12px">
+          <span>Noise Reduction</span>
+          <div style="width:36px;height:20px;background:linear-gradient(135deg,var(--green),#16a34a);border-radius:10px;cursor:pointer;position:relative"><div style="position:absolute;right:2px;top:2px;width:16px;height:16px;background:#fff;border-radius:50%"></div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--panel2);border-radius:8px;font-size:12px">
+          <span>Motion Blur AI</span>
+          <div style="width:36px;height:20px;background:rgba(255,255,255,.1);border-radius:10px;cursor:pointer;position:relative"><div style="position:absolute;left:2px;top:2px;width:16px;height:16px;background:var(--muted);border-radius:50%"></div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--panel2);border-radius:8px;font-size:12px">
+          <span>Auto Captions</span>
+          <div style="width:36px;height:20px;background:linear-gradient(135deg,var(--purple),#7c3aed);border-radius:10px;cursor:pointer;position:relative"><div style="position:absolute;right:2px;top:2px;width:16px;height:16px;background:#fff;border-radius:50%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Render Quality -->
+    <div class="prop-group">
+      <div class="prop-label">Render Quality</div>
+      <div class="render-opts">
+        <div class="render-opt selected" onclick="selectRender(this)"><div class="ro-label">4K Ultra HD — 60fps</div><div class="ro-sub">3840×2160 • HDR10+ • Dolby Vision</div></div>
+        <div class="render-opt" onclick="selectRender(this)"><div class="ro-label">2K QHD — 60fps</div><div class="ro-sub">2560×1440 • SDR</div></div>
+        <div class="render-opt" onclick="selectRender(this)"><div class="ro-label">1080p Full HD</div><div class="ro-sub">1920×1080 • H.264</div></div>
+        <div class="render-opt" onclick="selectRender(this)"><div class="ro-label">Social (9:16)</div><div class="ro-sub">1080×1920 • Instagram/TikTok</div></div>
+      </div>
+    </div>
+
+    <!-- Export -->
+    <div class="export-section">
+      <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:8px">📤 Export</div>
+      <div class="export-row">
+        <span class="export-fmt selected">MP4</span>
+        <span class="export-fmt">MOV</span>
+        <span class="export-fmt">WebM</span>
+        <span class="export-fmt">GIF</span>
+        <span class="export-fmt">4K RAW</span>
+      </div>
+      <button class="export-btn" onclick="exportVideo()">⚡ Export Now — 4K UHD</button>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="timeline">
+    <div class="tl-header">
+      <span class="tl-title">⏱ Timeline</span>
+      <button class="tl-btn">+ Track</button>
+      <button class="tl-btn">⚡ Auto-Cut</button>
+      <button class="tl-btn">🤖 AI Edit</button>
+      <span style="margin-left:auto;font-size:11px;color:var(--muted)">Total: 3:47</span>
+    </div>
+    <div class="timeline-tracks" id="timelineTracks"></div>
+  </div>
+
+</div>
+
+<script>
+// Media bin
+const media = [
+  {emoji:'🎬',bg:'#1a1000',name:'Scene_01.mp4',type:'Video',dur:'0:42'},
+  {emoji:'🌃',bg:'#001a20',name:'City_BG.mp4',type:'Video',dur:'1:20'},
+  {emoji:'🎵',bg:'#1a0533',name:'GoatMode.wav',type:'Audio',dur:'3:47'},
+  {emoji:'👑',bg:'#1a1a00',name:'Logo.png',type:'Image',dur:'—'},
+  {emoji:'🔥',bg:'#1a0a0a',name:'FX_Fire.mov',type:'FX',dur:'0:08'},
+  {emoji:'💫',bg:'#0a0a1a',name:'Glitch_VFX.mp4',type:'FX',dur:'0:05'},
+];
+const binEl = document.getElementById('mediaBin');
+media.forEach(m => {
+  binEl.innerHTML += `
+    <div class="media-item" draggable="true">
+      <div class="media-thumb" style="background:${m.bg}">${m.emoji}<span class="media-dur">${m.dur}</span></div>
+      <div class="media-name">${m.name}</div>
+      <div class="media-type">${m.type}</div>
+    </div>`;
+});
+
+// Effects
+const effects = [
+  {icon:'✨',name:'Glow',badge:'eb-ai',btext:'AI'},
+  {icon:'🌊',name:'Warp Stabilizer',badge:'eb-ai',btext:'AI'},
+  {icon:'🔮',name:'Lens Flare',badge:'eb-4k',btext:'4K'},
+  {icon:'🎭',name:'Face Tracking',badge:'eb-ai',btext:'AI'},
+  {icon:'🌈',name:'HDR Boost',badge:'eb-4k',btext:'4K'},
+  {icon:'⚡',name:'Speed Ramp',badge:'eb-new',btext:'NEW'},
+  {icon:'🎪',name:'AI Green Screen',badge:'eb-ai',btext:'AI'},
+  {icon:'🔥',name:'Particle FX',badge:'eb-new',btext:'NEW'},
+];
+const effEl = document.getElementById('effectList');
+effects.forEach(e => {
+  effEl.innerHTML += `
+    <div class="effect-item" onclick="this.classList.toggle('active')">
+      <div class="effect-icon">${e.icon}</div>
+      <div class="effect-name">${e.name}</div>
+      <div class="effect-badge ${e.badge}">${e.btext}</div>
+    </div>`;
+});
+
+// Timeline tracks
+const tracks = [
+  {label:'Video 1',clips:[{start:0,width:60,label:'Scene_01',color:'#d4a03c'},{start:62,width:38,label:'City_BG',color:'#a78bfa'}]},
+  {label:'Video 2',clips:[{start:10,width:25,label:'FX_Layer',color:'#f472b6'},{start:70,width:28,label:'Credits',color:'#38bdf8'}]},
+  {label:'Audio 1',clips:[{start:0,width:100,label:'GoatMode.wav',color:'#22c55e'}]},
+  {label:'Audio 2',clips:[{start:5,width:70,label:'Vocals',color:'#38bdf8'}]},
+  {label:'Effects',clips:[{start:15,width:10,label:'Glitch',color:'#ef4444'},{start:55,width:8,label:'Flash',color:'#ef4444'},{start:80,width:12,label:'Zoom',color:'#fb923c'}]},
+];
+const tlEl = document.getElementById('timelineTracks');
+// Ruler
+let rulerHtml = '<div class="tl-ruler">';
+for(let i=0;i<=20;i++) rulerHtml += `<div class="tl-mark">${i*10}s</div>`;
+rulerHtml += '</div>';
+tlEl.innerHTML = rulerHtml;
+
+tracks.forEach(t => {
+  let clipsHtml = t.clips.map(c => `
+    <div class="tl-clip" style="left:${c.start}%;width:${c.width}%;background:${c.color}33;border:1px solid ${c.color}66;color:${c.color}">
+      ${c.label}
+    </div>`).join('');
+  tlEl.innerHTML += `
+    <div class="tl-track">
+      <div class="tl-track-label">${t.label}</div>
+      <div class="tl-track-area">
+        ${clipsHtml}
+        <div class="tl-playhead" id="playhead" style="left:35%"></div>
+      </div>
+    </div>`;
+});
+
+// Playback
+let isPlaying = false;
+let timeSeconds = 84;
+let playInterval;
+function togglePlay() {
+  isPlaying = !isPlaying;
+  document.getElementById('playBtn').textContent = isPlaying ? '⏸' : '▶';
+  if(isPlaying) {
+    playInterval = setInterval(() => {
+      timeSeconds = (timeSeconds + 1) % 227;
+      const m = Math.floor(timeSeconds/60);
+      const s = timeSeconds%60;
+      document.getElementById('timecode').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      const pct = (timeSeconds/227)*100;
+      document.querySelectorAll('.tl-playhead').forEach(p => p.style.left = pct+'%');
+    }, 1000);
+  } else {
+    clearInterval(playInterval);
+  }
+}
+
+// Sora 2
+let soraVisible = false;
+function toggleSora() {
+  soraVisible = !soraVisible;
+  document.getElementById('soraPanel').classList.toggle('active', soraVisible);
+}
+
+const soraSteps = ['Parsing prompt...','Generating keyframes...','Rendering motion...','Applying 4K upscale...','Sora 2 synthesis complete!'];
+function generateSora() {
+  const prompt = document.getElementById('soraPrompt').value;
+  if(!prompt) return;
+  const prog = document.getElementById('soraProgress');
+  const fill = document.getElementById('soraFill');
+  const status = document.getElementById('soraStatus');
+  prog.style.display = 'block';
+  let step = 0;
+  const int = setInterval(() => {
+    if(step >= soraSteps.length) {
+      clearInterval(int);
+      setTimeout(() => {
+        document.getElementById('soraPanel').classList.remove('active');
+        soraVisible = false;
+        prog.style.display = 'none';
+        fill.style.width = '0%';
+        // Update scene
+        document.getElementById('sceneEmoji').textContent = '🤖';
+        document.getElementById('sceneLabel').textContent = prompt.substring(0,50);
+        document.getElementById('sceneDesc').textContent = 'Sora 2 Generated • 4K HDR';
+      }, 800);
+      return;
+    }
+    fill.style.width = ((step+1)/soraSteps.length*100)+'%';
+    status.textContent = soraSteps[step];
+    step++;
+  }, 700);
+}
+
+// FPS counter sim
+setInterval(() => {
+  const fps = Math.floor(58 + Math.random()*4);
+  document.getElementById('fpsCounter').textContent = 'FPS: ' + fps;
+}, 2000);
+
+// Export
+function exportVideo() {
+  const btn = document.querySelector('.export-btn');
+  btn.textContent = '⏳ Rendering 4K...';
+  setTimeout(() => {
+    btn.textContent = '✅ Export Complete!';
+    setTimeout(() => btn.textContent = '⚡ Export Now — 4K UHD', 3000);
+  }, 2500);
+}
+
+function selectRender(el) {
+  document.querySelectorAll('.render-opt').forEach(r => r.classList.remove('selected'));
+  el.classList.add('selected');
+}
+</script>
+</body>
+</html>

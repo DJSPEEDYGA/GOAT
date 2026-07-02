@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ms Money Penny — Screenwriting Studio 🎬</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/goat-theme.css">
+  <link rel="stylesheet" href="css/models-manager.css">
+  <style>
+    /* ── Screenwriting Page Overrides ── */
+    .era-label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 3px 12px;
+      border-radius: 12px;
+      margin-bottom: 6px;
+    }
+    .era-golden   { background: rgba(212,160,60,0.2); color: var(--gold); }
+    .era-new      { background: rgba(93,173,226,0.2); color: #5dade2; }
+    .era-modern   { background: rgba(46,204,113,0.2); color: #2ecc71; }
+    .era-tv       { background: rgba(155,89,182,0.2); color: #bb8fce; }
+    .era-rising   { background: rgba(243,156,18,0.2); color: #f39c12; }
+
+    .writer-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .writer-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .writer-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(212,160,60,0.12);
+    }
+    .writer-card:hover::before { opacity: 1; }
+    .writer-card h3 { font-family: var(--font-display); font-size: 18px; color: var(--gold); margin-bottom: 4px; }
+    .writer-card .years { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .writer-card .best-work { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.5; }
+    .writer-card .best-work strong { color: var(--gold-light); }
+    .writer-card .accolades { font-size: 12px; color: var(--text-muted); }
+    .writer-card .accolades span { display: inline-block; margin-right: 10px; }
+    .writer-card .quote {
+      font-style: italic;
+      font-size: 12px;
+      color: var(--text-secondary);
+      border-left: 2px solid var(--gold);
+      padding-left: 10px;
+      margin-top: 10px;
+    }
+
+    .writers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .software-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .software-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(212,160,60,0.1);
+    }
+    .software-card .sw-icon { font-size: 36px; margin-bottom: 10px; }
+    .software-card h3 { font-size: 17px; margin-bottom: 4px; color: var(--text-primary); }
+    .software-card .sw-type { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); margin-bottom: 8px; }
+    .software-card .sw-price { font-size: 13px; color: var(--gold-light); font-weight: 700; margin-bottom: 8px; }
+    .software-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px; }
+    .software-card .sw-features { list-style: none; padding: 0; margin: 0 0 12px 0; }
+    .software-card .sw-features li { font-size: 12px; color: var(--text-secondary); padding: 3px 0; }
+    .software-card .sw-features li::before { content: '✓ '; color: var(--success); font-weight: 700; }
+
+    .software-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 18px;
+    }
+
+    /* Structure guide */
+    .structure-timeline {
+      position: relative;
+      padding: 20px 0 20px 40px;
+    }
+    .structure-timeline::before {
+      content: '';
+      position: absolute;
+      left: 16px;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--gold), var(--border), var(--gold));
+    }
+    .structure-step {
+      position: relative;
+      margin-bottom: 24px;
+      padding: 16px 20px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: border-color 0.3s;
+    }
+    .structure-step:hover { border-color: var(--border-hover); }
+    .structure-step::before {
+      content: '';
+      position: absolute;
+      left: -32px;
+      top: 20px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--gold);
+      border: 2px solid var(--bg-primary);
+    }
+    .structure-step h4 { font-family: var(--font-display); color: var(--gold); margin-bottom: 4px; }
+    .structure-step .pages { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .structure-step p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+    /* Filter tabs */
+    .era-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .era-tab {
+      padding: 8px 18px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: var(--font-body);
+    }
+    .era-tab:hover, .era-tab.active {
+      background: linear-gradient(135deg, rgba(212,160,60,0.2), rgba(212,160,60,0.05));
+      color: var(--gold);
+      border-color: var(--gold);
+    }
+
+    @media (max-width: 768px) {
+      .writers-grid, .software-grid { grid-template-columns: 1fr; }
+      .structure-timeline { padding-left: 30px; }
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="models-page">
+
+  <!-- GOAT Background -->
+  <div class="goat-bg"></div>
+  <div class="goat-bg-overlay"></div>
+
+  <nav class="top-nav">
+    <a href="index.html" class="logo">
+      <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+      <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+      <img src="logo.png" alt="Ms Money Penny">
+      <span>Ms Money Penny</span>
+      <span class="crown-badge">👑 GOAT</span>
+    </a>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 AI Models</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="about.html">👑 About</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+      <a href="screenwriting.html" class="active">🎬 Screenwriting</a>
+      <a href="index.html#store">🛒 Store</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>🎬 Screenwriting Studio</h1>
+    <p class="subtitle">The ultimate resource for movie & TV script writers — legendary masters, industry tools, story structure, and AI-powered writing assistance</p>
+    <div class="stats">
+      <div class="stat"><div class="number">40+</div><div class="label">Legendary Writers</div></div>
+      <div class="stat"><div class="number">7</div><div class="label">Pro Software Tools</div></div>
+      <div class="stat"><div class="number">126</div><div class="label">Years of Cinema</div></div>
+      <div class="stat"><div class="number">∞</div><div class="label">Stories to Tell</div></div>
+    </div>
+  </div>
+
+  <div class="content" style="padding:0">
+    <main class="main-content" style="max-width:1200px;margin:0 auto">
+
+      <!-- ═══ SECTION 1: Legendary Screenwriters ═══ -->
+      <div class="section-header">
+        <h2>🏆 Legendary Screenwriters — 1900 to 2026</h2>
+        <p>The greatest movie and TV script writers in Hollywood history, from the Golden Age to today</p>
+      </div>
+
+      <!-- Era Filter Tabs -->
+      <div class="era-tabs">
+        <button class="era-tab active" data-era="all">All Eras (40+)</button>
+        <button class="era-tab" data-era="golden">🎞️ Golden Age (1920–1960)</button>
+        <button class="era-tab" data-era="new">🎥 New Hollywood (1960–1980)</button>
+        <button class="era-tab" data-era="modern">🎬 Modern Masters (1980–2010)</button>
+        <button class="era-tab" data-era="tv">📺 TV Titans</button>
+        <button class="era-tab" data-era="rising">🌟 Contemporary (2010–2026)</button>
+      </div>
+
+      <div class="writers-grid" id="writersGrid">
+
+        <!-- Golden Age -->
+        <div class="writer-card" data-era="golden">
+          <span class="era-label era-golden">Golden Age</span>
+          <h3>Billy Wilder</h3>
+          <div class="years">1906–2002 • Austrian-American</div>
+          <div class="best-work">🏆 <strong>The Apartment</strong>, <strong>Sunset Boulevard</strong>, <strong>Some Like It Hot</strong>, Double Indemnity, Stalag 17</div>
+          <div class="accolades"><span>🏅 6× Oscar Nom</span><span>🥇 3× Oscar Winner</span></div>
+          <div class="quote">"Grab 'em by the throat and never let 'em go."</div>
+        </div>
+
+        <div class="writer-card" data-era="golden">
+          <span class="era-label era-golden">Golden Age</span>
+          <h3>Ben Hecht</h3>
+          <div class="years">1894–1964 • American</div>
+          <div class="best-work">🏆 <strong>Scarface</strong>, <strong>His Girl Friday</strong>, <strong>Notorious</strong>, The Front Page, Wuthering Heights</div>
+          <div class="accolades"><span>🏅 6× Oscar Nom</span><span>🥇 2× Oscar Winner</span></div>
+          <div class="quote">"The Hollywood that I knew was the Hollywood of the written word."</div>
+        </div>
+
+        <div class="writer-card" data-era="golden">
+          <span class="era-label era-golden">Golden Age</span>
+          <h3>Preston Sturges</h3>
+          <div class="years">1898–1959 • American</div>
+          <div class="best-work">🏆 <strong>Sullivan's Travels</strong>, <strong>The Lady Eve</strong>, The Great McGinty, The Palm Beach Story</div>
+          <div class="accolades"><span>🥇 First Best Original Screenplay Oscar</span></div>
+          <div class="quote">"There's a lot to be said for making people laugh."</div>
+        </div>
+
+        <div class="writer-card" data-era="golden">
+          <span class="era-label era-golden">Golden Age</span>
+          <h3>Dalton Trumbo</h3>
+          <div class="years">1905–1976 • American</div>
+          <div class="best-work">🏆 <strong>Roman Holiday</strong>, <strong>Spartacus</strong>, Exodus, Johnny Got His Gun, Thirty Seconds Over Tokyo</div>
+          <div class="accolades"><span>🥇 2× Oscar Winner</span><span>🚫 Blacklisted (Hollywood Ten)</span></div>
+          <div class="quote">"The blacklist was a time of evil...no one escaped."</div>
+        </div>
+
+        <div class="writer-card" data-era="golden">
+          <span class="era-label era-golden">Golden Age</span>
+          <h3>Joseph L. Mankiewicz</h3>
+          <div class="years">1909–1993 • American</div>
+          <div class="best-work">🏆 <strong>All About Eve</strong>, <strong>A Letter to Three Wives</strong>, Cleopatra, The Barefoot Contessa</div>
+          <div class="accolades"><span>🥇 4× Oscar Winner (back-to-back directing & writing)</span></div>
+        </div>
+
+        <div class="writer-card" data-era="golden">
+          <span class="era-label era-golden">Golden Age</span>
+          <h3>Paddy Chayefsky</h3>
+          <div class="years">1923–1981 • American</div>
+          <div class="best-work">🏆 <strong>Network</strong>, <strong>Marty</strong>, <strong>The Hospital</strong>, Altered States</div>
+          <div class="accolades"><span>🥇 3× Oscar Winner (only writer to win 3 solo)</span></div>
+          <div class="quote">"I'm as mad as hell, and I'm not going to take this anymore!"</div>
+        </div>
+
+        <!-- New Hollywood -->
+        <div class="writer-card" data-era="new">
+          <span class="era-label era-new">New Hollywood</span>
+          <h3>William Goldman</h3>
+          <div class="years">1931–2018 • American</div>
+          <div class="best-work">🏆 <strong>Butch Cassidy and the Sundance Kid</strong>, <strong>All the President's Men</strong>, The Princess Bride, Marathon Man</div>
+          <div class="accolades"><span>🥇 2× Oscar Winner</span></div>
+          <div class="quote">"Nobody knows anything... Not one person in the entire motion picture field knows for a certainty what's going to work."</div>
+        </div>
+
+        <div class="writer-card" data-era="new">
+          <span class="era-label era-new">New Hollywood</span>
+          <h3>Francis Ford Coppola</h3>
+          <div class="years">1939– • American</div>
+          <div class="best-work">🏆 <strong>The Godfather</strong>, <strong>The Godfather Part II</strong>, Apocalypse Now, The Conversation, Patton</div>
+          <div class="accolades"><span>🥇 3× Oscar Winner</span><span>🌴 2× Palme d'Or</span></div>
+          <div class="quote">"I'm gonna make him an offer he can't refuse."</div>
+        </div>
+
+        <div class="writer-card" data-era="new">
+          <span class="era-label era-new">New Hollywood</span>
+          <h3>Woody Allen</h3>
+          <div class="years">1935– • American</div>
+          <div class="best-work">🏆 <strong>Annie Hall</strong>, <strong>Manhattan</strong>, <strong>Midnight in Paris</strong>, Hannah and Her Sisters, Blue Jasmine</div>
+          <div class="accolades"><span>🥇 3× Oscar Winner (Best Original Screenplay record)</span></div>
+        </div>
+
+        <div class="writer-card" data-era="new">
+          <span class="era-label era-new">New Hollywood</span>
+          <h3>Robert Towne</h3>
+          <div class="years">1934–2024 • American</div>
+          <div class="best-work">🏆 <strong>Chinatown</strong>, Shampoo, The Last Detail, Mission: Impossible</div>
+          <div class="accolades"><span>🥇 Oscar Winner</span><span>📜 Chinatown = greatest screenplay ever written (WGA)</span></div>
+          <div class="quote">"Forget it, Jake. It's Chinatown."</div>
+        </div>
+
+        <div class="writer-card" data-era="new">
+          <span class="era-label era-new">New Hollywood</span>
+          <h3>Ingmar Bergman</h3>
+          <div class="years">1918–2007 • Swedish</div>
+          <div class="best-work">🏆 <strong>Persona</strong>, <strong>The Seventh Seal</strong>, <strong>Wild Strawberries</strong>, Fanny and Alexander, Cries and Whispers</div>
+          <div class="accolades"><span>🥇 3× Oscar Winner</span><span>🌴 Cannes Grand Prix</span></div>
+          <div class="quote">"Film as dream, film as music."</div>
+        </div>
+
+        <div class="writer-card" data-era="new">
+          <span class="era-label era-new">New Hollywood</span>
+          <h3>Akira Kurosawa</h3>
+          <div class="years">1910–1998 • Japanese</div>
+          <div class="best-work">🏆 <strong>Seven Samurai</strong>, <strong>Rashomon</strong>, <strong>Ikiru</strong>, Yojimbo, Ran, High and Low</div>
+          <div class="accolades"><span>🥇 Honorary Oscar</span><span>🦁 Venice Golden Lion</span></div>
+          <div class="quote">"In a mad world, only the mad are sane."</div>
+        </div>
+
+        <div class="writer-card" data-era="new">
+          <span class="era-label era-new">New Hollywood</span>
+          <h3>Federico Fellini</h3>
+          <div class="years">1920–1993 • Italian</div>
+          <div class="best-work">🏆 <strong>8½</strong>, <strong>La Dolce Vita</strong>, <strong>Amarcord</strong>, Nights of Cabiria, La Strada</div>
+          <div class="accolades"><span>🥇 4× Oscar Winner (Foreign Film)</span><span>🌴 Palme d'Or</span></div>
+        </div>
+
+        <!-- Modern Masters -->
+        <div class="writer-card" data-era="modern">
+          <span class="era-label era-modern">Modern Masters</span>
+          <h3>Quentin Tarantino</h3>
+          <div class="years">1963– • American</div>
+          <div class="best-work">🏆 <strong>Pulp Fiction</strong>, <strong>Django Unchained</strong>, <strong>Inglourious Basterds</strong>, Kill Bill, Once Upon a Time in Hollywood</div>
+          <div class="accolades"><span>🥇 2× Oscar Winner</span><span>🌴 Palme d'Or</span></div>
+          <div class="quote">"I steal from every movie ever made."</div>
+        </div>
+
+        <div class="writer-card" data-era="modern">
+          <span class="era-label era-modern">Modern Masters</span>
+          <h3>Joel & Ethan Coen</h3>
+          <div class="years">1954/1957– • American</div>
+          <div class="best-work">🏆 <strong>Fargo</strong>, <strong>No Country for Old Men</strong>, <strong>The Big Lebowski</strong>, Barton Fink, True Grit</div>
+          <div class="accolades"><span>🥇 4× Oscar Winners</span><span>🌴 Palme d'Or</span></div>
+          <div class="quote">"The Dude abides."</div>
+        </div>
+
+        <div class="writer-card" data-era="modern">
+          <span class="era-label era-modern">Modern Masters</span>
+          <h3>Charlie Kaufman</h3>
+          <div class="years">1958– • American</div>
+          <div class="best-work">🏆 <strong>Eternal Sunshine of the Spotless Mind</strong>, <strong>Being John Malkovich</strong>, Adaptation, Synecdoche New York</div>
+          <div class="accolades"><span>🥇 Oscar Winner</span><span>📜 Most original living screenwriter</span></div>
+          <div class="quote">"Constantly talking isn't necessarily communicating."</div>
+        </div>
+
+        <div class="writer-card" data-era="modern">
+          <span class="era-label era-modern">Modern Masters</span>
+          <h3>Aaron Sorkin</h3>
+          <div class="years">1961– • American</div>
+          <div class="best-work">🏆 <strong>The Social Network</strong>, <strong>A Few Good Men</strong>, <strong>The West Wing</strong>, Steve Jobs, Moneyball, The Trial of the Chicago 7</div>
+          <div class="accolades"><span>🥇 Oscar Winner</span><span>📺 4× Emmy Winner</span></div>
+          <div class="quote">"You can't handle the truth!"</div>
+        </div>
+
+        <div class="writer-card" data-era="modern">
+          <span class="era-label era-modern">Modern Masters</span>
+          <h3>Nora Ephron</h3>
+          <div class="years">1941–2012 • American</div>
+          <div class="best-work">🏆 <strong>When Harry Met Sally</strong>, <strong>Sleepless in Seattle</strong>, <strong>You've Got Mail</strong>, Silkwood, Julie & Julia</div>
+          <div class="accolades"><span>🏅 3× Oscar Nominated</span><span>👑 Queen of Rom-Coms</span></div>
+        </div>
+
+        <div class="writer-card" data-era="modern">
+          <span class="era-label era-modern">Modern Masters</span>
+          <h3>Spike Lee</h3>
+          <div class="years">1957– • American</div>
+          <div class="best-work">🏆 <strong>Do the Right Thing</strong>, <strong>Malcolm X</strong>, <strong>BlacKkKlansman</strong>, 25th Hour, Da 5 Bloods</div>
+          <div class="accolades"><span>🥇 Oscar Winner (Adapted)</span><span>📜 Pioneer of Black cinema</span></div>
+        </div>
+
+        <div class="writer-card" data-era="modern">
+          <span class="era-label era-modern">Modern Masters</span>
+          <h3>Christopher Nolan</h3>
+          <div class="years">1970– • British-American</div>
+          <div class="best-work">🏆 <strong>Memento</strong>, <strong>The Dark Knight</strong>, <strong>Inception</strong>, Interstellar, Oppenheimer, Dunkirk</div>
+          <div class="accolades"><span>🥇 Oscar Winner (Oppenheimer)</span><span>💰 $6B+ Box Office</span></div>
+          <div class="quote">"I never considered myself a lucky person. I'm one of the hardest-working people I know."</div>
+        </div>
+
+        <div class="writer-card" data-era="modern">
+          <span class="era-label era-modern">Modern Masters</span>
+          <h3>Paul Thomas Anderson</h3>
+          <div class="years">1970– • American</div>
+          <div class="best-work">🏆 <strong>There Will Be Blood</strong>, <strong>Boogie Nights</strong>, <strong>Magnolia</strong>, Phantom Thread, The Master, Licorice Pizza</div>
+          <div class="accolades"><span>🏅 8× Oscar Nominated</span><span>🦁 Venice Best Director</span></div>
+        </div>
+
+        <div class="writer-card" data-era="modern">
+          <span class="era-label era-modern">Modern Masters</span>
+          <h3>Diablo Cody</h3>
+          <div class="years">1978– • American</div>
+          <div class="best-work">🏆 <strong>Juno</strong>, Jennifer's Body, Young Adult, Tully, Lisa Frankenstein</div>
+          <div class="accolades"><span>🥇 Oscar Winner (first screenplay)</span></div>
+          <div class="quote">"The best way to find your voice is to be unafraid of it."</div>
+        </div>
+
+        <!-- TV Titans -->
+        <div class="writer-card" data-era="tv">
+          <span class="era-label era-tv">TV Titan</span>
+          <h3>Vince Gilligan</h3>
+          <div class="years">1967– • American</div>
+          <div class="best-work">📺 <strong>Breaking Bad</strong>, <strong>Better Call Saul</strong>, The X-Files</div>
+          <div class="accolades"><span>📺 6× Emmy Winner</span><span>📜 Greatest TV show ever (many polls)</span></div>
+          <div class="quote">"Chemistry is the study of matter, but I prefer to see it as the study of change."</div>
+        </div>
+
+        <div class="writer-card" data-era="tv">
+          <span class="era-label era-tv">TV Titan</span>
+          <h3>David Chase</h3>
+          <div class="years">1945– • American</div>
+          <div class="best-work">📺 <strong>The Sopranos</strong>, The Rockford Files, Northern Exposure</div>
+          <div class="accolades"><span>📺 5× Emmy Winner</span><span>📜 Invented modern prestige TV</span></div>
+        </div>
+
+        <div class="writer-card" data-era="tv">
+          <span class="era-label era-tv">TV Titan</span>
+          <h3>Shonda Rhimes</h3>
+          <div class="years">1970– • American</div>
+          <div class="best-work">📺 <strong>Grey's Anatomy</strong>, <strong>Scandal</strong>, <strong>Bridgerton</strong>, How to Get Away with Murder, Inventing Anna</div>
+          <div class="accolades"><span>📺 Multiple Emmy Noms</span><span>💰 $300M Netflix Deal</span></div>
+          <div class="quote">"Dreams are lovely. But they are just dreams. Fleeting, ephemeral, pretty. But dreams do not come true just because you dream them."</div>
+        </div>
+
+        <div class="writer-card" data-era="tv">
+          <span class="era-label era-tv">TV Titan</span>
+          <h3>Ryan Murphy</h3>
+          <div class="years">1965– • American</div>
+          <div class="best-work">📺 <strong>American Horror Story</strong>, <strong>Glee</strong>, <strong>Pose</strong>, Nip/Tuck, The People v. O.J. Simpson, Dahmer</div>
+          <div class="accolades"><span>📺 6× Emmy Winner</span><span>💰 $300M Netflix Deal</span></div>
+        </div>
+
+        <div class="writer-card" data-era="tv">
+          <span class="era-label era-tv">TV Titan</span>
+          <h3>David Simon</h3>
+          <div class="years">1960– • American</div>
+          <div class="best-work">📺 <strong>The Wire</strong>, <strong>Treme</strong>, <strong>The Deuce</strong>, Generation Kill, Show Me a Hero</div>
+          <div class="accolades"><span>📺 Peabody Award</span><span>📜 "Dickens of television"</span></div>
+        </div>
+
+        <div class="writer-card" data-era="tv">
+          <span class="era-label era-tv">TV Titan</span>
+          <h3>Matthew Weiner</h3>
+          <div class="years">1965– • American</div>
+          <div class="best-work">📺 <strong>Mad Men</strong>, The Sopranos (writer)</div>
+          <div class="accolades"><span>📺 4× Emmy Winner</span><span>🌟 16× Emmy Noms for Mad Men</span></div>
+        </div>
+
+        <div class="writer-card" data-era="tv">
+          <span class="era-label era-tv">TV Titan</span>
+          <h3>Damon Lindelof</h3>
+          <div class="years">1973– • American</div>
+          <div class="best-work">📺 <strong>Lost</strong>, <strong>The Leftovers</strong>, <strong>Watchmen</strong></div>
+          <div class="accolades"><span>📺 Emmy Winner (Watchmen)</span><span>🏅 WGA Award</span></div>
+        </div>
+
+        <div class="writer-card" data-era="tv">
+          <span class="era-label era-tv">TV Titan</span>
+          <h3>Phoebe Waller-Bridge</h3>
+          <div class="years">1985– • British</div>
+          <div class="best-work">📺 <strong>Fleabag</strong>, <strong>Killing Eve</strong>, No Time to Die (co-writer), Indiana Jones 5</div>
+          <div class="accolades"><span>📺 4× Emmy Winner (single season!)</span><span>🎭 Olivier Award</span></div>
+          <div class="quote">"It'll pass."</div>
+        </div>
+
+        <!-- Contemporary / Rising -->
+        <div class="writer-card" data-era="rising">
+          <span class="era-label era-rising">Contemporary</span>
+          <h3>Jordan Peele</h3>
+          <div class="years">1979– • American</div>
+          <div class="best-work">🏆 <strong>Get Out</strong>, <strong>Us</strong>, <strong>Nope</strong></div>
+          <div class="accolades"><span>🥇 Oscar Winner</span><span>📜 First Black Best Original Screenplay</span></div>
+          <div class="quote">"I want to make a new kind of horror. Something that puts the audience in the shoes of the marginalized."</div>
+        </div>
+
+        <div class="writer-card" data-era="rising">
+          <span class="era-label era-rising">Contemporary</span>
+          <h3>Bong Joon-ho</h3>
+          <div class="years">1969– • South Korean</div>
+          <div class="best-work">🏆 <strong>Parasite</strong>, <strong>Memories of Murder</strong>, Snowpiercer, The Host, Okja, Mickey 17</div>
+          <div class="accolades"><span>🥇 4× Oscar Winner (Parasite)</span><span>🌴 Palme d'Or</span></div>
+          <div class="quote">"Once you overcome the one-inch tall barrier of subtitles, you will be introduced to so many more amazing films."</div>
+        </div>
+
+        <div class="writer-card" data-era="rising">
+          <span class="era-label era-rising">Contemporary</span>
+          <h3>Greta Gerwig</h3>
+          <div class="years">1983– • American</div>
+          <div class="best-work">🏆 <strong>Lady Bird</strong>, <strong>Little Women</strong>, <strong>Barbie</strong>, Frances Ha (co-writer), Narnia (upcoming)</div>
+          <div class="accolades"><span>🏅 2× Oscar Nominated</span><span>💰 $1.4B (Barbie)</span></div>
+        </div>
+
+        <div class="writer-card" data-era="rising">
+          <span class="era-label era-rising">Contemporary</span>
+          <h3>Barry Jenkins</h3>
+          <div class="years">1979– • American</div>
+          <div class="best-work">🏆 <strong>Moonlight</strong>, <strong>If Beale Street Could Talk</strong>, The Underground Railroad, Mufasa</div>
+          <div class="accolades"><span>🥇 Oscar Winner (Best Picture + Adapted)</span></div>
+        </div>
+
+        <div class="writer-card" data-era="rising">
+          <span class="era-label era-rising">Contemporary</span>
+          <h3>Daniel Kwan & Daniel Scheinert</h3>
+          <div class="years">1988/1987– • American</div>
+          <div class="best-work">🏆 <strong>Everything Everywhere All at Once</strong>, Swiss Army Man</div>
+          <div class="accolades"><span>🥇 Oscar Winner (Best Picture + Director + Original Screenplay)</span></div>
+        </div>
+
+        <div class="writer-card" data-era="rising">
+          <span class="era-label era-rising">Contemporary</span>
+          <h3>Emerald Fennell</h3>
+          <div class="years">1985– • British</div>
+          <div class="best-work">🏆 <strong>Promising Young Woman</strong>, <strong>Saltburn</strong>, Killing Eve (showrunner S2)</div>
+          <div class="accolades"><span>🥇 Oscar Winner (Best Original Screenplay)</span></div>
+        </div>
+
+        <div class="writer-card" data-era="rising">
+          <span class="era-label era-rising">Contemporary</span>
+          <h3>Taika Waititi</h3>
+          <div class="years">1975– • New Zealander</div>
+          <div class="best-work">🏆 <strong>Jojo Rabbit</strong>, <strong>What We Do in the Shadows</strong>, Thor: Ragnarok, Hunt for the Wilderpeople</div>
+          <div class="accolades"><span>🥇 Oscar Winner (Adapted Screenplay)</span></div>
+        </div>
+
+        <div class="writer-card" data-era="rising">
+          <span class="era-label era-rising">Contemporary</span>
+          <h3>Cord Jefferson</h3>
+          <div class="years">1982– • American</div>
+          <div class="best-work">🏆 <strong>American Fiction</strong>, Watchmen (TV), Succession, The Good Place</div>
+          <div class="accolades"><span>🥇 Oscar Winner (Best Adapted Screenplay 2024)</span></div>
+        </div>
+
+      </div>
+
+      <br><br>
+
+      <!-- ═══ SECTION 2: Screenwriting Software ═══ -->
+      <div class="section-header">
+        <h2>💻 Professional Screenwriting Software</h2>
+        <p>Industry-standard tools for writing, formatting, and producing scripts — from the $250 Emmy-winning Final Draft to free alternatives</p>
+      </div>
+
+      <div class="software-grid">
+        <div class="software-card" style="border-color:var(--gold)">
+          <div class="sw-icon">📝</div>
+          <h3>Final Draft 13</h3>
+          <div class="sw-type">🏆 Industry Standard • Engineering Emmy Winner</div>
+          <div class="sw-price">$249.99 (one-time) • Free Trial Available</div>
+          <p>The #1 screenwriting software used by Hollywood studios, agencies, and production offices. Only software that won an Engineering Emmy®.</p>
+          <ul class="sw-features">
+            <li>Beat Board™ story planning & outlining</li>
+            <li>SmartType auto-completion of characters & locations</li>
+            <li>Real-time collaboration with writing partners</li>
+            <li>Production-ready tagging, scheduling & budgeting</li>
+            <li>Track changes, revision colors, locked pages</li>
+            <li>Sprint Timer for focused writing sessions</li>
+            <li>Cross-platform: Windows, Mac, iOS</li>
+          </ul>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <a href="https://www.finaldraft.com/" target="_blank" class="btn btn-primary">🌐 Visit Final Draft</a>
+            <a href="https://www.finaldraft.com/trial" target="_blank" class="btn btn-secondary">📥 Free Trial</a>
+          </div>
+        </div>
+
+        <div class="software-card">
+          <div class="sw-icon">🎯</div>
+          <h3>Arc Studio Pro</h3>
+          <div class="sw-type">TV Writers' Choice • Beat Boards Built-In</div>
+          <div class="sw-price">Free tier + $9.99/mo Pro</div>
+          <p>Modern, clean interface with built-in beat boards and story structure guides (Save the Cat, Hero's Journey). Great for TV series bibles.</p>
+          <ul class="sw-features">
+            <li>Save the Cat & Hero's Journey templates</li>
+            <li>Episode tracking & series bibles</li>
+            <li>Real-time collaboration</li>
+            <li>FDX import/export</li>
+            <li>Browser-based + desktop apps</li>
+          </ul>
+          <a href="https://www.arcstudiopro.com/" target="_blank" class="btn btn-primary">🌐 Try Arc Studio</a>
+        </div>
+
+        <div class="software-card">
+          <div class="sw-icon">👥</div>
+          <h3>WriterDuet</h3>
+          <div class="sw-type">Best for Collaboration • "Google Docs of Scripts"</div>
+          <div class="sw-price">Free tier + $11.99/mo Pro</div>
+          <p>Real-time collaborative screenwriting. Multiple writers can work simultaneously with live cursors and cloud sync. The go-to for writing rooms.</p>
+          <ul class="sw-features">
+            <li>Real-time multi-cursor collaboration</li>
+            <li>Cloud sync across all devices</li>
+            <li>Free tier (3 scripts)</li>
+            <li>Offline mode available</li>
+            <li>FDX, PDF, Fountain export</li>
+          </ul>
+          <a href="https://writerduet.com/" target="_blank" class="btn btn-primary">🌐 Try WriterDuet</a>
+        </div>
+
+        <div class="software-card">
+          <div class="sw-icon">💰</div>
+          <h3>Fade In</h3>
+          <div class="sw-type">Best Value • One-Time Purchase</div>
+          <div class="sw-price">$79.95 (one-time, all platforms)</div>
+          <p>Reliable, no-subscription professional formatting. Runs on Windows, Mac, Linux, iOS, and Android. FDX compatible.</p>
+          <ul class="sw-features">
+            <li>One-time purchase, no subscription</li>
+            <li>Cross-platform (Win/Mac/Linux/iOS/Android)</li>
+            <li>FDX import/export</li>
+            <li>Clean, fast interface</li>
+            <li>Industry-standard formatting</li>
+          </ul>
+          <a href="https://www.fadeinpro.com/" target="_blank" class="btn btn-primary">🌐 Get Fade In</a>
+        </div>
+
+        <div class="software-card">
+          <div class="sw-icon">🎬</div>
+          <h3>Celtx</h3>
+          <div class="sw-type">All-in-One Production Suite</div>
+          <div class="sw-price">Free trial + $22.49/mo (Indie)</div>
+          <p>Script + breakdown + scheduling + budgeting in one platform. Perfect for indie filmmakers who need the whole production pipeline.</p>
+          <ul class="sw-features">
+            <li>Script writing + production breakdown</li>
+            <li>Scheduling & budgeting tools</li>
+            <li>Shot lists & storyboards</li>
+            <li>Team collaboration</li>
+            <li>Cloud-based, any device</li>
+          </ul>
+          <a href="https://www.celtx.com/" target="_blank" class="btn btn-primary">🌐 Try Celtx</a>
+        </div>
+
+        <div class="software-card">
+          <div class="sw-icon">🍎</div>
+          <h3>Highland 2</h3>
+          <div class="sw-type">Minimalist • Mac Only • Fountain Format</div>
+          <div class="sw-price">$49.99 (one-time, Mac only)</div>
+          <p>Beautiful, distraction-free writing using Fountain plain-text syntax. Created by screenwriter John August (Big Fish, Charlie's Angels).</p>
+          <ul class="sw-features">
+            <li>Fountain plain-text syntax</li>
+            <li>Minimal, gorgeous UI</li>
+            <li>Gender analysis tool</li>
+            <li>Revision mode</li>
+            <li>One-time purchase</li>
+          </ul>
+          <a href="https://quoteunquoteapps.com/highland-2/" target="_blank" class="btn btn-primary">🌐 Get Highland 2</a>
+        </div>
+
+        <div class="software-card">
+          <div class="sw-icon">🤖</div>
+          <h3>ScreenWeaver</h3>
+          <div class="sw-type">AI-Augmented • Living Story Map</div>
+          <div class="sw-price">Subscription (pricing TBA)</div>
+          <p>The only "creative partner" screenwriting tool. Living story map synchronized with your script. AI-generated mood and concept art per scene.</p>
+          <ul class="sw-features">
+            <li>Visual story timeline + script in sync</li>
+            <li>AI mood/concept art per scene</li>
+            <li>Real-time CRDT collaboration (like Figma)</li>
+            <li>FDX import/export</li>
+            <li>Structure visualization & pacing analysis</li>
+          </ul>
+          <a href="https://www.screenweaver.ai/" target="_blank" class="btn btn-primary">🌐 Try ScreenWeaver</a>
+        </div>
+      </div>
+
+      <br><br>
+
+      <!-- ═══ SECTION 3: Script Structure Guide ═══ -->
+      <div class="section-header">
+        <h2>📐 The Three-Act Structure — Screenplay Blueprint</h2>
+        <p>The foundational framework used by 90% of Hollywood films — from 1-page shorts to 180-page epics</p>
+      </div>
+
+      <div class="structure-timeline">
+        <div class="structure-step">
+          <h4>Act I — Setup (Pages 1–30)</h4>
+          <div class="pages">~25% of screenplay • Establish world, characters, stakes</div>
+          <p>Introduce your protagonist in their ordinary world. Establish the tone, genre, and central dramatic question. End with the <strong>Inciting Incident</strong> — the event that disrupts equilibrium and forces the hero into action.</p>
+        </div>
+
+        <div class="structure-step">
+          <h4>🔥 Plot Point 1 — The Break Into Act II (Page ~25-30)</h4>
+          <div class="pages">The "point of no return" — the protagonist commits to the journey</div>
+          <p>This is the first major turning point. The protagonist makes a choice (or is forced into one) that launches the central conflict. There's no going back to the way things were. Examples: Luke leaves Tatooine. Neo takes the red pill.</p>
+        </div>
+
+        <div class="structure-step">
+          <h4>Act II — Confrontation (Pages 30–90)</h4>
+          <div class="pages">~50% of screenplay • Rising action, obstacles, complications</div>
+          <p>The longest act. The protagonist pursues their goal but faces escalating obstacles. Subplots develop. Allies and enemies are revealed. The <strong>Midpoint</strong> (page ~55-60) is a major twist that raises stakes and shifts direction — often a false victory or false defeat.</p>
+        </div>
+
+        <div class="structure-step">
+          <h4>💀 All Is Lost Moment (Pages ~75-85)</h4>
+          <div class="pages">The "dark night of the soul" — lowest point for the protagonist</div>
+          <p>Everything seems hopeless. The protagonist has lost everything they've gained. This is the emotional low point that forces them to look inward and find the strength or truth needed for the final push.</p>
+        </div>
+
+        <div class="structure-step">
+          <h4>🔥 Plot Point 2 — The Break Into Act III (Page ~85-90)</h4>
+          <div class="pages">New information or decision that propels the climax</div>
+          <p>A revelation, decision, or event gives the protagonist what they need to face the final challenge. The story accelerates toward the climax with renewed purpose and higher stakes than ever.</p>
+        </div>
+
+        <div class="structure-step">
+          <h4>Act III — Resolution (Pages 90–120)</h4>
+          <div class="pages">~25% of screenplay • Climax, resolution, new equilibrium</div>
+          <p>The <strong>Climax</strong> is the final confrontation — the protagonist faces their greatest challenge. All threads converge. After the climax, the <strong>Denouement</strong> shows the new world order and the transformation of the protagonist. Leave the audience satisfied (or provoked).</p>
+        </div>
+      </div>
+
+      <br><br>
+
+      <!-- ═══ SECTION 4: AI Writing Tools ═══ -->
+      <div class="section-header">
+        <h2>🤖 AI-Powered Screenwriting Tools</h2>
+        <p>Augment your creative process with AI — brainstorm, outline, analyze, and refine your scripts</p>
+      </div>
+
+      <div class="software-grid">
+        <div class="software-card">
+          <div class="sw-icon">🧠</div>
+          <h3>ChatGPT / GPT-4</h3>
+          <div class="sw-type">General AI • Brainstorming & Dialogue</div>
+          <p>Use for brainstorming plot ideas, generating dialogue variations, character backstories, research, and overcoming writer's block. Not a replacement for human creativity, but a powerful brainstorming partner.</p>
+          <ul class="sw-features">
+            <li>Brainstorm plot and character ideas</li>
+            <li>Generate dialogue variations</li>
+            <li>Research historical settings</li>
+            <li>Analyze script structure</li>
+          </ul>
+        </div>
+
+        <div class="software-card">
+          <div class="sw-icon">📊</div>
+          <h3>NolanAI</h3>
+          <div class="sw-type">Script Analysis • AI Story Assistant</div>
+          <p>AI-powered script analysis, character arc tracking, and plot hole detection. Named after the filmmaker, built for screenwriters who want data-driven feedback.</p>
+          <ul class="sw-features">
+            <li>AI script analysis & feedback</li>
+            <li>Character arc visualization</li>
+            <li>Plot hole detection</li>
+            <li>Automated coverage reports</li>
+          </ul>
+        </div>
+
+        <div class="software-card">
+          <div class="sw-icon">✍️</div>
+          <h3>Sudowrite</h3>
+          <div class="sw-type">Creative Writing AI • Prose & Dialogue</div>
+          <p>AI writing assistant focused on creative fiction. Generates prose, rewrites scenes in different tones, and helps with "show don't tell" — great for novelists and screenwriters adapting novels.</p>
+          <ul class="sw-features">
+            <li>AI-generated prose & descriptions</li>
+            <li>Tone and style rewriting</li>
+            <li>"Show Don't Tell" suggestions</li>
+            <li>Character voice consistency</li>
+          </ul>
+        </div>
+
+        <div class="software-card">
+          <div class="sw-icon">🎯</div>
+          <h3>Ms Money Penny + OpenClaw</h3>
+          <div class="sw-type">Your Local AI Stack • 653 Models</div>
+          <p>Use our integrated Lightning AI router with 653 models for local, private script brainstorming. No API keys sent to the cloud — your ideas stay yours. Connect to NeMo, Nemotron, and HuggingFace models.</p>
+          <ul class="sw-features">
+            <li>653 AI models via Lightning AI</li>
+            <li>100% local & private</li>
+            <li>OpenClaw agent gateway</li>
+            <li>NVIDIA NeMo + Nemotron</li>
+          </ul>
+          <a href="models.html" class="btn btn-primary">🧠 Browse AI Models</a>
+        </div>
+      </div>
+
+      <br><br>
+
+      <!-- ═══ SECTION 5: Pro Tips ═══ -->
+      <div class="section-header">
+        <h2>💡 Screenwriting Pro Tips</h2>
+        <p>Wisdom from the masters — distilled into actionable advice</p>
+      </div>
+
+      <div class="dashboard-grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
+        <div class="dash-card">
+          <div class="card-icon">📖</div>
+          <h3>Read Scripts Daily</h3>
+          <div class="sub">Download produced screenplays from IMSDB, Script Slug, or The Black List and read at least one per week. Study structure, not just dialogue.</div>
+        </div>
+        <div class="dash-card">
+          <div class="card-icon">🎯</div>
+          <h3>Write the Logline First</h3>
+          <div class="sub">If you can't describe your movie in 1-2 sentences, you don't know your story yet. The logline is your compass.</div>
+        </div>
+        <div class="dash-card">
+          <div class="card-icon">⏱️</div>
+          <h3>1 Page ≈ 1 Minute</h3>
+          <div class="sub">Industry standard: each properly formatted screenplay page equals about one minute of screen time. A feature film = 90-120 pages.</div>
+        </div>
+        <div class="dash-card">
+          <div class="card-icon">🗣️</div>
+          <h3>Read Dialogue Aloud</h3>
+          <div class="sub">If it doesn't sound natural when spoken, it won't work on screen. Every character should have a distinct voice.</div>
+        </div>
+        <div class="dash-card">
+          <div class="card-icon">✂️</div>
+          <h3>Enter Late, Leave Early</h3>
+          <div class="sub">Start each scene as late as possible, end it as early as possible. Cut the fat. Every scene must either advance plot or reveal character.</div>
+        </div>
+        <div class="dash-card">
+          <div class="card-icon">🔄</div>
+          <h3>Rewrite is Writing</h3>
+          <div class="sub">The first draft is just getting the story out. The real writing happens in rewrites. Most produced scripts go through 10-20 drafts.</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 AI Models</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="about.html">👑 About</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="https://github.com/DJSPEEDYGA/nextjs-commerce" target="_blank">⭐ GitHub</a>
+      <a href="https://github.com/DJSPEEDYGA/nextjs-commerce/releases" target="_blank">📦 Releases</a>
+    </div>
+    <p>🐐 Ms Money Penny Store v1.3.0 — Built with ❤️ by <a href="https://lifeimitatesart.org" target="_blank">Life Imitates Art Inc.</a></p>
+    <p style="margin-top:8px;font-size:0.8rem;color:var(--text-muted);">Powered by NVIDIA AI Stack • Lightning AI • HuggingFace • OpenClaw • Electron</p>
+  </footer>
+
+  <script>
+    // Era filter tabs
+    document.querySelectorAll('.era-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.era-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const era = tab.dataset.era;
+        document.querySelectorAll('.writer-card').forEach(card => {
+          if (era === 'all' || card.dataset.era === era) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Scroll-in animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.writer-card, .software-card, .dash-card, .structure-step').forEach((el, i) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(18px)';
+      el.style.transition = `opacity 0.5s ease ${i * 0.03}s, transform 0.5s ease ${i * 0.03}s`;
+      observer.observe(el);
+    });
+  </script>
+
+</body>
+</html>

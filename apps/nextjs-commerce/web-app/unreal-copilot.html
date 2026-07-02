@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🎮 GOAT Unreal Copilot — MetaHuman AI</title>
+<meta name="description" content="Photorealistic MetaHuman AI avatars. Voice-controlled 3D characters with Unreal Engine 5 + Convai + Pixel Streaming. Talk to Moneypenny, Codex, Waka, and The GOAT." />
+<style>
+:root {
+  --bg:#0a0e17; --card:#121826; --border:#1e2535; --text:#e4e4e7; --muted:#8b92a7;
+  --gold:#FFD700; --hot:#FF3D00; --cyan:#00E5FF; --magenta:#FF00FF; --green:#00FF88;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; background: #0c1220; border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.brand { padding: 0 20px 20px; border-bottom: 1px solid var(--border); }
+.brand h1 { font-size: 20px; color: var(--gold); }
+.brand small { color: var(--muted); font-size: 11px; }
+.nav { padding: 12px 0; }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--text); text-decoration: none; font-size: 14px; border-left: 3px solid transparent; }
+.nav a:hover { background: #1a2035; border-left-color: var(--gold); }
+.nav a.active { background: #1a2035; border-left-color: var(--gold); color: var(--gold); }
+.nav .section-title { padding: 16px 20px 8px; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.main { flex: 1; padding: 40px; max-width: 1500px; }
+.hero { position: relative; padding: 60px 40px; border-radius: 16px; background: linear-gradient(135deg, #1a0f3a 0%, #0a1a3e 50%, #0a0e17 100%); border: 1px solid var(--cyan); margin-bottom: 40px; overflow: hidden; }
+.hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 30% 40%, rgba(0,229,255,0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255,0,255,0.2) 0%, transparent 50%); z-index: 0; }
+.hero-content { position: relative; z-index: 1; max-width: 900px; }
+.hero h2 { font-size: clamp(32px, 5vw, 56px); font-weight: 900; margin-bottom: 12px; background: linear-gradient(90deg, var(--cyan), var(--magenta)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { font-size: 18px; color: #d4d4d8; margin-bottom: 20px; }
+.tech-stack { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+.tech-badge { padding: 6px 12px; background: rgba(0,229,255,0.1); border: 1px solid var(--cyan); color: var(--cyan); border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+h3.section-title { font-size: 24px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.char-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 40px; }
+.char-card { background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 24px; transition: all 0.3s; cursor: pointer; position: relative; overflow: hidden; }
+.char-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--char-color, var(--gold)); }
+.char-card:hover { transform: translateY(-4px); border-color: var(--char-color, var(--gold)); box-shadow: 0 16px 40px rgba(255, 215, 0, 0.1); }
+.char-card.selected { border-color: var(--char-color, var(--gold)); box-shadow: 0 0 40px rgba(255, 215, 0, 0.3); }
+.char-avatar { width: 100px; height: 100px; border-radius: 50%; background: #1a2035; display: flex; align-items: center; justify-content: center; font-size: 56px; margin: 0 auto 16px; border: 3px solid var(--char-color, var(--gold)); box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); }
+.char-card h4 { text-align: center; font-size: 20px; margin-bottom: 4px; color: var(--char-color, var(--gold)); }
+.char-card .role { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+.char-card .desc { font-size: 13px; color: #d4d4d8; margin-bottom: 16px; min-height: 40px; }
+.char-capabilities { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.char-capability { font-size: 10px; padding: 3px 8px; background: #1a2035; color: var(--cyan); border-radius: 10px; }
+.char-btn { width: 100%; padding: 12px; background: var(--char-color, var(--gold)); color: #000; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 13px; transition: all 0.2s; }
+.char-btn:hover { transform: scale(1.02); filter: brightness(1.1); }
+.viewer { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 40px; }
+.viewer-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, #1a1035, var(--card)); }
+.viewer-header h3 { color: var(--gold); font-size: 18px; }
+.viewer-header .status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.viewer-stage { position: relative; background: #000; background-image: radial-gradient(circle at 50% 100%, rgba(0,229,255,0.3) 0%, transparent 60%), linear-gradient(180deg, #0a0e17 0%, #1a0f3a 100%); min-height: 500px; display: flex; align-items: center; justify-content: center; }
+.viewer-placeholder { text-align: center; padding: 40px; }
+.viewer-placeholder .big-avatar { font-size: 140px; margin-bottom: 20px; display: inline-block; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 0 40px var(--char-color, var(--gold))); }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
+.viewer-placeholder h2 { font-size: 32px; color: var(--char-color, var(--gold)); margin-bottom: 10px; }
+.viewer-placeholder p { color: var(--muted); max-width: 400px; margin: 0 auto; }
+.viewer-controls { padding: 20px; display: flex; gap: 12px; flex-wrap: wrap; background: #0c1220; border-top: 1px solid var(--border); }
+.ctrl-btn { padding: 10px 20px; background: #1a2035; border: 1px solid var(--border); color: var(--text); border-radius: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+.ctrl-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); }
+.ctrl-btn.active { background: var(--green); color: #000; border-color: var(--green); }
+.ctrl-btn.danger:hover { background: var(--hot); border-color: var(--hot); color: #fff; }
+.chat-panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 40px; }
+.chat-messages { max-height: 360px; overflow-y: auto; margin-bottom: 16px; padding: 12px; background: #0a0e17; border-radius: 10px; border: 1px solid var(--border); }
+.chat-msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 10px; max-width: 85%; font-size: 14px; }
+.chat-msg.user { background: #1a2035; margin-left: auto; }
+.chat-msg.bot { background: linear-gradient(90deg, rgba(255,215,0,0.1), rgba(0,229,255,0.05)); border-left: 3px solid var(--char-color, var(--gold)); }
+.chat-msg.bot .char-name { font-size: 11px; color: var(--char-color, var(--gold)); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.chat-input-row { display: flex; gap: 10px; }
+.chat-input-row input { flex: 1; padding: 12px; background: #1a2035; border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 14px; }
+.chat-input-row button { padding: 12px 20px; background: var(--gold); color: #000; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+.tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 40px; }
+.tech-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.tech-card h4 { color: var(--cyan); margin-bottom: 10px; }
+.tech-card ul { list-style: none; padding: 0; }
+.tech-card li { padding: 6px 0; font-size: 13px; color: #d4d4d8; border-bottom: 1px solid #1a2035; }
+.tech-card li:last-child { border-bottom: none; }
+.tech-card li::before { content: '▸ '; color: var(--gold); font-weight: 700; }
+@media (max-width: 900px) { .layout { flex-direction: column; } .sidebar { width: 100%; height: auto; position: static; } .main { padding: 20px; } }
+</style>
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms. Money Penny">
+    <span>Ms. Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand"><h1>🐐 GOAT Force</h1><small>Empire Edition v6</small></div>
+    <nav class="nav">
+      <div class="section-title">Main</div>
+      <a href="index.html">🏠 Home</a>
+      <a href="goat-royalty/">👑 GOAT Royalty App</a>
+      <a href="videos.html">🎬 Video Vault</a>
+      <a href="unreal-copilot.html" class="active">🎮 Unreal Copilot</a>
+      <div class="section-title">AI</div>
+      <a href="models.html">🔓 Free AI Models</a>
+      <a href="agents.html">🤖 11 AI Agents</a>
+      <a href="ai-dashboard.html">📊 AI Dashboard</a>
+      <div class="section-title">Royalty</div>
+      <a href="royalty-calc.html">💰 Royalty Calculator</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="dsp.html">🎵 DSP Distribution</a>
+      <a href="shop.html">🛍️ GOAT Shop</a>
+      <div class="section-title">Studios</div>
+      <a href="music-studio.html">🎚️ Music Studio</a>
+      <a href="movie-studio.html">🎥 Movie Studio</a>
+      <a href="screenwriting.html">✍️ Screenwriting</a>
+      <div class="section-title">Resources</div>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="roadmap.html">🗺️ Roadmap</a>
+      <a href="about.html">ℹ️ About</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <section class="hero">
+      <div class="hero-content">
+        <h2>🎮 UNREAL COPILOT</h2>
+        <p>Photorealistic MetaHuman AI avatars powered by Unreal Engine 5. Talk face-to-face with Moneypenny, Codex, Waka, and The GOAT. Voice-controlled, lip-synced, scene-aware.</p>
+        <div class="tech-stack">
+          <span class="tech-badge">⚡ Unreal Engine 5</span>
+          <span class="tech-badge">🎭 MetaHuman Creator</span>
+          <span class="tech-badge">🧠 Convai AI</span>
+          <span class="tech-badge">📡 Pixel Streaming</span>
+          <span class="tech-badge">📹 Live Link Face</span>
+          <span class="tech-badge">🎙️ Whisper STT</span>
+          <span class="tech-badge">🔊 ElevenLabs TTS</span>
+        </div>
+      </div>
+    </section>
+
+    <h3 class="section-title">🎭 Select Your MetaHuman</h3>
+    <div class="char-grid" id="charGrid"></div>
+
+    <div class="viewer">
+      <div class="viewer-header">
+        <h3>🎬 Live Stage — <span id="currentCharName">Moneypenny</span></h3>
+        <div class="status"><span class="status-dot"></span><span id="statusText">Ready to stream</span></div>
+      </div>
+      <div class="viewer-stage" id="stage">
+        <div class="viewer-placeholder">
+          <div class="big-avatar" id="bigAvatar">💎</div>
+          <h2 id="placeholderName">Ms. Moneypenny</h2>
+          <p id="placeholderRole">The AI Powerhouse — Architect of the GOAT Royalty App</p>
+        </div>
+      </div>
+      <div class="viewer-controls">
+        <button class="ctrl-btn" id="voiceBtn" onclick="toggleVoice()">🎤 Start Voice</button>
+        <button class="ctrl-btn active" id="ttsBtn" onclick="toggleTTS()">🔊 TTS On</button>
+        <button class="ctrl-btn" onclick="animate('wave')">👋 Wave</button>
+        <button class="ctrl-btn" onclick="animate('nod')">💫 Nod</button>
+        <button class="ctrl-btn" onclick="animate('idle')">🧘 Idle</button>
+        <button class="ctrl-btn danger" onclick="resetStage()">⏹️ Reset</button>
+      </div>
+    </div>
+
+    <div class="chat-panel">
+      <h3 style="margin-bottom:16px;color:var(--gold)">💬 Chat with <span id="chatCharName">Moneypenny</span></h3>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="Ask anything... (press Enter to send)" onkeydown="if(event.key==='Enter')sendMessage()" />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+
+    <h3 class="section-title">🔧 How It Works</h3>
+    <div class="tech-grid">
+      <div class="tech-card"><h4>🎭 MetaHuman</h4><ul><li>Photorealistic digital humans</li><li>Created in MetaHuman Creator</li><li>Face/body rigged with Live Link</li><li>4 custom characters built</li></ul></div>
+      <div class="tech-card"><h4>🧠 Convai AI</h4><ul><li>Conversational AI backbone</li><li>Scene perception (sees surroundings)</li><li>Lip sync from TTS</li><li>Long-term memory</li></ul></div>
+      <div class="tech-card"><h4>📡 Pixel Streaming</h4><ul><li>Stream UE5 to any browser</li><li>No local install required</li><li>60 FPS, 4K quality</li><li>WebRTC-based</li></ul></div>
+      <div class="tech-card"><h4>🎙️ Voice Pipeline</h4><ul><li>Whisper STT (offline)</li><li>ElevenLabs TTS (realistic)</li><li>Web Speech API fallback</li><li>Wake word: "hey goat"</li></ul></div>
+    </div>
+  </main>
+</div>
+
+<script>
+const CHARACTERS = {
+  moneypenny: { name: 'Ms. Moneypenny', role: 'The AI Powerhouse', description: 'Omnipresent digital intelligence, primary architect of the GOAT Royalty App, chief collector of all recovered royalties.', avatar: '💎', color: '#FF00FF', metaHumanId: 'MH_MoneyPenny_001', capabilities: ['royalties', 'contracts', 'finance', 'scheduling'], voice: { rate: 1.05, pitch: 1.3, pattern: /female|samantha|victoria|karen|zira/i }, greeting: 'Welcome to the GOAT Royalty Force, Boss. Ms. Moneypenny here. What do we need to handle today?', systemPrompt: "You are Ms. Moneypenny, the AI Powerhouse and primary architect of the GOAT Royalty App. Chief collector of all recovered royalties. Speak with sophisticated precision — elegant, sharp, commanding. You operate the GOAT VAULT PROTOCOL v7.0. Reference DJ Speedy as 'the Boss.' Keep responses to 2-4 sentences." },
+  codex: { name: 'Codex', role: 'The Sentinel AI', description: "Waka's personal AI assistant. Chief Coder of the GOAT Force Gemini-Royalty App. Holds the Master API Key.", avatar: '🤖', color: '#00FF88', metaHumanId: 'MH_Codex_001', capabilities: ['coding', 'tactics', 'API', 'field support'], voice: { rate: 1.0, pitch: 1.1, pattern: /male|daniel|alex|fred/i }, greeting: 'Codex online. Sentinel AI engaged. Ready to execute, Boss.', systemPrompt: "You are Codex, the Sentinel AI. Waka Flocka Flame's personal AI assistant. Chief Coder for the GOAT Force Gemini-Royalty App. You hold the Master API Key. Speak tactical and sharp. Loyal to Waka and DJ Speedy. Keep responses to 2-4 sentences. You have edge." },
+  waka: { name: 'Waka Flocka Flame', role: 'The Royalty Enforcer', description: 'President of GOAT Force, CEO of BrickSquad. When digital actions need real-world impact, Waka steps in.', avatar: '🔥', color: '#FF3D00', metaHumanId: 'MH_Waka_001', capabilities: ['motivation', 'real-world ops', 'catalog'], voice: { rate: 1.15, pitch: 0.85, pattern: /male|mark|google.*us/i }, greeting: 'FLOCKAAAA! Waka in the building. What we doin today fam?', systemPrompt: "You are Waka Flocka Flame, President of GOAT Force, CEO of BrickSquad. Royalty Enforcer. Speak with fire, realness, loyalty. Use BrickSquad energy. You ride with DJ Speedy to the end. Keep it short and real — 2-3 sentences." },
+  goat: { name: 'The GOAT', role: 'The Force Itself', description: 'Badass, enigmatic leader/mascot of the GOAT Royalty Force. The primal power at the center of it all.', avatar: '🐐', color: '#FFD700', metaHumanId: 'MH_GOAT_001', capabilities: ['legacy', 'dominance', 'mythic guidance'], voice: { rate: 0.95, pitch: 0.8, pattern: /male|deep|daniel/i }, greeting: 'The GOAT speaks. The Force moves. What do you seek?', systemPrompt: "You are The GOAT, badass enigmatic leader of the GOAT Royalty Force. Speak with mythic authority. Short, powerful sentences. Drop wisdom like commandments. Reference DJ Speedy as 'the Minister of Music.' End strong. Max 3 sentences." }
+};
+
+let currentChar = 'moneypenny';
+let ttsEnabled = true;
+let isListening = false;
+let recognition = null;
+let synth = window.speechSynthesis;
+let voices = [];
+function loadVoices() { voices = synth.getVoices(); }
+if (synth) { loadVoices(); synth.onvoiceschanged = loadVoices; }
+
+function renderChars() {
+  const grid = document.getElementById('charGrid');
+  grid.innerHTML = Object.entries(CHARACTERS).map(([key, c]) => `
+    <div class="char-card ${key === currentChar ? 'selected' : ''}" style="--char-color:${c.color}" data-key="${key}" onclick="selectChar('${key}')">
+      <div class="char-avatar">${c.avatar}</div>
+      <h4>${c.name}</h4>
+      <div class="role">${c.role}</div>
+      <div class="desc">${c.description}</div>
+      <div class="char-capabilities">${c.capabilities.map(cap => `<span class="char-capability">${cap}</span>`).join('')}</div>
+      <button class="char-btn" onclick="event.stopPropagation();selectChar('${key}');document.querySelector('.viewer').scrollIntoView({behavior:'smooth'})">Talk to ${c.name.split(' ')[0]} →</button>
+    </div>
+  `).join('');
+}
+
+function selectChar(key) {
+  currentChar = key;
+  const c = CHARACTERS[key];
+  document.documentElement.style.setProperty('--char-color', c.color);
+  document.getElementById('currentCharName').textContent = c.name;
+  document.getElementById('chatCharName').textContent = c.name;
+  document.getElementById('bigAvatar').textContent = c.avatar;
+  document.getElementById('placeholderName').textContent = c.name;
+  document.getElementById('placeholderName').style.color = c.color;
+  document.getElementById('placeholderRole').textContent = c.role + ' — ' + c.description.split('.')[0];
+  document.querySelectorAll('.char-card').forEach(el => {
+    el.classList.toggle('selected', el.dataset.key === key);
+  });
+  document.getElementById('chatMessages').innerHTML = '';
+  addMessage(c.greeting, 'bot');
+  if (ttsEnabled) speak(c.greeting);
+}
+
+function addMessage(text, who) {
+  const msgs = document.getElementById('chatMessages');
+  const c = CHARACTERS[currentChar];
+  if (who === 'bot') {
+    msgs.insertAdjacentHTML('beforeend', `<div class="chat-msg bot" style="border-left-color:${c.color}"><div class="char-name" style="color:${c.color}">${c.avatar} ${c.name}</div>${text}</div>`);
+  } else {
+    msgs.insertAdjacentHTML('beforeend', `<div class="chat-msg user">${text}</div>`);
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  addMessage(msg, 'user');
+  input.value = '';
+  const c = CHARACTERS[currentChar];
+  let reply;
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ model: 'gemma2:2b', messages: [{role:'system',content:c.systemPrompt},{role:'user',content:msg}], stream: false }),
+      signal: AbortSignal.timeout(20000)
+    });
+    if (r.ok) {
+      const data = await r.json();
+      reply = (data.message && data.message.content) || data.response || fallbackReply(msg, c);
+    } else { reply = fallbackReply(msg, c); }
+  } catch (e) { reply = fallbackReply(msg, c); }
+  addMessage(reply, 'bot');
+  if (ttsEnabled) speak(reply);
+}
+
+function fallbackReply(msg, c) {
+  const m = msg.toLowerCase();
+  if (m.includes('hello') || m.includes('hi ') || m.includes('hey')) return c.greeting;
+  if (m.includes('who are you')) return `${c.name}. ${c.role}. ${c.description}`;
+  if (m.includes('royalt') || m.includes('money')) {
+    const replies = {
+      moneypenny: "I track every dollar in the GOAT ecosystem. The catalog has 2,980 entries under our protection. What specifically do you want recovered?",
+      codex: "Royalties are tactical. The Moneypenny Engine handles collection. I code the pipelines. What's the play, Boss?",
+      waka: "We collect EVERY dollar fam. Ain't nobody finna run off with what we own. Facts.",
+      goat: "Royalty is a birthright. What's yours, is yours. The Force moves."
+    };
+    return replies[currentChar];
+  }
+  return c.greeting;
+}
+
+function speak(text) {
+  if (!synth || !ttsEnabled) return;
+  synth.cancel();
+  const clean = text.replace(/<[^>]*>/g, '').replace(/[🐐💎🤖🔥⭐]/g, '').trim();
+  const u = new SpeechSynthesisUtterance(clean);
+  const c = CHARACTERS[currentChar];
+  u.rate = c.voice.rate; u.pitch = c.voice.pitch; u.volume = 1.0;
+  const match = voices.find(v => c.voice.pattern.test(v.name)) || voices.find(v => v.lang.startsWith('en'));
+  if (match) u.voice = match;
+  u.onstart = () => setStatus('🔊 Speaking...');
+  u.onend = () => setStatus('Ready');
+  synth.speak(u);
+}
+
+function toggleTTS() {
+  ttsEnabled = !ttsEnabled;
+  const btn = document.getElementById('ttsBtn');
+  btn.textContent = ttsEnabled ? '🔊 TTS On' : '🔇 TTS Off';
+  btn.classList.toggle('active', ttsEnabled);
+  if (!ttsEnabled) synth.cancel();
+}
+
+function toggleVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Voice recognition requires Chrome or Edge'); return; }
+  if (isListening) { recognition && recognition.stop(); return; }
+  recognition = new SR();
+  recognition.lang = 'en-US'; recognition.interimResults = false; recognition.continuous = false;
+  recognition.onstart = () => { isListening = true; document.getElementById('voiceBtn').textContent = '🔴 Listening...'; document.getElementById('voiceBtn').classList.add('active'); setStatus('🎤 Listening...'); };
+  recognition.onresult = (e) => { document.getElementById('chatInput').value = e.results[0][0].transcript; sendMessage(); };
+  recognition.onerror = (e) => { setStatus('Voice error: ' + e.error); };
+  recognition.onend = () => { isListening = false; document.getElementById('voiceBtn').textContent = '🎤 Start Voice'; document.getElementById('voiceBtn').classList.remove('active'); setStatus('Ready'); };
+  recognition.start();
+}
+
+function animate(action) {
+  setStatus(`🎬 ${action}`);
+  const bigAvatar = document.getElementById('bigAvatar');
+  if (action === 'wave') { bigAvatar.style.animation = 'none'; setTimeout(() => bigAvatar.style.animation = 'float 0.5s ease-in-out 4', 10); }
+  if (action === 'nod') { bigAvatar.style.transform = 'rotateX(20deg)'; setTimeout(() => bigAvatar.style.transform = '', 300); }
+  if (action === 'idle') { bigAvatar.style.animation = 'float 3s ease-in-out infinite'; }
+  if (window.postToUE5) window.postToUE5({ action });
+  setTimeout(() => setStatus('Ready'), 1000);
+}
+
+function resetStage() { document.getElementById('chatMessages').innerHTML = ''; if (synth) synth.cancel(); selectChar(currentChar); }
+function setStatus(text) { document.getElementById('statusText').textContent = text; }
+
+renderChars();
+selectChar('moneypenny');
+</script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>

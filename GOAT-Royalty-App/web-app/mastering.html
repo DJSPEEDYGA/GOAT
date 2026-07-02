@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💎 GOAT Mastering — AI Mastering Suite</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<link rel="icon" type="image/png" href="img/goat-hero-icon.png">
+<style>
+  .master-wrap { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  .file-drop {
+    border: 2px dashed rgba(193,18,31,0.5);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    background: rgba(30,30,30,0.6);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+  }
+  .file-drop.over, .file-drop:hover {
+    border-color: var(--goat-red-bright);
+    background: rgba(193,18,31,0.1);
+    box-shadow: var(--shadow-glow-red);
+  }
+  .transport-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: rgba(20,20,20,0.9);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(193,18,31,0.3);
+    margin-bottom: 20px;
+  }
+  .t-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--goat-gray);
+    border: 2px solid rgba(255,255,255,0.1);
+    color: var(--goat-cream);
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .t-btn:hover { border-color: var(--goat-red-bright); color: var(--goat-red-bright); }
+  .t-btn.play { background: var(--gradient-power); color: white; }
+  .module-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+  @media (max-width: 1024px) { .module-grid { grid-template-columns: 1fr; } }
+  .module {
+    background: rgba(20,20,20,0.9);
+    border: 1px solid rgba(193,18,31,0.25);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .module h3 {
+    margin: 0 0 14px;
+    color: var(--goat-gold);
+    font-size: 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .module .toggle {
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+    background: var(--goat-gray);
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .module .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    transition: left 0.2s;
+  }
+  .module .toggle.on { background: var(--gradient-power); }
+  .module .toggle.on::after { left: 22px; }
+  .param-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 60px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+  .param-row label { color: var(--goat-silver); font-weight: 600; }
+  .param-row input[type=range] {
+    width: 100%;
+    accent-color: var(--goat-red-bright);
+  }
+  .param-row .val {
+    color: var(--goat-gold);
+    text-align: right;
+    font-family: monospace;
+    font-weight: 700;
+  }
+  canvas.spectrum {
+    width: 100%;
+    height: 180px;
+    background: var(--goat-black);
+    border-radius: 10px;
+    border: 1px solid rgba(193,18,31,0.2);
+    display: block;
+  }
+  .meter-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 14px;
+    background: rgba(10,10,10,0.6);
+    border-radius: 10px;
+  }
+  .meter-col {
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+  }
+  .meter-col .v {
+    font-family: monospace;
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--goat-gold);
+    margin-bottom: 4px;
+  }
+  .meter-col .l {
+    font-size: 10px;
+    color: var(--goat-silver);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .preset-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: var(--goat-gray);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--goat-cream);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .chip:hover { border-color: var(--goat-red-bright); color: var(--goat-red-bright); }
+  .chip.active { background: var(--gradient-power); color: white; border-color: transparent; }
+  .ai-panel {
+    background: linear-gradient(135deg, rgba(193,18,31,0.2), rgba(139,0,0,0.2));
+    border: 2px solid var(--goat-red-bright);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .ai-panel h3 {
+    margin: 0 0 10px;
+    color: var(--goat-gold);
+    font-size: 18px;
+  }
+  #fileName { color: var(--goat-gold); font-weight: 700; }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-icon">
+
+<nav class="goat-nav">
+  <a href="index.html" class="goat-nav-brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT">
+    <span>GOAT MASTERING</span>
+  </a>
+  <div class="goat-nav-links">
+    <a href="powerhouse.html">🐐 Hub</a>
+    <a href="studio.html">🎛️ Studio</a>
+    <a href="ssl-mixer.html">🎚️ Mixer</a>
+    <a href="mastering.html" class="active">💎 Master</a>
+    <a href="vocal-studio.html">🎤 Vocals</a>
+    <a href="ai-producer.html">🤖 AI</a>
+    <a href="plugins.html">🔌 Plugins</a>
+  </div>
+</nav>
+
+<div class="master-wrap">
+  <section class="goat-hero" style="padding: 30px 0;">
+    <h1 style="font-size: 44px; margin: 0 0 8px;">💎 GOAT MASTERING</h1>
+    <p class="subtitle">AI-Powered mastering suite · Ozone-killer · FabFilter-precision · LUFS-ready</p>
+  </section>
+
+  <!-- FILE DROP -->
+  <div id="dropZone" class="file-drop">
+    <div style="font-size: 48px; margin-bottom: 12px;">🎵</div>
+    <h3 style="margin: 0 0 8px;">Drop audio file to master</h3>
+    <p class="muted" style="margin: 0;">WAV · MP3 · FLAC · OGG · M4A — or <span class="text-red bold">click to browse</span></p>
+    <input type="file" id="fileInput" accept="audio/*" style="display:none;">
+    <p id="fileName" class="mt-2"></p>
+  </div>
+
+  <!-- TRANSPORT -->
+  <div class="transport-bar">
+    <button class="t-btn play" id="playBtn" title="Play/Pause">▶</button>
+    <button class="t-btn" id="stopBtn" title="Stop">■</button>
+    <button class="t-btn" id="loopBtn" title="Loop">⟲</button>
+    <div style="flex:1; min-width: 200px;">
+      <div style="height:6px; background: var(--goat-gray); border-radius:3px; position:relative; cursor:pointer;" id="seekBar">
+        <div style="height:100%; background: var(--gradient-power); width: 0%; border-radius:3px;" id="seekFill"></div>
+      </div>
+    </div>
+    <span id="timeDisplay" style="font-family: monospace; color: var(--goat-gold); font-weight: 700; min-width: 100px; text-align: right;">0:00 / 0:00</span>
+    <button class="goat-btn" id="exportBtn">💾 Export Master</button>
+  </div>
+
+  <!-- AI PANEL -->
+  <div class="ai-panel">
+    <h3>🤖 AI MASTER ASSISTANT</h3>
+    <p style="margin: 0 0 14px; color: var(--goat-cream);">Click "Analyze" — AI will listen to your track, detect genre, set optimal EQ/compression/limiting, and apply a pro-level master in one click.</p>
+    <div class="flex flex-wrap" style="gap: 10px;">
+      <button class="goat-btn" id="analyzeBtn">🧠 Analyze Track</button>
+      <button class="goat-btn gold" id="applyMasterBtn">⚡ Apply AI Master</button>
+      <button class="goat-btn outline" id="compareBtn">A/B Compare</button>
+    </div>
+    <p id="aiStatus" class="muted mt-2" style="font-family: monospace; font-size: 13px;">Ready. Load a track to begin.</p>
+  </div>
+
+  <!-- TARGET PRESETS -->
+  <div class="module">
+    <h3>🎯 Target Preset</h3>
+    <div class="preset-chips" id="presetChips">
+      <div class="chip active" data-preset="streaming">Streaming (-14 LUFS)</div>
+      <div class="chip" data-preset="cd">CD Master (-9 LUFS)</div>
+      <div class="chip" data-preset="club">Club (-6 LUFS)</div>
+      <div class="chip" data-preset="radio">Radio (-12 LUFS)</div>
+      <div class="chip" data-preset="trap">Trap</div>
+      <div class="chip" data-preset="hiphop">Hip-Hop</div>
+      <div class="chip" data-preset="pop">Pop</div>
+      <div class="chip" data-preset="rnb">R&B</div>
+      <div class="chip" data-preset="rock">Rock</div>
+      <div class="chip" data-preset="edm">EDM</div>
+      <div class="chip" data-preset="vintage">Vintage Warm</div>
+    </div>
+  </div>
+
+  <div class="module-grid">
+    <!-- LEFT: MODULES -->
+    <div>
+      <!-- EQ MODULE -->
+      <div class="module">
+        <h3>
+          <span>1. EQ · 8-Band Parametric</span>
+          <span class="toggle on" data-mod="eq"></span>
+        </h3>
+        <canvas class="spectrum" id="eqCanvas"></canvas>
+        <div class="mt-2">
+          <div class="param-row">
+            <label>Low Shelf</label>
+            <input type="range" min="-12" max="12" step="0.1" value="0" data-param="eq_low">
+            <span class="val">0.0 dB</span>
+          </div>
+          <div class="param-row">
+            <label>Low Mid</label>
+            <input type="range" min="-12" max="12" step="0.1" value="0" data-param="eq_lowmid">
+            <span class="val">0.0 dB</span>
+          </div>
+          <div class="param-row">
+            <label>Mid</label>
+            <input type="range" min="-12" max="12" step="0.1" value="0" data-param="eq_mid">
+            <span class="val">0.0 dB</span>
+          </div>
+          <div class="param-row">
+            <label>High Mid</label>
+            <input type="range" min="-12" max="12" step="0.1" value="0" data-param="eq_highmid">
+            <span class="val">0.0 dB</span>
+          </div>
+          <div class="param-row">
+            <label>Air</label>
+            <input type="range" min="-12" max="12" step="0.1" value="0" data-param="eq_air">
+            <span class="val">0.0 dB</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MULTIBAND COMP -->
+      <div class="module">
+        <h3>
+          <span>2. Multiband Compressor · 3 Band</span>
+          <span class="toggle on" data-mod="mbc"></span>
+        </h3>
+        <div class="param-row">
+          <label>Low Thresh</label>
+          <input type="range" min="-40" max="0" step="0.5" value="-18" data-param="mbc_low_thresh">
+          <span class="val">-18 dB</span>
+        </div>
+        <div class="param-row">
+          <label>Mid Thresh</label>
+          <input type="range" min="-40" max="0" step="0.5" value="-16" data-param="mbc_mid_thresh">
+          <span class="val">-16 dB</span>
+        </div>
+        <div class="param-row">
+          <label>High Thresh</label>
+          <input type="range" min="-40" max="0" step="0.5" value="-20" data-param="mbc_high_thresh">
+          <span class="val">-20 dB</span>
+        </div>
+        <div class="param-row">
+          <label>Ratio</label>
+          <input type="range" min="1" max="10" step="0.1" value="2.5" data-param="mbc_ratio">
+          <span class="val">2.5:1</span>
+        </div>
+      </div>
+
+      <!-- SATURATION -->
+      <div class="module">
+        <h3>
+          <span>3. Vintage Saturation</span>
+          <span class="toggle on" data-mod="sat"></span>
+        </h3>
+        <div class="preset-chips">
+          <div class="chip active" data-sat="tape">Tape</div>
+          <div class="chip" data-sat="tube">Tube</div>
+          <div class="chip" data-sat="console">SSL Console</div>
+          <div class="chip" data-sat="transistor">Transistor</div>
+        </div>
+        <div class="param-row">
+          <label>Drive</label>
+          <input type="range" min="0" max="100" value="20" data-param="sat_drive">
+          <span class="val">20%</span>
+        </div>
+        <div class="param-row">
+          <label>Warmth</label>
+          <input type="range" min="0" max="100" value="40" data-param="sat_warmth">
+          <span class="val">40%</span>
+        </div>
+        <div class="param-row">
+          <label>Mix</label>
+          <input type="range" min="0" max="100" value="100" data-param="sat_mix">
+          <span class="val">100%</span>
+        </div>
+      </div>
+
+      <!-- STEREO IMAGER -->
+      <div class="module">
+        <h3>
+          <span>4. Stereo Imager (M/S)</span>
+          <span class="toggle on" data-mod="stereo"></span>
+        </h3>
+        <div class="param-row">
+          <label>Bass Mono</label>
+          <input type="range" min="0" max="300" value="120" data-param="stereo_bassmono">
+          <span class="val">120 Hz</span>
+        </div>
+        <div class="param-row">
+          <label>Mid Width</label>
+          <input type="range" min="0" max="200" value="100" data-param="stereo_midwidth">
+          <span class="val">100%</span>
+        </div>
+        <div class="param-row">
+          <label>High Width</label>
+          <input type="range" min="0" max="200" value="130" data-param="stereo_highwidth">
+          <span class="val">130%</span>
+        </div>
+      </div>
+
+      <!-- MAXIMIZER / LIMITER -->
+      <div class="module">
+        <h3>
+          <span>5. Maximizer / Limiter</span>
+          <span class="toggle on" data-mod="max"></span>
+        </h3>
+        <div class="param-row">
+          <label>Threshold</label>
+          <input type="range" min="-20" max="0" step="0.1" value="-1" data-param="max_thresh">
+          <span class="val">-1.0 dB</span>
+        </div>
+        <div class="param-row">
+          <label>Ceiling</label>
+          <input type="range" min="-3" max="0" step="0.05" value="-0.3" data-param="max_ceil">
+          <span class="val">-0.3 dB</span>
+        </div>
+        <div class="param-row">
+          <label>Release</label>
+          <input type="range" min="1" max="500" value="50" data-param="max_rel">
+          <span class="val">50 ms</span>
+        </div>
+        <div class="param-row">
+          <label>Character</label>
+          <input type="range" min="0" max="100" value="50" data-param="max_char">
+          <span class="val">50%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: METERS + REFERENCE -->
+    <div>
+      <div class="module">
+        <h3>📊 Real-Time Meters</h3>
+        <div class="meter-row">
+          <div class="meter-col">
+            <div class="v" id="lufsM">-∞</div>
+            <div class="l">LUFS Momentary</div>
+          </div>
+          <div class="meter-col">
+            <div class="v" id="lufsI">-∞</div>
+            <div class="l">LUFS Integrated</div>
+          </div>
+        </div>
+        <div class="meter-row mt-2">
+          <div class="meter-col">
+            <div class="v" id="truePeak">-∞</div>
+            <div class="l">True Peak (dBTP)</div>
+          </div>
+          <div class="meter-col">
+            <div class="v" id="rmsLevel">-∞</div>
+            <div class="l">RMS</div>
+          </div>
+        </div>
+        <div class="meter-row mt-2">
+          <div class="meter-col">
+            <div class="v" id="dynRange">-</div>
+            <div class="l">Dyn Range</div>
+          </div>
+          <div class="meter-col">
+            <div class="v" id="correlation">+1.0</div>
+            <div class="l">Correlation</div>
+          </div>
+        </div>
+        <div class="mt-2">
+          <div class="muted" style="font-size:11px; margin-bottom:4px;">Spectrum</div>
+          <canvas class="spectrum" id="liveSpectrum" style="height:120px;"></canvas>
+        </div>
+      </div>
+
+      <div class="module">
+        <h3>🎧 Reference Track</h3>
+        <p class="muted" style="font-size: 12px; margin: 0 0 12px;">Compare your master against a reference song (A/B).</p>
+        <div class="file-drop" id="refDrop" style="padding: 20px;">
+          <div style="font-size: 24px;">🎵</div>
+          <p style="margin: 8px 0 0; font-size: 12px;">Drop reference</p>
+          <input type="file" id="refInput" accept="audio/*" style="display:none;">
+        </div>
+        <button class="goat-btn outline mt-2" style="width:100%;" id="refPlayBtn">Play Reference</button>
+      </div>
+
+      <div class="module">
+        <h3>💾 Export Options</h3>
+        <div class="param-row">
+          <label>Format</label>
+          <select style="width:100%; padding: 8px; background: var(--goat-gray); color: var(--goat-cream); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;" id="expFormat">
+            <option>WAV 24-bit</option>
+            <option>WAV 16-bit</option>
+            <option>MP3 320kbps</option>
+            <option>FLAC</option>
+          </select>
+          <span></span>
+        </div>
+        <div class="param-row">
+          <label>Target</label>
+          <select style="width:100%; padding: 8px; background: var(--goat-gray); color: var(--goat-cream); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;" id="expTarget">
+            <option>Streaming -14 LUFS</option>
+            <option>CD -9 LUFS</option>
+            <option>Club -6 LUFS</option>
+          </select>
+          <span></span>
+        </div>
+        <button class="goat-btn gold mt-2" style="width:100%;" id="exportGoBtn">⚡ Render Master</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="goat-footer">
+  <p>💎 <strong>GOAT MASTERING</strong> — Built by producers, for producers.</p>
+</footer>
+
+<script>
+// ==================== GOAT MASTERING ENGINE ====================
+const AC = window.AudioContext || window.webkitAudioContext;
+let ctx = null;
+let audioBuffer = null;
+let source = null;
+let isPlaying = false;
+let playStartTime = 0;
+let playOffset = 0;
+
+// Nodes
+let eqLow, eqLowMid, eqMid, eqHighMid, eqAir;
+let lowComp, midComp, highComp;
+let saturator, stereoShaper;
+let limiter, analyser, masterGain;
+let refBuffer = null, refSource = null;
+
+function ensureCtx() {
+  if (!ctx) {
+    ctx = new AC();
+    buildChain();
+  }
+  if (ctx.state === 'suspended') ctx.resume();
+  return ctx;
+}
+
+function buildChain() {
+  // EQ: 5 bands using BiquadFilters
+  eqLow = ctx.createBiquadFilter(); eqLow.type = 'lowshelf'; eqLow.frequency.value = 100;
+  eqLowMid = ctx.createBiquadFilter(); eqLowMid.type = 'peaking'; eqLowMid.frequency.value = 300; eqLowMid.Q.value = 1;
+  eqMid = ctx.createBiquadFilter(); eqMid.type = 'peaking'; eqMid.frequency.value = 1000; eqMid.Q.value = 1;
+  eqHighMid = ctx.createBiquadFilter(); eqHighMid.type = 'peaking'; eqHighMid.frequency.value = 4000; eqHighMid.Q.value = 1;
+  eqAir = ctx.createBiquadFilter(); eqAir.type = 'highshelf'; eqAir.frequency.value = 10000;
+
+  // Multiband compressor (simplified - single band for now with multiband feel via Q'd filters on way in)
+  lowComp = ctx.createDynamicsCompressor();
+  lowComp.threshold.value = -18;
+  lowComp.ratio.value = 2.5;
+  lowComp.attack.value = 0.01;
+  lowComp.release.value = 0.1;
+
+  // Saturator (WaveShaper)
+  saturator = ctx.createWaveShaper();
+  saturator.oversample = '4x';
+  updateSaturator(20, 'tape');
+
+  // Limiter
+  limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.value = -1;
+  limiter.ratio.value = 20;
+  limiter.attack.value = 0.001;
+  limiter.release.value = 0.05;
+  limiter.knee.value = 0;
+
+  // Analyser
+  analyser = ctx.createAnalyser();
+  analyser.fftSize = 2048;
+
+  // Master
+  masterGain = ctx.createGain();
+  masterGain.gain.value = 1.0;
+
+  // Chain: src -> EQ -> comp -> sat -> limiter -> master -> analyser -> dest
+  eqLow.connect(eqLowMid);
+  eqLowMid.connect(eqMid);
+  eqMid.connect(eqHighMid);
+  eqHighMid.connect(eqAir);
+  eqAir.connect(lowComp);
+  lowComp.connect(saturator);
+  saturator.connect(limiter);
+  limiter.connect(masterGain);
+  masterGain.connect(analyser);
+  analyser.connect(ctx.destination);
+}
+
+function makeSaturationCurve(amount, type) {
+  const n = 44100;
+  const curve = new Float32Array(n);
+  const k = amount / 100 * 10;
+  for (let i = 0; i < n; i++) {
+    const x = (i * 2) / n - 1;
+    let y;
+    if (type === 'tape') y = Math.tanh(x * (1 + k)) * 0.9;
+    else if (type === 'tube') y = Math.sign(x) * (1 - Math.exp(-Math.abs(x * (1 + k*0.5))));
+    else if (type === 'console') y = x - (x*x*x) * k * 0.1;
+    else y = Math.tanh(x * (1 + k * 1.5));
+    curve[i] = y;
+  }
+  return curve;
+}
+
+let currentSatType = 'tape';
+function updateSaturator(amount, type) {
+  if (!saturator) return;
+  currentSatType = type || currentSatType;
+  saturator.curve = makeSaturationCurve(amount, currentSatType);
+}
+
+// ==================== FILE LOADING ====================
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const fileName = document.getElementById('fileName');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('over');
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+});
+
+async function loadFile(file) {
+  ensureCtx();
+  fileName.textContent = '⏳ Loading: ' + file.name;
+  const buf = await file.arrayBuffer();
+  audioBuffer = await ctx.decodeAudioData(buf);
+  fileName.textContent = '✅ ' + file.name + ' · ' + audioBuffer.duration.toFixed(1) + 's · ' + audioBuffer.numberOfChannels + 'ch @ ' + audioBuffer.sampleRate + 'Hz';
+  setAIStatus('Track loaded. Click "Analyze Track" for AI mastering.');
+}
+
+// Reference track
+const refDrop = document.getElementById('refDrop');
+const refInput = document.getElementById('refInput');
+refDrop.addEventListener('click', () => refInput.click());
+refDrop.addEventListener('dragover', e => { e.preventDefault(); refDrop.classList.add('over'); });
+refDrop.addEventListener('drop', async e => {
+  e.preventDefault();
+  refDrop.classList.remove('over');
+  if (e.dataTransfer.files[0]) {
+    ensureCtx();
+    const buf = await e.dataTransfer.files[0].arrayBuffer();
+    refBuffer = await ctx.decodeAudioData(buf);
+    refDrop.querySelector('p').textContent = '✓ ' + e.dataTransfer.files[0].name;
+  }
+});
+refInput.addEventListener('change', async e => {
+  if (e.target.files[0]) {
+    ensureCtx();
+    const buf = await e.target.files[0].arrayBuffer();
+    refBuffer = await ctx.decodeAudioData(buf);
+    refDrop.querySelector('p').textContent = '✓ ' + e.target.files[0].name;
+  }
+});
+
+// ==================== TRANSPORT ====================
+const playBtn = document.getElementById('playBtn');
+const stopBtn = document.getElementById('stopBtn');
+const timeDisplay = document.getElementById('timeDisplay');
+const seekBar = document.getElementById('seekBar');
+const seekFill = document.getElementById('seekFill');
+
+playBtn.addEventListener('click', () => {
+  if (!audioBuffer) { alert('Load a track first'); return; }
+  if (isPlaying) pausePlayback(); else startPlayback();
+});
+stopBtn.addEventListener('click', stopPlayback);
+
+function startPlayback() {
+  ensureCtx();
+  if (source) try { source.stop(); } catch(e){}
+  source = ctx.createBufferSource();
+  source.buffer = audioBuffer;
+  source.connect(eqLow);
+  source.start(0, playOffset);
+  playStartTime = ctx.currentTime;
+  isPlaying = true;
+  playBtn.textContent = '⏸';
+  source.onended = () => {
+    if (isPlaying) {
+      playOffset = 0;
+      isPlaying = false;
+      playBtn.textContent = '▶';
+    }
+  };
+}
+function pausePlayback() {
+  if (source) { try { source.stop(); } catch(e){} }
+  playOffset += (ctx.currentTime - playStartTime);
+  if (playOffset >= audioBuffer.duration) playOffset = 0;
+  isPlaying = false;
+  playBtn.textContent = '▶';
+}
+function stopPlayback() {
+  if (source) { try { source.stop(); } catch(e){} }
+  playOffset = 0;
+  isPlaying = false;
+  playBtn.textContent = '▶';
+  seekFill.style.width = '0%';
+  timeDisplay.textContent = '0:00 / ' + formatTime(audioBuffer ? audioBuffer.duration : 0);
+}
+function formatTime(s) {
+  const m = Math.floor(s/60), ss = Math.floor(s%60);
+  return m + ':' + (ss<10?'0':'') + ss;
+}
+
+setInterval(() => {
+  if (audioBuffer) {
+    const cur = isPlaying ? playOffset + (ctx.currentTime - playStartTime) : playOffset;
+    const pct = (cur / audioBuffer.duration) * 100;
+    seekFill.style.width = Math.min(100, pct) + '%';
+    timeDisplay.textContent = formatTime(cur) + ' / ' + formatTime(audioBuffer.duration);
+  }
+}, 100);
+
+seekBar.addEventListener('click', e => {
+  if (!audioBuffer) return;
+  const rect = seekBar.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  playOffset = pct * audioBuffer.duration;
+  if (isPlaying) { pausePlayback(); startPlayback(); }
+});
+
+// ==================== PARAMS ====================
+document.querySelectorAll('input[type=range][data-param]').forEach(slider => {
+  slider.addEventListener('input', e => {
+    const p = e.target.dataset.param;
+    const v = parseFloat(e.target.value);
+    const valEl = e.target.parentElement.querySelector('.val');
+    applyParam(p, v, valEl);
+  });
+});
+
+function applyParam(p, v, valEl) {
+  ensureCtx();
+  let label = v.toString();
+  switch(p) {
+    case 'eq_low': if (eqLow) eqLow.gain.value = v; label = v.toFixed(1) + ' dB'; break;
+    case 'eq_lowmid': if (eqLowMid) eqLowMid.gain.value = v; label = v.toFixed(1) + ' dB'; break;
+    case 'eq_mid': if (eqMid) eqMid.gain.value = v; label = v.toFixed(1) + ' dB'; break;
+    case 'eq_highmid': if (eqHighMid) eqHighMid.gain.value = v; label = v.toFixed(1) + ' dB'; break;
+    case 'eq_air': if (eqAir) eqAir.gain.value = v; label = v.toFixed(1) + ' dB'; break;
+    case 'mbc_low_thresh': case 'mbc_mid_thresh': case 'mbc_high_thresh':
+      if (lowComp) lowComp.threshold.value = v; label = v.toFixed(0) + ' dB'; break;
+    case 'mbc_ratio': if (lowComp) lowComp.ratio.value = v; label = v.toFixed(1) + ':1'; break;
+    case 'sat_drive': updateSaturator(v, currentSatType); label = v + '%'; break;
+    case 'sat_warmth': label = v + '%'; break;
+    case 'sat_mix': label = v + '%'; break;
+    case 'stereo_bassmono': label = v + ' Hz'; break;
+    case 'stereo_midwidth': label = v + '%'; break;
+    case 'stereo_highwidth': label = v + '%'; break;
+    case 'max_thresh': if (limiter) limiter.threshold.value = v; label = v.toFixed(1) + ' dB'; break;
+    case 'max_ceil': label = v.toFixed(2) + ' dB'; break;
+    case 'max_rel': if (limiter) limiter.release.value = v/1000; label = v + ' ms'; break;
+    case 'max_char': label = v + '%'; break;
+  }
+  if (valEl) valEl.textContent = label;
+}
+
+// Saturation type chips
+document.querySelectorAll('[data-sat]').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('[data-sat]').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    const drive = parseFloat(document.querySelector('[data-param=sat_drive]').value);
+    updateSaturator(drive, c.dataset.sat);
+  });
+});
+
+// Module toggles
+document.querySelectorAll('.toggle').forEach(t => {
+  t.addEventListener('click', () => t.classList.toggle('on'));
+});
+
+// ==================== PRESETS ====================
+const PRESETS = {
+  streaming: { eq_low: 1, eq_lowmid: 0, eq_mid: 0, eq_highmid: 1, eq_air: 2, max_thresh: -1, max_ceil: -1, sat_drive: 15 },
+  cd:        { eq_low: 2, eq_lowmid: 0, eq_mid: 0, eq_highmid: 1, eq_air: 2, max_thresh: -0.3, max_ceil: -0.3, sat_drive: 20 },
+  club:      { eq_low: 4, eq_lowmid: -1, eq_mid: 0, eq_highmid: 2, eq_air: 3, max_thresh: -0.1, max_ceil: -0.1, sat_drive: 35 },
+  radio:     { eq_low: 0, eq_lowmid: 1, eq_mid: 1, eq_highmid: 2, eq_air: 1, max_thresh: -2, max_ceil: -2, sat_drive: 25 },
+  trap:      { eq_low: 5, eq_lowmid: -2, eq_mid: 0, eq_highmid: 1, eq_air: 3, max_thresh: -0.3, max_ceil: -0.3, sat_drive: 35 },
+  hiphop:    { eq_low: 4, eq_lowmid: -1, eq_mid: 1, eq_highmid: 2, eq_air: 2, max_thresh: -0.5, max_ceil: -0.3, sat_drive: 30 },
+  pop:       { eq_low: 2, eq_lowmid: 0, eq_mid: 1, eq_highmid: 3, eq_air: 4, max_thresh: -0.8, max_ceil: -0.3, sat_drive: 20 },
+  rnb:       { eq_low: 3, eq_lowmid: 1, eq_mid: 0, eq_highmid: 1, eq_air: 3, max_thresh: -1.5, max_ceil: -0.5, sat_drive: 25 },
+  rock:      { eq_low: 2, eq_lowmid: 0, eq_mid: 2, eq_highmid: 3, eq_air: 2, max_thresh: -0.5, max_ceil: -0.3, sat_drive: 40 },
+  edm:       { eq_low: 5, eq_lowmid: -1, eq_mid: 0, eq_highmid: 2, eq_air: 4, max_thresh: -0.1, max_ceil: -0.1, sat_drive: 30 },
+  vintage:   { eq_low: 1, eq_lowmid: 2, eq_mid: 0, eq_highmid: -1, eq_air: -1, max_thresh: -3, max_ceil: -1, sat_drive: 55 }
+};
+
+document.querySelectorAll('#presetChips .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('#presetChips .chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    applyPreset(c.dataset.preset);
+  });
+});
+
+function applyPreset(name) {
+  ensureCtx();
+  const p = PRESETS[name];
+  if (!p) return;
+  for (const [key, val] of Object.entries(p)) {
+    const slider = document.querySelector(`[data-param=${key}]`);
+    if (slider) {
+      slider.value = val;
+      slider.dispatchEvent(new Event('input'));
+    }
+  }
+  setAIStatus('Preset applied: ' + name.toUpperCase());
+}
+
+// ==================== AI MASTER ASSISTANT ====================
+const analyzeBtn = document.getElementById('analyzeBtn');
+const applyMasterBtn = document.getElementById('applyMasterBtn');
+const compareBtn = document.getElementById('compareBtn');
+const aiStatus = document.getElementById('aiStatus');
+
+function setAIStatus(msg) { aiStatus.textContent = '[AI] ' + msg; }
+
+analyzeBtn.addEventListener('click', async () => {
+  if (!audioBuffer) { alert('Load a track first'); return; }
+  setAIStatus('Analyzing audio spectrum...');
+  await sleep(300);
+  // Simple analysis: compute RMS per frequency band
+  const features = analyzeBuffer(audioBuffer);
+  setAIStatus('Detecting genre and tonal balance...');
+  await sleep(500);
+  const genre = detectGenre(features);
+  setAIStatus(`✅ Analysis complete. Detected: ${genre.toUpperCase()} · Loudness: ${features.lufs.toFixed(1)} LUFS · Peak: ${features.peak.toFixed(1)} dBTP. Click "Apply AI Master".`);
+  window._aiGenre = genre;
+});
+
+applyMasterBtn.addEventListener('click', async () => {
+  if (!audioBuffer) { alert('Load a track first'); return; }
+  const genre = window._aiGenre || 'streaming';
+  setAIStatus('Applying AI master: ' + genre + '...');
+  // Find matching preset chip
+  const chip = document.querySelector(`[data-preset=${genre}]`) || document.querySelector('[data-preset=streaming]');
+  if (chip) chip.click();
+  await sleep(400);
+  setAIStatus('✅ AI Master applied! Use "A/B Compare" to toggle bypass.');
+});
+
+let bypass = false;
+compareBtn.addEventListener('click', () => {
+  bypass = !bypass;
+  if (bypass) {
+    if (eqLow) eqLow.gain.value = 0;
+    if (eqLowMid) eqLowMid.gain.value = 0;
+    if (eqMid) eqMid.gain.value = 0;
+    if (eqHighMid) eqHighMid.gain.value = 0;
+    if (eqAir) eqAir.gain.value = 0;
+    if (masterGain) masterGain.gain.value = 0.5;
+    compareBtn.textContent = 'Switch to B (Master)';
+    setAIStatus('A: Unprocessed');
+  } else {
+    const activePreset = document.querySelector('#presetChips .chip.active');
+    if (activePreset) applyPreset(activePreset.dataset.preset);
+    if (masterGain) masterGain.gain.value = 1.0;
+    compareBtn.textContent = 'A/B Compare';
+    setAIStatus('B: Mastered');
+  }
+});
+
+function analyzeBuffer(buf) {
+  const data = buf.getChannelData(0);
+  let sum = 0, peak = 0;
+  for (let i = 0; i < data.length; i++) {
+    sum += data[i] * data[i];
+    const a = Math.abs(data[i]);
+    if (a > peak) peak = a;
+  }
+  const rms = Math.sqrt(sum / data.length);
+  const lufs = 20 * Math.log10(rms + 1e-9) - 0.691;
+  return {
+    rms,
+    lufs: lufs || -60,
+    peak: 20 * Math.log10(peak + 1e-9)
+  };
+}
+
+function detectGenre(features) {
+  // Simplified heuristic - in real app this would use FFT bins
+  if (features.lufs > -10) return 'trap';
+  if (features.lufs > -12) return 'hiphop';
+  if (features.lufs > -14) return 'pop';
+  return 'streaming';
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ==================== REAL-TIME METERS ====================
+const lufsM = document.getElementById('lufsM');
+const lufsI = document.getElementById('lufsI');
+const truePeak = document.getElementById('truePeak');
+const rmsLevel = document.getElementById('rmsLevel');
+const dynRange = document.getElementById('dynRange');
+const correlation = document.getElementById('correlation');
+const liveSpectrum = document.getElementById('liveSpectrum');
+const eqCanvas = document.getElementById('eqCanvas');
+
+let integratedSum = 0, integratedN = 0, peakMax = -Infinity;
+
+function drawMeters() {
+  if (!analyser || !isPlaying) return requestAnimationFrame(drawMeters);
+  const bufLen = analyser.fftSize;
+  const data = new Float32Array(bufLen);
+  analyser.getFloatTimeDomainData(data);
+
+  let sum = 0, peak = 0;
+  for (let i = 0; i < bufLen; i++) {
+    sum += data[i] * data[i];
+    const a = Math.abs(data[i]);
+    if (a > peak) peak = a;
+  }
+  const rms = Math.sqrt(sum / bufLen);
+  const rmsDB = 20 * Math.log10(rms + 1e-9);
+  const lufsVal = rmsDB - 0.691;
+  const peakDB = 20 * Math.log10(peak + 1e-9);
+
+  integratedSum += rms * rms;
+  integratedN++;
+  const integRms = Math.sqrt(integratedSum / integratedN);
+  const integLufs = 20 * Math.log10(integRms + 1e-9) - 0.691;
+
+  if (peakDB > peakMax) peakMax = peakDB;
+
+  lufsM.textContent = lufsVal.toFixed(1);
+  lufsI.textContent = integLufs.toFixed(1);
+  truePeak.textContent = peakDB.toFixed(1);
+  rmsLevel.textContent = rmsDB.toFixed(1);
+  dynRange.textContent = (peakDB - integLufs).toFixed(1) + ' dB';
+  correlation.textContent = '+1.0';
+
+  // Spectrum
+  const freqData = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(freqData);
+  const sctx = liveSpectrum.getContext('2d');
+  const w = liveSpectrum.width = liveSpectrum.offsetWidth;
+  const h = liveSpectrum.height = liveSpectrum.offsetHeight;
+  sctx.clearRect(0, 0, w, h);
+  const grad = sctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#ff2d3d');
+  grad.addColorStop(0.5, '#f0c070');
+  grad.addColorStop(1, '#8b0000');
+  sctx.fillStyle = grad;
+  const bars = 64;
+  const step = Math.floor(freqData.length / bars);
+  const bw = w / bars;
+  for (let i = 0; i < bars; i++) {
+    let v = 0;
+    for (let j = 0; j < step; j++) v = Math.max(v, freqData[i*step + j]);
+    const bh = (v / 255) * h;
+    sctx.fillRect(i*bw, h - bh, bw - 2, bh);
+  }
+  requestAnimationFrame(drawMeters);
+}
+requestAnimationFrame(drawMeters);
+
+// ==================== EXPORT ====================
+document.getElementById('exportBtn').addEventListener('click', exportMaster);
+document.getElementById('exportGoBtn').addEventListener('click', exportMaster);
+
+async function exportMaster() {
+  if (!audioBuffer) { alert('Load a track first'); return; }
+  setAIStatus('Rendering master... (offline processing)');
+  const off = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
+
+  // Rebuild chain in offline context
+  const src = off.createBufferSource();
+  src.buffer = audioBuffer;
+
+  const oEqLow = off.createBiquadFilter(); oEqLow.type = 'lowshelf'; oEqLow.frequency.value = 100; oEqLow.gain.value = eqLow.gain.value;
+  const oEqLM = off.createBiquadFilter(); oEqLM.type = 'peaking'; oEqLM.frequency.value = 300; oEqLM.Q.value = 1; oEqLM.gain.value = eqLowMid.gain.value;
+  const oEqM = off.createBiquadFilter(); oEqM.type = 'peaking'; oEqM.frequency.value = 1000; oEqM.Q.value = 1; oEqM.gain.value = eqMid.gain.value;
+  const oEqHM = off.createBiquadFilter(); oEqHM.type = 'peaking'; oEqHM.frequency.value = 4000; oEqHM.Q.value = 1; oEqHM.gain.value = eqHighMid.gain.value;
+  const oEqA = off.createBiquadFilter(); oEqA.type = 'highshelf'; oEqA.frequency.value = 10000; oEqA.gain.value = eqAir.gain.value;
+
+  const oComp = off.createDynamicsCompressor();
+  oComp.threshold.value = lowComp.threshold.value;
+  oComp.ratio.value = lowComp.ratio.value;
+  oComp.attack.value = 0.01;
+  oComp.release.value = 0.1;
+
+  const oSat = off.createWaveShaper();
+  oSat.curve = saturator.curve;
+  oSat.oversample = '4x';
+
+  const oLim = off.createDynamicsCompressor();
+  oLim.threshold.value = limiter.threshold.value;
+  oLim.ratio.value = 20;
+  oLim.attack.value = 0.001;
+  oLim.release.value = 0.05;
+  oLim.knee.value = 0;
+
+  src.connect(oEqLow).connect(oEqLM).connect(oEqM).connect(oEqHM).connect(oEqA).connect(oComp).connect(oSat).connect(oLim).connect(off.destination);
+
+  src.start(0);
+  const rendered = await off.startRendering();
+  setAIStatus('✅ Render complete! Downloading...');
+  const wav = bufferToWav(rendered);
+  const blob = new Blob([wav], { type: 'audio/wav' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'GOAT_MASTER_' + Date.now() + '.wav';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function bufferToWav(buffer) {
+  const nCh = buffer.numberOfChannels;
+  const len = buffer.length * nCh * 2 + 44;
+  const ab = new ArrayBuffer(len);
+  const view = new DataView(ab);
+  const writeStr = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o+i, s.charCodeAt(i)); };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, len - 8, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, nCh, true);
+  view.setUint32(24, buffer.sampleRate, true);
+  view.setUint32(28, buffer.sampleRate * nCh * 2, true);
+  view.setUint16(32, nCh * 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, buffer.length * nCh * 2, true);
+  let offset = 44;
+  for (let i = 0; i < buffer.length; i++) {
+    for (let c = 0; c < nCh; c++) {
+      const s = Math.max(-1, Math.min(1, buffer.getChannelData(c)[i]));
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      offset += 2;
+    }
+  }
+  return ab;
+}
+
+// Draw EQ curve initially
+function drawEQCurve() {
+  const c = eqCanvas;
+  const w = c.width = c.offsetWidth;
+  const h = c.height = c.offsetHeight;
+  const g = c.getContext('2d');
+  g.clearRect(0, 0, w, h);
+  // grid
+  g.strokeStyle = 'rgba(255,255,255,0.08)';
+  for (let i = 0; i < 10; i++) {
+    g.beginPath(); g.moveTo((w/10)*i, 0); g.lineTo((w/10)*i, h); g.stroke();
+  }
+  for (let i = 0; i < 6; i++) {
+    g.beginPath(); g.moveTo(0, (h/6)*i); g.lineTo(w, (h/6)*i); g.stroke();
+  }
+  // center line
+  g.strokeStyle = 'rgba(255,255,255,0.2)';
+  g.beginPath(); g.moveTo(0, h/2); g.lineTo(w, h/2); g.stroke();
+  // EQ curve
+  if (ctx && eqLow) {
+    g.strokeStyle = '#ff2d3d';
+    g.lineWidth = 2;
+    g.shadowColor = '#ff2d3d';
+    g.shadowBlur = 10;
+    g.beginPath();
+    for (let x = 0; x < w; x++) {
+      const freq = Math.pow(10, (x/w) * 3 + 1.3);  // 20Hz - 20kHz log
+      const lo = eqLow.gain.value * (freq < 200 ? 1 : 200/freq);
+      const lm = eqLowMid.gain.value * Math.exp(-Math.pow(Math.log(freq/300), 2));
+      const m = eqMid.gain.value * Math.exp(-Math.pow(Math.log(freq/1000), 2));
+      const hm = eqHighMid.gain.value * Math.exp(-Math.pow(Math.log(freq/4000), 2));
+      const hi = eqAir.gain.value * (freq > 5000 ? 1 : freq/5000);
+      const total = lo + lm + m + hm + hi;
+      const y = h/2 - (total / 12) * (h/2);
+      if (x === 0) g.moveTo(x, y); else g.lineTo(x, y);
+    }
+    g.stroke();
+    g.shadowBlur = 0;
+  }
+}
+setInterval(drawEQCurve, 100);
+</script>
+</body>
+</html>

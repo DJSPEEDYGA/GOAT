@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GOAT License Manager — Plugin Vault</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c14;--bg2:#0d1420;--bg3:#111928;--bg4:#1a2336;
+  --border:rgba(212,160,60,0.18);--gold:#d4a03c;--gold2:#f0c040;
+  --red:#e74c3c;--green:#2ecc71;--blue:#3498db;--purple:#9b59b6;
+  --cyan:#00d4ff;--orange:#f39c12;--pink:#e91e8c;
+  --text:#f0ece4;--sub:#7a7060;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px}
+#app{display:flex;flex-direction:column;height:100vh}
+/* TOPBAR */
+#topbar{height:44px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 12px;flex-shrink:0}
+.logo{font-size:15px;font-weight:800;color:var(--gold)}
+.tb-btn{padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s;text-decoration:none}
+.tb-btn:hover{background:var(--bg4);color:var(--text);border-color:var(--gold)}
+.spacer{flex:1}
+/* MAIN */
+#main{display:flex;flex:1;overflow:hidden;min-height:0}
+/* LEFT - VENDORS */
+#left{width:200px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.panel-title{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;padding:8px 10px;border-bottom:1px solid var(--border)}
+.vendor-card{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:8px;cursor:pointer;transition:all .2s}
+.vendor-card:hover,.vendor-card.sel{background:var(--bg3)}
+.vendor-card.sel .vc-name{color:var(--gold)}
+.vc-icon{font-size:18px;width:24px;text-align:center;flex-shrink:0}
+.vc-info{flex:1;min-width:0}
+.vc-name{font-size:10px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vc-count{font-size:9px;color:var(--sub)}
+.vc-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.vc-bar-wrap{height:3px;background:var(--bg4);border-radius:2px;margin-top:3px;overflow:hidden}
+.vc-bar-fill{height:100%;border-radius:2px}
+/* CENTER */
+#center{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+/* TABS */
+#tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+.tab{padding:8px 18px;font-size:11px;cursor:pointer;color:var(--sub);border-bottom:2px solid transparent;transition:all .2s;font-family:inherit;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.act{color:var(--gold);border-bottom-color:var(--gold)}
+/* TOOLBAR */
+#toolbar{height:38px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 12px;flex-shrink:0}
+#search-input{flex:1;max-width:240px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 10px;font-family:inherit;font-size:11px;outline:none}
+#search-input:focus{border-color:var(--gold)}
+.filter-btn{padding:3px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:10px;font-family:inherit;transition:all .2s}
+.filter-btn:hover,.filter-btn.act{background:var(--bg4);color:var(--text);border-color:var(--gold)}
+/* TAB CONTENT */
+#tab-content{flex:1;overflow-y:auto;padding:14px}
+/* LICENSE GRID */
+.lic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.lic-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;transition:all .2s;cursor:pointer;position:relative}
+.lic-card:hover{border-color:var(--gold);transform:translateY(-1px);box-shadow:0 4px 16px rgba(212,160,60,0.1)}
+.lic-card-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.lic-icon{font-size:22px;width:32px;text-align:center}
+.lic-name{font-size:11px;font-weight:700;color:var(--text);line-height:1.3}
+.lic-vendor{font-size:9px;color:var(--sub)}
+.lic-status{position:absolute;top:10px;right:10px;font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px}
+.lic-detail{font-size:9px;color:var(--sub);line-height:1.8;margin-top:6px;border-top:1px solid rgba(255,255,255,0.04);padding-top:6px}
+.lic-detail span{color:var(--text)}
+.lic-machines{display:flex;align-items:center;gap:4px;margin-top:4px}
+.machine-dot{width:8px;height:8px;border-radius:50%;background:var(--bg4);border:1px solid var(--border)}
+.machine-dot.used{background:var(--green);border-color:var(--green)}
+.machine-dot.over{background:var(--red);border-color:var(--red)}
+.lic-value{font-size:10px;font-weight:700;color:var(--gold);margin-top:4px}
+/* AUTH FORMS */
+.auth-form{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px}
+.auth-form-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.auth-vendor-icon{font-size:24px}
+.auth-vendor-name{font-size:13px;font-weight:700;color:var(--text)}
+.auth-status-badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;margin-left:auto}
+.form-field{margin-bottom:8px}
+.form-label{font-size:9px;color:var(--sub);margin-bottom:3px;display:block}
+.form-input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:6px 10px;font-family:inherit;font-size:11px;outline:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--gold)}
+.form-btns{display:flex;gap:6px;margin-top:10px}
+.form-btn{padding:6px 14px;border-radius:5px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:10px;font-family:inherit;transition:all .2s}
+.form-btn:hover{border-color:var(--gold);color:var(--gold)}
+.form-btn.primary{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700}
+.form-btn.primary:hover{background:var(--gold2)}
+.form-btn.danger{border-color:var(--red);color:var(--red)}
+/* OFFLINE */
+.machine-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:10px}
+.machine-icon{font-size:14px;flex-shrink:0}
+.machine-name{flex:1;font-weight:600}
+.machine-os{font-size:9px;color:var(--sub)}
+.machine-id{font-size:8px;color:var(--cyan);font-family:monospace}
+/* DASHBOARD */
+.dash-stat{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
+.dash-val{font-size:24px;font-weight:900}
+.dash-lbl{font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+/* RIGHT PANEL */
+#right{width:210px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;padding:10px}
+.rp-title{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;margin-top:10px}
+.notif-item{padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;margin-bottom:4px;font-size:9px;cursor:pointer;transition:all .2s}
+.notif-item:hover{border-color:var(--gold)}
+.notif-title{font-weight:700;color:var(--text)}
+.notif-sub{color:var(--sub);margin-top:1px}
+.storage-bar{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.storage-fill{height:100%;border-radius:3px;transition:width .6s}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<div id="app">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <span class="logo">🐐 LICENSE MANAGER</span>
+    <span style="font-size:10px;color:var(--sub)">Plugin Vault & Auth Center</span>
+    <div class="spacer"></div>
+    <button class="tb-btn" onclick="autoLoginAll()">⚡ Login All</button>
+    <button class="tb-btn" onclick="syncAll()">🔄 Sync All</button>
+    <button class="tb-btn" onclick="scanNew()">🔍 Scan Plugins</button>
+    <div class="spacer"></div>
+    <a href="powerhouse.html" class="tb-btn">⬅ Home</a>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <!-- LEFT -->
+    <div id="left">
+      <div class="panel-title">🏢 Vendors (10)</div>
+      <div id="vendor-list"></div>
+    </div>
+
+    <!-- CENTER -->
+    <div id="center">
+      <div id="tabs">
+        <div class="tab act" onclick="switchTab('vault',this)">Plugin Vault</div>
+        <div class="tab" onclick="switchTab('auth',this)">Auth Manager</div>
+        <div class="tab" onclick="switchTab('offline',this)">Offline Auth</div>
+        <div class="tab" onclick="switchTab('dash',this)">Dashboard</div>
+      </div>
+      <div id="toolbar">
+        <input id="search-input" placeholder="🔍 Search plugins…" oninput="renderVault()">
+        <button class="filter-btn act" onclick="setFilter('all',this)" data-f="all">All</button>
+        <button class="filter-btn" onclick="setFilter('active',this)" data-f="active">Active</button>
+        <button class="filter-btn" onclick="setFilter('trial',this)" data-f="trial">Trial</button>
+        <button class="filter-btn" onclick="setFilter('expired',this)" data-f="expired">Expired</button>
+        <div class="spacer"></div>
+        <span id="plugin-count" style="font-size:10px;color:var(--sub)">29 plugins</span>
+      </div>
+      <div id="tab-content"></div>
+    </div>
+
+    <!-- RIGHT -->
+    <div id="right">
+      <div class="rp-title">🔔 Notifications</div>
+      <div id="notif-list"></div>
+      <div class="rp-title">💾 Storage</div>
+      <div id="storage-list"></div>
+      <div class="rp-title">💻 Machines</div>
+      <div id="machines-right"></div>
+      <div class="rp-title">⚙ Quick Actions</div>
+      <button class="tb-btn" style="width:100%;margin-bottom:4px;text-align:left" onclick="autoLoginAll()">⚡ Login All Vendors</button>
+      <button class="tb-btn" style="width:100%;margin-bottom:4px;text-align:left" onclick="syncAll()">🔄 Sync Licenses</button>
+      <button class="tb-btn" style="width:100%;margin-bottom:4px;text-align:left">📤 Export Report</button>
+      <button class="tb-btn" style="width:100%;text-align:left">🔒 Deauth Machine</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const vendors = [
+  {id:'ni',        name:'Native Instruments', icon:'🎹', color:'#3498db',  loggedIn:true},
+  {id:'waves',     name:'Waves',              icon:'🌊', color:'#2ecc71',  loggedIn:true},
+  {id:'ew',        name:'EastWest',           icon:'🎻', color:'#9b59b6',  loggedIn:true},
+  {id:'uad',       name:'UAD / Luna',         icon:'🔊', color:'#f39c12',  loggedIn:false},
+  {id:'izotope',   name:'iZotope',            icon:'🔬', color:'#e74c3c',  loggedIn:true},
+  {id:'fabfilter', name:'FabFilter',          icon:'⚡', color:'#d4a03c',  loggedIn:true},
+  {id:'soundtoys', name:'SoundToys',          icon:'🎪', color:'#e91e8c',  loggedIn:true},
+  {id:'antares',   name:'Antares',            icon:'🎤', color:'#00d4ff',  loggedIn:true},
+  {id:'spitfire',  name:'Spitfire Audio',     icon:'🎼', color:'#1abc9c',  loggedIn:false},
+  {id:'slate',     name:'Slate Digital',      icon:'🪨', color:'#ff6b35',  loggedIn:true},
+];
+
+const plugins = [
+  // Native Instruments
+  {id:0,  vendor:'ni',        name:'Komplete 14 Ult.',icon:'🎹',type:'Bundle',    status:'active', serial:'NI-K14U-8842-XXXX', machines:2,maxMachines:3, expiry:'2025-12-31', value:599, version:'14.0.2', size:'680 GB'},
+  {id:1,  vendor:'ni',        name:'Kontakt 7',       icon:'🎹',type:'Sampler',   status:'active', serial:'NI-KT7-5521-XXXX',  machines:2,maxMachines:3, expiry:'Perpetual',  value:449, version:'7.6.1',  size:'2.4 GB'},
+  {id:2,  vendor:'ni',        name:'Massive X',       icon:'🎹',type:'Synth',     status:'active', serial:'NI-MX-3310-XXXX',   machines:2,maxMachines:3, expiry:'Perpetual',  value:99,  version:'1.6.4',  size:'820 MB'},
+  // Waves
+  {id:3,  vendor:'waves',     name:'Waves Gold',      icon:'🌊',type:'Bundle',    status:'active', serial:'WV-GLD-7721-XXXX',  machines:3,maxMachines:3, expiry:'Perpetual',  value:399, version:'14.1',   size:'1.2 GB'},
+  {id:4,  vendor:'waves',     name:'CLA-76',          icon:'🌊',type:'Compressor',status:'active', serial:'WV-76-4421-XXXX',   machines:2,maxMachines:3, expiry:'Perpetual',  value:59,  version:'14.0',   size:'45 MB'},
+  {id:5,  vendor:'waves',     name:'H-Delay',         icon:'🌊',type:'Delay',     status:'active', serial:'WV-HD-9821-XXXX',   machines:2,maxMachines:3, expiry:'Perpetual',  value:59,  version:'14.0',   size:'32 MB'},
+  {id:6,  vendor:'waves',     name:'R-Verb',          icon:'🌊',type:'Reverb',    status:'active', serial:'WV-RV-1120-XXXX',   machines:2,maxMachines:3, expiry:'Perpetual',  value:59,  version:'14.0',   size:'38 MB'},
+  // EastWest
+  {id:7,  vendor:'ew',        name:'Hollywood Orch.', icon:'🎻',type:'Library',   status:'active', serial:'EW-HO-5521-XXXX',   machines:1,maxMachines:2, expiry:'2025-06-30', value:999, version:'1.1.4',  size:'1.1 TB'},
+  {id:8,  vendor:'ew',        name:'Hollywood Choir', icon:'🎻',type:'Library',   status:'active', serial:'EW-HC-8823-XXXX',   machines:1,maxMachines:2, expiry:'2025-06-30', value:499, version:'1.0.8',  size:'320 GB'},
+  {id:9,  vendor:'ew',        name:'Voices of Empire',icon:'🎻',type:'Library',   status:'trial',  serial:'EW-VE-TRIAL-0001',  machines:1,maxMachines:1, expiry:'2024-08-15', value:249, version:'1.0.2',  size:'140 GB'},
+  // UAD
+  {id:10, vendor:'uad',       name:'UAD Neve 1073',   icon:'🔊',type:'EQ',        status:'active', serial:'UAD-1073-6612-XXXX', machines:1,maxMachines:1, expiry:'Perpetual',  value:299, version:'10.2',   size:'120 MB'},
+  {id:11, vendor:'uad',       name:'UAD LA-2A',       icon:'🔊',type:'Compressor',status:'active', serial:'UAD-LA2-4421-XXXX',  machines:1,maxMachines:1, expiry:'Perpetual',  value:199, version:'10.2',   size:'95 MB'},
+  // iZotope
+  {id:12, vendor:'izotope',   name:'Ozone 11 Adv.',   icon:'🔬',type:'Mastering', status:'active', serial:'IZ-O11A-2231-XXXX',  machines:3,maxMachines:3, expiry:'2025-03-01', value:499, version:'11.0.1', size:'2.1 GB'},
+  {id:13, vendor:'izotope',   name:'Nectar 4 Adv.',   icon:'🔬',type:'Vocal',     status:'active', serial:'IZ-N4A-8812-XXXX',   machines:3,maxMachines:3, expiry:'2025-03-01', value:399, version:'4.1.0',  size:'1.8 GB'},
+  {id:14, vendor:'izotope',   name:'RX 11 Advanced',  icon:'🔬',type:'Repair',    status:'active', serial:'IZ-RX11-5531-XXXX',  machines:3,maxMachines:3, expiry:'2025-03-01', value:399, version:'11.0.2', size:'680 MB'},
+  {id:15, vendor:'izotope',   name:'Neutron 4',       icon:'🔬',type:'Mix Suite',  status:'expired',serial:'IZ-N4-1120-XXXX',   machines:0,maxMachines:3, expiry:'2023-12-31', value:249, version:'4.0.0',  size:'1.2 GB'},
+  // FabFilter
+  {id:16, vendor:'fabfilter', name:'Total Bundle',    icon:'⚡',type:'Bundle',    status:'active', serial:'FF-TB-7721-XXXX',    machines:3,maxMachines:3, expiry:'Perpetual',  value:799, version:'2024.1',  size:'480 MB'},
+  {id:17, vendor:'fabfilter', name:'Pro-Q 4',         icon:'⚡',type:'EQ',        status:'active', serial:'FF-PQ4-4421-XXXX',   machines:3,maxMachines:3, expiry:'Perpetual',  value:199, version:'4.0.1',  size:'42 MB'},
+  {id:18, vendor:'fabfilter', name:'Pro-L 2',         icon:'⚡',type:'Limiter',   status:'active', serial:'FF-PL2-9921-XXXX',   machines:3,maxMachines:3, expiry:'Perpetual',  value:199, version:'2.0.6',  size:'35 MB'},
+  // SoundToys
+  {id:19, vendor:'soundtoys', name:'SoundToys 5',     icon:'🎪',type:'Bundle',    status:'active', serial:'ST-5-8823-XXXX',     machines:2,maxMachines:3, expiry:'Perpetual',  value:499, version:'5.3.4',  size:'380 MB'},
+  {id:20, vendor:'soundtoys', name:'MicroShift',      icon:'🎪',type:'Width',     status:'active', serial:'ST-MS-2210-XXXX',    machines:2,maxMachines:3, expiry:'Perpetual',  value:99,  version:'5.3.4',  size:'18 MB'},
+  {id:21, vendor:'soundtoys', name:'EchoBoy',         icon:'🎪',type:'Delay',     status:'active', serial:'ST-EB-5531-XXXX',    machines:2,maxMachines:3, expiry:'Perpetual',  value:99,  version:'5.3.4',  size:'22 MB'},
+  // Antares
+  {id:22, vendor:'antares',   name:'Auto-Tune Pro 11',icon:'🎤',type:'Pitch',     status:'active', serial:'AT-P11-6612-XXXX',   machines:3,maxMachines:3, expiry:'2025-01-15', value:399, version:'11.1.1', size:'280 MB'},
+  {id:23, vendor:'antares',   name:'Harmony Engine 5',icon:'🎤',type:'Harmony',   status:'active', serial:'AT-HE5-3310-XXXX',   machines:3,maxMachines:3, expiry:'2025-01-15', value:199, version:'5.0.2',  size:'160 MB'},
+  // Spitfire
+  {id:24, vendor:'spitfire',  name:'BBCSO Discover',  icon:'🎼',type:'Library',   status:'active', serial:'SF-BBC-8821-XXXX',   machines:2,maxMachines:3, expiry:'Perpetual',  value:0,   version:'1.4.2',  size:'22 GB'},
+  {id:25, vendor:'spitfire',  name:'LABS Collection', icon:'🎼',type:'Bundle',    status:'trial',  serial:'SF-LABS-TRIAL-0002', machines:1,maxMachines:2, expiry:'2024-09-01', value:49,  version:'2.4.1',  size:'18 GB'},
+  // Slate Digital
+  {id:26, vendor:'slate',     name:'Everything Bundle',icon:'🪨',type:'Bundle',   status:'active', serial:'SL-EV-4421-XXXX',    machines:3,maxMachines:3, expiry:'2024-12-01', value:14,  version:'2024.6',  size:'3.2 GB'},
+  {id:27, vendor:'slate',     name:'Virtual Mix Rack', icon:'🪨',type:'Channel',  status:'active', serial:'SL-VMR-7721-XXXX',   machines:3,maxMachines:3, expiry:'2024-12-01', value:14,  version:'2024.5',  size:'1.1 GB'},
+  {id:28, vendor:'slate',     name:'Fresh Air',        icon:'🪨',type:'EQ',       status:'active', serial:'SL-FA-9921-XXXX',    machines:3,maxMachines:3, expiry:'Perpetual',  value:0,   version:'1.0.8',  size:'25 MB'},
+];
+
+let selectedVendor='all', currentFilter='all', currentTab='vault';
+
+// ── STATUS HELPERS ──
+function statusStyle(s){
+  const m={active:'background:rgba(46,204,113,0.15);color:#2ecc71',
+           trial:'background:rgba(243,156,18,0.15);color:#f39c12',
+           expired:'background:rgba(231,76,60,0.15);color:#e74c3c',
+           offline:'background:rgba(122,112,96,0.15);color:#7a7060'};
+  return m[s]||m.offline;
+}
+function hexA(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
+
+// ── VENDOR LIST ──
+function buildVendorList(){
+  const el=document.getElementById('vendor-list');
+  const allCard=document.createElement('div');
+  allCard.className='vendor-card'+(selectedVendor==='all'?' sel':'');
+  allCard.innerHTML=`<div class="vc-icon">🏢</div><div class="vc-info"><div class="vc-name">All Vendors</div><div class="vc-count">${plugins.length} plugins</div><div class="vc-bar-wrap"><div class="vc-bar-fill" style="width:${plugins.filter(p=>p.status==='active').length/plugins.length*100}%;background:var(--gold)"></div></div></div>`;
+  allCard.onclick=()=>{selectedVendor='all';buildVendorList();renderTab(currentTab);};
+  el.innerHTML='';el.appendChild(allCard);
+  vendors.forEach(v=>{
+    const vPlugins=plugins.filter(p=>p.vendor===v.id);
+    const card=document.createElement('div');
+    card.className='vendor-card'+(selectedVendor===v.id?' sel':'');
+    card.innerHTML=`
+      <div class="vc-icon">${v.icon}</div>
+      <div class="vc-info">
+        <div class="vc-name">${v.name}</div>
+        <div class="vc-count">${vPlugins.length} plugins</div>
+        <div class="vc-bar-wrap"><div class="vc-bar-fill" style="width:${vPlugins.filter(p=>p.status==='active').length/Math.max(vPlugins.length,1)*100}%;background:${v.color}"></div></div>
+      </div>
+      <div class="vc-status" style="background:${v.loggedIn?'var(--green)':'var(--sub)'}"></div>
+    `;
+    card.onclick=()=>{selectedVendor=v.id;buildVendorList();renderTab(currentTab);};
+    el.appendChild(card);
+  });
+}
+
+// ── LICENSE CARD ──
+function licCard(p){
+  const v=vendors.find(v=>v.id===p.vendor)||{color:'#7a7060',icon:'🔌',name:'Unknown'};
+  const machDots=Array.from({length:p.maxMachines},(_,i)=>`<div class="machine-dot ${i<p.machines?'used':''}"></div>`).join('');
+  return `
+    <div class="lic-card" onclick="selectPlugin(${p.id})">
+      <div class="lic-status" style="${statusStyle(p.status)}">${p.status.toUpperCase()}</div>
+      <div class="lic-card-header">
+        <div class="lic-icon">${p.icon}</div>
+        <div><div class="lic-name">${p.name}</div><div class="lic-vendor">${v.name} • ${p.type}</div></div>
+      </div>
+      <div class="lic-detail">
+        Serial: <span>${p.serial}</span><br>
+        Version: <span>${p.version}</span><br>
+        Size: <span>${p.size}</span><br>
+        Expires: <span style="color:${p.expiry==='Perpetual'?'var(--green)':p.status==='expired'?'var(--red)':'var(--orange)'}">${p.expiry}</span>
+      </div>
+      <div class="lic-machines">${machDots}<span style="font-size:9px;color:var(--sub);margin-left:4px">${p.machines}/${p.maxMachines} machines</span></div>
+      ${p.value>0?`<div class="lic-value">$${p.value}${p.value<50&&p.vendor==='slate'?'/mo':''}</div>`:'<div class="lic-value" style="color:var(--green)">Free</div>'}
+    </div>
+  `;
+}
+
+// ── VAULT TAB ──
+function renderVault(){
+  const search=(document.getElementById('search-input')?.value||'').toLowerCase();
+  let filtered=plugins.filter(p=>{
+    if(selectedVendor!=='all'&&p.vendor!==selectedVendor)return false;
+    if(currentFilter!=='all'&&p.status!==currentFilter)return false;
+    if(search&&!p.name.toLowerCase().includes(search)&&!p.type.toLowerCase().includes(search)&&!p.vendor.toLowerCase().includes(search))return false;
+    return true;
+  });
+  document.getElementById('plugin-count').textContent=filtered.length+' plugins';
+  document.getElementById('tab-content').innerHTML=`<div class="lic-grid">${filtered.map(licCard).join('')}</div>`;
+}
+
+// ── AUTH TAB ──
+function renderAuth(){
+  const show=selectedVendor==='all'?vendors:vendors.filter(v=>v.id===selectedVendor);
+  document.getElementById('tab-content').innerHTML=show.map(v=>`
+    <div class="auth-form">
+      <div class="auth-form-header">
+        <span class="auth-vendor-icon">${v.icon}</span>
+        <div>
+          <div class="auth-vendor-name">${v.name}</div>
+          <div style="font-size:9px;color:var(--sub)">${plugins.filter(p=>p.vendor===v.id).length} plugins licensed</div>
+        </div>
+        <span class="auth-status-badge" style="${v.loggedIn?'background:rgba(46,204,113,0.15);color:#2ecc71':'background:rgba(122,112,96,0.15);color:#7a7060'}">${v.loggedIn?'✓ LOGGED IN':'NOT LOGGED IN'}</span>
+      </div>
+      ${v.loggedIn?`
+        <div style="background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.2);border-radius:6px;padding:8px 12px;font-size:10px;color:var(--green);margin-bottom:8px">
+          ✓ Authenticated as dj.speedy@lifeimitatesart.com • Session valid
+        </div>
+        <div class="form-btns">
+          <button class="form-btn danger" onclick="logout('${v.id}')">Logout</button>
+          <button class="form-btn" onclick="testAuth('${v.id}')">Test Connection</button>
+          <button class="form-btn" onclick="refreshLic('${v.id}')">Refresh Licenses</button>
+        </div>
+      `:`
+        <div class="form-field"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="your@email.com" value="dj.speedy@lifeimitatesart.com"></div>
+        <div class="form-field"><label class="form-label">Password</label><input class="form-input" type="password" placeholder="••••••••" value="••••••••••••"></div>
+        <div class="form-field"><label class="form-label">License Key (optional)</label><input class="form-input" placeholder="${v.id.toUpperCase()}-XXXX-XXXX-XXXX-XXXX"></div>
+        <div class="form-btns">
+          <button class="form-btn primary" onclick="doLogin('${v.id}')">Login & Sync</button>
+          <button class="form-btn" onclick="testAuth('${v.id}')">Test</button>
+        </div>
+      `}
+    </div>
+  `).join('');
+}
+
+function doLogin(vid){
+  const v=vendors.find(v=>v.id===vid);if(!v)return;
+  v.loggedIn=true;
+  buildVendorList();renderAuth();
+  showToast('✓ Logged into '+v.name);
+}
+function logout(vid){
+  const v=vendors.find(v=>v.id===vid);if(!v)return;
+  v.loggedIn=false;
+  buildVendorList();renderAuth();
+}
+function testAuth(vid){showToast('Testing connection to '+vendors.find(v=>v.id===vid)?.name+'… OK');}
+function refreshLic(vid){showToast('Licenses refreshed for '+vendors.find(v=>v.id===vid)?.name);}
+
+// ── OFFLINE AUTH TAB ──
+const machines=[
+  {name:'MacBook Pro M3',  os:'macOS 14.4',id:'MAC-M3-8842-PROD',  icon:'💻',active:true},
+  {name:'Mac Studio M2U',  os:'macOS 14.2',id:'MAC-M2U-5521-STU',  icon:'🖥',active:true},
+  {name:'Windows Studio PC',os:'Win 11 Pro',id:'WIN-PC-3310-HOME',  icon:'🖥',active:true},
+  {name:'MacBook Air M2',  os:'macOS 14.1',id:'MAC-AIR-7721-TRVL', icon:'💻',active:false},
+];
+const ilokDongles=[
+  {id:'iLok #1 (USB)',     id2:'ILOK-AAX-8821-PROD',used:true},
+  {id:'iLok #2 (Cloud)',   id2:'ILOK-CLD-5531-CLO2',used:true},
+];
+
+function renderOffline(){
+  document.getElementById('tab-content').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px">💻 Authorized Machines</div>
+        ${machines.map(m=>`
+          <div class="machine-row">
+            <span class="machine-icon">${m.icon}</span>
+            <div style="flex:1">
+              <div class="machine-name">${m.name}</div>
+              <div class="machine-os">${m.os}</div>
+              <div class="machine-id">${m.id}</div>
+            </div>
+            <span style="font-size:9px;font-weight:700;${m.active?'color:var(--green)':'color:var(--sub)'}">${m.active?'AUTH':'INACTIVE'}</span>
+          </div>
+        `).join('')}
+        <div style="font-size:11px;font-weight:700;color:var(--gold);margin:12px 0 8px">🔑 iLok Dongles</div>
+        ${ilokDongles.map(d=>`
+          <div class="machine-row">
+            <span class="machine-icon">🔑</span>
+            <div style="flex:1">
+              <div class="machine-name">${d.id}</div>
+              <div class="machine-id">${d.id2}</div>
+            </div>
+            <span style="font-size:9px;font-weight:700;color:var(--green)">ACTIVE</span>
+          </div>
+        `).join('')}
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px">🔐 Challenge / Response</div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px">
+          <div class="form-field">
+            <label class="form-label">Select Plugin</label>
+            <select class="form-input" id="cr-plugin">
+              ${plugins.filter(p=>p.status==='active').slice(0,12).map(p=>`<option value="${p.serial}">${p.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Challenge Code (from plugin)</label>
+            <input class="form-input" id="cr-challenge" placeholder="Enter challenge code…">
+          </div>
+          <div class="form-btns" style="margin-bottom:10px">
+            <button class="form-btn primary" onclick="genResponse()">Generate Response</button>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Response Code</label>
+            <input class="form-input" id="cr-response" readonly placeholder="Response will appear here…" style="font-family:monospace;color:var(--cyan)">
+          </div>
+          <button class="form-btn" onclick="copyResponse()">📋 Copy Response</button>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--gold);margin:12px 0 8px">🌐 Machine Transfer</div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px">
+          <div class="form-field">
+            <label class="form-label">Deauthorize Machine</label>
+            <select class="form-input">
+              ${machines.map(m=>`<option>${m.name} — ${m.id}</option>`).join('')}
+            </select>
+          </div>
+          <button class="form-btn danger" style="margin-top:6px" onclick="deauthMachine()">Deauthorize</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function genResponse(){
+  const ch=document.getElementById('cr-challenge').value.trim();
+  const sel=document.getElementById('cr-plugin').value;
+  if(!ch){showToast('Enter a challenge code first');return;}
+  const resp=btoa(ch+'|'+sel+'|GOAT-ROYALTY-'+Date.now()).replace(/=/g,'').toUpperCase().slice(0,24);
+  const fmt=resp.match(/.{1,6}/g).join('-');
+  document.getElementById('cr-response').value=fmt;
+}
+function copyResponse(){
+  const v=document.getElementById('cr-response')?.value;
+  if(v){navigator.clipboard?.writeText(v);showToast('Response code copied!');}
+}
+function deauthMachine(){showToast('Machine deauthorized. Licenses freed.');}
+
+// ── DASHBOARD TAB ──
+function renderDashboard(){
+  const total=plugins.length;
+  const active=plugins.filter(p=>p.status==='active').length;
+  const totalValue=plugins.reduce((a,p)=>a+p.value,0);
+  const authVendors=vendors.filter(v=>v.loggedIn).length;
+  const totalStorage=plugins.reduce((a,p)=>{
+    const s=parseFloat(p.size);const u=p.size.includes('TB')?1024*1024:p.size.includes('GB')?1024:1;
+    return a+s*u;
+  },0);
+
+  const expiring=plugins.filter(p=>p.expiry!=='Perpetual'&&p.status!=='expired').sort((a,b)=>new Date(a.expiry)-new Date(b.expiry));
+
+  document.getElementById('tab-content').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+      <div class="dash-stat"><div class="dash-val" style="color:var(--cyan)">${total}</div><div class="dash-lbl">Total Plugins</div></div>
+      <div class="dash-stat"><div class="dash-val" style="color:var(--gold)">$${(totalValue).toLocaleString()}</div><div class="dash-lbl">Total Value</div></div>
+      <div class="dash-stat"><div class="dash-val" style="color:var(--green)">${authVendors}/10</div><div class="dash-lbl">Auth'd Vendors</div></div>
+      <div class="dash-stat"><div class="dash-val" style="color:var(--purple)">${(totalStorage/1024).toFixed(1)} TB</div><div class="dash-lbl">Total Storage</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--gold);margin-bottom:10px">By Vendor</div>
+        ${vendors.map(v=>{const cnt=plugins.filter(p=>p.vendor===v.id).length;return `
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:12px;width:18px">${v.icon}</span>
+            <span style="width:120px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${v.name}</span>
+            <div style="flex:1;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${cnt/total*100}%;background:${v.color};border-radius:3px"></div>
+            </div>
+            <span style="font-size:10px;color:${v.color};width:20px;text-align:right">${cnt}</span>
+          </div>
+        `;}).join('')}
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--gold);margin-bottom:10px">📅 Expiring Soon</div>
+        ${expiring.slice(0,8).map(p=>`
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+            <span style="font-size:12px">${p.icon}</span>
+            <span style="flex:1;font-size:10px">${p.name}</span>
+            <span style="font-size:9px;color:${p.status==='trial'?'var(--orange)':'var(--sub)'}">${p.expiry}</span>
+            <span style="font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;${statusStyle(p.status)}">${p.status.toUpperCase()}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:12px">
+      <div style="font-size:10px;font-weight:700;color:var(--gold);margin-bottom:10px">By Status</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        ${[{s:'active',c:'var(--green)'},{s:'trial',c:'var(--orange)'},{s:'expired',c:'var(--red)'},{s:'offline',c:'var(--sub)'}].map(({s,c})=>{
+          const cnt=plugins.filter(p=>p.status===s).length;
+          return `<div style="text-align:center;background:var(--bg3);border-radius:6px;padding:10px">
+            <div style="font-size:20px;font-weight:700;color:${c}">${cnt}</div>
+            <div style="font-size:9px;color:var(--sub);text-transform:uppercase">${s}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ── RIGHT PANEL ──
+function buildRightPanel(){
+  // notifications
+  const notifs=[
+    {title:'Pro-L 2 Update',  sub:'v2.0.6 available',color:'#3498db'},
+    {title:'Auto-Tune Pro 11',sub:'License expires Jan 2025',color:'#f39c12'},
+    {title:'EW Sub Renewal',  sub:'Renews Jun 30',color:'#9b59b6'},
+    {title:'UAD Offline',     sub:'Not logged in',color:'#e74c3c'},
+    {title:'Spitfire Update', sub:'BBCSO v1.4.2',color:'#1abc9c'},
+  ];
+  document.getElementById('notif-list').innerHTML=notifs.map(n=>`
+    <div class="notif-item">
+      <div style="width:6px;height:6px;border-radius:50%;background:${n.color};display:inline-block;margin-right:5px"></div>
+      <span class="notif-title">${n.title}</span>
+      <div class="notif-sub">${n.sub}</div>
+    </div>
+  `).join('');
+  // storage
+  const storageItems=[
+    {n:'NI Komplete',s:'682 GB',pct:68,c:'#3498db'},
+    {n:'EastWest',   s:'1.56 TB',pct:85,c:'#9b59b6'},
+    {n:'Spitfire',   s:'40 GB', pct:12,c:'#1abc9c'},
+    {n:'Other',      s:'8 GB',  pct:3,c:'#7a7060'},
+  ];
+  document.getElementById('storage-list').innerHTML=storageItems.map(s=>`
+    <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px"><span>${s.n}</span><span style="color:var(--sub)">${s.s}</span></div>
+    <div class="storage-bar"><div class="storage-fill" style="width:${s.pct}%;background:${s.c}"></div></div>
+  `).join('');
+  // machines
+  document.getElementById('machines-right').innerHTML=machines.map(m=>`
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;font-size:9px">
+      <span>${m.icon}</span>
+      <div style="flex:1"><div style="color:var(--text)">${m.name}</div><div style="color:var(--sub)">${m.os}</div></div>
+      <div style="width:7px;height:7px;border-radius:50%;background:${m.active?'var(--green)':'var(--sub)'}"></div>
+    </div>
+  `).join('');
+}
+
+// ── TOAST ──
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--gold);color:var(--text);padding:8px 16px;border-radius:8px;font-size:11px;z-index:9999;opacity:0;transition:opacity .3s';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.style.opacity='1',10);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},2400);
+}
+
+// ── AUTO LOGIN ALL ──
+function autoLoginAll(){
+  vendors.forEach(v=>v.loggedIn=true);
+  buildVendorList();if(currentTab==='auth')renderAuth();
+  showToast('⚡ All '+vendors.length+' vendors logged in!');
+}
+function syncAll(){showToast('🔄 Syncing all licenses… Done!');}
+function scanNew(){showToast('🔍 Scanning system for new plugins… Found 0 new.');}
+function selectPlugin(id){const p=plugins[id];showToast(p.name+' — '+p.serial);}
+
+// ── TABS ──
+function setFilter(f,el){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('act'));
+  el.classList.add('act');
+  renderVault();
+}
+function switchTab(tab,el){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
+  el.classList.add('act');
+  // show/hide toolbar
+  document.getElementById('toolbar').style.display=tab==='vault'?'flex':'none';
+  renderTab(tab);
+}
+function renderTab(tab){
+  if(tab==='vault')renderVault();
+  else if(tab==='auth')renderAuth();
+  else if(tab==='offline')renderOffline();
+  else if(tab==='dash')renderDashboard();
+}
+
+// ── INIT ──
+function init(){
+  buildVendorList();
+  renderVault();
+  buildRightPanel();
+}
+window.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📚 Complete Catalog - GOAT Royalty App</title>
+  <link rel="icon" href="favicon.ico">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #FFD700;
+      --secondary: #1a1a2e;
+      --accent: #e94560;
+      --dark: #0f0f23;
+      --light: #ffffff;
+      --glass: rgba(255, 255, 255, 0.1);
+      --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--dark);
+      color: var(--light);
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(233, 69, 96, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
+    }
+    
+    /* Navigation */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(15, 15, 35, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    
+    .logo img { height: 40px; }
+    
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .nav-links a {
+      color: var(--light);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    
+    .nav-links a:hover, .nav-links a.active {
+      background: var(--glass);
+      color: var(--primary);
+    }
+    
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: linear-gradient(180deg, rgba(102, 126, 234, 0.2) 0%, transparent 100%);
+    }
+    
+    .hero h1 {
+      font-size: 3rem;
+      background: linear-gradient(135deg, var(--primary), #fff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    
+    .hero p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .stat-card {
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+    }
+    
+    .stat-card .number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+    
+    .stat-card .label {
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 0.5rem;
+    }
+    
+    /* Tabs */
+    .tabs-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem 2rem;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      padding: 0.5rem;
+      background: var(--glass);
+      border-radius: 12px;
+    }
+    
+    .tab-btn {
+      padding: 1rem 1.5rem;
+      background: transparent;
+      border: none;
+      color: var(--light);
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .tab-btn:hover {
+      background: rgba(255, 215, 0, 0.1);
+    }
+    
+    .tab-btn.active {
+      background: var(--primary);
+      color: var(--dark);
+      font-weight: bold;
+    }
+    
+    /* Search */
+    .search-container {
+      margin-bottom: 1.5rem;
+    }
+    
+    .search-input {
+      width: 100%;
+      max-width: 500px;
+      padding: 1rem 1.5rem;
+      background: var(--glass);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 12px;
+      color: var(--light);
+      font-size: 1rem;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .search-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Table */
+    .data-table-container {
+      background: var(--glass);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .data-table th {
+      background: rgba(255, 215, 0, 0.1);
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--primary);
+      position: sticky;
+      top: 0;
+    }
+    
+    .data-table td {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .data-table tr:hover {
+      background: rgba(255, 215, 0, 0.05);
+    }
+    
+    /* Tab content */
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Publishers Section */
+    .publishers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .publisher-card {
+      background: var(--glass);
+      border-radius: 16px;
+      padding: 2rem;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    
+    .publisher-card h3 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+    }
+    
+    .publisher-card .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .publisher-card .info-label {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .publisher-card .info-value {
+      color: var(--light);
+      font-family: monospace;
+    }
+    
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--primary);
+    }
+    
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .page-btn {
+      padding: 0.5rem 1rem;
+      background: var(--glass);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      color: var(--light);
+      cursor: pointer;
+      border-radius: 8px;
+    }
+    
+    .page-btn:hover, .page-btn.active {
+      background: var(--primary);
+      color: var(--dark);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .top-nav { flex-direction: column; gap: 1rem; }
+      .nav-links { justify-content: center; }
+      .hero h1 { font-size: 2rem; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .data-table { font-size: 0.85rem; }
+      .data-table th, .data-table td { padding: 0.75rem; }
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <nav class="top-nav">
+    <a href="index.html" class="logo">
+      <img src="goat-logo.png" alt="GOAT">
+      <span>📚 Complete Catalog</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 AI Models</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="about.html">👑 About</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="catalog.html" class="active">📚 Catalog</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h1>📚 Complete Music Catalog</h1>
+    <p>Your complete publishing catalog with Harvey L. Miller works, Fastassman Publishing, MLC data, and Speedy Splits - all in one place.</p>
+  </section>
+
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="number" id="statHarveyMiller">414</div>
+      <div class="label">Harvey Miller Works</div>
+    </div>
+    <div class="stat-card">
+      <div class="number" id="statFastassman">423</div>
+      <div class="label">Fastassman Publishing</div>
+    </div>
+    <div class="stat-card">
+      <div class="number" id="statMLC">4,007</div>
+      <div class="label">MLC Entries</div>
+    </div>
+    <div class="stat-card">
+      <div class="number" id="statSplits">1,110</div>
+      <div class="label">Speedy Splits</div>
+    </div>
+    <div class="stat-card">
+      <div class="number" id="statTotal">5,954</div>
+      <div class="label">Total Catalog Entries</div>
+    </div>
+  </div>
+
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('harvey-miller')">📝 Harvey Miller Works</button>
+      <button class="tab-btn" onclick="showTab('fastassman-pub')">🏢 Fastassman Publishing</button>
+      <button class="tab-btn" onclick="showTab('mlc')">🎵 MLC Data</button>
+      <button class="tab-btn" onclick="showTab('splits')">📊 Speedy Splits</button>
+      <button class="tab-btn" onclick="showTab('publishers')">👑 Publishers</button>
+    </div>
+
+    <!-- Harvey Miller Works Tab -->
+    <div id="harvey-miller" class="tab-content active">
+      <div class="search-container">
+        <input type="text" class="search-input" id="searchHarvey" placeholder="🔍 Search Harvey Miller works..." onkeyup="filterTable('harvey')">
+      </div>
+      <div class="data-table-container" style="max-height: 600px; overflow-y: auto;">
+        <table class="data-table" id="harveyTable">
+          <thead>
+            <tr>
+              <th>Work Title</th>
+              <th>ASCAP Work ID</th>
+              <th>Interested Parties</th>
+              <th>Role</th>
+              <th>Own %</th>
+              <th>Collect %</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="harveyBody">
+            <tr><td colspan="7" class="loading">Loading Harvey Miller works...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="harveyPagination"></div>
+    </div>
+
+    <!-- Fastassman Publishing Tab -->
+    <div id="fastassman-pub" class="tab-content">
+      <div class="search-container">
+        <input type="text" class="search-input" id="searchFastassman" placeholder="🔍 Search Fastassman Publishing works..." onkeyup="filterTable('fastassman')">
+      </div>
+      <div class="data-table-container" style="max-height: 600px; overflow-y: auto;">
+        <table class="data-table" id="fastassmanTable">
+          <thead>
+            <tr>
+              <th>Work Title</th>
+              <th>ASCAP Work ID</th>
+              <th>Interested Parties</th>
+              <th>Role</th>
+              <th>Own %</th>
+              <th>Collect %</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="fastassmanBody">
+            <tr><td colspan="7" class="loading">Loading Fastassman Publishing works...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="fastassmanPagination"></div>
+    </div>
+
+    <!-- MLC Data Tab -->
+    <div id="mlc" class="tab-content">
+      <div class="search-container">
+        <input type="text" class="search-input" id="searchMLC" placeholder="🔍 Search MLC data..." onkeyup="filterTable('mlc')">
+      </div>
+      <div class="data-table-container" style="max-height: 600px; overflow-y: auto;">
+        <table class="data-table" id="mlcTable">
+          <thead>
+            <tr>
+              <th>MLC Song Code</th>
+              <th>ISWC</th>
+              <th>Writers</th>
+              <th>Recording Artists</th>
+              <th>Known Shares</th>
+            </tr>
+          </thead>
+          <tbody id="mlcBody">
+            <tr><td colspan="5" class="loading">Loading MLC data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="mlcPagination"></div>
+    </div>
+
+    <!-- Speedy Splits Tab -->
+    <div id="splits" class="tab-content">
+      <div class="search-container">
+        <input type="text" class="search-input" id="searchSplits" placeholder="🔍 Search Speedy Splits..." onkeyup="filterTable('splits')">
+      </div>
+      <div class="data-table-container" style="max-height: 600px; overflow-y: auto;">
+        <table class="data-table" id="splitsTable">
+          <thead>
+            <tr>
+              <th>Writer Name</th>
+              <th>Publisher Name</th>
+              <th>PRO</th>
+              <th>Writer Split</th>
+              <th>Publisher Split</th>
+            </tr>
+          </thead>
+          <tbody id="splitsBody">
+            <tr><td colspan="5" class="loading">Loading Speedy Splits...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="splitsPagination"></div>
+    </div>
+
+    <!-- Publishers Tab -->
+    <div id="publishers" class="tab-content">
+      <div class="publishers-grid">
+        <div class="publisher-card">
+          <h3>🏢 BRICK SQUAD MONOPOLY PUBLISHING</h3>
+          <div class="info-row">
+            <span class="info-label">ASCAP ID:</span>
+            <span class="info-value">390547347</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">IPI Number:</span>
+            <span class="info-value">348585814</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Status:</span>
+            <span class="info-value">Active</span>
+          </div>
+        </div>
+        
+        <div class="publisher-card">
+          <h3>🎵 Fastassman Publishing Inc.</h3>
+          <div class="info-row">
+            <span class="info-label">ASCAP ID:</span>
+            <span class="info-value">60881</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">IPI Number:</span>
+            <span class="info-value">348202968</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Status:</span>
+            <span class="info-value">Active</span>
+          </div>
+        </div>
+        
+        <div class="publisher-card">
+          <h3>👤 Harvey L. Miller Jr. (DJ Speedy)</h3>
+          <div class="info-row">
+            <span class="info-label">Writer Account:</span>
+            <span class="info-value">60881</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">IPI Number:</span>
+            <span class="info-value">348202968</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">PRO:</span>
+            <span class="info-value">ASCAP</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Role:</span>
+            <span class="info-value">Writer/Publisher</span>
+          </div>
+        </div>
+        
+        <div class="publisher-card">
+          <h3>🏢 Related Publishers</h3>
+          <div class="info-row">
+            <span class="info-label">Speedy Productions, Inc.</span>
+            <span class="info-value">Active</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Life Imitates Art Inc.</span>
+            <span class="info-value">Active</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">HarveyMillerMusic Inc.</span>
+            <span class="info-value">Active</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Brick Squad Music LLC</span>
+            <span class="info-value">Active</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Data storage
+    let harveyData = [];
+    let fastassmanData = [];
+    let mlcData = [];
+    let splitsData = [];
+    
+    const itemsPerPage = 50;
+    
+    // Tab switching
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+    
+    // Load all data
+    async function loadData() {
+      try {
+        // Load Harvey Miller Works
+        const harveyRes = await fetch('data/harvey-miller-works.json');
+        harveyData = await harveyRes.json();
+        renderTable('harvey', harveyData, 1);
+        
+        // Load Fastassman Publishing Works
+        const fastassmanRes = await fetch('data/fastassman-publishing-works.json');
+        fastassmanData = await fastassmanRes.json();
+        renderTable('fastassman', fastassmanData, 1);
+        
+        // Load MLC Data
+        const mlcRes = await fetch('data/fastassman-mlc.json');
+        mlcData = await mlcRes.json();
+        renderTable('mlc', mlcData, 1);
+        
+        // Load Speedy Splits
+        const splitsRes = await fetch('data/speedy-splits.json');
+        splitsData = await splitsRes.json();
+        renderTable('splits', splitsData, 1);
+        
+        // Update stats
+        document.getElementById('statHarveyMiller').textContent = harveyData.length.toLocaleString();
+        document.getElementById('statFastassman').textContent = fastassmanData.length.toLocaleString();
+        document.getElementById('statMLC').textContent = mlcData.length.toLocaleString();
+        document.getElementById('statSplits').textContent = splitsData.length.toLocaleString();
+        document.getElementById('statTotal').textContent = (harveyData.length + fastassmanData.length + mlcData.length + splitsData.length).toLocaleString();
+        
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    }
+    
+    // Render table with pagination
+    function renderTable(type, data, page, filtered = null) {
+      const displayData = filtered || data;
+      const start = (page - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      const pageData = displayData.slice(start, end);
+      
+      let html = '';
+      
+      if (type === 'harvey' || type === 'fastassman') {
+        pageData.forEach(item => {
+          html += `
+            <tr>
+              <td>${item.work_title || '-'}</td>
+              <td><code>${item.ascap_work_id || '-'}</code></td>
+              <td>${item.interested_parties || '-'}</td>
+              <td>${item.role || '-'}</td>
+              <td>${item.own_percent || '-'}</td>
+              <td>${item.collect_percent || '-'}</td>
+              <td><span style="color: ${item.registration_status === 'Accepted' ? '#4ade80' : '#fbbf24'}">${item.registration_status || '-'}</span></td>
+            </tr>
+          `;
+        });
+        document.getElementById(type + 'Body').innerHTML = html || '<tr><td colspan="7">No data found</td></tr>';
+      } else if (type === 'mlc') {
+        pageData.forEach(item => {
+          html += `
+            <tr>
+              <td><code>${item.mlc_song_code || '-'}</code></td>
+              <td><code>${item.iswc || '-'}</code></td>
+              <td>${item.writers || '-'}</td>
+              <td>${item.recording_artists || '-'}</td>
+              <td>${item.total_known_shares || '-'}</td>
+            </tr>
+          `;
+        });
+        document.getElementById('mlcBody').innerHTML = html || '<tr><td colspan="5">No data found</td></tr>';
+      } else if (type === 'splits') {
+        pageData.forEach(item => {
+          html += `
+            <tr>
+              <td>${item.writer_name || '-'}</td>
+              <td>${item.publisher_name || '-'}</td>
+              <td>${item.pro || '-'}</td>
+              <td>${item.writer_split || '-'}</td>
+              <td>${item.publisher_split || '-'}</td>
+            </tr>
+          `;
+        });
+        document.getElementById('splitsBody').innerHTML = html || '<tr><td colspan="5">No data found</td></tr>';
+      }
+      
+      // Render pagination
+      renderPagination(type, displayData.length, page);
+    }
+    
+    // Render pagination
+    function renderPagination(type, totalItems, currentPage) {
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      let html = '';
+      
+      for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage('${type}', ${i})">${i}</button>`;
+      }
+      
+      if (totalPages > 10) {
+        html += `<span style="color: rgba(255,255,255,0.5); padding: 0.5rem;">... of ${totalPages} pages</span>`;
+      }
+      
+      document.getElementById(type + 'Pagination').innerHTML = html;
+    }
+    
+    // Go to page
+    function goToPage(type, page) {
+      if (type === 'harvey') renderTable('harvey', harveyData, page);
+      else if (type === 'fastassman') renderTable('fastassman', fastassmanData, page);
+      else if (type === 'mlc') renderTable('mlc', mlcData, page);
+      else if (type === 'splits') renderTable('splits', splitsData, page);
+    }
+    
+    // Filter table
+    function filterTable(type) {
+      const searchId = type === 'fastassman' ? 'searchFastassman' : 'search' + type.charAt(0).toUpperCase() + type.slice(1);
+      const query = document.getElementById(searchId).value.toLowerCase();
+      
+      let data, filterFn;
+      
+      if (type === 'harvey') {
+        data = harveyData;
+        filterFn = item => (item.work_title || '').toLowerCase().includes(query) || 
+                          (item.ascap_work_id || '').toLowerCase().includes(query) ||
+                          (item.interested_parties || '').toLowerCase().includes(query);
+      } else if (type === 'fastassman') {
+        data = fastassmanData;
+        filterFn = item => (item.work_title || '').toLowerCase().includes(query) || 
+                          (item.ascap_work_id || '').toLowerCase().includes(query) ||
+                          (item.interested_parties || '').toLowerCase().includes(query);
+      } else if (type === 'mlc') {
+        data = mlcData;
+        filterFn = item => (item.mlc_song_code || '').toLowerCase().includes(query) || 
+                          (item.writers || '').toLowerCase().includes(query) ||
+                          (item.recording_artists || '').toLowerCase().includes(query);
+      } else if (type === 'splits') {
+        data = splitsData;
+        filterFn = item => (item.writer_name || '').toLowerCase().includes(query) || 
+                          (item.publisher_name || '').toLowerCase().includes(query);
+      }
+      
+      const filtered = data.filter(filterFn);
+      renderTable(type, data, 1, filtered);
+    }
+    
+    // Initialize
+    loadData();
+  </script>
+</body>
+</html>
