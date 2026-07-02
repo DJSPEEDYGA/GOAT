@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GOAT Agents Brain — AI Command Center</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c14;--bg2:#0d1420;--bg3:#111928;--bg4:#1a2336;
+  --border:rgba(212,160,60,0.18);--gold:#d4a03c;--gold2:#f0c040;
+  --red:#e74c3c;--green:#2ecc71;--blue:#3498db;--purple:#9b59b6;
+  --cyan:#00d4ff;--orange:#f39c12;--pink:#e91e8c;
+  --text:#f0ece4;--sub:#7a7060;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px}
+#app{display:flex;flex-direction:column;height:100vh}
+/* TOPBAR */
+#topbar{height:44px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 12px;flex-shrink:0}
+.logo{font-size:15px;font-weight:800;color:var(--gold)}
+.tb-btn{padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.tb-btn:hover{background:var(--bg4);color:var(--text);border-color:var(--gold)}
+.tb-btn.danger:hover{border-color:var(--red);color:var(--red)}
+.spacer{flex:1}
+/* STATUS BAR */
+#statusbar{height:28px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 14px;flex-shrink:0;overflow-x:auto}
+.sb-item{display:flex;align-items:center;gap:4px;white-space:nowrap;font-size:10px}
+.sb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sb-dot.pulse{animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+/* MAIN */
+#main{display:flex;flex:1;overflow:hidden;min-height:0}
+/* LEFT - ROSTER */
+#left{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.panel-title{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;padding:8px 10px;border-bottom:1px solid var(--border)}
+.agent-card{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:8px;cursor:pointer;transition:all .2s}
+.agent-card:hover,.agent-card.sel{background:var(--bg3)}
+.agent-card.sel .ac-name{color:var(--gold)}
+.ac-icon{font-size:18px;width:28px;text-align:center;flex-shrink:0}
+.ac-info{flex:1;min-width:0}
+.ac-name{font-size:10px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-role{font-size:9px;color:var(--sub)}
+.ac-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ac-prog-wrap{width:100%;height:3px;background:var(--bg4);border-radius:2px;margin-top:3px;overflow:hidden}
+.ac-prog{height:100%;border-radius:2px;transition:width .4s}
+/* CENTER - BRAIN */
+#center{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#brain-wrap{flex:1;position:relative;overflow:hidden}
+#brain-canvas{display:block;width:100%;height:100%}
+/* CHAT */
+#chat-panel{height:220px;border-top:1px solid var(--border);display:flex;flex-direction:column;background:var(--bg2);flex-shrink:0}
+#chat-header{height:32px;display:flex;align-items:center;padding:0 12px;gap:8px;border-bottom:1px solid var(--border);flex-shrink:0}
+#chat-messages{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:6px}
+#chat-input-row{height:38px;display:flex;gap:6px;padding:5px 10px;border-top:1px solid var(--border);flex-shrink:0}
+#chat-input{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 10px;font-family:inherit;font-size:11px;outline:none}
+#chat-input:focus{border-color:var(--gold)}
+#chat-send{padding:4px 14px;background:var(--gold);color:#000;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-family:inherit;font-size:11px}
+.msg{max-width:85%;padding:6px 10px;border-radius:8px;font-size:10px;line-height:1.5;word-break:break-word}
+.msg.user{background:rgba(52,152,219,0.2);border:1px solid rgba(52,152,219,0.3);color:var(--text);align-self:flex-end;border-radius:8px 8px 2px 8px}
+.msg.agent{background:var(--bg3);border:1px solid var(--border);color:var(--text);align-self:flex-start;border-radius:8px 8px 8px 2px}
+.msg-sender{font-size:9px;font-weight:700;margin-bottom:2px}
+/* RIGHT */
+#right{width:230px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.rp-section{border-bottom:1px solid var(--border);padding:10px}
+.rp-title{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.task-item{padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;margin-bottom:5px;cursor:pointer;transition:all .2s;font-size:10px}
+.task-item:hover{border-color:var(--gold)}
+.task-title{font-weight:700;color:var(--text)}
+.task-agent{font-size:9px;color:var(--sub);margin-top:2px}
+.task-prog{height:3px;background:var(--bg4);border-radius:2px;margin-top:5px;overflow:hidden}
+.task-prog-fill{height:100%;border-radius:2px;transition:width .4s}
+.mem-item{padding:5px 6px;background:var(--bg4);border-radius:4px;margin-bottom:3px;font-size:9px;color:var(--sub)}
+.mem-key{color:var(--cyan);font-weight:700}
+/* AUTOPILOT */
+.autopilot-btn{width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;transition:all .3s;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 0}
+.autopilot-btn:hover{border-color:var(--gold);background:rgba(212,160,60,0.1);color:var(--gold)}
+.autopilot-btn.active{background:rgba(212,160,60,0.2);border-color:var(--gold);color:var(--gold);box-shadow:0 0 20px rgba(212,160,60,0.2)}
+</style>
+<script src="js/goat-runtime.js"></script>
+<link rel="stylesheet" href="css/goat-touch-global.css?v=20260608-touch">
+<link rel="stylesheet" href="css/goat-force-media.css?v=20260625-force">
+</head>
+<body>
+<div id="app">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <span class="logo">🐐 AGENTS BRAIN</span>
+    <span style="font-size:10px;color:var(--sub)">AI Command Center</span>
+    <div class="spacer"></div>
+    <button class="tb-btn" onclick="toggleAutopilot()" id="autopilotTopBtn">🤖 Autopilot</button>
+    <button class="tb-btn" onclick="activateAll()">⚡ Activate All</button>
+    <button class="tb-btn" onclick="pauseAll()">⏸ Pause All</button>
+    <button class="tb-btn danger" onclick="resetBrain()">↺ Reset</button>
+    <div class="spacer"></div>
+    <a href="powerhouse.html" class="tb-btn">⬅ Home</a>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div id="statusbar"></div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <!-- LEFT - ROSTER -->
+    <div id="left">
+      <div class="panel-title">🤖 GOAT Command Roster</div>
+      <div id="agent-roster"></div>
+    </div>
+
+    <!-- CENTER -->
+    <div id="center">
+      <section id="force-showcase" aria-label="GOAT Royalty Force media command">
+        <div class="force-stage">
+          <div data-force-stage-media></div>
+          <div class="force-stage-copy">
+            <div class="force-kicker" data-force-lane>AI video</div>
+            <h2 data-force-title>GOAT Force Motion 01</h2>
+            <p>GOAT Royalty Force cinematic command visuals for agents, royalty recovery, video, music, business, and private creator ops.</p>
+            <div class="force-stage-actions">
+              <button class="force-action primary" type="button" data-force-open>Open stage</button>
+              <a class="force-action" href="goat-ai-video.html">Video studio</a>
+              <a class="force-action" href="goat-apps.html">App launcher</a>
+            </div>
+          </div>
+        </div>
+        <div class="force-filmstrip" data-force-filmstrip></div>
+      </section>
+
+      <!-- BRAIN CANVAS -->
+      <div id="brain-wrap">
+        <canvas id="brain-canvas"></canvas>
+      </div>
+
+      <!-- CHAT -->
+      <div id="chat-panel">
+        <div id="chat-header">
+          <span style="font-size:11px;font-weight:700;color:var(--gold)">💬 GOAT Command Chat</span>
+          <span style="font-size:9px;color:var(--sub)" id="chatAgent">→ Routing to best agent…</span>
+          <div class="spacer"></div>
+          <button class="tb-btn" onclick="clearChat()">🗑 Clear</button>
+        </div>
+        <div id="chat-messages"></div>
+        <div id="chat-input-row">
+          <input id="chat-input" placeholder="Ask any agent… (mix my beat, post on social, check royalties…)" onkeydown="if(event.key==='Enter')sendMsg()">
+          <button id="chat-send" onclick="sendMsg()">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div id="right">
+      <div class="rp-section">
+        <div class="rp-title">⚙ System</div>
+        <button class="autopilot-btn" id="autopilotBtn" onclick="toggleAutopilot()">
+          <span id="apIcon">🤖</span><span id="apLabel">Enable GOAT Autopilot</span>
+        </button>
+        <div id="system-stats" style="font-size:9px;color:var(--sub);line-height:2">
+          CPU: <span style="color:var(--text)" id="sCpu">12%</span><br>
+          Memory: <span style="color:var(--text)" id="sMem">2.4 GB</span><br>
+          Active Agents: <span style="color:var(--green)" id="sActive">8</span><br>
+          Tasks in Queue: <span style="color:var(--gold)" id="sQueue">14</span><br>
+          Uptime: <span style="color:var(--cyan)" id="sUptime">04:22:11</span>
+        </div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-title">🎞 GOAT Force Media</div>
+        <div class="force-rail" data-force-rail></div>
+        <a class="force-doc-link" href="assets/goat-force-media/docs/moneypenny-codex-goat-royalty-force.docx">Open Force Doc</a>
+      </div>
+      <div class="rp-section">
+        <div class="rp-title">📋 Task Queue</div>
+        <div id="task-queue"></div>
+      </div>
+      <div class="rp-section">
+        <div class="rp-title">🧠 Memory Bank</div>
+        <div id="memory-bank"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="force-lightbox" aria-hidden="true">
+  <div class="force-lightbox-inner">
+    <div class="force-lightbox-head">
+      <div class="force-kicker">GOAT Force stage</div>
+      <div class="force-lightbox-title">GOAT Force Media</div>
+      <button class="force-lightbox-close" type="button" data-force-close>Close</button>
+    </div>
+    <div class="force-lightbox-media"></div>
+  </div>
+</div>
+
+<script>
+// ── AGENTS ──
+const agents = [
+  {id:0, name:'Ms Money Penny', role:'LLM Boss / GOAT Command', icon:'👑', color:'#f0c040',
+    model:'GOAT Royalty Command + local LLM routes', status:'active', task:'Chairing GOAT command', progress:91,
+    caps:['Crew Command','Royalties','Business','Investor Packets','Store/App Authority'],
+    responses:['Command layer online. I route the house, protect the money, and keep every agent in its lane.','Money Penny speaking: business, royalties, releases, investor packets, and app authority stay under my command.','I have AGENT-007 holding the tools and controls while I keep the GOAT Royalty house lined up.']},
+  {id:1, name:'AGENT-007 Enforcer', role:'Tools / Controls / Security', icon:'007', color:'#58a6ff',
+    model:'AGENT-007 local tools bridge', status:'active', task:'Protecting tools and runtime', progress:84,
+    caps:['Computer Control','Deployment','Security','Model Runtime','Studio Tools'],
+    responses:['AGENT-007 ready. Tools, controls, deploy checks, and local runtime status are on my board.','I hold the tool chest and execute owner-approved actions under Money Penny command.','Security, server checks, model visibility, studio controls, and deploy handoffs are ready for inspection.']},
+  {id:0, name:'Music Producer AI', role:'Beat & Melody Generation', icon:'🎵', color:'#d4a03c',
+    model:'GPT-4 + MusicLM', status:'active', task:'Generating trap beat in Am', progress:72,
+    caps:['Beat Creation','Melody Gen','Chord Suggest','Arrangement'],
+    responses:['Working on a fire trap beat in A Minor at 140 BPM. 808s and hi-hats locked in!','Generating 4-bar melodic phrase with Auto-Tune harmonies. Ready in 3…','Chord progression: Am-F-C-G. Analyzing your catalog for style match.']},
+  {id:1, name:'Marketing Agent', role:'Campaign & Social Media', icon:'📢', color:'#e74c3c',
+    model:'GPT-4 + Meta API', status:'active', task:'Scheduling Instagram posts', progress:45,
+    caps:['Social Posts','Campaign Strategy','Ad Targeting','Analytics'],
+    responses:['Posting to Instagram, Twitter, and TikTok at peak engagement times. Expected reach: 120K.','Campaign strategy ready: 3-week push with FB/IG ads, budget $500. Projected streams: +40K.','Your best posting times are 2PM and 8PM EST. I\'ll auto-schedule everything.']},
+  {id:2, name:'Royalty Manager', role:'Publishing & Revenue', icon:'💰', color:'#2ecc71',
+    model:'FinanceLLM + ASCAP', status:'active', task:'Tracking Q2 royalties', progress:88,
+    caps:['Royalty Tracking','Publishing','PRO Registration','Revenue Forecast'],
+    responses:['Q2 royalties: $19,280 total. Spotify $8,400 | Apple $4,900 | Tidal $1,860. Payment incoming!','3 unclaimed royalties found on Pandora. Auto-claiming now. Value: $240.','ASCAP registration updated for all 2024 releases. Publishing splits confirmed at 50/50.']},
+  {id:3, name:'Video Director AI', role:'Visual Content & Edit', icon:'🎬', color:'#9b59b6',
+    model:'GPT-4V + RunwayML', status:'active', task:'Cutting music video V2', progress:33,
+    caps:['Video Edit','Thumbnail Gen','Color Grade','AI Visuals'],
+    responses:['Cutting the music video to beat drops. Auto-syncing edits to kick drum transients.','Generated 12 thumbnail options for your YouTube upload. Highest CTR predicted: Option 3.','AI-generated visuals for the bridge section are ready. Golden aesthetic with crown motifs.']},
+  {id:4, name:'Analytics Agent', role:'Data & Insights', icon:'📊', color:'#3498db',
+    model:'DataLLM + Chartmetric', status:'active', task:'Processing Spotify data', progress:91,
+    caps:['Stream Analytics','Trend Analysis','Audience Insights','Competitor Intel'],
+    responses:['Your streams grew 12.4% this week. Best performer: "Crown Legacy" (+18K streams today).','New audience: 18-24 female demographic growing 22% in Atlanta. Target that market!','Playlist placement opportunity: 3 Spotify editorial playlists match your sound. Pitching now.']},
+  {id:5, name:'A&R Scout', role:'Collaboration & Features', icon:'🔍', color:'#f39c12',
+    model:'GPT-4 + SoundCloud API', status:'idle', task:'Scanning emerging artists', progress:0,
+    caps:['Artist Discovery','Feature Matching','Label Scouting','Trend Detection'],
+    responses:['Found 8 emerging artists in Atlanta matching your sound profile. Top match: 94% compatibility.','Label interest detected from 2 major distributors. Connecting you with their A&R teams.','Trending sound in your genre: melodic drill. I recommend pivoting 20% of your next project.']},
+  {id:6, name:'Legal Agent', role:'Contracts & Compliance', icon:'⚖', color:'#1abc9c',
+    model:'LegalLLM + DocuSign', status:'active', task:'Reviewing publishing deal', progress:55,
+    caps:['Contract Review','Copyright','Sample Clearance','Deal Analysis'],
+    responses:['Contract review complete. 2 red flags found: Clause 4.2 limits sync rights. Recommend negotiating.','Sample clearance for "Crown Legacy" confirmed. All 3 samples cleared. Cost: $1,200 total.','Copyright registration filed for all 2024 releases. Certificates available in 6-8 weeks.']},
+  {id:7, name:'Social Media Agent', role:'Content & Engagement', icon:'📱', color:'#e91e8c',
+    model:'GPT-4 + Meta/X APIs', status:'active', task:'Responding to fan DMs', progress:67,
+    caps:['Auto-Reply','Content Calendar','Fan Engagement','Viral Strategy'],
+    responses:['Responded to 142 fan DMs today. Engagement rate up 18%. 3 fans converted to superfans!','Content calendar for July ready: 28 posts, 8 Reels, 4 TikTok trends. Scheduled and ready.','Viral strategy: Duet challenge launching in 24h. Estimated reach: 2.4M with #GOATSeason.']},
+  {id:8, name:'Vocal Coach AI', role:'Vocal Training & Analysis', icon:'🎤', color:'#00d4ff',
+    model:'AudioLLM + Antares', status:'idle', task:'Waiting for audio input', progress:0,
+    caps:['Pitch Analysis','Technique Coaching','Breath Control','Warmup Routines'],
+    responses:['Analyzing your vocal take. Pitch accuracy: 87%. Suggested improvement: soft palate technique on high notes.','Warmup routine ready: 5-minute program. Focus on passaggio transitions today.','Your tone quality is excellent in the middle register. Work on breath support in the lower range.']},
+  {id:9, name:'Mix Engineer AI', role:'Mixing & Mastering', icon:'🎛', color:'#ff6b35',
+    model:'AudioLLM + iZotope', status:'active', task:'Mastering Crown Legacy EP', progress:78,
+    caps:['Auto-Mix','Mastering','Stem Balance','Reference Match'],
+    responses:['Mix complete. LUFS: -14.2. Dynamics preserved. Reference track matched at 94%.','Found 3 frequency conflicts in the 200-400Hz range. Applying surgical EQ cuts now.','Mastering "GOAT Season": -1.0 dBTP ceiling, -14 LUFS integrated. Streaming-optimized.']},
+  {id:10, name:'GOAT Autopilot', role:'Full Automation System', icon:'🚀', color:'#d4a03c',
+    model:'GOAT-AGI v2.1', status:'standby', task:'Awaiting activation', progress:0,
+    caps:['Full Automation','Multi-Agent Coordination','Decision Making','24/7 Operation'],
+    responses:['GOAT Autopilot activated. Money Penny chairs command and AGENT-007 holds the tools while the crew runs for DJ Speedy.','Autopilot running: 8 tasks delegated, 3 completed in last hour. Revenue trend: +12% this week.','All systems nominal. Marketing campaigns active. Royalties tracked. New beat in progress.']},
+];
+
+agents.forEach((ag,i)=>{ag.id=i;});
+const agentByName=(name)=>agents.find(a=>a.name===name)||agents[0];
+const AUTOPILOT_INDEX=agents.findIndex(a=>a.name==='GOAT Autopilot');
+
+let selectedAgent=0, autopilotActive=false;
+let brainNodes=[], edges=[], packets=[];
+
+// ── BRAIN INIT ──
+function initBrain(W,H){
+  const cx=W/2, cy=H/2;
+  brainNodes=[];packets=[];
+  // core node
+  brainNodes.push({id:'core',x:cx,y:cy,r:28,color:'#d4a03c',label:'GOAT\nCORE',isCore:true,angle:0,orbitR:0,orbitSpeed:0});
+  // agent nodes - orbital
+  const orbitR=Math.min(W,H)*0.34;
+  agents.forEach((ag,i)=>{
+    const angle=(i/agents.length)*Math.PI*2;
+    brainNodes.push({
+      id:ag.id, x:cx+orbitR*Math.cos(angle), y:cy+orbitR*Math.sin(angle),
+      r:16, color:ag.color, label:ag.icon, agent:ag, isCore:false,
+      angle, orbitR, orbitSpeed:0.0003+i*0.00005, cx, cy
+    });
+  });
+  // edges
+  edges=[];
+  agents.forEach((_,i)=>{edges.push({from:0,to:i+1,active:true});});
+  // inter-agent edges
+  [[1,4],[2,3],[4,7],[5,6],[8,9],[1,10],[3,10]].forEach(([a,b])=>{
+    if(a<brainNodes.length&&b<brainNodes.length)edges.push({from:a,to:b,active:false});
+  });
+}
+
+// ── BRAIN DRAW ──
+function drawBrain(){
+  const cv=document.getElementById('brain-canvas');
+  const wrap=document.getElementById('brain-wrap');
+  cv.width=wrap.clientWidth;cv.height=wrap.clientHeight;
+  const W=cv.width,H=cv.height;
+  if(W<10||H<10)return;
+  const ctx=cv.getContext('2d');
+
+  // bg
+  ctx.fillStyle='#080c14';ctx.fillRect(0,0,W,H);
+  // subtle grid
+  ctx.strokeStyle='rgba(255,255,255,0.02)';
+  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  if(brainNodes.length===0)initBrain(W,H);
+
+  const now=Date.now();
+  // update orbital positions
+  const cx=W/2,cy=H/2;
+  brainNodes.forEach((n,i)=>{
+    if(!n.isCore){
+      n.angle+=n.orbitSpeed;
+      n.x=cx+n.orbitR*Math.cos(n.angle);
+      n.y=cy+n.orbitR*Math.sin(n.angle);
+    }
+  });
+
+  // update core glow position
+  brainNodes[0].x=cx;brainNodes[0].y=cy;
+
+  // draw orbital rings
+  ctx.strokeStyle='rgba(212,160,60,0.04)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(cx,cy,brainNodes[1]?.orbitR||120,0,Math.PI*2);ctx.stroke();
+  ctx.lineWidth=1;
+
+  // draw edges
+  edges.forEach(e=>{
+    const from=brainNodes[e.from],to=brainNodes[e.to];
+    if(!from||!to)return;
+    const ag=to.agent;
+    const isActive=ag&&ag.status==='active'&&autopilotActive||(ag&&ag.status==='active');
+    ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);
+    if(isActive){
+      ctx.strokeStyle=hexA(to.color,0.35);ctx.lineWidth=1.5;
+    } else {
+      ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+    }
+    ctx.stroke();ctx.lineWidth=1;
+  });
+
+  // update & draw packets
+  packets=packets.filter(p=>p.t<1);
+  packets.forEach(p=>{
+    p.t+=0.012;
+    const from=brainNodes[p.from],to=brainNodes[p.to];
+    if(!from||!to)return;
+    const x=from.x+(to.x-from.x)*p.t;
+    const y=from.y+(to.y-from.y)*p.t;
+    ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);
+    ctx.fillStyle=p.color;ctx.fill();
+    // trail
+    ctx.beginPath();ctx.arc(x-(to.x-from.x)*0.05,y-(to.y-from.y)*0.05,2,0,Math.PI*2);
+    ctx.fillStyle=hexA(p.color,0.4);ctx.fill();
+  });
+
+  // spawn packets for active agents
+  if(Math.random()<0.06&&autopilotActive){
+    const ag=agents[Math.floor(Math.random()*agents.length)];
+    if(ag.status==='active'&&brainNodes[ag.id+1]){
+      const dir=Math.random()>0.5;
+      packets.push({from:dir?0:ag.id+1,to:dir?ag.id+1:0,t:0,color:ag.color});
+    }
+  }
+  if(Math.random()<0.03){
+    const ag=agents.filter(a=>a.status==='active')[Math.floor(Math.random()*5)];
+    if(ag&&brainNodes[ag.id+1]){
+      packets.push({from:0,to:ag.id+1,t:0,color:ag.color});
+    }
+  }
+
+  // draw nodes
+  brainNodes.forEach((n,ni)=>{
+    const isSelected=!n.isCore&&n.agent&&n.agent.id===selectedAgent;
+    const r=n.r;
+
+    // glow
+    const glowR=n.isCore?60:28;
+    const grd=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,glowR);
+    grd.addColorStop(0,hexA(n.color,n.isCore?0.25:0.12));
+    grd.addColorStop(1,hexA(n.color,0));
+    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(n.x,n.y,glowR,0,Math.PI*2);ctx.fill();
+
+    // selection ring
+    if(isSelected){
+      ctx.beginPath();ctx.arc(n.x,n.y,r+5,0,Math.PI*2);
+      ctx.strokeStyle=n.color;ctx.lineWidth=2;ctx.stroke();ctx.lineWidth=1;
+    }
+
+    // node circle
+    const grad=ctx.createRadialGradient(n.x-r*0.3,n.y-r*0.3,1,n.x,n.y,r);
+    grad.addColorStop(0,hexA(n.color,0.7));grad.addColorStop(1,hexA(n.color,0.3));
+    ctx.beginPath();ctx.arc(n.x,n.y,r,0,Math.PI*2);ctx.fillStyle=grad;ctx.fill();
+    ctx.strokeStyle=hexA(n.color,0.8);ctx.lineWidth=1.5;ctx.stroke();ctx.lineWidth=1;
+
+    // status dot (for agent nodes)
+    if(!n.isCore&&n.agent){
+      const statusColors={active:'#2ecc71',idle:'#f39c12',standby:'#7a7060'};
+      const sc=statusColors[n.agent.status]||'#7a7060';
+      ctx.beginPath();ctx.arc(n.x+r*0.65,n.y-r*0.65,4,0,Math.PI*2);
+      ctx.fillStyle=sc;ctx.fill();
+    }
+
+    // icon / label
+    ctx.fillStyle='#fff';
+    if(n.isCore){
+      ctx.font='bold 10px monospace';ctx.textAlign='center';
+      ctx.fillText('🐐',n.x,n.y-3);ctx.fillText('CORE',n.x,n.y+10);
+    } else {
+      ctx.font='13px sans-serif';ctx.textAlign='center';
+      ctx.fillText(n.label,n.x,n.y+5);
+    }
+    ctx.textAlign='left';
+  });
+
+  // agent name labels (outside nodes)
+  brainNodes.forEach(n=>{
+    if(n.isCore)return;
+    const ag=n.agent;if(!ag)return;
+    const dist=n.orbitR+30;
+    const lx=cx+dist*Math.cos(n.angle);
+    const ly=cy+dist*Math.sin(n.angle);
+    ctx.fillStyle=hexA(n.color,0.7);ctx.font='8px monospace';ctx.textAlign='center';
+    ctx.fillText(ag.name.split(' ').slice(0,2).join(' '),lx,ly);
+    ctx.textAlign='left';
+  });
+}
+
+function hexA(hex,a){
+  if(hex.startsWith('#')){
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+  return hex;
+}
+
+// ── ROSTER ──
+function buildRoster(){
+  const el=document.getElementById('agent-roster');
+  el.innerHTML=agents.map((ag,i)=>`
+    <div class="agent-card ${i===selectedAgent?'sel':''}" onclick="selectAgent(${i})">
+      <div class="ac-icon">${ag.icon}</div>
+      <div class="ac-info">
+        <div class="ac-name">${ag.name}</div>
+        <div class="ac-role">${ag.role}</div>
+        ${ag.status==='active'?`<div class="ac-prog-wrap"><div class="ac-prog" id="acp${i}" style="width:${ag.progress}%;background:${ag.color}"></div></div>`:''}
+      </div>
+      <div class="ac-status" style="background:${{active:'#2ecc71',idle:'#f39c12',standby:'#7a7060'}[ag.status]};${ag.status==='active'?'animation:pulse 1.5s infinite':''}"></div>
+    </div>
+  `).join('');
+}
+
+function selectAgent(i){
+  selectedAgent=i;
+  buildRoster();
+  addMsg('system','GOAT CORE','Routing to '+agents[i].name+'…');
+}
+
+// ── STATUS BAR ──
+function buildStatusBar(){
+  const el=document.getElementById('statusbar');
+  const active=agents.filter(a=>a.status==='active').length;
+  el.innerHTML=`
+    <div class="sb-item"><div class="sb-dot" style="background:var(--green)"></div><span>BRAIN ONLINE</span></div>
+    <div class="sb-item"><span style="color:var(--sub)">Active:</span><span style="color:var(--green);font-weight:700;margin-left:3px">${active}/${agents.length}</span></div>
+    ${agents.filter(a=>a.status==='active').map(ag=>`
+      <div class="sb-item">
+        <div class="sb-dot pulse" style="background:${ag.color}"></div>
+        <span style="color:${ag.color}">${ag.name.split(' ')[0]}</span>
+        <span style="color:var(--sub);margin-left:3px;font-size:9px">${ag.task.slice(0,20)}…</span>
+      </div>
+    `).join('')}
+    <div class="spacer" style="flex:1"></div>
+    <div class="sb-item"><span style="color:var(--sub)">Model:</span><span style="color:var(--cyan);margin-left:3px">GOAT-AGI v2.1</span></div>
+  `;
+}
+
+// ── TASK QUEUE ──
+function buildTaskQueue(){
+  const el=document.getElementById('task-queue');
+  const tasks=[
+    {title:'Money Penny command brief', agent:'Ms Money Penny',  prog:91,color:'#f0c040'},
+    {title:'AGENT-007 tool check',       agent:'AGENT-007',       prog:84,color:'#58a6ff'},
+    {title:'Mix "808 Nights"',     agent:'Mix Engineer AI', prog:45,color:'#ff6b35'},
+    {title:'Post YouTube Short',   agent:'Marketing Agent',  prog:20,color:'#e74c3c'},
+    {title:'Royalty Q2 Report',    agent:'Royalty Manager',  prog:88,color:'#2ecc71'},
+    {title:'Contract Review',      agent:'Legal Agent',      prog:55,color:'#1abc9c'},
+    {title:'A/B Test Thumbnails',  agent:'Video Director',   prog:10,color:'#9b59b6'},
+    {title:'Fan DM Responses',     agent:'Social Agent',     prog:67,color:'#e91e8c'},
+  ];
+  el.innerHTML=tasks.map((t,i)=>`
+    <div class="task-item">
+      <div class="task-title">${t.title}</div>
+      <div class="task-agent">${t.agent}</div>
+      <div class="task-prog"><div class="task-prog-fill" id="tp${i}" style="width:${t.prog}%;background:${t.color}"></div></div>
+    </div>
+  `).join('');
+}
+
+// ── MEMORY BANK ──
+function buildMemory(){
+  const el=document.getElementById('memory-bank');
+  const mems=[
+    {k:'artist',v:'DJ Speedy'},
+    {k:'genre',v:'Trap / Hip-Hop'},
+    {k:'key',v:'A Minor'},
+    {k:'bpm',v:'140'},
+    {k:'label',v:'Life Imitates Art'},
+    {k:'last_release',v:'GOAT Season'},
+    {k:'streams_total',v:'20.5M'},
+    {k:'revenue_ytd',v:'$81,960'},
+    {k:'top_market',v:'Atlanta, GA'},
+    {k:'collab_open',v:'true'},
+  ];
+  el.innerHTML=mems.map(m=>`
+    <div class="mem-item"><span class="mem-key">${m.k}:</span> ${m.v}</div>
+  `).join('');
+}
+
+// ── SYSTEM PANEL ──
+let uptimeSecs=15731;
+function buildSystemPanel(){
+  const h=Math.floor(uptimeSecs/3600),m=Math.floor((uptimeSecs%3600)/60),s=uptimeSecs%60;
+  document.getElementById('sUptime').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  document.getElementById('sCpu').textContent=Math.floor(8+Math.random()*20)+'%';
+  document.getElementById('sMem').textContent=(2.1+Math.random()*0.6).toFixed(1)+' GB';
+  document.getElementById('sActive').textContent=agents.filter(a=>a.status==='active').length;
+  document.getElementById('sQueue').textContent=Math.floor(10+Math.random()*8);
+}
+
+// ── CHAT ──
+function addMsg(type,sender,text){
+  const el=document.getElementById('chat-messages');
+  const div=document.createElement('div');
+  div.className='msg '+(type==='user'?'user':'agent');
+  if(type!=='user'){
+    const sDiv=document.createElement('div');sDiv.className='msg-sender';sDiv.style.color=agents.find(a=>a.name===sender)?.color||'var(--gold)';sDiv.textContent=sender;
+    div.appendChild(sDiv);
+  }
+  const tDiv=document.createElement('div');tDiv.textContent=text;div.appendChild(tDiv);
+  el.appendChild(div);
+  el.scrollTop=el.scrollHeight;
+}
+
+const INTEL_AGENT_MAP=[ 'business','autonomous','producer','business','business','fashion','researcher','a&r','legal','business','producer','producer','autonomous' ];
+const INTEL_BASE=(typeof GOAT!=='undefined'&&GOAT.intel)?GOAT.intel:'http://127.0.0.1:5500';
+let intelOnline=null;
+
+async function checkIntel(){
+  if(intelOnline!==null) return intelOnline;
+  try{
+    const r=await fetch(INTEL_BASE+'/brain/agents',{signal:AbortSignal.timeout(4000)});
+    intelOnline=r.ok;
+  }catch(e){ intelOnline=false; }
+  return intelOnline;
+}
+
+async function sendMsg(){
+  const input=document.getElementById('chat-input');
+  const msg=input.value.trim();if(!msg)return;
+  addMsg('user','You',msg);
+  input.value='';
+  const lower=msg.toLowerCase();
+  let ag=agentByName('Ms Money Penny');
+  if(/007|agent-007|enforcer|tool|control|computer|deploy|server|security|model|llm|launch|runtime/.test(lower))ag=agentByName('AGENT-007 Enforcer');
+  else if(/royalt|money|earn|revenue|payout|ascap|publish|business|investor|store|contract|client/.test(lower))ag=agentByName('Ms Money Penny');
+  else if(/beat|melody|chord|producer|sample/.test(lower))ag=agentByName('Music Producer AI');
+  else if(/post|social|instagram|twitter|tiktok|market|campaign/.test(lower))ag=agentByName('Marketing Agent');
+  else if(/video|edit|film|visual|thumbnail/.test(lower))ag=agentByName('Video Director AI');
+  else if(/mix|master|eq|compressor|fx|effect/.test(lower))ag=agentByName('Mix Engineer AI');
+  else if(/legal|copyright|clearance/.test(lower))ag=agentByName('Legal Agent');
+  else if(/analyt|data|trend|stream|chart|spotify/.test(lower))ag=agentByName('Analytics Agent');
+  else if(/vocal|pitch|sing/.test(lower))ag=agentByName('Vocal Coach AI');
+  else if(/fan|dm|reply|engage/.test(lower))ag=agentByName('Social Media Agent');
+  else if(/automat|autoplot|autopilot|full run|everything/.test(lower))ag=agents[AUTOPILOT_INDEX]||agentByName('GOAT Autopilot');
+  document.getElementById('chatAgent').textContent='→ '+ag.name;
+  selectedAgent=ag.id;buildRoster();
+
+  if(await checkIntel()){
+    const brainId=INTEL_AGENT_MAP[ag.id]||'producer';
+    addMsg('agent',ag.name,'… Intel brain thinking');
+    try{
+      const r=await fetch(INTEL_BASE+'/brain/agent/'+encodeURIComponent(brainId),{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message:msg,history:[]}),
+        signal:AbortSignal.timeout(90000)
+      });
+      const d=await r.json();
+      const el=document.getElementById('chat-messages');
+      if(el.lastChild) el.removeChild(el.lastChild);
+      addMsg('agent',d.agent||ag.name,d.reply||d.error||'No reply');
+      return;
+    }catch(e){
+      const el=document.getElementById('chat-messages');
+      if(el.lastChild) el.removeChild(el.lastChild);
+    }
+  }
+  setTimeout(()=>{
+    const resp=ag.responses[Math.floor(Math.random()*ag.responses.length)];
+    addMsg('agent',ag.name,resp+' (offline demo — start GOAT Intel for real replies)');
+  },400);
+}
+
+function clearChat(){document.getElementById('chat-messages').innerHTML='';}
+
+// ── AUTOPILOT ──
+function toggleAutopilot(){
+  autopilotActive=!autopilotActive;
+  const btn=document.getElementById('autopilotBtn');
+  const topBtn=document.getElementById('autopilotTopBtn');
+  const icon=document.getElementById('apIcon');
+  const lbl=document.getElementById('apLabel');
+  if(autopilotActive){
+    btn.classList.add('active');icon.textContent='🚀';lbl.textContent='GOAT Autopilot ACTIVE';
+    topBtn.style.borderColor='var(--gold)';topBtn.style.color='var(--gold)';
+    if(agents[AUTOPILOT_INDEX]){agents[AUTOPILOT_INDEX].status='active';agents[AUTOPILOT_INDEX].task='Full automation running';}
+    buildRoster();buildStatusBar();
+    addMsg('agent','GOAT Autopilot','GOAT Autopilot activated. Money Penny chairs command, AGENT-007 holds tools and controls, and the full crew is synchronized for DJ Speedy.');
+  } else {
+    btn.classList.remove('active');icon.textContent='🤖';lbl.textContent='Enable GOAT Autopilot';
+    topBtn.style.borderColor='';topBtn.style.color='';
+    if(agents[AUTOPILOT_INDEX]){agents[AUTOPILOT_INDEX].status='standby';agents[AUTOPILOT_INDEX].task='Awaiting activation';}
+    buildRoster();buildStatusBar();
+    addMsg('agent','GOAT Autopilot','⏸ Autopilot suspended. Manual mode active.');
+  }
+}
+
+async function activateAll(){
+  agents.forEach(ag=>{if(ag.status!=='standby')ag.status='active';});
+  buildRoster();buildStatusBar();
+  if(await checkIntel()){
+    addMsg('agent','GOAT CORE','⚡ Crew linked to GOAT Intel :5500. Chat below uses real brain routes (not demo lines).');
+  } else {
+    addMsg('agent','GOAT CORE','⚡ UI activated — start Launch GOAT Force for real crew chat (Intel :5500).');
+  }
+}
+function pauseAll(){agents.forEach(ag=>{if(ag.id!==AUTOPILOT_INDEX)ag.status='idle';});buildRoster();buildStatusBar();}
+function resetBrain(){
+  autopilotActive=false;
+  const activeNames=new Set(['Ms Money Penny','AGENT-007 Enforcer','Music Producer AI','Royalty Manager','Analytics Agent','Legal Agent','Mix Engineer AI']);
+  agents.forEach((ag)=>{ag.status=activeNames.has(ag.name)?'active':'idle';ag.progress=Math.floor(Math.random()*80);});
+  brainNodes=[];initBrain(document.getElementById('brain-canvas').width,document.getElementById('brain-canvas').height);
+  buildRoster();buildStatusBar();
+}
+
+// ── PROGRESS ANIM ──
+setInterval(()=>{
+  agents.forEach((ag,i)=>{
+    if(ag.status==='active'){
+      ag.progress=Math.min(100,ag.progress+(Math.random()*3-0.5));
+      const el=document.getElementById('acp'+i);
+      if(el)el.style.width=ag.progress+'%';
+      if(ag.progress>=100){ag.progress=Math.floor(Math.random()*30);ag.task=getNextTask(ag);}
+    }
+  });
+  uptimeSecs++;
+  buildSystemPanel();
+},600);
+
+const TASK_POOL={
+  0:['Chairing GOAT command','Routing crew lanes','Reviewing investor packet','Checking business command'],
+  1:['Checking tools','Watching runtime','Securing controls','Preparing deploy handoff'],
+  2:['Generating trap beat','Creating melody','Analyzing chord prog','Arranging drop'],
+  3:['Scheduling posts','Running ad campaign','Analyzing engagement','Creating content'],
+  4:['Tracking royalties','Filing PRO claim','Forecasting revenue','Updating catalog'],
+  5:['Cutting music video','Generating visuals','Color grading','Creating thumbnails'],
+  6:['Processing Spotify data','Analyzing trends','Building report','Comparing artists'],
+  8:['Reviewing contract','Clearing samples','Filing copyright','Checking compliance'],
+  9:['Responding to DMs','Creating posts','Planning viral','Engaging comments'],
+  11:['Mixing drums','Mastering EP','Balancing stems','Applying EQ'],
+  12:['Full automation running','Coordinating agents','Optimizing revenue','24/7 operation'],
+};
+function getNextTask(ag){const pool=TASK_POOL[ag.id];return pool?pool[Math.floor(Math.random()*pool.length)]:ag.task;}
+
+// ── MAIN LOOP ──
+function loop(){drawBrain();requestAnimationFrame(loop);}
+
+// ── INIT ──
+function init(){
+  buildRoster();
+  buildStatusBar();
+  buildTaskQueue();
+  buildMemory();
+  buildSystemPanel();
+  // welcome message
+  setTimeout(()=>{
+    addMsg('agent','GOAT CORE','Welcome back, DJ Speedy. Ms Money Penny is up as LLM boss, AGENT-007 is holding the tools and controls, and the crew is standing by. What should we work on first?');
+  },500);
+  requestAnimationFrame(loop);
+}
+window.addEventListener('DOMContentLoaded',init);
+window.addEventListener('resize',()=>{brainNodes=[];});
+</script>
+<script src="js/goat-touch-global.js?v=20260608-touch"></script>
+<script src="js/goat-force-media.js?v=20260625-force"></script>
+
+<script src="js/money-penny-home-store-restore.js"></script>
+</body>
+</html>

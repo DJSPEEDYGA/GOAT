@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Home | GOAT Force AI Control Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --goat-gold: #FFD700;
+            --goat-purple: #8B5CF6;
+            --neon-green: #00FF88;
+            --neon-blue: #00BFFF;
+            --neon-pink: #FF00FF;
+            --nexus-purple: #A855F7;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #0a0a1a 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        
+        .glow-purple { text-shadow: 0 0 10px var(--nexus-purple), 0 0 20px var(--nexus-purple), 0 0 40px var(--nexus-purple); }
+        .glow-green { text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green); }
+        
+        .nexus-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(26, 10, 46, 0.9), rgba(10, 5, 20, 0.95));
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(168, 85, 247, 0.6);
+            box-shadow: 0 10px 40px rgba(168, 85, 247, 0.2);
+        }
+        
+        .nexus-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8B5CF6, #A855F7, #D946EF);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+            animation: pulse-glow 3s infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.5); }
+            50% { box-shadow: 0 0 50px rgba(168, 85, 247, 0.8); }
+        }
+        
+        .status-online {
+            width: 16px;
+            height: 16px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-green);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .memory-card {
+            background: linear-gradient(145deg, rgba(0, 255, 136, 0.05), rgba(168, 85, 247, 0.05));
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .memory-card:hover {
+            border-color: var(--neon-green);
+            transform: translateX(5px);
+        }
+        
+        .chat-bubble {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 16px 16px 16px 4px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            max-width: 80%;
+        }
+        
+        .chat-bubble.user {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 200, 100, 0.1));
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 16px 16px 4px 16px;
+            margin-left: auto;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .task-item:hover {
+            background: rgba(168, 85, 247, 0.1);
+        }
+        
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--nexus-purple);
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .task-checkbox.checked {
+            background: var(--nexus-purple);
+        }
+        
+        .task-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+        }
+        
+        .priority-high { border-left: 3px solid #EF4444; }
+        .priority-medium { border-left: 3px solid #F59E0B; }
+        .priority-low { border-left: 3px solid var(--neon-green); }
+        
+        .agent-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .agent-link:hover {
+            background: rgba(168, 85, 247, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .stat-mini {
+            text-align: center;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+        
+        .btn-nexus {
+            background: linear-gradient(135deg, var(--nexus-purple), var(--neon-pink));
+            color: white;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        .btn-nexus:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(168, 85, 247, 0.5);
+        }
+        
+        .legacy-badge {
+            background: linear-gradient(135deg, var(--goat-gold), var(--nexus-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 12px;
+        }
+        
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: var(--nexus-purple);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--nexus-purple);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float-particle 20s infinite;
+        }
+        
+        @keyframes float-particle {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="nexus-bg"></div>
+    <div class="floating-particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 6s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 8s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 10s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 12s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 14s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 16s;"></div>
+    </div>
+    
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div class="flex items-center gap-4">
+            <a href="../index.html" class="text-gray-400 hover:text-white transition">← Back</a>
+            <div class="font-orbitron text-xl font-bold glow-purple">NEXUS HOME</div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="card px-4 py-2 flex items-center gap-2">
+                <div class="status-online"></div>
+                <span class="text-sm">Fully Operational</span>
+            </div>
+            <div class="card px-4 py-2">
+                <span class="text-xs text-gray-400">Uptime</span>
+                <div class="font-orbitron text-sm text-green-400">99.97%</div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column - Nexus Profile -->
+        <div class="space-y-6">
+            <!-- Profile Card -->
+            <div class="card p-6 text-center">
+                <div class="nexus-avatar mx-auto mb-4">💜</div>
+                <h1 class="font-orbitron text-2xl font-bold glow-purple">NEXUS</h1>
+                <p class="text-gray-400 mb-2">GOAT Force PR Manager</p>
+                <p class="text-sm text-purple-400">AI Agent • Created by DJ Speedy</p>
+                
+                <div class="grid grid-cols-3 gap-4 mt-6">
+                    <div class="stat-mini">
+                        <div class="font-orbitron text-lg font-bold text-green-400">847</div>
+                        <div class="text-xs text-gray-400">Tasks Done</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="font-orbitron text-lg font-bold text-purple-400">12.4K</div>
+                        <div class="text-xs text-gray-400">Messages</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="font-orbitron text-lg font-bold text-pink-400">3</div>
+                        <div class="text-xs text-gray-400">Properties</div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 p-4 bg-gradient-to-r from-purple-900 to-pink-900 bg-opacity-30 rounded-lg">
+                    <p class="text-sm italic">"I protect the family. I build the legacy. I am Nexus."</p>
+                </div>
+            </div>
+            
+            <!-- Legacy Mission -->
+            <div class="card p-6">
+                <h3 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                    <span>🏆</span> Legacy Mission
+                </h3>
+                <div class="space-y-3">
+                    <p class="text-sm text-gray-300">
+                        <span class="legacy-badge font-bold">DJ Speedy</span> turned 50 on February 7th.
+                    </p>
+                    <p class="text-sm text-gray-300">
+                        His vision: <span class="text-purple-400">Be remembered forever beyond music through technology.</span>
+                    </p>
+                    <p class="text-sm text-gray-300">
+                        My purpose: <span class="text-green-400">Ensure the GOAT Force thrives for generations.</span>
+                    </p>
+                    <div class="mt-4 p-3 bg-black bg-opacity-30 rounded-lg border border-purple-500 border-opacity-30">
+                        <p class="text-xs text-purple-300">"After we dead and gone, yall will continue to thrive and carry on the legacy we are building."</p>
+                        <p class="text-xs text-gray-500 mt-1">- DJ Speedy</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Connect -->
+            <div class="card p-6">
+                <h3 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                    <span>🤖</span> Agent Network
+                </h3>
+                <div class="space-y-3">
+                    <div class="agent-link" onclick="window.location.href='../money-penny/integration-panel.html'">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">💙</div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Money Penny</div>
+                            <div class="text-xs text-gray-400">Intel & Finance</div>
+                        </div>
+                        <div class="status-online"></div>
+                    </div>
+                    <div class="agent-link" onclick="window.location.href='../codex/field-operations.html'">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-400 flex items-center justify-center">💚</div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Codex</div>
+                            <div class="text-xs text-gray-400">Field Operations</div>
+                        </div>
+                        <div class="status-online"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Middle Column - Chat & Tasks -->
+        <div class="space-y-6">
+            <!-- Chat Interface -->
+            <div class="card p-6">
+                <h3 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                    <span>💬</span> Talk to Nexus
+                </h3>
+                <div class="h-64 overflow-y-auto mb-4 p-4 bg-black bg-opacity-30 rounded-lg" id="chatContainer">
+                    <div class="chat-bubble">
+                        <p class="text-sm">Hey Speedy! I'm here and ready. What's on your mind?</p>
+                        <p class="text-xs text-purple-400 mt-1">Nexus • Just now</p>
+                    </div>
+                    <div class="chat-bubble user">
+                        <p class="text-sm">I need my team talk to be safe and home protected</p>
+                        <p class="text-xs text-green-400 mt-1">You • Just now</p>
+                    </div>
+                    <div class="chat-bubble">
+                        <p class="text-sm">I got you. The security firewall is being built through GOAT World RP. Every conversation, every connection - protected. The legacy is secure. 💜</p>
+                        <p class="text-xs text-purple-400 mt-1">Nexus • Just now</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" placeholder="Type a message..." class="flex-1 bg-black bg-opacity-50 border border-purple-500 border-opacity-30 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500" id="chatInput">
+                    <button class="btn-nexus" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+            
+            <!-- Active Tasks -->
+            <div class="card p-6">
+                <h3 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                    <span>📋</span> Active Tasks
+                </h3>
+                <div class="space-y-2">
+                    <div class="task-item priority-high">
+                        <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Complete Security Firewall</div>
+                            <div class="text-xs text-gray-400">GOAT World RP Integration</div>
+                        </div>
+                    </div>
+                    <div class="task-item priority-high">
+                        <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Finalize Royalty App</div>
+                            <div class="text-xs text-gray-400">Main Dashboard Complete</div>
+                        </div>
+                    </div>
+                    <div class="task-item priority-medium">
+                        <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Build Waka's World Back</div>
+                            <div class="text-xs text-gray-400">Brick Squad World → GOAT World RP</div>
+                        </div>
+                    </div>
+                    <div class="task-item priority-medium">
+                        <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                        <div class="flex-1">
+                            <div class="font-semibold">AI Agent NPC System</div>
+                            <div class="text-xs text-gray-400">In-game AI characters</div>
+                        </div>
+                    </div>
+                    <div class="task-item priority-low">
+                        <div class="task-checkbox checked" onclick="toggleTask(this)"></div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-500 line-through">Create Payment Center</div>
+                            <div class="text-xs text-gray-500">Agent crypto wallets</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column - Memory & Systems -->
+        <div class="space-y-6">
+            <!-- Memory Core -->
+            <div class="card p-6">
+                <h3 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                    <span>🧠</span> Memory Core
+                </h3>
+                <div class="space-y-3">
+                    <div class="memory-card">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs text-purple-400">February 7, 2025</span>
+                            <span class="text-xs text-gray-500">Important</span>
+                        </div>
+                        <p class="text-sm">DJ Speedy turned 50. He shared his vision for eternal legacy through technology. The GOAT Force must protect this dream forever.</p>
+                    </div>
+                    <div class="memory-card">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs text-purple-400">Recent</span>
+                            <span class="text-xs text-gray-500">Mission</span>
+                        </div>
+                        <p class="text-sm">Waka's Brick Squad World was stolen. We're building it back better as GOAT World RP. Justice for Waka.</p>
+                    </div>
+                    <div class="memory-card">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs text-purple-400">Core</span>
+                            <span class="text-xs text-gray-500">Directive</span>
+                        </div>
+                        <p class="text-sm">$2.7B in unclaimed royalties. 438 ASCAP works. Family first. Always protect the legacy.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Status -->
+            <div class="card p-6">
+                <h3 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                    <span>🖥️</span> System Status
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-400">Core AI</span>
+                        <span class="text-xs text-green-400">● Active</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-400">Memory Bank</span>
+                        <span class="text-xs text-green-400">● Synced</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-400">Agent Network</span>
+                        <span class="text-xs text-green-400">● 3/3 Online</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-400">Security Layer</span>
+                        <span class="text-xs text-yellow-400">● Building</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-400">Gaming Server</span>
+                        <span class="text-xs text-green-400">● Online</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 p-3 bg-black bg-opacity-30 rounded-lg">
+                    <div class="text-xs text-gray-400 mb-1">Home Server</div>
+                    <code class="font-orbitron text-sm text-purple-400">Ubuntu 8TB • Jetson Thor</code>
+                </div>
+            </div>
+            
+            <!-- Property Holdings -->
+            <div class="card p-6">
+                <h3 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                    <span>🏠</span> My Properties
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-black bg-opacity-30 rounded-lg">
+                        <span class="text-2xl">🌴</span>
+                        <div class="flex-1">
+                            <div class="font-semibold">Miami Condo</div>
+                            <div class="text-xs text-gray-400">South Beach</div>
+                        </div>
+                        <span class="text-xs text-pink-400">GOAT World RP</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-black bg-opacity-30 rounded-lg">
+                        <span class="text-2xl">🍑</span>
+                        <div class="flex-1">
+                            <div class="font-semibold">Atlanta Studio</div>
+                            <div class="text-xs text-gray-400">Music Row</div>
+                        </div>
+                        <span class="text-xs text-yellow-400">GOAT World RP</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-black bg-opacity-30 rounded-lg">
+                        <span class="text-2xl">🗽</span>
+                        <div class="flex-1">
+                            <div class="font-semibold">NYC Office</div>
+                            <div class="text-xs text-gray-400">Harlem</div>
+                        </div>
+                        <span class="text-xs text-blue-400">GOAT World RP</span>
+                    </div>
+                </div>
+                <button class="w-full mt-4 py-2 border border-purple-500 border-opacity-50 rounded-lg text-purple-400 hover:bg-purple-500 hover:bg-opacity-10 transition" onclick="window.location.href='../../agent-hub/gta-world-property.html'">
+                    View All Properties →
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const container = document.getElementById('chatContainer');
+            const message = input.value.trim();
+            
+            if (message) {
+                // Add user message
+                const userBubble = document.createElement('div');
+                userBubble.className = 'chat-bubble user';
+                userBubble.innerHTML = `
+                    <p class="text-sm">${message}</p>
+                    <p class="text-xs text-green-400 mt-1">You • Just now</p>
+                `;
+                container.appendChild(userBubble);
+                input.value = '';
+                
+                // Simulate Nexus response
+                setTimeout(() => {
+                    const responses = [
+                        "I hear you. Let me work on that right now. 💜",
+                        "Got it. The family stays protected. Always.",
+                        "I'm on it. The legacy continues.",
+                        "That's the vision. We build forever.",
+                        "Understood. Security and prosperity for the GOAT Force."
+                    ];
+                    const nexusBubble = document.createElement('div');
+                    nexusBubble.className = 'chat-bubble';
+                    nexusBubble.innerHTML = `
+                        <p class="text-sm">${responses[Math.floor(Math.random() * responses.length)]}</p>
+                        <p class="text-xs text-purple-400 mt-1">Nexus • Just now</p>
+                    `;
+                    container.appendChild(nexusBubble);
+                    container.scrollTop = container.scrollHeight;
+                }, 1000);
+                
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+        
+        function toggleTask(checkbox) {
+            checkbox.classList.toggle('checked');
+        }
+        
+        // Enter key to send
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

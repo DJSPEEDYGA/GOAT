@@ -1,0 +1,217 @@
+name: Build GOAT Royalty App Installers
+
+on:
+  push:
+    branches: [main, master]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      build_windows:
+        description: 'Build Windows installers'
+        required: false
+        default: true
+        type: boolean
+      build_macos:
+        description: 'Build macOS installers'
+        required: false
+        default: true
+        type: boolean
+      build_linux:
+        description: 'Build Linux installers'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  build-windows:
+    name: Build Windows Installers
+    runs-on: windows-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_windows }}
+    timeout-minutes: 45
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: 🔨 Build Next.js application
+        run: npm run build
+
+      - name: 🚀 Build Windows EXE installer
+        run: npx electron-builder --win --config electron-builder.yml --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📤 Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers
+          path: |
+            dist/*.exe
+            dist/*.exe.blockmap
+          retention-days: 30
+          if-no-files-found: warn
+
+  build-macos:
+    name: Build macOS Installers
+    runs-on: macos-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_macos }}
+    timeout-minutes: 45
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: 🔨 Build Next.js application
+        run: npm run build
+
+      - name: 🚀 Build macOS DMG installer
+        run: npx electron-builder --mac --config electron-builder.yml --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📤 Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installers
+          path: |
+            dist/*.dmg
+            dist/*.dmg.blockmap
+            dist/*.zip
+          retention-days: 30
+          if-no-files-found: warn
+
+  build-linux:
+    name: Build Linux Installers
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_linux }}
+    timeout-minutes: 45
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libarchive-tools rpm
+
+      - name: 📦 Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: 🔨 Build Next.js application
+        run: npm run build
+
+      - name: 🚀 Build Linux packages
+        run: npx electron-builder --linux --config electron-builder.yml --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📤 Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-installers
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.tar.gz
+          retention-days: 30
+          if-no-files-found: warn
+
+  release:
+    name: Create GitHub Release
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    
+    steps:
+      - name: 📥 Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-installers
+          path: dist/
+
+      - name: 📥 Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-installers
+          path: dist/
+
+      - name: 📥 Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-installers
+          path: dist/
+
+      - name: 📋 List all artifacts
+        run: ls -la dist/
+
+      - name: 🚀 Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            ## GOAT Royalty App ${{ github.ref_name }}
+            
+            ### 📥 Downloads
+            
+            | Platform | File | Description |
+            |----------|------|-------------|
+            | **Windows** | `GOAT Royalty App-Setup-*.exe` | Standard installer |
+            | **Windows** | `GOAT Royalty App-Portable-*.exe` | Portable (no install) |
+            | **macOS (Intel)** | `GOAT Royalty App-*-x64.dmg` | Intel Macs |
+            | **macOS (Apple Silicon)** | `GOAT Royalty App-*-arm64.dmg` | M1/M2/M3 Macs |
+            | **Linux** | `GOAT Royalty App-*.AppImage` | Portable AppImage |
+            | **Linux** | `goat-royalty-app_*.deb` | Debian/Ubuntu package |
+            
+            ### 💻 System Requirements
+            
+            - **Windows**: Windows 10/11 (64-bit)
+            - **macOS**: macOS 10.15+ (Catalina or later)
+            - **Linux**: Ubuntu 18.04+ or compatible distribution
+            
+            ### 📝 Installation
+            
+            1. Download the installer for your platform
+            2. Run the installer (Windows/macOS) or extract (Linux)
+            3. Launch the application
+            
+            ---
+            
+            **Questions?** Contact harvey@goatroyaltyapp.com
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

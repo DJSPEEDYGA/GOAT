@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0a">
+<title>🎼 GOAT Piano Keys</title>
+<link rel="stylesheet" href="css/goat-touch.css">
+<script src="js/goat-touch.js" defer></script>
+<style>
+  .keys-page {
+    padding: calc(64px + env(safe-area-inset-top) + 10px) 8px calc(84px + env(safe-area-inset-bottom)) 8px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .scale-bar { display: flex; gap: 6px; overflow-x: auto; padding: 4px; -webkit-overflow-scrolling: touch; }
+  .scale-chip { flex-shrink: 0; padding: 10px 14px; background: var(--goat-charcoal); border:1px solid rgba(255,255,255,.1); border-radius: 16px; font-size: 12px; font-weight: 800; color: var(--goat-cream); cursor: pointer; text-transform: uppercase; }
+  .scale-chip.active { background: var(--gradient-gold); color: var(--goat-black); border-color: var(--goat-gold); }
+  .piano-keys { height: 260px; }
+  .octave-nav { display: flex; gap: 8px; justify-content: center; padding: 10px; }
+  .chord-pads { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 6px; }
+  .chord-pad { min-height: 80px; background: var(--gradient-dark); border: 2px solid rgba(255,255,255,.08); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
+  .chord-pad:active { transform: scale(0.94); background: var(--gradient-power); }
+  .chord-pad .nm { font-size: 20px; font-weight: 900; color: var(--goat-gold); }
+  .chord-pad .lbl { font-size: 10px; color: var(--goat-silver); text-transform: uppercase; }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="touch-mode">
+
+<header class="t-topbar">
+  <button class="t-btn" onclick="history.back()" style="min-width:auto;min-height:44px;padding:8px 12px;">←</button>
+  <div class="brand"><span class="emoji">🎼</span><span>PIANO</span></div>
+  <span class="spacer"></span>
+  <span class="chip" id="octChip">OCT 4</span>
+  <span class="chip" id="scaleChip">C MAJ</span>
+</header>
+
+<main class="keys-page">
+
+  <div class="scale-bar" id="scaleBar"></div>
+
+  <div class="piano-keys">
+    <div class="piano-inner" id="pianoInner"></div>
+  </div>
+
+  <div class="octave-nav">
+    <button class="t-btn" onclick="shiftOct(-1)">◀ OCT</button>
+    <button class="t-btn" onclick="shiftOct(1)">OCT ▶</button>
+    <button class="t-btn" onclick="sustainToggle()" id="sustainBtn">SUSTAIN</button>
+  </div>
+
+  <div style="font-size:12px;color:var(--goat-gold);font-weight:800;text-transform:uppercase;letter-spacing:1px;padding:0 10px;">Chord Pads (scale-aware)</div>
+  <div class="chord-pads" id="chordPads"></div>
+
+</main>
+
+<nav class="t-tabbar">
+  <a class="t-tab" href="touch-hub.html"><span class="ic">🏠</span><span class="lb">Hub</span></a>
+  <a class="t-tab" href="touch-brain.html"><span class="ic">🧠</span><span class="lb">AI</span></a>
+  <a class="t-tab" href="touch-pads.html"><span class="ic">🎹</span><span class="lb">Pads</span></a>
+  <a class="t-tab" href="touch-mixer.html"><span class="ic">🎚️</span><span class="lb">Mix</span></a>
+  <a class="t-tab active" href="touch-keys.html"><span class="ic">🎼</span><span class="lb">Keys</span></a>
+  <a class="t-tab" href="touch-xy.html"><span class="ic">🎯</span><span class="lb">XY</span></a>
+</nav>
+
+<script>
+// ============== NOTE MATH ==============
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function freq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+
+const SCALES = {
+  'C MAJ': { root: 0,  steps:[0,2,4,5,7,9,11] },
+  'A MIN': { root: 9,  steps:[0,2,3,5,7,8,10] },
+  'G MAJ': { root: 7,  steps:[0,2,4,5,7,9,11] },
+  'D MIN': { root: 2,  steps:[0,2,3,5,7,8,10] },
+  'F MAJ': { root: 5,  steps:[0,2,4,5,7,9,11] },
+  'E MIN': { root: 4,  steps:[0,2,3,5,7,8,10] },
+  'TRAP':  { root: 0,  steps:[0,2,3,5,7,8,10] }, // natural minor is trap's best friend
+  'LO-FI': { root: 2,  steps:[0,2,3,5,7,9,10] }, // dorian
+};
+
+let currentScale = 'C MAJ';
+let octave = 4;
+let sustain = false;
+
+// ============== SCALE CHIPS ==============
+const sbar = document.getElementById('scaleBar');
+Object.keys(SCALES).forEach(name => {
+  const chip = document.createElement('div');
+  chip.className = 'scale-chip' + (name === currentScale ? ' active' : '');
+  chip.textContent = name;
+  chip.addEventListener('click', () => {
+    currentScale = name;
+    document.querySelectorAll('.scale-chip').forEach(c => c.classList.toggle('active', c.textContent === name));
+    document.getElementById('scaleChip').textContent = name;
+    buildChords();
+    GoatTouch.haptic('medium');
+  });
+  sbar.appendChild(chip);
+});
+
+// ============== PIANO KEYS ==============
+const pianoInner = document.getElementById('pianoInner');
+function buildKeys() {
+  pianoInner.innerHTML = '';
+  const octaves = 2;
+  const whiteWidth = 56;
+  let wIdx = 0;
+  for (let o = 0; o < octaves; o++) {
+    const baseMidi = (octave + o) * 12;
+    const pattern = [0,2,4,5,7,9,11]; // white notes: C D E F G A B
+    pattern.forEach((s, i) => {
+      const w = document.createElement('div');
+      w.className = 'pkey white';
+      w.style.left = (wIdx * whiteWidth) + 'px';
+      const midi = baseMidi + s;
+      w.dataset.midi = midi;
+      w.dataset.name = NOTE_NAMES[s] + (octave + o);
+      w.addEventListener('touchstart', e => { e.preventDefault(); hitKey(w, midi); }, {passive:false});
+      w.addEventListener('mousedown', () => hitKey(w, midi));
+      pianoInner.appendChild(w);
+      wIdx++;
+    });
+    // black keys
+    const blackOffsets = [[0,1],[1,3],[3,6],[4,8],[5,10]]; // (white idx, semitone)
+    blackOffsets.forEach(([wi, semi]) => {
+      const b = document.createElement('div');
+      b.className = 'pkey black';
+      b.style.left = ((o*7 + wi) * whiteWidth + whiteWidth - 18) + 'px';
+      const midi = baseMidi + semi;
+      b.addEventListener('touchstart', e => { e.preventDefault(); hitKey(b, midi); }, {passive:false});
+      b.addEventListener('mousedown', () => hitKey(b, midi));
+      pianoInner.appendChild(b);
+    });
+  }
+  pianoInner.style.width = (wIdx * whiteWidth) + 'px';
+}
+function hitKey(el, midi) {
+  el.classList.add('active');
+  GoatTouch.haptic('light');
+  GoatTouch.playTone(freq(midi), sustain ? 1.2 : 0.4, 'triangle', 0.25);
+  setTimeout(() => el.classList.remove('active'), sustain ? 1200 : 400);
+}
+buildKeys();
+
+function shiftOct(d) {
+  octave = Math.max(1, Math.min(7, octave + d));
+  document.getElementById('octChip').textContent = 'OCT ' + octave;
+  buildKeys(); buildChords();
+  GoatTouch.haptic('medium');
+}
+
+function sustainToggle() {
+  sustain = !sustain;
+  document.getElementById('sustainBtn').classList.toggle('active', sustain);
+  GoatTouch.haptic('medium');
+}
+
+// ============== CHORD PADS ==============
+const ROMAN = ['I','ii','iii','IV','V','vi','vii°','I8'];
+function buildChords() {
+  const box = document.getElementById('chordPads');
+  box.innerHTML = '';
+  const scale = SCALES[currentScale];
+  const baseMidi = octave * 12 + scale.root;
+  for (let i = 0; i < 8; i++) {
+    const deg = i % 7;
+    const root = baseMidi + scale.steps[deg] + (i >= 7 ? 12 : 0);
+    const third = baseMidi + scale.steps[(deg+2) % 7] + (deg+2 >= 7 ? 12 : 0) + (i >= 7 ? 12 : 0);
+    const fifth = baseMidi + scale.steps[(deg+4) % 7] + (deg+4 >= 7 ? 12 : 0) + (i >= 7 ? 12 : 0);
+    const pad = document.createElement('div');
+    pad.className = 'chord-pad';
+    pad.innerHTML = `<div class="nm">${ROMAN[i]}</div><div class="lbl">${NOTE_NAMES[(scale.root + scale.steps[deg]) % 12]}</div>`;
+    pad.addEventListener('touchstart', e => { e.preventDefault(); playChord([root, third, fifth]); pad.style.background='var(--gradient-power)'; setTimeout(()=>pad.style.background='', 300); }, {passive:false});
+    pad.addEventListener('mousedown', () => { playChord([root, third, fifth]); pad.style.background='var(--gradient-power)'; setTimeout(()=>pad.style.background='', 300); });
+    box.appendChild(pad);
+  }
+}
+function playChord(midis) {
+  GoatTouch.haptic('medium');
+  midis.forEach(m => GoatTouch.playTone(freq(m), 1.5, 'triangle', 0.12));
+}
+buildChords();
+</script>
+</body>
+</html>

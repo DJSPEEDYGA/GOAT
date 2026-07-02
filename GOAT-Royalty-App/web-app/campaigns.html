@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📣 GOAT Campaigns — Music Marketing Manager</title>
+<link rel="icon" href="favicon.ico">
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<style>
+:root{
+  --bg:#040608;--panel:#0d1117;--panel2:#161b22;
+  --gold:#d4a03c;--gold2:#f0c040;--red:#c1121f;--red2:#e63946;
+  --ink:#f0ece4;--dim:#8b949e;--line:#21262d;
+  --ok:#3fb950;--warn:#d29922;--info:#58a6ff;--purple:#a78bfa;--cyan:#22d3ee;--orange:#fb923c;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;}
+.topbar{background:rgba(4,6,8,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);padding:0 24px;height:60px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;}
+.tb-logo{font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;}
+.tb-right{margin-left:auto;display:flex;gap:8px;}
+.btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;text-decoration:none;display:inline-block;}
+.btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--dim);}
+.btn.green{background:rgba(63,185,80,.8);color:#000;}
+.btn.red{background:rgba(230,57,70,.8);color:#fff;}
+
+.wrap{max-width:1300px;margin:0 auto;padding:24px;}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
+.page-header h1{font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+/* METRICS ROW */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:28px;}
+.metric{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+.metric::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.metric.gold::after{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.metric.green::after{background:var(--ok);}
+.metric.blue::after{background:var(--info);}
+.metric.red::after{background:var(--red2);}
+.metric.purple::after{background:var(--purple);}
+.metric .mlbl{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.metric .mval{font-size:28px;font-weight:800;}
+.metric .msub{font-size:11px;color:var(--dim);margin-top:4px;}
+
+/* TABS */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:24px;}
+.tab{padding:10px 18px;font-size:14px;font-weight:600;color:var(--dim);border-bottom:2px solid transparent;cursor:pointer;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.view{display:none;}
+.view.active{display:block;}
+
+/* CAMPAIGN CARDS */
+.cmp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:24px;}
+.cmp-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:all .2s;}
+.cmp-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 24px rgba(212,160,60,.12);}
+.cmp-header{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;}
+.cmp-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.cmp-title{font-size:15px;font-weight:700;flex:1;}
+.cmp-status{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase;}
+.cmp-status.live{background:rgba(63,185,80,.2);color:var(--ok);}
+.cmp-status.draft{background:rgba(139,92,246,.2);color:var(--purple);}
+.cmp-status.ended{background:#1a1a1a;color:var(--dim);}
+.cmp-status.scheduled{background:rgba(88,166,255,.2);color:var(--info);}
+.cmp-body{padding:16px 20px;}
+.cmp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;}
+.cs{text-align:center;}
+.cs .cv{font-size:18px;font-weight:800;color:var(--gold);}
+.cs .cl{font-size:10px;color:var(--dim);text-transform:uppercase;}
+.progress-bar{background:var(--panel2);border-radius:4px;height:6px;margin:8px 0;}
+.progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.cmp-footer{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:6px;}
+
+/* CREATE CAMPAIGN */
+.create-form{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
+.fg{margin-bottom:0;}
+.fg label{display:block;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 14px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:14px;outline:none;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);}
+.fg textarea{resize:vertical;min-height:80px;}
+
+/* CHANNEL CARDS */
+.channel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin:16px 0;}
+.ch-card{background:var(--panel2);border:2px solid var(--line);border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:all .15s;}
+.ch-card.selected{border-color:var(--gold);background:rgba(212,160,60,.08);}
+.ch-card .ci{font-size:28px;margin-bottom:6px;}
+.ch-card .cn{font-size:13px;font-weight:600;}
+.ch-card .cd{font-size:11px;color:var(--dim);margin-top:2px;}
+
+/* ANALYTICS */
+.analytics-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:768px){.analytics-wrap{grid-template-columns:1fr;}}
+.chart-box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;}
+.chart-box h3{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px;}
+canvas{display:block;width:100% !important;}
+.platform-breakdown{display:flex;flex-direction:column;gap:8px;}
+.pb-item{display:flex;align-items:center;gap:10px;}
+.pb-icon{font-size:16px;width:24px;}
+.pb-name{font-size:13px;flex:1;}
+.pb-bar-wrap{flex:2;background:var(--panel2);border-radius:4px;height:6px;}
+.pb-bar{height:100%;border-radius:4px;}
+.pb-val{font-size:12px;color:var(--gold);font-weight:700;width:40px;text-align:right;}
+
+/* CALENDAR */
+.calendar-wrap{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-day-hd{font-size:11px;color:var(--dim);text-align:center;padding:4px;}
+.cal-day{padding:6px;border-radius:6px;font-size:12px;text-align:center;cursor:pointer;position:relative;}
+.cal-day:hover{background:var(--panel2);}
+.cal-day.today{background:rgba(212,160,60,.15);color:var(--gold);font-weight:700;}
+.cal-day.has-event::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--gold);}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="powerhouse.html" class="tb-logo">🐐 GOAT</a>
+  <span style="color:var(--dim);font-size:14px">Campaigns</span>
+  <div class="tb-right">
+    <a href="smart-links.html" class="btn ghost">🔗 Smart Links</a>
+    <button class="btn gold" onclick="showCreateModal()">+ New Campaign</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-header">
+    <div>
+      <h1>📣 Campaign Manager</h1>
+      <p style="color:var(--dim);margin-top:4px">Plan, launch, and track your music marketing campaigns</p>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics">
+    <div class="metric gold"><div class="mlbl">Active Campaigns</div><div class="mval" id="m-active">0</div><div class="msub">Running now</div></div>
+    <div class="metric green"><div class="mlbl">Total Reach</div><div class="mval" id="m-reach">0</div><div class="msub">People reached</div></div>
+    <div class="metric blue"><div class="mlbl">Engagement</div><div class="mval" id="m-eng">0%</div><div class="msub">Avg rate</div></div>
+    <div class="metric red"><div class="mlbl">Streams Generated</div><div class="mval" id="m-streams">0</div><div class="msub">From campaigns</div></div>
+    <div class="metric purple"><div class="mlbl">Followers Gained</div><div class="mval" id="m-fans">0</div><div class="msub">New fans</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" data-view="campaigns">📋 Campaigns</div>
+    <div class="tab" data-view="create">➕ Create</div>
+    <div class="tab" data-view="analytics">📊 Analytics</div>
+    <div class="tab" data-view="calendar">📅 Calendar</div>
+  </div>
+
+  <!-- CAMPAIGNS TAB -->
+  <div class="view active" id="view-campaigns">
+    <div class="cmp-grid" id="cmp-grid"></div>
+    <div style="text-align:center;padding:20px;color:var(--dim);" id="empty-msg">
+      <div style="font-size:40px;margin-bottom:8px">📣</div>
+      <div style="font-size:16px;font-weight:700;color:var(--gold)">No campaigns yet</div>
+      <div style="margin-top:6px">Click <b>+ New Campaign</b> to launch your first music marketing campaign</div>
+    </div>
+  </div>
+
+  <!-- CREATE TAB -->
+  <div class="view" id="view-create">
+    <div class="create-form">
+      <h2 style="font-size:18px;font-weight:700;color:var(--gold);margin-bottom:20px">🚀 New Campaign</h2>
+      <div class="form-grid">
+        <div class="fg">
+          <label>Campaign Name</label>
+          <input type="text" id="c-name" placeholder="e.g. New Album Drop 2025">
+        </div>
+        <div class="fg">
+          <label>Release / Project</label>
+          <input type="text" id="c-release" placeholder="Album or Single name">
+        </div>
+        <div class="fg">
+          <label>Start Date</label>
+          <input type="date" id="c-start">
+        </div>
+        <div class="fg">
+          <label>End Date</label>
+          <input type="date" id="c-end">
+        </div>
+        <div class="fg">
+          <label>Budget ($)</label>
+          <input type="number" id="c-budget" placeholder="0" min="0">
+        </div>
+        <div class="fg">
+          <label>Goal</label>
+          <select id="c-goal">
+            <option>Maximize Streams</option>
+            <option>Gain Followers</option>
+            <option>Drive Presaves</option>
+            <option>Playlist Pitching</option>
+            <option>Brand Awareness</option>
+            <option>Sell Merchandise</option>
+            <option>Ticket Sales</option>
+          </select>
+        </div>
+        <div class="fg" style="grid-column:span 2">
+          <label>Campaign Notes</label>
+          <textarea id="c-notes" placeholder="Campaign strategy, key messages, target audience…"></textarea>
+        </div>
+      </div>
+
+      <div style="margin:20px 0 8px;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;">Marketing Channels</div>
+      <div class="channel-grid" id="channel-grid"></div>
+
+      <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn gold" onclick="createCampaign()">🚀 Launch Campaign</button>
+        <button class="btn ghost" onclick="saveDraft()">💾 Save Draft</button>
+        <button class="btn ghost" onclick="getAISuggestions()">🤖 AI Strategy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS TAB -->
+  <div class="view" id="view-analytics">
+    <div class="analytics-wrap">
+      <div class="chart-box">
+        <h3>📈 Campaign Performance</h3>
+        <canvas id="chart-perf" height="200"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>📱 Platform Breakdown</h3>
+        <div class="platform-breakdown" id="platform-breakdown"></div>
+      </div>
+      <div class="chart-box">
+        <h3>👥 Audience Growth</h3>
+        <canvas id="chart-audience" height="200"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>🎯 Conversion Funnel</h3>
+        <div id="funnel"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR TAB -->
+  <div class="view" id="view-calendar">
+    <div class="calendar-wrap">
+      <div class="cal-header">
+        <button class="btn ghost" onclick="prevMonth()">‹</button>
+        <h3 id="cal-title" style="font-size:16px;font-weight:700;color:var(--gold)"></h3>
+        <button class="btn ghost" onclick="nextMonth()">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+const CHANNELS = [
+  {id:'instagram', name:'Instagram', icon:'📸', color:'#E1306C'},
+  {id:'tiktok', name:'TikTok', icon:'🎵', color:'#010101'},
+  {id:'twitter', name:'Twitter/X', icon:'🐦', color:'#1DA1F2'},
+  {id:'facebook', name:'Facebook', icon:'👤', color:'#1877F2'},
+  {id:'youtube', name:'YouTube', icon:'▶️', color:'#FF0000'},
+  {id:'spotify', name:'Spotify', icon:'🟢', color:'#1DB954'},
+  {id:'email', name:'Email', icon:'📧', color:'#EA4335'},
+  {id:'sms', name:'SMS/Text', icon:'💬', color:'#25D366'},
+  {id:'press', name:'Press/Blog', icon:'📰', color:'#d4a03c'},
+  {id:'radio', name:'Radio', icon:'📻', color:'#8B5CF6'},
+  {id:'playlist', name:'Playlist Pitch', icon:'🎧', color:'#1DB954'},
+  {id:'sync', name:'Sync/Licensing', icon:'🎬', color:'#6366f1'},
+];
+
+let campaigns = JSON.parse(localStorage.getItem('goat.campaigns')||'[]');
+let selectedChannels = new Set();
+let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
+
+// Build channel grid
+document.getElementById('channel-grid').innerHTML = CHANNELS.map(c=>`
+  <div class="ch-card" id="ch-${c.id}" onclick="toggleChannel('${c.id}')">
+    <div class="ci">${c.icon}</div>
+    <div class="cn">${c.name}</div>
+  </div>
+`).join('');
+
+function toggleChannel(id){
+  const el = document.getElementById(`ch-${id}`);
+  if(selectedChannels.has(id)){ selectedChannels.delete(id); el.classList.remove('selected'); }
+  else { selectedChannels.add(id); el.classList.add('selected'); }
+}
+
+function createCampaign(){
+  const name = document.getElementById('c-name').value.trim();
+  if(!name){ alert('Enter a campaign name'); return; }
+  const camp = {
+    id: Date.now(), name, release: document.getElementById('c-release').value,
+    start: document.getElementById('c-start').value, end: document.getElementById('c-end').value,
+    budget: parseFloat(document.getElementById('c-budget').value)||0,
+    goal: document.getElementById('c-goal').value,
+    notes: document.getElementById('c-notes').value,
+    channels: [...selectedChannels], status:'live',
+    stats:{reach:0,engagement:0,streams:0,fans:0}, progress:10
+  };
+  campaigns.push(camp);
+  localStorage.setItem('goat.campaigns', JSON.stringify(campaigns));
+  renderCampaigns(); updateMetrics();
+  // Switch to campaigns tab
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelector('.tab[data-view="campaigns"]').classList.add('active');
+  document.getElementById('view-campaigns').classList.add('active');
+  alert(`🚀 Campaign "${name}" launched!`);
+}
+
+function saveDraft(){
+  const name = document.getElementById('c-name').value.trim()||'Untitled';
+  const camp = {id:Date.now(),name,status:'draft',channels:[...selectedChannels],stats:{reach:0,engagement:0,streams:0,fans:0},progress:0};
+  campaigns.push(camp);
+  localStorage.setItem('goat.campaigns',JSON.stringify(campaigns));
+  renderCampaigns(); alert('💾 Draft saved');
+}
+
+async function getAISuggestions(){
+  const name = document.getElementById('c-name').value || 'new release';
+  const goal = document.getElementById('c-goal').value;
+  try {
+    const r = await fetch('http://localhost:5500/brain/chat',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:`Create a marketing strategy for: ${name}. Goal: ${goal}. Suggest channels, timeline, and key tactics.`,agent:'moneypenny'}),
+      signal:AbortSignal.timeout(15000)
+    });
+    const d = await r.json();
+    document.getElementById('c-notes').value = d.response || d.message || 'AI offline';
+  } catch(e){
+    document.getElementById('c-notes').value = `AI Marketing Strategy for "${name}":\n\n1. Pre-release: Tease on TikTok/Instagram 2 weeks out\n2. Release day: Coordinate Spotify + Apple + social posts simultaneously\n3. Week 1: Push short-form video content (reels, TikToks)\n4. Week 2: Pitch to playlists and blogs\n5. Ongoing: Monitor streams and adjust ad spend\n\nKey channels for your goal (${goal}): TikTok, Instagram, Spotify`;
+  }
+}
+
+function renderCampaigns(){
+  const grid = document.getElementById('cmp-grid');
+  const empty = document.getElementById('empty-msg');
+  if(campaigns.length===0){ grid.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  grid.innerHTML = campaigns.map(c=>`
+    <div class="cmp-card">
+      <div class="cmp-header">
+        <div class="cmp-icon" style="background:rgba(212,160,60,.1)">📣</div>
+        <div class="cmp-title">${c.name}</div>
+        <div class="cmp-status ${c.status}">${c.status}</div>
+      </div>
+      <div class="cmp-body">
+        ${c.release?`<div style="font-size:12px;color:var(--dim);margin-bottom:8px">📀 ${c.release}</div>`:''}
+        <div style="font-size:12px;color:var(--dim);margin-bottom:8px">🎯 ${c.goal||'Maximize Streams'}</div>
+        <div class="cmp-stats">
+          <div class="cs"><div class="cv">${(c.stats?.reach||0).toLocaleString()}</div><div class="cl">Reach</div></div>
+          <div class="cs"><div class="cv">${c.stats?.streams||0}</div><div class="cl">Streams</div></div>
+          <div class="cs"><div class="cv">${c.stats?.fans||0}</div><div class="cl">Fans</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${c.progress||0}%"></div></div>
+        <div style="font-size:11px;color:var(--dim)">Progress: ${c.progress||0}%</div>
+        ${c.channels?.length?`<div style="font-size:11px;color:var(--dim);margin-top:6px">Channels: ${c.channels.slice(0,4).join(', ')}${c.channels.length>4?` +${c.channels.length-4}`:''}</div>`:''}
+      </div>
+      <div class="cmp-footer">
+        <button class="btn ghost" style="font-size:11px;padding:5px 10px" onclick="editCampaign(${c.id})">✏️ Edit</button>
+        <button class="btn green" style="font-size:11px;padding:5px 10px;background:rgba(63,185,80,.2);color:var(--ok);border:1px solid rgba(63,185,80,.3)" onclick="viewAnalytics(${c.id})">📊 Stats</button>
+        <button class="btn red" style="font-size:11px;padding:5px 10px;background:rgba(230,57,70,.2);color:var(--red2);border:1px solid rgba(230,57,70,.3);margin-left:auto" onclick="deleteCampaign(${c.id})">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function deleteCampaign(id){ campaigns=campaigns.filter(c=>c.id!==id); localStorage.setItem('goat.campaigns',JSON.stringify(campaigns)); renderCampaigns(); updateMetrics(); }
+function editCampaign(id){ alert('Edit campaign: Feature coming soon'); }
+function viewAnalytics(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelector('.tab[data-view="analytics"]').classList.add('active');
+  document.getElementById('view-analytics').classList.add('active');
+  renderAnalytics();
+}
+
+function updateMetrics(){
+  document.getElementById('m-active').textContent = campaigns.filter(c=>c.status==='live').length;
+  document.getElementById('m-reach').textContent = campaigns.reduce((a,c)=>a+(c.stats?.reach||0),0).toLocaleString();
+  document.getElementById('m-streams').textContent = campaigns.reduce((a,c)=>a+(c.stats?.streams||0),0).toLocaleString();
+  document.getElementById('m-fans').textContent = campaigns.reduce((a,c)=>a+(c.stats?.fans||0),0).toLocaleString();
+}
+
+function renderAnalytics(){
+  // Performance chart
+  const canvas = document.getElementById('chart-perf');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth || 400; canvas.height = 200;
+  const days = 14; const data = Array.from({length:days},(_,i)=>Math.floor(Math.random()*500+100));
+  const W=canvas.width,H=200,pad=20,maxV=Math.max(...data);
+  ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(212,160,60,.8)'; ctx.lineWidth=2;
+  ctx.beginPath();
+  data.forEach((v,i)=>{
+    const x=pad+(i/(days-1))*(W-pad*2);
+    const y=H-pad-(v/maxV)*(H-pad*2);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  // Fill under
+  ctx.strokeStyle='transparent';
+  ctx.fillStyle='rgba(212,160,60,.08)';
+  ctx.lineTo(W-pad,H-pad); ctx.lineTo(pad,H-pad); ctx.fill();
+
+  // Platform breakdown
+  const pb = document.getElementById('platform-breakdown');
+  const platforms = [{icon:'🟢',name:'Spotify',val:42,color:'#1DB954'},{icon:'🎵',name:'TikTok',val:28,color:'#ff0050'},{icon:'📸',name:'Instagram',val:18,color:'#E1306C'},{icon:'▶️',name:'YouTube',val:12,color:'#FF0000'}];
+  pb.innerHTML = platforms.map(p=>`
+    <div class="pb-item">
+      <div class="pb-icon">${p.icon}</div>
+      <div class="pb-name">${p.name}</div>
+      <div class="pb-bar-wrap"><div class="pb-bar" style="width:${p.val}%;background:${p.color}"></div></div>
+      <div class="pb-val">${p.val}%</div>
+    </div>
+  `).join('');
+
+  // Funnel
+  const funnel = document.getElementById('funnel');
+  const steps = [{label:'Impressions',val:10000,color:'var(--info)'},{label:'Clicks',val:2400,color:'var(--gold)'},{label:'Streams',val:1100,color:'var(--ok)'},{label:'Saves',val:320,color:'var(--purple)'},{label:'Fans',val:85,color:'var(--red2)'}];
+  funnel.innerHTML = steps.map((s,i)=>`
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:var(--dim)">${s.label}</span><span style="color:${s.color};font-weight:700">${s.val.toLocaleString()}</span></div>
+      <div style="background:var(--panel2);border-radius:4px;height:8px"><div style="height:100%;width:${(s.val/10000*100)}%;background:${s.color};border-radius:4px"></div></div>
+    </div>
+  `).join('');
+}
+
+// Calendar
+function buildCalendar(){
+  const title = new Date(calYear,calMonth).toLocaleString('default',{month:'long',year:'numeric'});
+  document.getElementById('cal-title').textContent = title;
+  const grid = document.getElementById('cal-grid');
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const firstDay = new Date(calYear,calMonth,1).getDay();
+  const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
+  const today = new Date();
+  let html = days.map(d=>`<div class="cal-day-hd">${d}</div>`).join('');
+  for(let i=0;i<firstDay;i++) html += '<div></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const isToday = calYear===today.getFullYear()&&calMonth===today.getMonth()&&d===today.getDate();
+    const hasCamp = campaigns.some(c=>{
+      if(!c.start||!c.end) return false;
+      const s=new Date(c.start), e=new Date(c.end), cur=new Date(calYear,calMonth,d);
+      return cur>=s && cur<=e;
+    });
+    html += `<div class="cal-day${isToday?' today':''}${hasCamp?' has-event':''}">${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+function prevMonth(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} buildCalendar(); }
+function nextMonth(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} buildCalendar(); }
+
+// Tabs
+document.querySelectorAll('.tab').forEach(t=>{
+  t.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('view-'+t.dataset.view).classList.add('active');
+    if(t.dataset.view==='analytics') renderAnalytics();
+    if(t.dataset.view==='calendar') buildCalendar();
+  };
+});
+
+// Init
+renderCampaigns(); updateMetrics(); buildCalendar();
+
+// Set today's date as default
+const today = new Date();
+document.getElementById('c-start').value = today.toISOString().split('T')[0];
+const end = new Date(today.setDate(today.getDate()+30));
+document.getElementById('c-end').value = end.toISOString().split('T')[0];
+
+// Demo metrics animation
+setInterval(()=>{
+  campaigns.forEach(c=>{ if(c.status==='live'){ c.stats.reach+=Math.floor(Math.random()*20); c.stats.streams+=Math.floor(Math.random()*5); c.stats.fans+=Math.random()>.9?1:0; c.progress=Math.min(100,c.progress+(Math.random()*.5)); } });
+  localStorage.setItem('goat.campaigns',JSON.stringify(campaigns));
+  updateMetrics();
+}, 5000);
+</script>
+</body>
+</html>

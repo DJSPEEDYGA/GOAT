@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://integrate.api.nvidia.com https://api.openai.com https://generativelanguage.googleapis.com https://api.anthropic.com https://openrouter.ai https://api-inference.huggingface.co https://api.groq.com https://api.cerebras.ai https://api.sambanova.ai https://api.together.xyz https://api.fireworks.ai https://api.novita.ai https://api.hyperbolic.xyz http://localhost:*">
+  <title>Super GOAT Royalty</title>
+  <link rel="stylesheet" href="styles.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- ==================== SIDEBAR ==================== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">🐐</div>
+        <div>
+          <h1>Super GOAT Royalty</h1>
+          <div class="version">v3.1.0 &bull; AI Command Center</div>
+        </div>
+      </div>
+
+      <!-- Model Indicator -->
+      <div class="model-indicator" id="modelIndicator" data-tool="modelhub" title="Click to open Model Hub">
+        <div class="mi-provider">NVIDIA NIM</div>
+        <div class="mi-model">meta/llama-3.1-405b-instruct</div>
+        <div class="mi-meta">405B params &bull; 128K context</div>
+      </div>
+
+      <!-- GOAT Brain Toggle -->
+      <div class="goat-brain-toggle" id="goatBrainToggle" data-action="toggleGOATBrain">
+        <div class="gb-header">
+          <span class="gb-icon">🧠</span>
+          <span class="gb-title">GOAT Brain</span>
+          <span class="gb-status" id="gbStatus">OFF</span>
+        </div>
+        <div class="gb-desc">Multi-LLM Super Intelligence</div>
+      </div>
+
+      <!-- New Chat Button -->
+      <button class="new-chat-btn" data-action="newChat">
+        <span>+</span> New Chat
+      </button>
+
+      <!-- Chat History -->
+      <div class="chat-history" id="chatHistory">
+        <!-- Chat items populated by JS -->
+      </div>
+
+      <!-- Tools Grid -->
+      <div class="sidebar-tools">
+        <h3>🛠️ Tools</h3>
+        <div class="tool-grid">
+          <button class="tool-btn" data-tool="terminal" title="Terminal">
+            <span class="tool-icon">⌨</span>
+            <span class="tool-label">Terminal</span>
+          </button>
+          <button class="tool-btn" data-tool="filemanager" title="Files">
+            <span class="tool-icon">📁</span>
+            <span class="tool-label">Files</span>
+          </button>
+          <button class="tool-btn" data-tool="codeeditor" title="Code">
+            <span class="tool-icon">💻</span>
+            <span class="tool-label">Code</span>
+          </button>
+          <button class="tool-btn" data-tool="webbrowser" title="Web">
+            <span class="tool-icon">🌐</span>
+            <span class="tool-label">Web</span>
+          </button>
+          <button class="tool-btn" data-tool="imagetools" title="Images">
+            <span class="tool-icon">🎨</span>
+            <span class="tool-label">Images</span>
+          </button>
+          <button class="tool-btn" data-tool="audiotools" title="Audio">
+            <span class="tool-icon">🎵</span>
+            <span class="tool-label">Audio</span>
+          </button>
+          <button class="tool-btn" data-tool="pdftools" title="PDF">
+            <span class="tool-icon">📄</span>
+            <span class="tool-label">PDF</span>
+          </button>
+          <button class="tool-btn" data-tool="dataanalysis" title="Data">
+            <span class="tool-icon">📊</span>
+            <span class="tool-label">Data</span>
+          </button>
+          <button class="tool-btn" data-tool="musicprod" title="Music">
+            <span class="tool-icon">🎹</span>
+            <span class="tool-label">Music</span>
+          </button>
+          <button class="tool-btn" data-tool="royaltycalc" title="Royalties">
+            <span class="tool-icon">💰</span>
+            <span class="tool-label">Royalties</span>
+          </button>
+          <button class="tool-btn" data-tool="modelhub" title="Model Hub" style="border-color:#76B900">
+            <span class="tool-icon">🤖</span>
+            <span class="tool-label">Models</span>
+          </button>
+          <button class="tool-btn" data-tool="goatbrain" title="GOAT Brain" style="border-color:var(--accent)">
+            <span class="tool-icon">🧠</span>
+            <span class="tool-label">Brain</span>
+          </button>
+          <button class="tool-btn" data-tool="axiom" title="Axiom AI" style="border-color:var(--cyan)">
+            <span class="tool-icon">🤖</span>
+            <span class="tool-label">Axiom</span>
+          </button>
+          <button class="tool-btn" data-tool="uecopilot" title="Ultimate Engine CoPilot — FAB Featured UE5 AI" style="border-color:#e8530a">
+            <span class="tool-icon">🎮</span>
+            <span class="tool-label">UE CoPilot</span>
+          </button>
+          <button class="tool-btn" data-tool="goatconnect" title="GOAT Connect — Worldwide Artist & Fan Platform" style="border-color:#f59e0b">
+            <span class="tool-icon">💛</span>
+            <span class="tool-label">GOAT Connect</span>
+          </button>
+          <button class="tool-btn" data-tool="faceshield" title="GOAT FaceShield™ — Facial Recognition & Identity Verification" style="border-color:#22c55e">
+            <span class="tool-icon">👁️</span>
+            <span class="tool-label">FaceShield</span>
+          </button>
+          <button class="tool-btn" data-tool="avatarstudio" title="GOAT Avatar Studio — MetaHuman, DAZ3D, Hollywood Cameras, FiveM, C++" style="border-color:#8b5cf6">
+            <span class="tool-icon">🎭</span>
+            <span class="tool-label">Avatar Studio</span>
+          </button>
+          <button class="tool-btn" data-tool="promptengine" title="GOAT Power Prompting Engine — ReAct, Quantum, Senior Dev, CEO Mode" style="border-color:#6366f1">
+            <span class="tool-icon">🧠</span>
+            <span class="tool-label">Prompting</span>
+          </button>
+          <button class="tool-btn" data-tool="worldwide" title="GOAT Worldwide — Live Map, Global Feed, Music DNA, Events, Analytics" style="border-color:#0ea5e9">
+            <span class="tool-icon">🌍</span>
+            <span class="tool-label">Worldwide</span>
+          </button>
+          <button class="tool-btn" data-tool="agentbuilder" title="GOAT AI Agent Builder — Build Custom AI Agents" style="border-color:#6366f1">
+            <span class="tool-icon">🤖</span>
+            <span class="tool-label">AI Agents</span>
+          </button>
+          <button class="tool-btn" data-tool="ue5scene" title="GOAT UE5 Scene Generator — Text-to-Scene Pipeline" style="border-color:#e8530a">
+            <span class="tool-icon">🎮</span>
+            <span class="tool-label">UE5 Scene</span>
+          </button>
+          <button class="tool-btn" data-tool="scriptstudio" title="GOAT Script Studio — Hollywood Screenwriting Engine" style="border-color:#dc2626">
+            <span class="tool-icon">🎬</span>
+            <span class="tool-label">Script Studio</span>
+          </button>
+          <button class="tool-btn" data-tool="distribution" title="GOAT Distribution Hub — 50+ DSPs · Release Management" style="border-color:#76B900">
+            <span class="tool-icon">🚀</span>
+            <span class="tool-label">Distribution</span>
+          </button>
+          <button class="tool-btn" data-tool="beatmaker" title="GOAT Beat Maker — 16-Step Sequencer · Drum Machine" style="border-color:#f59e0b">
+            <span class="tool-icon">🎹</span>
+            <span class="tool-label">Beat Maker</span>
+          </button>
+          <button class="tool-btn" data-tool="crypto" title="GOAT Crypto Royalty — Blockchain Music Rights · NFTs" style="border-color:#627EEA">
+            <span class="tool-icon">⛓️</span>
+            <span class="tool-label">Crypto</span>
+          </button>
+          <button class="tool-btn" data-tool="vault" title="GOAT Secure Vault — AES-256-GCM Encrypted Storage" style="border-color:#ef4444">
+            <span class="tool-icon">🔐</span>
+            <span class="tool-label">Vault</span>
+          </button>
+          <button class="tool-btn" data-tool="datasets" title="HuggingFace Datasets — 41 AI Datasets, No API Key" style="border-color:#FFD700">
+            <span class="tool-icon">🤗</span>
+            <span class="tool-label">Datasets</span>
+          </button>
+          <button class="tool-btn" data-tool="voice" title="GOAT Voice Recorder — Recording · Waveform · Timeline" style="border-color:#ef4444">
+            <span class="tool-icon">🎤</span>
+            <span class="tool-label">Voice</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Provider Stats -->
+      <div class="sidebar-stats" id="sidebarStats">
+        <div class="stat-row">
+          <span class="stat-label">Total Models</span>
+          <span class="stat-value" id="totalModelsCount">1000+</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Providers</span>
+          <span class="stat-value" id="totalProviders">12+</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <button class="toggle-sidebar-btn" data-action="toggleSidebar" title="Toggle Sidebar">☰</button>
+        
+        <!-- Model Selector Dropdown -->
+        <select class="model-selector" id="modelSelector" onchange="changeModel(this.value)">
+          <!-- Populated by buildModelSelector() in app.js -->
+          <optgroup label="🟢 NVIDIA NIM">
+            <option value="nvidia:meta/llama-3.1-405b-instruct">Llama 3.1 405B Instruct</option>
+            <option value="nvidia:meta/llama-3.1-70b-instruct">Llama 3.1 70B Instruct</option>
+            <option value="nvidia:meta/llama-3.1-8b-instruct">Llama 3.1 8B Instruct</option>
+            <option value="nvidia:nvidia/llama-3.1-nemotron-70b-instruct">Nemotron 70B Instruct</option>
+            <option value="nvidia:mistralai/mixtral-8x22b-instruct-v0.1">Mixtral 8x22B</option>
+            <option value="nvidia:deepseek-ai/deepseek-coder-6.7b-instruct">DeepSeek Coder 6.7B</option>
+            <option value="nvidia:google/gemma-2-27b-it">Gemma 2 27B</option>
+            <option value="nvidia:microsoft/phi-3-medium-128k-instruct">Phi-3 Medium 128K</option>
+          </optgroup>
+          <optgroup label="🔵 OpenAI">
+            <option value="openai:gpt-4o">GPT-4o</option>
+            <option value="openai:gpt-4o-mini">GPT-4o Mini</option>
+            <option value="openai:gpt-4-turbo">GPT-4 Turbo</option>
+            <option value="openai:o1-preview">o1 Preview</option>
+            <option value="openai:o1-mini">o1 Mini</option>
+          </optgroup>
+          <optgroup label="🔴 Google">
+            <option value="google:gemini-2.0-flash">Gemini 2.0 Flash</option>
+            <option value="google:gemini-1.5-pro">Gemini 1.5 Pro</option>
+            <option value="google:gemini-1.5-flash">Gemini 1.5 Flash</option>
+          </optgroup>
+          <optgroup label="🟠 Anthropic">
+            <option value="anthropic:claude-3.5-sonnet">Claude 3.5 Sonnet</option>
+            <option value="anthropic:claude-3-opus">Claude 3 Opus</option>
+            <option value="anthropic:claude-3-haiku">Claude 3 Haiku</option>
+          </optgroup>
+          <optgroup label="⚡ Groq (Speed)">
+            <option value="groq:llama-3.1-70b-versatile">Llama 3.1 70B (Groq)</option>
+            <option value="groq:llama-3.1-8b-instant">Llama 3.1 8B Instant (Groq)</option>
+            <option value="groq:mixtral-8x7b-32768">Mixtral 8x7B (Groq)</option>
+            <option value="groq:gemma2-9b-it">Gemma 2 9B (Groq)</option>
+          </optgroup>
+          <optgroup label="⚡ Cerebras (Speed)">
+            <option value="cerebras:llama3.1-70b">Llama 3.1 70B (Cerebras)</option>
+            <option value="cerebras:llama3.1-8b">Llama 3.1 8B (Cerebras)</option>
+          </optgroup>
+          <optgroup label="⚡ SambaNova (Speed)">
+            <option value="sambanova:Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B (SambaNova)</option>
+            <option value="sambanova:Meta-Llama-3.1-70B-Instruct">Llama 3.1 70B (SambaNova)</option>
+            <option value="sambanova:Meta-Llama-3.1-8B-Instruct">Llama 3.1 8B (SambaNova)</option>
+          </optgroup>
+          <optgroup label="🟣 Together AI">
+            <option value="together:meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo">Llama 3.1 405B Turbo (Together)</option>
+            <option value="together:meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo">Llama 3.1 70B Turbo (Together)</option>
+            <option value="together:mistralai/Mixtral-8x22B-Instruct-v0.1">Mixtral 8x22B (Together)</option>
+            <option value="together:Qwen/Qwen2-72B-Instruct">Qwen2 72B (Together)</option>
+          </optgroup>
+          <optgroup label="🔥 Fireworks AI">
+            <option value="fireworks:accounts/fireworks/models/llama-v3p1-405b-instruct">Llama 3.1 405B (Fireworks)</option>
+            <option value="fireworks:accounts/fireworks/models/llama-v3p1-70b-instruct">Llama 3.1 70B (Fireworks)</option>
+          </optgroup>
+          <optgroup label="🌐 OpenRouter (653+ Models)">
+            <option value="openrouter:anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (OR)</option>
+            <option value="openrouter:openai/gpt-4o">GPT-4o (OR)</option>
+            <option value="openrouter:google/gemini-pro-1.5">Gemini Pro 1.5 (OR)</option>
+            <option value="openrouter:meta-llama/llama-3.1-405b-instruct">Llama 3.1 405B (OR)</option>
+            <option value="openrouter:mistralai/mistral-large">Mistral Large (OR)</option>
+            <option value="openrouter:deepseek/deepseek-chat">DeepSeek Chat (OR)</option>
+            <option value="openrouter:qwen/qwen-2-72b-instruct">Qwen 2 72B (OR)</option>
+            <option value="openrouter:nvidia/nemotron-4-340b-instruct">Nemotron 4 340B (OR)</option>
+            <option value="openrouter:cohere/command-r-plus">Command R+ (OR)</option>
+            <option value="openrouter:perplexity/llama-3.1-sonar-huge-128k-online">Sonar Huge 128K (OR)</option>
+          </optgroup>
+          <optgroup label="🖥️ Hugging Face">
+            <option value="hf:meta-llama/Meta-Llama-3.1-70B-Instruct">Llama 3.1 70B (HF)</option>
+            <option value="hf:mistralai/Mixtral-8x7B-Instruct-v0.1">Mixtral 8x7B (HF)</option>
+            <option value="hf:microsoft/Phi-3-mini-4k-instruct">Phi-3 Mini (HF)</option>
+          </optgroup>
+          <optgroup label="🏠 Local (Ollama)">
+            <option value="ollama:llama3">Ollama - Llama 3</option>
+            <option value="ollama:mistral">Ollama - Mistral</option>
+            <option value="ollama:codellama">Ollama - CodeLlama</option>
+            <option value="ollama:deepseek-coder">Ollama - DeepSeek Coder</option>
+            <option value="ollama:phi3">Ollama - Phi-3</option>
+            <option value="ollama:gemma2">Ollama - Gemma 2</option>
+            <option value="ollama:qwen2">Ollama - Qwen2</option>
+          </optgroup>
+        </select>
+
+        <span class="top-bar-title" id="topBarTitle">Super GOAT Royalty &mdash; 1000+ LLMs Ready</span>
+
+        <div class="provider-pills" id="providerPills">
+          <span class="provider-pill nvidia" title="NVIDIA NIM: 80+ Models">NIM</span>
+          <span class="provider-pill openrouter" title="OpenRouter: 653+ Models">OR</span>
+          <span class="provider-pill hf" title="Hugging Face + Providers">HF</span>
+        </div>
+
+        <div class="status-indicator" id="statusIndicator" title="Connected"></div>
+        
+        <button class="toggle-sidebar-btn" data-action="openSettings" title="Settings">⚙</button>
+      </div>
+
+      <!-- Chat Area -->
+      <div class="chat-area" id="chatArea">
+        <div class="welcome-screen" id="welcomeScreen">
+          <div class="welcome-logo">🐐</div>
+          <h2>Super GOAT Royalty <span style="color:#76B900">3.0</span></h2>
+          <p class="welcome-subtitle">AI-Powered Music Production & Royalty Management Command Center</p>
+          <p class="welcome-desc">
+            Powered by <strong style="color:#76B900">1000+ LLMs</strong> from NVIDIA NIM, OpenAI, Google, Anthropic, 
+            Groq, Cerebras, SambaNova, Together AI, Fireworks, OpenRouter, Hugging Face & Ollama. 
+            Enable <strong style="color:var(--accent)">🧠 GOAT Brain</strong> to combine multiple models into one super intelligence.
+          </p>
+          
+          <div class="quick-actions">
+            <button class="quick-action" data-quick="Analyze my music catalog and generate a comprehensive performance report">
+              <div class="qa-icon">🎵</div>
+              <div class="qa-title">Music Analytics</div>
+              <div class="qa-desc">Analyze your catalog and generate performance reports</div>
+            </button>
+            <button class="quick-action" data-quick="Help me write and debug code for my project">
+              <div class="qa-icon">💻</div>
+              <div class="qa-title">Code Assistant</div>
+              <div class="qa-desc">Write, debug, and optimize code in any language</div>
+            </button>
+            <button class="quick-action" data-quick="Search the web for the latest music industry trends">
+              <div class="qa-icon">🌐</div>
+              <div class="qa-title">Web Research</div>
+              <div class="qa-desc">Search and analyze information from the web</div>
+            </button>
+            <button class="quick-action" data-quick="Calculate my royalties across all streaming platforms">
+              <div class="qa-icon">💰</div>
+              <div class="qa-title">Royalty Calculator</div>
+              <div class="qa-desc">Calculate earnings across Spotify, Apple Music, YouTube & more</div>
+            </button>
+            <button class="quick-action" data-tool="modelhub">
+              <div class="qa-icon" style="color:#76B900">🤖</div>
+              <div class="qa-title">Model Hub</div>
+              <div class="qa-desc">Browse 1000+ LLMs from NVIDIA, OpenAI, Google & more</div>
+            </button>
+            <button class="quick-action" data-tool="goatbrain">
+              <div class="qa-icon" style="color:var(--accent)">🧠</div>
+              <div class="qa-title">GOAT Brain</div>
+              <div class="qa-desc">Multi-model orchestration with 7 intelligence modes</div>
+            </button>
+            <button class="quick-action" data-quick="Open the terminal and show system information">
+              <div class="qa-icon">⌨</div>
+              <div class="qa-title">Terminal</div>
+              <div class="qa-desc">Execute commands and manage your system</div>
+            </button>
+            <button class="quick-action" data-quick="Help me analyze a CSV data file with charts">
+              <div class="qa-icon">📊</div>
+              <div class="qa-title">Data Analysis</div>
+              <div class="qa-desc">Process CSV, JSON, Excel files with visualizations</div>
+            </button>
+            <button class="quick-action" data-tool="axiom">
+              <div class="qa-icon" style="color:var(--cyan)">🤖</div>
+              <div class="qa-title">Axiom AI Automation</div>
+              <div class="qa-desc">No-code browser bots, web scraping, and AI-powered automation</div>
+            </button>
+            <button class="quick-action" data-quick="Scrape data from a website and export to CSV">
+              <div class="qa-icon">🕷</div>
+              <div class="qa-title">Web Scraping</div>
+              <div class="qa-desc">Extract data from any website with AI-powered scraping</div>
+            </button>
+            <button class="quick-action" data-quick="Generate a professional cover art image for my new single">
+              <div class="qa-icon">🎨</div>
+              <div class="qa-title">Image Generation</div>
+              <div class="qa-desc">Create cover art, visuals, and promotional images</div>
+            </button>
+            <button class="quick-action" data-quick="Help me write lyrics for a new hip-hop track with clever wordplay">
+              <div class="qa-icon">🎤</div>
+              <div class="qa-title">Lyric Writer</div>
+              <div class="qa-desc">AI-powered songwriting and lyric generation</div>
+            </button>
+            <button class="quick-action" data-tool="uecopilot" style="border-color:#e8530a">
+              <div class="qa-icon" style="color:#e8530a">🎮</div>
+              <div class="qa-title" style="color:#e8530a">UE5 CoPilot</div>
+              <div class="qa-desc">Generate Blueprints, C++, scenes & UI for Unreal Engine 5 — FAB Featured</div>
+            </button>
+            <button class="quick-action" data-tool="goatconnect" style="border-color:#f59e0b">
+              <div class="qa-icon" style="color:#f59e0b">💛</div>
+              <div class="qa-title" style="color:#f59e0b">GOAT Connect</div>
+              <div class="qa-desc">Worldwide Artist & Fan Platform — Matchmaking, Security, Banking Protection & More</div>
+            </button>
+            <button class="quick-action" data-tool="faceshield" style="border-color:#22c55e">
+              <div class="qa-icon" style="color:#22c55e">👁️</div>
+              <div class="qa-title" style="color:#22c55e">FaceShield™</div>
+              <div class="qa-desc">AI Facial Recognition, Liveness Detection, Age Gate, Catfish Detector & Identity Verification</div>
+            </button>
+            <button class="quick-action" data-tool="avatarstudio" style="border-color:#8b5cf6">
+              <div class="qa-icon" style="color:#8b5cf6">🎭</div>
+              <div class="qa-title" style="color:#8b5cf6">Avatar Studio</div>
+              <div class="qa-desc">MetaHuman Creator • DAZ3D • ReadyPlayerMe • Hollywood Cameras • FiveM • C++ Mastery</div>
+            </button>
+            <button class="quick-action" data-tool="promptengine" style="border-color:#6366f1">
+              <div class="qa-icon" style="color:#6366f1">🧠</div>
+              <div class="qa-title" style="color:#6366f1">Power Prompting</div>
+              <div class="qa-desc">ReAct • Chain-of-Thought • Quantum Engineer • Senior Dev Review • CEO Mode • Adversarial Testing</div>
+            </button>
+            <button class="quick-action" data-tool="worldwide" style="border-color:#0ea5e9">
+              <div class="qa-icon" style="color:#0ea5e9">🌍</div>
+              <div class="qa-title" style="color:#0ea5e9">GOAT Worldwide</div>
+              <div class="qa-desc">Live Map • Global Feed • Music DNA Matchmaking • Events • Analytics Dashboard • Leaderboards • Fan Clubs • Discovery</div>
+            </button>
+            <button class="quick-action" data-tool="agentbuilder" style="border-color:#6366f1">
+              <div class="qa-icon" style="color:#6366f1">🤖</div>
+              <div class="qa-title" style="color:#6366f1">AI Agent Builder</div>
+              <div class="qa-desc">Build Custom AI Agents • Music Scout • Royalty Tracker • Fan Engagement • Security Agent • Multi-Agent Pipelines • Marketplace</div>
+            </button>
+            <button class="quick-action" data-tool="ue5scene" style="border-color:#e8530a">
+              <div class="qa-icon" style="color:#e8530a">🎮</div>
+              <div class="qa-title" style="color:#e8530a">UE5 Scene Generator</div>
+              <div class="qa-desc">Text-to-Scene Pipeline • Lumen • Nanite • MetaHuman • Niagara VFX • PCG • World Partition • Sequencer • 8 Scene Presets</div>
+            </button>
+            <button class="quick-action" data-tool="scriptstudio" style="border-color:#dc2626">
+              <div class="qa-icon" style="color:#dc2626">🎬</div>
+              <div class="qa-title" style="color:#dc2626">Script Studio</div>
+              <div class="qa-desc">Hollywood Screenwriting Engine • 12 Formats • 14 Genres • 24 Legendary Writers • AI Scene Gen • Beat Board • Production Tools</div>
+            </button>
+            <button class="quick-action" data-tool="distribution" style="border-color:#76B900">
+              <div class="qa-icon" style="color:#76B900">🚀</div>
+              <div class="qa-title" style="color:#76B900">Distribution Hub</div>
+              <div class="qa-desc">50+ DSPs • Release Management • Revenue Calculator • Global Distribution • Checklist</div>
+            </button>
+            <button class="quick-action" data-tool="beatmaker" style="border-color:#f59e0b">
+              <div class="qa-icon" style="color:#f59e0b">🎹</div>
+              <div class="qa-title" style="color:#f59e0b">Beat Maker</div>
+              <div class="qa-desc">16-Step Sequencer • 6 Drum Kits • Web Audio Synthesis • Trap • Boom Bap • Drill • EDM • Lo-Fi</div>
+            </button>
+            <button class="quick-action" data-tool="crypto" style="border-color:#627EEA">
+              <div class="qa-icon" style="color:#627EEA">⛓️</div>
+              <div class="qa-title" style="color:#627EEA">Crypto Royalty</div>
+              <div class="qa-desc">Blockchain Music Rights • NFT Minting • Smart Contracts • Chain of Custody • 8 Marketplaces</div>
+            </button>
+            <button class="quick-action" data-tool="vault" style="border-color:#ef4444">
+              <div class="qa-icon" style="color:#ef4444">🔐</div>
+              <div class="qa-title" style="color:#ef4444">Secure Vault</div>
+              <div class="qa-desc">AES-256-GCM Encryption • API Keys • Contracts • Passwords • Wallets • Zero-Knowledge</div>
+            </button>
+          </div>
+
+          <!-- Provider Showcase -->
+          <div class="provider-showcase">
+            <div class="ps-title">Powered By</div>
+            <div class="ps-logos">
+              <span class="ps-badge nvidia">NVIDIA NIM</span>
+              <span class="ps-badge openai">OpenAI</span>
+              <span class="ps-badge google">Google</span>
+              <span class="ps-badge anthropic">Anthropic</span>
+              <span class="ps-badge groq">Groq</span>
+              <span class="ps-badge cerebras">Cerebras</span>
+              <span class="ps-badge sambanova">SambaNova</span>
+              <span class="ps-badge together">Together AI</span>
+              <span class="ps-badge fireworks">Fireworks</span>
+              <span class="ps-badge openrouter">OpenRouter</span>
+              <span class="ps-badge hf">Hugging Face</span>
+              <span class="ps-badge ollama">Ollama</span>
+              <span class="ps-badge" style="background:rgba(232,83,10,0.15);color:#e8530a;border:1px solid rgba(232,83,10,0.3)">🎮 UE5 CoPilot</span>
+              <span class="ps-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">💛 GOAT Connect</span>
+              <span class="ps-badge" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3)">👁️ FaceShield™</span>
+              <span class="ps-badge" style="background:rgba(139,92,246,0.15);color:#8b5cf6;border:1px solid rgba(139,92,246,0.3)">🎭 Avatar Studio</span>
+              <span class="ps-badge" style="background:rgba(99,102,241,0.15);color:#6366f1;border:1px solid rgba(99,102,241,0.3)">🧠 Power Prompting • 🌍 GOAT Worldwide • 🤖 AI Agents • 🎮 UE5 Scenes • 🎬 Script Studio</span>
+              <span class="ps-badge" style="background:rgba(14,165,233,0.15);color:#0ea5e9;border:1px solid rgba(14,165,233,0.3)">🌍 GOAT Worldwide</span>
+              <span class="ps-badge" style="background:rgba(99,102,241,0.15);color:#6366f1;border:1px solid rgba(99,102,241,0.3)">🤖 AI Agent Builder</span>
+              <span class="ps-badge" style="background:rgba(232,83,10,0.15);color:#e8530a;border:1px solid rgba(232,83,10,0.3)">🎮 UE5 Scene Gen</span>
+              <span class="ps-badge" style="background:rgba(220,38,38,0.15);color:#dc2626;border:1px solid rgba(220,38,38,0.3)">🎬 Script Studio</span>
+              <span class="ps-badge" style="background:rgba(118,185,0,0.15);color:#76B900;border:1px solid rgba(118,185,0,0.3)">🚀 Distribution Hub</span>
+              <span class="ps-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">🎹 Beat Maker</span>
+              <span class="ps-badge" style="background:rgba(98,126,234,0.15);color:#627EEA;border:1px solid rgba(98,126,234,0.3)">⛓️ Crypto Royalty</span>
+              <span class="ps-badge" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3)">🔐 Secure Vault</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-area">
+        <div class="file-chips" id="fileChips"></div>
+        <div class="input-container">
+          <div class="input-toolbar">
+            <button data-action="attachFile" title="Attach File">📎</button>
+            <button data-tool="terminal" title="Terminal">⌨</button>
+            <button data-tool="codeeditor" title="Code">💻</button>
+            <button data-tool="webbrowser" title="Web Search">🔍</button>
+            <div class="separator"></div>
+            <button data-tool="imagetools" title="Image Tools">🎨</button>
+            <button data-tool="audiotools" title="Audio Tools">🎵</button>
+            <button data-tool="pdftools" title="PDF Tools">📄</button>
+            <div class="separator"></div>
+            <button data-tool="modelhub" title="Model Hub" style="color:#76B900">🤖</button>
+            <button data-action="toggleGOATBrain" title="Toggle GOAT Brain" id="inputGoatBrainBtn" style="color:var(--accent)">🧠</button>
+            <button data-tool="uecopilot" title="Ultimate Engine CoPilot" style="color:#e8530a">🎮</button>
+            <button data-tool="goatconnect" title="GOAT Connect — Artist & Fan Platform" style="color:#f59e0b">💛</button>
+            <button data-tool="faceshield" title="GOAT FaceShield™ — Facial Recognition" style="color:#22c55e">👁️</button>
+            <button data-tool="avatarstudio" title="Avatar Studio — MetaHuman & DAZ3D" style="color:#8b5cf6">🎭</button>
+            <button data-tool="promptengine" title="Power Prompting Engine — ReAct, Quantum, CEO Mode" style="color:#6366f1">🧠</button>
+            <button data-tool="worldwide" title="GOAT Worldwide — Live Map, Feed, DNA, Events, Analytics" style="color:#0ea5e9">🌍</button>
+            <button data-tool="agentbuilder" title="AI Agent Builder — Custom Agents & Pipelines" style="color:#6366f1">🤖</button>
+            <button data-tool="ue5scene" title="UE5 Scene Generator — Text to Full Scene" style="color:#e8530a">🎮</button>
+            <button data-tool="scriptstudio" title="Script Studio — Hollywood Screenwriting" style="color:#dc2626">🎬</button>
+            <button data-tool="distribution" title="Distribution Hub — 50+ DSPs" style="color:#76B900">🚀</button>
+            <button data-tool="beatmaker" title="Beat Maker — Drum Machine" style="color:#f59e0b">🎹</button>
+            <button data-tool="crypto" title="Crypto Royalty — Blockchain" style="color:#627EEA">⛓️</button>
+            <button data-tool="vault" title="Secure Vault — Encrypted Storage" style="color:#ef4444">🔐</button>
+            <div class="separator"></div>
+            <button data-action="clearChat" title="Clear Chat">🗑</button>
+          </div>
+          <div class="input-row">
+            <textarea id="message-input" placeholder="Ask Super GOAT anything... 1000+ LLMs at your command (Ctrl+Enter to send)" rows="1" onkeydown="handleKeyDown(event)" oninput="autoResize(this)"></textarea>
+            <button class="send-btn" id="sendBtn" data-action="sendMessage" title="Send">➤</button>
+          </div>
+        </div>
+        <div class="input-hint">
+          Super GOAT Royalty v3.1 &bull; 1000+ LLMs &bull; NVIDIA NIM &bull; OpenRouter &bull; GOAT Brain &bull; Terminal &bull; Code &bull; Web &bull; Music &bull; Royalties &bull; Axiom &bull; 🎮 UE5 CoPilot &bull; 💛 GOAT Connect &bull; 👁️ FaceShield™ &bull; 🎭 Avatar Studio &bull; 🎬 Hollywood Cams &bull; 🚗 FiveM &bull; ⚙️ C++ Mastery &bull; 🧠 Power Prompting • 🌍 GOAT Worldwide • 🤖 AI Agents • 🎮 UE5 Scenes • 🎬 Script Studio
+        </div>
+      </div>
+    </main>
+
+    <!-- ==================== TOOL PANEL (slides in from right) ==================== -->
+    <div class="tool-panel" id="toolPanel">
+      <div class="tool-panel-header">
+        <h3 id="toolPanelTitle">Tool</h3>
+        <button class="tool-panel-close" data-action="closeToolPanel">&times;</button>
+      </div>
+      <div class="tool-panel-content" id="toolPanelContent">
+        <!-- Dynamic tool content rendered by app.js -->
+      </div>
+    </div>
+
+    <!-- ==================== SETTINGS MODAL ==================== -->
+    <div class="modal-overlay" id="settingsModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>⚙ Settings</h2>
+          <button class="tool-panel-close" data-action="closeSettings">&times;</button>
+        </div>
+        <div class="modal-body">
+
+          <!-- NVIDIA NIM -->
+          <div class="setting-group">
+            <h4 style="color:#76B900">🟢 NVIDIA NIM (build.nvidia.com)</h4>
+            <p class="setting-desc">Access 80+ models including Llama, Mistral, DeepSeek, Gemma, Phi, CodeLlama, and more via NVIDIA's inference API.</p>
+            <div class="setting-row">
+              <span class="setting-label">NVIDIA API Key</span>
+              <input type="password" class="setting-input" id="nvidiaKeyInput" placeholder="nvapi-..." onchange="saveSetting('nvidiaKey', this.value)">
+            </div>
+          </div>
+
+          <!-- OpenAI -->
+          <div class="setting-group">
+            <h4 style="color:#10a37f">🔵 OpenAI</h4>
+            <p class="setting-desc">GPT-4o, GPT-4 Turbo, o1, and more.</p>
+            <div class="setting-row">
+              <span class="setting-label">OpenAI API Key</span>
+              <input type="password" class="setting-input" id="openaiKeyInput" placeholder="sk-..." onchange="saveSetting('openaiKey', this.value)">
+            </div>
+          </div>
+
+          <!-- Google -->
+          <div class="setting-group">
+            <h4 style="color:#EA4335">🔴 Google AI (Gemini)</h4>
+            <p class="setting-desc">Gemini 2.0 Flash, Gemini 1.5 Pro, Gemini 1.5 Flash.</p>
+            <div class="setting-row">
+              <span class="setting-label">Google AI API Key</span>
+              <input type="password" class="setting-input" id="googleKeyInput" placeholder="AI..." onchange="saveSetting('googleKey', this.value)">
+            </div>
+          </div>
+
+          <!-- Anthropic -->
+          <div class="setting-group">
+            <h4 style="color:#D4A574">🟠 Anthropic (Claude)</h4>
+            <p class="setting-desc">Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Haiku.</p>
+            <div class="setting-row">
+              <span class="setting-label">Anthropic API Key</span>
+              <input type="password" class="setting-input" id="anthropicKeyInput" placeholder="sk-ant-..." onchange="saveSetting('anthropicKey', this.value)">
+            </div>
+          </div>
+
+          <!-- Groq -->
+          <div class="setting-group">
+            <h4 style="color:#F55036">⚡ Groq (Ultra-Fast Inference)</h4>
+            <p class="setting-desc">Lightning-fast inference with LPU™. Llama 3.1, Mixtral, Gemma at incredible speeds.</p>
+            <div class="setting-row">
+              <span class="setting-label">Groq API Key</span>
+              <input type="password" class="setting-input" id="groqKeyInput" placeholder="gsk_..." onchange="saveSetting('groqKey', this.value)">
+            </div>
+          </div>
+
+          <!-- Cerebras -->
+          <div class="setting-group">
+            <h4 style="color:#00D4AA">⚡ Cerebras (Wafer-Scale Speed)</h4>
+            <p class="setting-desc">World's fastest inference on wafer-scale chips. Llama 3.1 70B/8B.</p>
+            <div class="setting-row">
+              <span class="setting-label">Cerebras API Key</span>
+              <input type="password" class="setting-input" id="cerebrasKeyInput" placeholder="csk-..." onchange="saveSetting('cerebrasKey', this.value)">
+            </div>
+          </div>
+
+          <!-- SambaNova -->
+          <div class="setting-group">
+            <h4 style="color:#FF6B35">⚡ SambaNova (RDU Speed)</h4>
+            <p class="setting-desc">Reconfigurable Dataflow Unit powered inference. Llama 3.1 405B/70B/8B.</p>
+            <div class="setting-row">
+              <span class="setting-label">SambaNova API Key</span>
+              <input type="password" class="setting-input" id="sambanovaKeyInput" placeholder="..." onchange="saveSetting('sambanovaKey', this.value)">
+            </div>
+          </div>
+
+          <!-- Together AI -->
+          <div class="setting-group">
+            <h4 style="color:#6366F1">🟣 Together AI</h4>
+            <p class="setting-desc">Run leading open-source models. Llama, Mixtral, Qwen, DBRX, and more.</p>
+            <div class="setting-row">
+              <span class="setting-label">Together AI API Key</span>
+              <input type="password" class="setting-input" id="togetherKeyInput" placeholder="..." onchange="saveSetting('togetherKey', this.value)">
+            </div>
+          </div>
+
+          <!-- Fireworks AI -->
+          <div class="setting-group">
+            <h4 style="color:#FF4500">🔥 Fireworks AI</h4>
+            <p class="setting-desc">Fast, production-grade inference for open-source models.</p>
+            <div class="setting-row">
+              <span class="setting-label">Fireworks AI API Key</span>
+              <input type="password" class="setting-input" id="fireworksKeyInput" placeholder="..." onchange="saveSetting('fireworksKey', this.value)">
+            </div>
+          </div>
+
+          <!-- OpenRouter -->
+          <div class="setting-group">
+            <h4 style="color:#6E56CF">🌐 OpenRouter (653+ Models)</h4>
+            <p class="setting-desc">Unified API for 653+ models from every major provider. One key, all models.</p>
+            <div class="setting-row">
+              <span class="setting-label">OpenRouter API Key</span>
+              <input type="password" class="setting-input" id="openrouterKeyInput" placeholder="sk-or-..." onchange="saveSetting('openrouterKey', this.value)">
+            </div>
+          </div>
+
+          <!-- Hugging Face -->
+          <div class="setting-group">
+            <h4 style="color:#FFD21E">🤗 Hugging Face</h4>
+            <p class="setting-desc">Access the world's largest model hub with serverless inference API.</p>
+            <div class="setting-row">
+              <span class="setting-label">Hugging Face Token</span>
+              <input type="password" class="setting-input" id="hfKeyInput" placeholder="hf_..." onchange="saveSetting('hfKey', this.value)">
+            </div>
+          </div>
+
+          <!-- Novita AI -->
+          <div class="setting-group">
+            <h4 style="color:#7C3AED">🔮 Novita AI</h4>
+            <p class="setting-desc">Affordable GPU inference for open-source models.</p>
+            <div class="setting-row">
+              <span class="setting-label">Novita AI API Key</span>
+              <input type="password" class="setting-input" id="novitaKeyInput" placeholder="..." onchange="saveSetting('novitaKey', this.value)">
+            </div>
+          </div>
+
+          <!-- Hyperbolic -->
+          <div class="setting-group">
+            <h4 style="color:#00C9FF">🌀 Hyperbolic</h4>
+            <p class="setting-desc">Decentralized GPU cloud for open-source model inference.</p>
+            <div class="setting-row">
+              <span class="setting-label">Hyperbolic API Key</span>
+              <input type="password" class="setting-input" id="hyperbolicKeyInput" placeholder="..." onchange="saveSetting('hyperbolicKey', this.value)">
+            </div>
+          </div>
+
+          <!-- Ollama (Local) -->
+          <div class="setting-group">
+            <h4>🏠 Ollama (Local Models)</h4>
+            <p class="setting-desc">Run models locally with Ollama. No API key needed - just install Ollama and pull models.</p>
+            <div class="setting-row">
+              <span class="setting-label">Ollama URL</span>
+              <input type="text" class="setting-input" id="ollamaUrlInput" placeholder="http://localhost:11434" onchange="saveSetting('ollamaUrl', this.value)">
+            </div>
+          </div>
+
+          <!-- GOAT Brain Settings -->
+          <div class="setting-group">
+            <h4 style="color:var(--accent)">🧠 GOAT Brain Configuration</h4>
+            <p class="setting-desc">Configure the multi-model orchestration system. GOAT Brain queries multiple LLMs and synthesizes their responses.</p>
+            <div class="setting-row">
+              <span class="setting-label">Default Mode</span>
+              <select class="setting-input" id="goatBrainModeSelect" onchange="saveSetting('goatBrainMode', this.value)" style="width:200px">
+                <option value="specialist">🎯 Specialist (Auto-route to best model)</option>
+                <option value="consensus">🗳️ Consensus (Vote across models)</option>
+                <option value="bestOfN">🏆 Best of N (Pick best response)</option>
+                <option value="chain">🔗 Chain (Sequential refinement)</option>
+                <option value="ensemble">🎭 Ensemble (Merge perspectives)</option>
+                <option value="debate">⚔️ Debate (Models argue, judge decides)</option>
+                <option value="parallel">⚡ Parallel (All models, fastest wins)</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Max Models per Query</span>
+              <select class="setting-input" id="goatBrainMaxModels" onchange="saveSetting('goatBrainMaxModels', this.value)" style="width:100px">
+                <option value="3">3</option>
+                <option value="5" selected>5</option>
+                <option value="7">7</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Appearance -->
+          <div class="setting-group">
+            <h4>🎨 Appearance</h4>
+            <div class="setting-row">
+              <span class="setting-label">Theme</span>
+              <select class="setting-input" id="themeSelect" onchange="setTheme(this.value)" style="width:150px">
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Music Production -->
+          <div class="setting-group">
+            <h4>🎹 Music Production</h4>
+            <div class="setting-row">
+              <span class="setting-label">Spotify Client ID</span>
+              <input type="password" class="setting-input" id="spotifyIdInput" placeholder="Your Spotify Client ID" onchange="saveSetting('spotifyClientId', this.value)">
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Supabase URL</span>
+              <input type="text" class="setting-input" id="supabaseUrlInput" placeholder="https://your-project.supabase.co" onchange="saveSetting('supabaseUrl', this.value)">
+            </div>
+          </div>
+
+          <!-- About -->
+          <div class="setting-group">
+            <h4>ℹ️ About</h4>
+            <div class="setting-row" style="flex-direction:column;gap:8px;align-items:flex-start">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:32px">🐐</span>
+                <div>
+                  <div style="font-weight:700;font-size:16px">Super GOAT Royalty v3.1.0</div>
+                  <div style="color:var(--text-muted);font-size:12px">AI-Powered Music Production & Royalty Management Command Center</div>
+                </div>
+              </div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:8px">
+                Created by <strong style="color:var(--text-primary)">Harvey Miller (DJ Speedy)</strong><br>
+                <span style="color:#76B900">●</span> NVIDIA NIM &bull; <span style="color:#10a37f">●</span> OpenAI &bull; <span style="color:#EA4335">●</span> Google &bull; <span style="color:#D4A574">●</span> Anthropic<br>
+                <span style="color:#F55036">●</span> Groq &bull; <span style="color:#00D4AA">●</span> Cerebras &bull; <span style="color:#FF6B35">●</span> SambaNova &bull; <span style="color:#6366F1">●</span> Together AI<br>
+                <span style="color:#FF4500">●</span> Fireworks &bull; <span style="color:#6E56CF">●</span> OpenRouter &bull; <span style="color:#FFD21E">●</span> Hugging Face &bull; <span style="color:var(--text-secondary)">●</span> Ollama
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px">
+                1000+ LLMs &bull; GOAT Brain Multi-Model Intelligence &bull; Full Tool Suite &bull; Axiom Automation
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load Axiom UI module first, then main app -->
+  <script src="../axiom/axiom-ui.js"></script>
+  <script src="../goat-connect/goat-connect.js"></script>
+  <script src="../goat-connect/facial-recognition.js"></script>
+  <script src="../goat-connect/avatar-studio.js"></script>
+  <script src="../prompt-engine/prompt-engine.js"></script>
+  <script src="../worldwide/worldwide-platform.js"></script>
+  <script src="../ai-agent-builder/ai-agent-builder.js"></script>
+  <script src="../ue5/ue5-scene-generator.js"></script>
+  <script src="../script-studio/script-studio.js"></script>
+  <script src="../distribution/distribution-hub.js"></script>
+  <script src="../music/beat-maker.js"></script>
+  <script src="../crypto/crypto-royalty.js"></script>
+  <script src="../vault/secure-vault.js"></script>
+  <script src="app.js"></script>
+  <script src="goat-shield.js"></script>
+  <script src="event-delegator.js"></script>
+</body>
+</html>

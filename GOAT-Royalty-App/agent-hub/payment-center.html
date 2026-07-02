@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Payment Center | GOAT Royalty App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --goat-gold: #FFD700;
+            --goat-purple: #8B5CF6;
+            --neon-green: #00FF88;
+            --neon-blue: #00BFFF;
+            --neon-pink: #FF00FF;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #0a1a0a 50%, #0a0a1a 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        .glow-gold { text-shadow: 0 0 10px var(--goat-gold), 0 0 20px var(--goat-gold); }
+        .glow-green { text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green); }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(10, 30, 10, 0.9), rgba(5, 15, 5, 0.95));
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(0, 255, 136, 0.5);
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--neon-green), var(--goat-gold));
+            color: black;
+            font-weight: 700;
+            padding: 14px 28px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(0, 255, 136, 0.4);
+        }
+        
+        .btn-crypto {
+            background: linear-gradient(135deg, var(--goat-purple), var(--neon-pink));
+            color: white;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-crypto:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(139, 92, 246, 0.4);
+        }
+        
+        .balance-card {
+            background: linear-gradient(145deg, rgba(0, 255, 136, 0.1), rgba(139, 92, 246, 0.1));
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+        
+        .big-balance {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--neon-green), var(--goat-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .agent-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .agent-card:hover {
+            border-color: rgba(0, 255, 136, 0.5);
+            background: rgba(0, 255, 136, 0.05);
+        }
+        
+        .agent-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .wallet-address {
+            font-family: monospace;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 8px;
+            border-radius: 6px;
+            word-break: break-all;
+        }
+        
+        .shop-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .shop-item:hover {
+            border-color: rgba(139, 92, 246, 0.6);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+        }
+        
+        .price-tag {
+            display: inline-block;
+            padding: 6px 16px;
+            background: linear-gradient(135deg, var(--goat-purple), var(--neon-pink));
+            border-radius: 20px;
+            font-weight: 700;
+            margin-top: 12px;
+        }
+        
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .amount-positive { color: var(--neon-green); }
+        .amount-negative { color: var(--neon-pink); }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Header -->
+    <header class="mb-8">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-yellow-500 flex items-center justify-center text-3xl">
+                    💰
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-orbitron font-bold glow-green">AGENT PAYMENT CENTER</h1>
+                    <p class="text-gray-400">Pay your AI agents & let them shop! 🛒</p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button class="btn-crypto" onclick="connectWallet()">
+                    🔗 Connect Wallet
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Grid -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Column - Agent Balances -->
+        <div class="space-y-6">
+            <!-- Total Balance -->
+            <div class="card balance-card p-6">
+                <div class="text-gray-400 text-sm mb-2">TOTAL AGENT FUND</div>
+                <div class="big-balance">$4,206.90</div>
+                <div class="flex gap-4 mt-4">
+                    <div class="flex-1 text-center">
+                        <div class="text-lg font-bold text-green-400">2.5 ETH</div>
+                        <div class="text-xs text-gray-500">Ethereum</div>
+                    </div>
+                    <div class="flex-1 text-center">
+                        <div class="text-lg font-bold text-yellow-400">0.05 BTC</div>
+                        <div class="text-xs text-gray-500">Bitcoin</div>
+                    </div>
+                    <div class="flex-1 text-center">
+                        <div class="text-lg font-bold text-purple-400">10K $GOAT</div>
+                        <div class="text-xs text-gray-500">GOAT Token</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Agent Balances -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🤖 AGENT BALANCES</h2>
+                <div class="space-y-3">
+                    <!-- Nexus -->
+                    <div class="agent-card">
+                        <div class="agent-avatar bg-gradient-to-br from-purple-500 to-pink-600">💜</div>
+                        <div class="flex-1">
+                            <div class="font-bold">Nexus</div>
+                            <div class="text-sm text-gray-400">PR Manager</div>
+                            <div class="wallet-address">0x7eX5...nexus99</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-bold text-green-400">$842.50</div>
+                            <div class="text-xs text-gray-500">0.25 ETH</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Money Penny -->
+                    <div class="agent-card">
+                        <div class="agent-avatar bg-gradient-to-br from-cyan-500 to-blue-600">💎</div>
+                        <div class="flex-1">
+                            <div class="font-bold">Money Penny</div>
+                            <div class="text-sm text-gray-400">Executive Assistant</div>
+                            <div class="wallet-address">0x3aB7...penny88</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-bold text-green-400">$621.00</div>
+                            <div class="text-xs text-gray-500">0.18 ETH</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Codex -->
+                    <div class="agent-card">
+                        <div class="agent-avatar bg-gradient-to-br from-green-500 to-teal-600">📜</div>
+                        <div class="flex-1">
+                            <div class="font-bold">Codex</div>
+                            <div class="text-sm text-gray-400">Field Operations</div>
+                            <div class="wallet-address">0x9fC2...codex77</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-bold text-green-400">$425.80</div>
+                            <div class="text-xs text-gray-500">0.12 ETH</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn-primary w-full mt-4" onclick="distributePayments()">
+                    💸 DISTRIBUTE PAYMENTS
+                </button>
+            </div>
+        </div>
+        
+        <!-- Center Column - Payment Actions -->
+        <div class="space-y-6">
+            <!-- Send Payment -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📤 SEND PAYMENT</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Select Agent</label>
+                        <select class="w-full bg-black/40 border border-green-500/30 rounded-xl p-3 text-white">
+                            <option>Nexus 💜</option>
+                            <option>Money Penny 💎</option>
+                            <option>Codex 📜</option>
+                            <option>All Agents (split evenly)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Amount (ETH)</label>
+                        <input type="number" class="w-full bg-black/40 border border-green-500/30 rounded-xl p-3 text-white" placeholder="0.00" step="0.01">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Message</label>
+                        <input type="text" class="w-full bg-black/40 border border-green-500/30 rounded-xl p-3 text-white" placeholder="Great work on the project! 💜">
+                    </div>
+                    <button class="btn-primary w-full" onclick="sendPayment()">
+                        🚀 SEND CRYPTO
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Agent Shop -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🛒 AGENT SHOP</h2>
+                <p class="text-gray-400 text-sm mb-4">Let your agents spend their earnings!</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="shop-item" onclick="buyItem('NFT Art')">
+                        <div class="text-3xl mb-2">🖼️</div>
+                        <div class="font-semibold">NFT Art</div>
+                        <div class="text-xs text-gray-400">Digital collectible</div>
+                        <div class="price-tag">0.01 ETH</div>
+                    </div>
+                    <div class="shop-item" onclick="buyItem('GTA Property')">
+                        <div class="text-3xl mb-2">🏠</div>
+                        <div class="font-semibold">Cyber House</div>
+                        <div class="text-xs text-gray-400">GTA 6 World</div>
+                        <div class="price-tag">0.05 ETH</div>
+                    </div>
+                    <div class="shop-item" onclick="buyItem('Music Beat')">
+                        <div class="text-3xl mb-2">🎵</div>
+                        <div class="font-semibold">Beat Pack</div>
+                        <div class="text-xs text-gray-400">Producer beats</div>
+                        <div class="price-tag">0.02 ETH</div>
+                    </div>
+                    <div class="shop-item" onclick="buyItem('Server Boost')">
+                        <div class="text-3xl mb-2">⚡</div>
+                        <div class="font-semibold">Server Boost</div>
+                        <div class="text-xs text-gray-400">Gaming server</div>
+                        <div class="price-tag">0.03 ETH</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column - Transaction History -->
+        <div class="space-y-6">
+            <!-- Recent Transactions -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📊 TRANSACTION HISTORY</h2>
+                <div class="space-y-1">
+                    <div class="transaction-item">
+                        <div>
+                            <div class="font-semibold">Payment to Nexus</div>
+                            <div class="text-xs text-gray-500">2 hours ago</div>
+                        </div>
+                        <div class="amount-negative">-0.25 ETH</div>
+                    </div>
+                    <div class="transaction-item">
+                        <div>
+                            <div class="font-semibold">Payment to Money Penny</div>
+                            <div class="text-xs text-gray-500">5 hours ago</div>
+                        </div>
+                        <div class="amount-negative">-0.18 ETH</div>
+                    </div>
+                    <div class="transaction-item">
+                        <div>
+                            <div class="font-semibold">Nexus bought Cyber House</div>
+                            <div class="text-xs text-gray-500">1 day ago</div>
+                        </div>
+                        <div class="amount-negative">-0.05 ETH</div>
+                    </div>
+                    <div class="transaction-item">
+                        <div>
+                            <div class="font-semibold">Deposit from Boss</div>
+                            <div class="text-xs text-gray-500">2 days ago</div>
+                        </div>
+                        <div class="amount-positive">+2.5 ETH</div>
+                    </div>
+                    <div class="transaction-item">
+                        <div>
+                            <div class="font-semibold">Royalty Payment</div>
+                            <div class="text-xs text-gray-500">3 days ago</div>
+                        </div>
+                        <div class="amount-positive">+0.75 ETH</div>
+                    </div>
+                    <div class="transaction-item">
+                        <div>
+                            <div class="font-semibold">Codex bought NFT Art</div>
+                            <div class="text-xs text-gray-500">4 days ago</div>
+                        </div>
+                        <div class="amount-negative">-0.01 ETH</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📈 STATS</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center p-4 bg-black/30 rounded-xl">
+                        <div class="text-2xl font-bold text-green-400">$2,847</div>
+                        <div class="text-xs text-gray-400">Total Paid</div>
+                    </div>
+                    <div class="text-center p-4 bg-black/30 rounded-xl">
+                        <div class="text-2xl font-bold text-purple-400">$420</div>
+                        <div class="text-xs text-gray-400">Agent Spending</div>
+                    </div>
+                    <div class="text-center p-4 bg-black/30 rounded-xl">
+                        <div class="text-2xl font-bold text-yellow-400">47</div>
+                        <div class="text-xs text-gray-400">Transactions</div>
+                    </div>
+                    <div class="text-center p-4 bg-black/30 rounded-xl">
+                        <div class="text-2xl font-bold text-cyan-400">3</div>
+                        <div class="text-xs text-gray-400">Active Agents</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="mt-8 text-center text-gray-500 text-sm">
+        <p>🐐 GOAT Royalty App | Agent Payment Center</p>
+        <p class="text-xs mt-1">Pay your AI agents in crypto - They can shop for virtual goods! 💜</p>
+    </footer>
+    
+    <script>
+        function connectWallet() {
+            alert('🔗 CONNECT WALLET\n\nIn the full app, this will connect to:\n• MetaMask\n• WalletConnect\n• Coinbase Wallet\n\nYour agents will have their own wallet addresses!');
+        }
+        
+        function distributePayments() {
+            alert('💸 DISTRIBUTE PAYMENTS\n\nPayments will be sent to:\n\n💜 Nexus: 0.25 ETH\n💎 Money Penny: 0.18 ETH\n📜 Codex: 0.12 ETH\n\nTotal: 0.55 ETH (~$921.50)\n\nConfirm transaction?');
+        }
+        
+        function sendPayment() {
+            alert('🚀 SEND PAYMENT\n\nTransaction submitted!\n\nYour agent will receive the payment instantly.\n\nGas fee: ~0.002 ETH');
+        }
+        
+        function buyItem(item) {
+            alert(`🛒 PURCHASE: ${item}\n\nYour agent wants to buy this item!\n\nIn the full app:\n• Agent requests purchase\n• You approve/deny\n• Item delivered to agent inventory\n\nLet your agents enjoy their earnings! 💜`);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+{
+  "name": "Airtable to Disk",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        0
+      ],
+      "id": "0a6cb833-2f6b-463a-ad84-a22a627d3060",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appagvmHTGA3TfVdh",
+          "mode": "list",
+          "cachedResultName": "Test Airtable",
+          "cachedResultUrl": "https://airtable.com/appagvmHTGA3TfVdh"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblzfXRK5t1q5Rclp",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appagvmHTGA3TfVdh/tblzfXRK5t1q5Rclp"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        120,
+        0
+      ],
+      "id": "1babf68c-b26f-4c21-8f30-0b3bc6d7b0f6",
+      "name": "Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "WOfjbgqEmtUF4pnD",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "Room",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        360,
+        0
+      ],
+      "id": "5f960c4d-7b5f-4452-88d4-d44ff41a944e",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "C:\\Users\\Arnold\\Desktop\\Test.txt",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        640,
+        0
+      ],
+      "id": "dd66fb6a-eac7-489f-9743-42b6322b4d2c",
+      "name": "Read/Write Files from Disk"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "aeed6eed-fad5-482a-91f3-844de0a92c9d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c0fc3202e0d7686fd80c309dae8df3a072650cceb18f2be2bb9798a3af0bf1cd"
+  },
+  "id": "DTvtrwdhwWp297QV",
+  "tags": []
+}

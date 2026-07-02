@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0a">
+<title>🎹 GOAT Beat Pads</title>
+<link rel="stylesheet" href="css/goat-touch.css">
+<script src="js/goat-touch.js" defer></script>
+<style>
+  .pad-page {
+    padding: calc(64px + env(safe-area-inset-top) + 10px) 10px calc(160px + env(safe-area-inset-bottom)) 10px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .kit-bar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .kit-chip {
+    flex-shrink: 0;
+    padding: 12px 18px;
+    background: var(--goat-charcoal);
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    color: var(--goat-cream);
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .kit-chip.active { background: var(--gradient-gold); color: var(--goat-black); border-color: var(--goat-gold); }
+
+  .bpm-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background: var(--goat-charcoal);
+    border-radius: var(--radius-md);
+    flex-wrap: wrap;
+  }
+  .bpm-num {
+    font-size: 40px;
+    font-weight: 900;
+    color: var(--goat-gold);
+    font-variant-numeric: tabular-nums;
+    min-width: 120px;
+    text-align: center;
+  }
+  .step-sequencer {
+    display: grid;
+    grid-template-columns: 60px repeat(16, 1fr);
+    gap: 3px;
+    padding: 6px;
+    background: var(--goat-charcoal);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+  }
+  .seq-label { font-size: 10px; font-weight: 800; color: var(--goat-gold); display: flex; align-items: center; text-transform: uppercase; padding-left: 4px; }
+  .seq-cell {
+    aspect-ratio: 1;
+    min-width: 24px;
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .seq-cell.on { background: var(--goat-red-bright); border-color: var(--goat-gold); box-shadow: 0 0 8px var(--goat-red-bright); }
+  .seq-cell.playing { outline: 2px solid var(--goat-gold); outline-offset: -2px; }
+
+  .transport-mini {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    padding: 8px;
+  }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="touch-mode">
+
+<header class="t-topbar">
+  <button class="t-btn" onclick="history.back()" style="min-width:auto;min-height:44px;padding:8px 12px;">←</button>
+  <div class="brand"><span class="emoji">🎹</span><span>BEAT PADS</span></div>
+  <span class="spacer"></span>
+  <span class="chip" id="kitName">TRAP KIT</span>
+</header>
+
+<main class="pad-page">
+
+  <div class="kit-bar" id="kitBar">
+    <div class="kit-chip active" data-kit="trap">🔥 TRAP</div>
+    <div class="kit-chip" data-kit="hiphop">💎 HIP-HOP</div>
+    <div class="kit-chip" data-kit="drill">💣 DRILL</div>
+    <div class="kit-chip" data-kit="rnb">💜 R&B</div>
+    <div class="kit-chip" data-kit="lofi">☕ LO-FI</div>
+    <div class="kit-chip" data-kit="808">🔊 808 PACK</div>
+  </div>
+
+  <div class="pad-grid" id="padGrid"></div>
+
+  <div class="bpm-row">
+    <button class="t-btn" onclick="bpmShift(-5)">−5</button>
+    <button class="t-btn" onclick="bpmShift(-1)">−1</button>
+    <div style="text-align:center;">
+      <div style="font-size:10px;color:#9ca3af;font-weight:700;letter-spacing:1px;">BPM</div>
+      <div class="bpm-num" id="bpmNum">90</div>
+    </div>
+    <button class="t-btn" onclick="bpmShift(1)">+1</button>
+    <button class="t-btn" onclick="bpmShift(5)">+5</button>
+  </div>
+
+  <div class="step-sequencer" id="stepSeq"></div>
+
+  <div class="transport-mini">
+    <button class="tp-btn play" id="playBtn" onclick="togglePlay()">▶</button>
+    <button class="tp-btn" onclick="clearSeq()">🗑️</button>
+    <button class="tp-btn rec" id="recBtn" onclick="toggleRec()">●</button>
+  </div>
+
+</main>
+
+<nav class="t-tabbar">
+  <a class="t-tab" href="touch-hub.html"><span class="ic">🏠</span><span class="lb">Hub</span></a>
+  <a class="t-tab" href="touch-brain.html"><span class="ic">🧠</span><span class="lb">AI</span></a>
+  <a class="t-tab active" href="touch-pads.html"><span class="ic">🎹</span><span class="lb">Pads</span></a>
+  <a class="t-tab" href="touch-mixer.html"><span class="ic">🎚️</span><span class="lb">Mix</span></a>
+  <a class="t-tab" href="touch-deck.html"><span class="ic">🎛️</span><span class="lb">Deck</span></a>
+  <a class="t-tab" href="touch-keys.html"><span class="ic">🎼</span><span class="lb">Keys</span></a>
+</nav>
+
+<script>
+const KITS = {
+  trap:   [['KICK','kick'],['SNARE','snare'],['CLAP','clap'],['HAT','hat'],
+           ['OH','hat'],['808-A','808'],['808-B','808'],['RIM','snare'],
+           ['PERC 1','hat'],['PERC 2','hat'],['CRASH','hat'],['RIDE','hat'],
+           ['VOX 1','snare'],['VOX 2','clap'],['FX UP','hat'],['FX DN','808']],
+  hiphop: [['KICK','kick'],['SNARE','snare'],['CLAP','clap'],['HAT','hat'],
+           ['RIM','snare'],['BASS','808'],['SUB','808'],['SHAKER','hat'],
+           ['CONGA','snare'],['BONGO','snare'],['CYM','hat'],['TAMB','hat'],
+           ['HIT','clap'],['ZAP','hat'],['SCRATCH','snare'],['LASER','hat']],
+  drill:  [['KICK D','kick'],['SNARE','snare'],['CLAP','clap'],['HAT','hat'],
+           ['SLIDE 808','808'],['808 GLIDE','808'],['RIM','snare'],['OH','hat'],
+           ['PERC','hat'],['CHANT','clap'],['GUN','snare'],['BRR','hat'],
+           ['HORN','808'],['SIREN','hat'],['SNIPE','snare'],['OOH','clap']],
+  rnb:    [['KICK S','kick'],['SNARE S','snare'],['SNAP','clap'],['SOFT HAT','hat'],
+           ['SHAKER','hat'],['BASS','808'],['KEYS','kick'],['STRINGS','kick'],
+           ['RHODES','kick'],['AHH','clap'],['OOH','clap'],['SIGH','hat'],
+           ['PAD','808'],['WHISTLE','hat'],['HARP','kick'],['BELL','hat']],
+  lofi:   [['VINYL KICK','kick'],['DUSTY SNARE','snare'],['SOFT CLAP','clap'],['HAT','hat'],
+           ['RIM','snare'],['BASS','808'],['RHODES','kick'],['JAZZ HAT','hat'],
+           ['BRUSH','hat'],['SHAKER','hat'],['CASS HISS','hat'],['VINYL POP','snare'],
+           ['WARM BASS','808'],['ECHO','clap'],['CHIME','hat'],['PIANO','kick']],
+  '808':  [['808 C','808'],['808 D','808'],['808 E','808'],['808 F','808'],
+           ['808 G','808'],['808 A','808'],['808 B','808'],['808 C+','808'],
+           ['SLIDE UP','808'],['SLIDE DN','808'],['GLIDE','808'],['PUNCH','808'],
+           ['DISTORT','808'],['CLEAN','808'],['WAVE','808'],['SUB','808']],
+};
+
+let currentKit = 'trap';
+const padGrid = document.getElementById('padGrid');
+
+function renderPads() {
+  padGrid.innerHTML = '';
+  const kit = KITS[currentKit];
+  kit.forEach((p, i) => {
+    const pad = document.createElement('div');
+    pad.className = 'pad';
+    pad.dataset.idx = i;
+    pad.innerHTML = `<div class="pad-num">${String(i+1).padStart(2,'0')}</div><div class="pad-name">${p[0]}</div>`;
+    GoatTouch.bindPad(pad, { sound: p[1] });
+    padGrid.appendChild(pad);
+  });
+}
+renderPads();
+
+document.querySelectorAll('.kit-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.kit-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentKit = chip.dataset.kit;
+    document.getElementById('kitName').textContent = chip.textContent.trim();
+    renderPads();
+    GoatTouch.haptic('medium');
+  });
+});
+
+// ============== BPM ==============
+let bpm = 90;
+function bpmShift(d) {
+  bpm = Math.max(40, Math.min(220, bpm + d));
+  document.getElementById('bpmNum').textContent = bpm;
+  GoatTouch.haptic('light');
+}
+
+// ============== STEP SEQUENCER ==============
+const SEQ_ROWS = ['KICK','SNARE','HAT','808'];
+const SEQ_SOUNDS = ['kick','snare','hat','808'];
+const STEPS = 16;
+const seqState = SEQ_ROWS.map(() => new Array(STEPS).fill(false));
+
+const seqEl = document.getElementById('stepSeq');
+function buildSeq() {
+  seqEl.innerHTML = '';
+  SEQ_ROWS.forEach((name, r) => {
+    const label = document.createElement('div');
+    label.className = 'seq-label';
+    label.textContent = name;
+    seqEl.appendChild(label);
+    for (let s = 0; s < STEPS; s++) {
+      const c = document.createElement('div');
+      c.className = 'seq-cell';
+      c.dataset.row = r; c.dataset.step = s;
+      c.addEventListener('click', () => {
+        seqState[r][s] = !seqState[r][s];
+        c.classList.toggle('on', seqState[r][s]);
+        GoatTouch.haptic('light');
+        if (seqState[r][s]) GoatTouch.playDrum(SEQ_SOUNDS[r], 0.7);
+      });
+      seqEl.appendChild(c);
+    }
+  });
+}
+buildSeq();
+
+// ============== PLAYBACK ==============
+let playing = false;
+let playStep = 0;
+let playTimer = null;
+function togglePlay() {
+  playing = !playing;
+  const btn = document.getElementById('playBtn');
+  btn.textContent = playing ? '⏸' : '▶';
+  if (playing) {
+    playStep = 0;
+    tickStep();
+  } else {
+    clearTimeout(playTimer);
+    document.querySelectorAll('.seq-cell.playing').forEach(c => c.classList.remove('playing'));
+  }
+  GoatTouch.haptic('medium');
+}
+function tickStep() {
+  if (!playing) return;
+  document.querySelectorAll('.seq-cell.playing').forEach(c => c.classList.remove('playing'));
+  document.querySelectorAll(`.seq-cell[data-step="${playStep}"]`).forEach(c => c.classList.add('playing'));
+  SEQ_ROWS.forEach((_, r) => {
+    if (seqState[r][playStep]) GoatTouch.playDrum(SEQ_SOUNDS[r], 0.9);
+  });
+  playStep = (playStep + 1) % STEPS;
+  const stepDur = (60 / bpm) * 1000 / 4; // 16th notes
+  playTimer = setTimeout(tickStep, stepDur);
+}
+function clearSeq() {
+  seqState.forEach(row => row.fill(false));
+  document.querySelectorAll('.seq-cell').forEach(c => c.classList.remove('on'));
+  GoatTouch.haptic('heavy');
+}
+
+// ============== RECORD (pattern memory) ==============
+let recording = false;
+function toggleRec() {
+  recording = !recording;
+  document.getElementById('recBtn').classList.toggle('armed', recording);
+  GoatTouch.haptic(recording ? 'success' : 'medium');
+}
+</script>
+</body>
+</html>

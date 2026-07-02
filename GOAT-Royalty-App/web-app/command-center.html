@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎯 Command Center — GOAT Royalty App</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FFD700">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root { --bg:#0a0e17; --card:#121826; --border:#1e2535; --text:#e4e4e7; --muted:#8b92a7; --gold:#FFD700; --cyan:#00E5FF; --green:#10b981; --hot:#FF3D00; --red:#ef4444; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; line-height:1.5; }
+.container { max-width:1500px; margin:0 auto; padding:24px; }
+
+.topbar { display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.brand { font-size:20px; font-weight:900; background:linear-gradient(90deg,var(--gold),var(--cyan),var(--hot)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.navlinks { margin-left:auto; display:flex; gap:6px; flex-wrap:wrap; }
+.navlinks a { padding:6px 10px; background:#1a2035; border:1px solid var(--border); border-radius:6px; color:var(--text); text-decoration:none; font-size:12px; }
+.navlinks a:hover { border-color:var(--gold); color:var(--gold); }
+
+.hero { padding:20px 24px; background:linear-gradient(135deg,#1a0f3a 0%,#0a1a3e 100%); border:1px solid var(--cyan); border-radius:14px; margin-bottom:20px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+.hero h1 { font-size:clamp(22px,3vw,32px); background:linear-gradient(90deg,var(--gold),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:900; flex:1; min-width:240px; }
+.hero .clock { font-size:14px; color:var(--cyan); font-family:monospace; }
+
+/* MAIN GRID */
+.grid { display:grid; grid-template-columns:repeat(12, 1fr); gap:16px; }
+.panel { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px; min-height:120px; }
+.panel h3 { font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.panel h3 .icon { font-size:18px; }
+
+/* Column spans */
+.c3 { grid-column: span 3; }
+.c4 { grid-column: span 4; }
+.c6 { grid-column: span 6; }
+.c8 { grid-column: span 8; }
+.c12 { grid-column: span 12; }
+@media (max-width:900px) {
+  .c3, .c4, .c6, .c8 { grid-column: span 12; }
+}
+
+/* STAT CARDS */
+.stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; }
+.stat { background:#0a0e17; border:1px solid var(--border); border-radius:10px; padding:14px; text-align:left; }
+.stat .num { font-size:24px; font-weight:900; color:var(--gold); }
+.stat .lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
+.stat .sub { font-size:11px; color:var(--cyan); margin-top:4px; }
+
+/* ENGINE PILLS */
+.engines { display:flex; flex-wrap:wrap; gap:6px; }
+.pill { padding:6px 12px; border-radius:20px; font-size:11px; font-weight:700; border:1px solid; }
+.pill.ok { background:rgba(16,185,129,0.12); color:var(--green); border-color:var(--green); }
+.pill.off { background:rgba(239,68,68,0.12); color:var(--red); border-color:var(--red); }
+.pill .dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:currentColor; margin-right:6px; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* QUICK ACTIONS */
+.actions { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; }
+.act { background:#0a0e17; border:1px solid var(--border); border-radius:10px; padding:14px; text-decoration:none; color:var(--text); text-align:center; font-size:12px; transition:all 0.2s; display:flex; flex-direction:column; align-items:center; gap:6px; }
+.act:hover { border-color:var(--gold); transform:translateY(-2px); background:#1a2035; }
+.act .icon { font-size:24px; }
+.act .label { font-weight:700; color:var(--gold); font-size:12px; }
+.act .desc { color:var(--muted); font-size:10px; }
+
+/* QUICK CHAT */
+.mini-chat { display:flex; flex-direction:column; gap:10px; }
+.mini-chat .msgs { background:#0a0e17; border:1px solid var(--border); border-radius:10px; padding:12px; min-height:140px; max-height:200px; overflow-y:auto; font-size:13px; }
+.mini-chat .msg { margin-bottom:8px; padding:8px 10px; border-radius:8px; }
+.mini-chat .msg.u { background:#1a2035; text-align:right; }
+.mini-chat .msg.b { background:rgba(255,215,0,0.06); border-left:3px solid var(--gold); }
+.mini-chat .input-row { display:flex; gap:6px; }
+.mini-chat input { flex:1; padding:8px 12px; background:#0a0e17; border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:13px; }
+.mini-chat input:focus { outline:none; border-color:var(--gold); }
+.mini-chat button { padding:8px 14px; background:var(--gold); color:#000; border:none; border-radius:6px; font-weight:800; cursor:pointer; font-size:12px; }
+
+/* TIKTOK FEED */
+.feed { display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto; }
+.feed-item { display:flex; gap:10px; padding:8px; background:#0a0e17; border:1px solid var(--border); border-radius:8px; }
+.feed-item .thumb { width:50px; height:50px; border-radius:6px; background:linear-gradient(135deg,var(--hot),var(--gold)); display:flex; align-items:center; justify-content:center; font-size:18px; }
+.feed-item .info { flex:1; min-width:0; }
+.feed-item .t { font-size:12px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.feed-item .m { font-size:10px; color:var(--cyan); }
+
+/* TICKER */
+.ticker { display:flex; gap:16px; padding:10px 14px; background:#0a0e17; border:1px solid var(--border); border-radius:10px; overflow:hidden; position:relative; }
+.ticker .scroll { display:flex; gap:30px; animation:scroll 40s linear infinite; white-space:nowrap; font-size:13px; color:var(--cyan); }
+.ticker .scroll span { font-weight:700; }
+@keyframes scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+.owner-tag { font-size:11px; color:var(--muted); margin-top:4px; }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="topbar">
+    <div class="brand">🎯 Command Center</div>
+    <div class="navlinks">
+      <a href="powerhouse.html">Powerhouse</a>
+      <a href="agents-brain.html">AI Brain</a>
+      <a href="autopilot.html">Autopilot</a>
+      <a href="network.html">Network</a>
+      <a href="intel.html">Intel</a>
+      <a href="settings.html">⚙️ Settings</a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div>
+      <h1>🐐 GOAT Royalty App — Mission Control</h1>
+      <div class="owner-tag">DJ Speedy (Harvey L. Miller Jr.) + Waka Flocka Flame · Network = Net Worth</div>
+    </div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+
+  <!-- MARKET TICKER -->
+  <div class="panel c12" style="padding:0;border:none;background:transparent;margin-bottom:16px;">
+    <div class="ticker">
+      <div class="scroll" id="ticker">
+        <span>🐐 Loading live data...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="grid">
+
+    <!-- AI ENGINES STATUS -->
+    <div class="panel c6">
+      <h3><span class="icon">🧠</span> AI Brain — Engine Status</h3>
+      <div class="engines" id="engines">
+        <span class="pill off"><span class="dot"></span> checking...</span>
+      </div>
+      <p class="owner-tag" style="margin-top:12px;">Routes through fastest available engine. OpenAI removed. <a href="agents-brain.html" style="color:var(--cyan);">Chat with 11 agents →</a></p>
+    </div>
+
+    <!-- NETWORK STATS -->
+    <div class="panel c6">
+      <h3><span class="icon">🔗</span> Network = Net Worth</h3>
+      <div class="stat-grid">
+        <div class="stat"><div class="num">$16M</div><div class="lbl">Combined Net Worth</div></div>
+        <div class="stat"><div class="num">826.7K</div><div class="lbl">Waka TikTok</div></div>
+        <div class="stat"><div class="num">511</div><div class="lbl">Catalog Tracks</div></div>
+        <div class="stat"><div class="num">$3.3B</div><div class="lbl">Lawsuit Position</div></div>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="panel c12">
+      <h3><span class="icon">⚡</span> Quick Actions</h3>
+      <div class="actions">
+        <a href="agents-brain.html" class="act">
+          <span class="icon">🧠</span><span class="label">AI Brain</span><span class="desc">11 agents</span>
+        </a>
+        <a href="autopilot.html" class="act">
+          <span class="icon">🤖</span><span class="label">Autopilot</span><span class="desc">Execute goals</span>
+        </a>
+        <a href="moneypenny.html" class="act">
+          <span class="icon">💼</span><span class="label">Moneypenny</span><span class="desc">Marketing AI</span>
+        </a>
+        <a href="network.html" class="act">
+          <span class="icon">🔗</span><span class="label">Network</span><span class="desc">Social command</span>
+        </a>
+        <a href="spotify-dashboard.html" class="act">
+          <span class="icon">🎧</span><span class="label">Spotify</span><span class="desc">Real-time analytics</span>
+        </a>
+        <a href="fan-db.html" class="act">
+          <span class="icon">📧</span><span class="label">Fan DB</span><span class="desc">Grow audience</span>
+        </a>
+        <a href="intel.html" class="act">
+          <span class="icon">🕵️</span><span class="label">Intel</span><span class="desc">Research tools</span>
+        </a>
+        <a href="catalog.html" class="act">
+          <span class="icon">🎵</span><span class="label">Catalog</span><span class="desc">142 profiles</span>
+        </a>
+        <a href="royalty-calc.html" class="act">
+          <span class="icon">💰</span><span class="label">Royalty Calc</span><span class="desc">ASCAP/MLC/SX</span>
+        </a>
+        <a href="studio.html" class="act">
+          <span class="icon">🎛️</span><span class="label">Studio</span><span class="desc">Production tools</span>
+        </a>
+        <a href="settings.html" class="act">
+          <span class="icon">⚙️</span><span class="label">Settings</span><span class="desc">API keys</span>
+        </a>
+        <a href="download.html" class="act">
+          <span class="icon">📥</span><span class="label">Download</span><span class="desc">Mac/PC/Linux</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- MINI CHAT: MONEYPENNY -->
+    <div class="panel c6">
+      <h3><span class="icon">💼</span> Quick Chat — Moneypenny</h3>
+      <div class="mini-chat">
+        <div class="msgs" id="msgs">
+          <div class="msg b">💼 Hey Speedy. Ready to work. What do you need? (Try: "Write a hook for a new Waka drop")</div>
+        </div>
+        <div class="input-row">
+          <input id="mpInput" placeholder="Ask Moneypenny..." onkeydown="if(event.key==='Enter') mpSend()">
+          <button onclick="mpSend()">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WAKA TIKTOK FEED -->
+    <div class="panel c6">
+      <h3><span class="icon">🎵</span> Waka Flocka TikTok — Latest</h3>
+      <div class="feed" id="tikFeed">
+        <div class="feed-item"><div class="thumb">⏳</div><div class="info"><div class="t">Loading feed...</div></div></div>
+      </div>
+    </div>
+
+    <!-- AUTOPILOT QUICK RUN -->
+    <div class="panel c6">
+      <h3><span class="icon">🤖</span> Autopilot — Quick Goal</h3>
+      <div class="mini-chat">
+        <div class="msgs" id="apMsgs">
+          <div class="msg b">🤖 Give me a goal. I'll plan it and execute with real tools. (Try: "Look up DJ Speedy on iTunes")</div>
+        </div>
+        <div class="input-row">
+          <input id="apInput" placeholder="Give Autopilot a goal..." onkeydown="if(event.key==='Enter') apSend()">
+          <button onclick="apSend()">🚀 Run</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAN DB -->
+    <div class="panel c6">
+      <h3><span class="icon">📧</span> Fan Database</h3>
+      <div class="stat-grid">
+        <div class="stat"><div class="num" id="fanTotal">—</div><div class="lbl">Total Fans</div></div>
+        <div class="stat"><div class="num" id="fanDjspeedy">—</div><div class="lbl">DJ Speedy</div></div>
+        <div class="stat"><div class="num" id="fanWaka">—</div><div class="lbl">Waka</div></div>
+        <div class="stat"><div class="num" id="fanGoat">—</div><div class="lbl">GOAT Force</div></div>
+      </div>
+      <p class="owner-tag" style="margin-top:10px;"><a href="fan-db.html" style="color:var(--cyan);">Manage →</a> · <a href="agents-brain.html" style="color:var(--cyan);">Generate campaign →</a></p>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://localhost:5500'
+  : 'https://010dy.app.super.myninja.ai';
+
+// PWA registration
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// Live clock
+function tickClock(){
+  const d = new Date();
+  document.getElementById('clock').textContent = d.toLocaleTimeString() + ' · ' + d.toLocaleDateString();
+}
+tickClock(); setInterval(tickClock, 1000);
+
+// Engine status
+async function loadEngines(){
+  try {
+    const r = await fetch(API + '/brain/status');
+    const s = await r.json();
+    const div = document.getElementById('engines');
+    div.innerHTML = '';
+    const icons = { ollama:'🔒', nvidia:'⚡', gemini:'🌟' };
+    Object.entries(s).forEach(([k,v]) => {
+      const pill = document.createElement('span');
+      pill.className = 'pill ' + (v.online ? 'ok' : 'off');
+      pill.innerHTML = `<span class="dot"></span> ${icons[k]||''} ${k} ${v.online ? 'ONLINE' : 'offline'}`;
+      div.appendChild(pill);
+    });
+  } catch (e) {
+    document.getElementById('engines').innerHTML = '<span class="pill off"><span class="dot"></span> Intel server offline (port 5500)</span>';
+  }
+}
+
+// Ticker
+async function loadTicker(){
+  const ticker = document.getElementById('ticker');
+  try {
+    const stats = [];
+    // Fan stats
+    try {
+      const r = await fetch(API + '/fans/stats');
+      if (r.ok){
+        const d = await r.json();
+        stats.push(`📧 ${d.total||0} fans in DB`);
+      }
+    } catch(e){}
+    // iTunes ping
+    stats.push('🎵 Waka Flocka: Brick Squad Monopoly · Sony/The Orchard');
+    stats.push('💼 DJ Speedy aka Harvey L. Miller Jr. · Fastassman Publishing');
+    stats.push('💰 $3.3B lawsuit position secured');
+    stats.push('🤖 Autopilot ready with 8 tools');
+    stats.push('🧠 AI Brain: OpenAI REMOVED · NVIDIA + Gemini + Ollama');
+    stats.push('🐐 GOAT Royalty App v3.0 — The GREATEST OF ALL TIME');
+    const content = stats.join('  •  ') + '  •  ' + stats.join('  •  ');
+    ticker.textContent = '';
+    const span = document.createElement('span');
+    span.textContent = content;
+    ticker.appendChild(span);
+  } catch(e){
+    ticker.textContent = '🐐 GOAT Royalty App v3 — Network = Net Worth';
+  }
+}
+
+// Moneypenny chat
+async function mpSend(){
+  const input = document.getElementById('mpInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  const msgs = document.getElementById('msgs');
+  msgs.innerHTML += `<div class="msg u">${escapeHtml(msg)}</div>`;
+  msgs.innerHTML += `<div class="msg b" id="mpTmp">⏳ thinking...</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  try {
+    const r = await fetch(API + '/brain/agent/moneypenny', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg})
+    });
+    const d = await r.json();
+    document.getElementById('mpTmp').innerHTML = (d.reply || '❌ '+(d.error||'')).replace(/\n/g,'<br>');
+    document.getElementById('mpTmp').id = '';
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch(e){
+    document.getElementById('mpTmp').innerHTML = '❌ ' + e.message;
+  }
+}
+
+// Autopilot chat
+async function apSend(){
+  const input = document.getElementById('apInput');
+  const goal = input.value.trim();
+  if (!goal) return;
+  input.value = '';
+  const msgs = document.getElementById('apMsgs');
+  msgs.innerHTML += `<div class="msg u">${escapeHtml(goal)}</div>`;
+  msgs.innerHTML += `<div class="msg b" id="apTmp">⏳ planning and executing...</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  try {
+    const r = await fetch(API + '/autopilot/run', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({goal, max_steps: 3})
+    });
+    const d = await r.json();
+    let html = '';
+    if (d.ok) {
+      d.transcript.forEach(e => {
+        if (e.type === 'plan') html += `<strong>🧠 Plan:</strong> ${escapeHtml(e.text.slice(0,200))}<br>`;
+        else if (e.type === 'tool_results') {
+          e.results.forEach(r => {
+            html += `${r.ok?'✅':'❌'} <strong>${r.tool}</strong>: ${escapeHtml(r.summary||'')}<br>`;
+          });
+        }
+        else if (e.type === 'final') html += `<strong>✅ Done:</strong> ${escapeHtml(e.text.slice(0,300))}`;
+      });
+    } else html = '❌ ' + (d.error||'failed');
+    document.getElementById('apTmp').innerHTML = html;
+    document.getElementById('apTmp').id = '';
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch(e){
+    document.getElementById('apTmp').innerHTML = '❌ ' + e.message;
+  }
+}
+
+// Waka TikTok feed
+async function loadTikTokFeed(){
+  try {
+    const r = await fetch(API + '/tiktok/user?username=wakaflocka&limit=5');
+    const d = await r.json();
+    const feed = document.getElementById('tikFeed');
+    feed.innerHTML = '';
+    const videos = d.videos || d.entries || [];
+    if (videos.length === 0) {
+      feed.innerHTML = '<div class="feed-item"><div class="thumb">🎵</div><div class="info"><div class="t">@wakaflocka · 826.7K followers</div><div class="m">Feed will load when Intel server is live</div></div></div>';
+      return;
+    }
+    videos.slice(0,5).forEach(v => {
+      feed.innerHTML += `<div class="feed-item">
+        <div class="thumb">🎵</div>
+        <div class="info">
+          <div class="t">${escapeHtml((v.title||v.description||'TikTok').slice(0,60))}</div>
+          <div class="m">👁 ${(v.view_count||v.views||0).toLocaleString()} views</div>
+        </div>
+      </div>`;
+    });
+  } catch(e){
+    document.getElementById('tikFeed').innerHTML = '<div class="feed-item"><div class="thumb">⚠️</div><div class="info"><div class="t">@wakaflocka</div><div class="m">826.7K followers · 4.9M likes</div></div></div>';
+  }
+}
+
+// Fan DB stats
+async function loadFanStats(){
+  try {
+    const r = await fetch(API + '/fans/stats');
+    const d = await r.json();
+    document.getElementById('fanTotal').textContent = d.total || 0;
+    document.getElementById('fanDjspeedy').textContent = (d.by_artist && d.by_artist['djspeedy']) || 0;
+    document.getElementById('fanWaka').textContent = (d.by_artist && d.by_artist['wakaflocka']) || 0;
+    document.getElementById('fanGoat').textContent = (d.by_artist && d.by_artist['goat-force']) || 0;
+  } catch(e){}
+}
+
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+// Initial load
+loadEngines();
+loadTicker();
+loadTikTokFeed();
+loadFanStats();
+setInterval(loadEngines, 20000);
+setInterval(loadFanStats, 30000);
+</script>
+</body>
+</html>

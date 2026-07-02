@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ms Money Penny — 🎬 Movie Studio | Professional Video Editor & AI Effects</title>
+  <meta name="description" content="Professional Movie Studio - AI-powered video editing with 3D effects, transitions, and templates. Create music videos, lyric videos, TikToks, YouTube content, and more.">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/goat-theme.css">
+  <style>
+    :root {
+      --bg-primary: #0a0a0a; --bg-secondary: #0d1b2a; --bg-card: #1b2838;
+      --bg-hover: #1f3044; --accent: #d4a03c; --accent-light: #f0c040;
+      --text-primary: #f5f0e8; --text-secondary: #b8b0a0; --text-muted: #6a6050;
+      --border: #2a3a4a; --success: #2ecc71; --warning: #f39c12; --info: #5dade2;
+      --navy: #0f2440; --gold: #d4a03c;
+    }
+    
+    .studio-hero {
+      background: linear-gradient(135deg, rgba(15,36,64,0.95), rgba(10,10,10,0.98));
+      padding: 100px 20px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .studio-hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('goat-background.png') center/cover;
+      opacity: 0.08;
+    }
+    
+    .studio-hero h1 {
+      font-size: 3rem;
+      color: var(--gold);
+      margin-bottom: 10px;
+      position: relative;
+    }
+    
+    .studio-hero .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+      max-width: 700px;
+      margin: 0 auto 30px;
+      position: relative;
+    }
+    
+    .feature-stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+      position: relative;
+    }
+    
+    .feature-stat {
+      text-align: center;
+    }
+    
+    .feature-stat .number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    
+    .feature-stat .label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    
+    /* Timeline Editor */
+    .editor-section {
+      background: var(--bg-secondary);
+      padding: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .editor-container {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    
+    .editor-toolbar {
+      background: rgba(0,0,0,0.3);
+      padding: 12px 20px;
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    
+    .toolbar-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.9rem;
+    }
+    
+    .toolbar-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+    
+    .toolbar-btn.active {
+      background: var(--gold);
+      color: #000;
+      border-color: var(--gold);
+    }
+    
+    .video-preview {
+      background: #000;
+      height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .video-preview .placeholder {
+      text-align: center;
+    }
+    
+    .video-preview .placeholder-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+    }
+    
+    .video-preview .placeholder-text {
+      color: var(--text-muted);
+    }
+    
+    .timeline-container {
+      background: rgba(0,0,0,0.4);
+      padding: 20px;
+    }
+    
+    .timeline-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+    
+    .timeline-time {
+      color: var(--text-muted);
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    
+    .timeline-track {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+    
+    .track-label {
+      width: 80px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+    
+    .track-content {
+      flex: 1;
+      height: 40px;
+      background: rgba(212,160,60,0.1);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .track-clip {
+      position: absolute;
+      height: 100%;
+      background: linear-gradient(135deg, var(--gold), #c49030);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      color: #000;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .track-clip.audio {
+      background: linear-gradient(135deg, var(--info), #3498db);
+      color: #fff;
+    }
+    
+    .track-clip.effects {
+      background: linear-gradient(135deg, var(--success), #27ae60);
+      color: #fff;
+    }
+    
+    .track-clip.text {
+      background: linear-gradient(135deg, var(--warning), #e67e22);
+      color: #000;
+    }
+    
+    /* Effects Grid */
+    .effects-section {
+      padding: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .effects-section h2 {
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .effects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    
+    .effect-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .effect-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-3px);
+    }
+    
+    .effect-card .effect-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+    
+    .effect-card h4 {
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+    
+    .effect-card .effect-category {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+    
+    /* Templates */
+    .templates-section {
+      background: linear-gradient(135deg, var(--navy), var(--bg-primary));
+      padding: 60px 40px;
+    }
+    
+    .templates-section h2 {
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .template-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    
+    .template-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+    }
+    
+    .template-preview {
+      height: 140px;
+      background: linear-gradient(135deg, var(--gold), var(--navy));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+    
+    .template-info {
+      padding: 20px;
+    }
+    
+    .template-info h3 {
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .template-info p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+    }
+    
+    .template-meta {
+      display: flex;
+      gap: 15px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    
+    .template-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .btn-use-template {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 12px;
+      width: 100%;
+      transition: all 0.3s;
+    }
+    
+    .btn-use-template:hover {
+      background: var(--gold);
+      color: #000;
+    }
+    
+    /* Transitions */
+    .transitions-section {
+      padding: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .transitions-section h2 {
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .transitions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+    }
+    
+    .transition-item {
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .transition-item:hover {
+      border-color: var(--gold);
+    }
+    
+    .transition-item .transition-icon {
+      font-size: 1.5rem;
+      margin-bottom: 6px;
+    }
+    
+    .transition-item .transition-name {
+      color: var(--text-primary);
+      font-size: 0.85rem;
+    }
+    
+    .transition-item .transition-duration {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+    }
+    
+    /* AI Effects */
+    .ai-effects-section {
+      background: var(--bg-secondary);
+      padding: 60px 40px;
+    }
+    
+    .ai-effects-section h2 {
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .ai-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .ai-feature {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      gap: 16px;
+      transition: all 0.3s;
+    }
+    
+    .ai-feature:hover {
+      border-color: var(--gold);
+    }
+    
+    .ai-feature .ai-icon {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, var(--gold), var(--warning));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    
+    .ai-feature h4 {
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    
+    .ai-feature p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+    
+    /* Audio Reactive */
+    .audio-reactive-section {
+      padding: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .audio-reactive-section h2 {
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .reactive-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    
+    .reactive-card {
+      background: linear-gradient(135deg, rgba(93,173,226,0.2), rgba(155,89,182,0.2));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+    
+    .reactive-card:hover {
+      border-color: var(--info);
+      transform: scale(1.02);
+    }
+    
+    .reactive-card .reactive-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    
+    .reactive-card h4 {
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    
+    .reactive-card p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+    
+    /* Export Settings */
+    .export-section {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 600px;
+      margin: 40px auto;
+    }
+    
+    .export-section h3 {
+      color: var(--gold);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .export-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .export-option {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .export-option:hover, .export-option.selected {
+      border-color: var(--gold);
+    }
+    
+    .export-option .resolution {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    
+    .export-option .label {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+    
+    .btn-export {
+      background: linear-gradient(135deg, var(--gold), #c49030);
+      color: #000;
+      border: none;
+      padding: 16px 40px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: block;
+      margin: 0 auto;
+    }
+    
+    .btn-export:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 30px rgba(212,160,60,0.4);
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="models-page">
+
+  <!-- GOAT Background -->
+  <div class="goat-bg"></div>
+  <div class="goat-bg-overlay"></div>
+
+  <nav class="top-nav">
+    <a href="index.html" class="logo">
+      <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+      <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+      <img src="logo.png" alt="Ms Money Penny">
+      <span>Ms Money Penny</span>
+      <span class="crown-badge">👑 GOAT</span>
+    </a>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 AI Models</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html" class="active">🎬 Movie Studio</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="studio-hero">
+    <h1>🎬 Movie Studio</h1>
+    <p class="subtitle">Professional AI-powered video editing with 3D effects, transitions, and templates. Create music videos, lyric videos, TikToks, YouTube content, and more. Inspired by Filmora, Premiere Pro, and DaVinci Resolve.</p>
+    <div class="feature-stats">
+      <div class="feature-stat">
+        <div class="number">50+</div>
+        <div class="label">Effects</div>
+      </div>
+      <div class="feature-stat">
+        <div class="number">16</div>
+        <div class="label">Transitions</div>
+      </div>
+      <div class="feature-stat">
+        <div class="number">6</div>
+        <div class="label">Templates</div>
+      </div>
+      <div class="feature-stat">
+        <div class="number">6</div>
+        <div class="label">AI Features</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Video Editor Interface -->
+  <section class="editor-section">
+    <h2 style="color: var(--gold); text-align: center; margin-bottom: 20px;">🎞️ Timeline Editor</h2>
+    <div class="editor-container">
+      <div class="editor-toolbar">
+        <button class="toolbar-btn active">🖱️ Select</button>
+        <button class="toolbar-btn">✂️ Cut</button>
+        <button class="toolbar-btn">🔗 Split</button>
+        <button class="toolbar-btn">🗑️ Delete</button>
+        <button class="toolbar-btn">📋 Copy</button>
+        <button class="toolbar-btn">📥 Import</button>
+        <button class="toolbar-btn">💾 Save</button>
+        <button class="toolbar-btn">⏪ Undo</button>
+        <button class="toolbar-btn">⏩ Redo</button>
+      </div>
+      
+      <div class="video-preview">
+        <div class="placeholder">
+          <div class="placeholder-icon">🎬</div>
+          <div class="placeholder-text">Drop video here or click Import to begin</div>
+        </div>
+      </div>
+      
+      <div class="timeline-container">
+        <div class="timeline-header">
+          <span class="timeline-time">00:00:00</span>
+          <span class="timeline-time">00:00:30</span>
+          <span class="timeline-time">00:01:00</span>
+          <span class="timeline-time">00:01:30</span>
+          <span class="timeline-time">00:02:00</span>
+          <span class="timeline-time">00:02:30</span>
+          <span class="timeline-time">00:03:00</span>
+        </div>
+        
+        <div class="timeline-track">
+          <span class="track-label">Video</span>
+          <div class="track-content">
+            <div class="track-clip" style="left: 0; width: 35%;">Clip 1</div>
+            <div class="track-clip" style="left: 38%; width: 40%;">Clip 2</div>
+          </div>
+        </div>
+        
+        <div class="timeline-track">
+          <span class="track-label">Audio</span>
+          <div class="track-content">
+            <div class="track-clip audio" style="left: 0; width: 90%;">🎵 Audio Track</div>
+          </div>
+        </div>
+        
+        <div class="timeline-track">
+          <span class="track-label">Effects</span>
+          <div class="track-content">
+            <div class="track-clip effects" style="left: 10%; width: 15%;">⚡ Effect</div>
+            <div class="track-clip effects" style="left: 50%; width: 20%;">✨ Filter</div>
+          </div>
+        </div>
+        
+        <div class="timeline-track">
+          <span class="track-label">Text</span>
+          <div class="track-content">
+            <div class="track-clip text" style="left: 5%; width: 10%;">Title</div>
+            <div class="track-clip text" style="left: 85%; width: 12%;">Credits</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Effects Section -->
+  <section class="effects-section">
+    <h2>🎨 Video Effects</h2>
+    <div class="effects-grid">
+      <div class="effect-card">
+        <div class="effect-icon">🎬</div>
+        <h4>Cinematic Look</h4>
+        <span class="effect-category">Color</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">📷</div>
+        <h4>Vintage Film</h4>
+        <span class="effect-category">Color</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">💜</div>
+        <h4>Neon Glow</h4>
+        <span class="effect-category">Color</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">⚪</div>
+        <h4>Black & White</h4>
+        <span class="effect-category">Color</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">🟤</div>
+        <h4>Sepia Tone</h4>
+        <span class="effect-category">Color</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">🌈</div>
+        <h4>HDR Effect</h4>
+        <span class="effect-category">Color</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">🧡</div>
+        <h4>Teal & Orange</h4>
+        <span class="effect-category">Color</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">🌀</div>
+        <h4>Glitch</h4>
+        <span class="effect-category">Overlay</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">📺</div>
+        <h4>VHS Effect</h4>
+        <span class="effect-category">Overlay</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">☀️</div>
+        <h4>Light Leak</h4>
+        <span class="effect-category">Overlay</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">🔥</div>
+        <h4>Film Burn</h4>
+        <span class="effect-category">Overlay</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">🌧️</div>
+        <h4>Rain Overlay</h4>
+        <span class="effect-category">Weather</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3D Effects -->
+  <section class="effects-section" style="background: var(--bg-secondary);">
+    <h2>🧊 3D Effects</h2>
+    <div class="effects-grid">
+      <div class="effect-card">
+        <div class="effect-icon">📝</div>
+        <h4>3D Text</h4>
+        <span class="effect-category">Text</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">🔄</div>
+        <h4>3D Rotation</h4>
+        <span class="effect-category">Transform</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">📚</div>
+        <h4>Parallax Scroll</h4>
+        <span class="effect-category">Transform</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">🔍</div>
+        <h4>Depth of Field</h4>
+        <span class="effect-category">Blur</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">✨</div>
+        <h4>3D Particles</h4>
+        <span class="effect-category">Particles</span>
+      </div>
+      <div class="effect-card">
+        <div class="effect-icon">💡</div>
+        <h4>3D Lens Flare</h4>
+        <span class="effect-category">Light</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Audio Reactive Effects -->
+  <section class="audio-reactive-section">
+    <h2>🎧 Audio Reactive Effects</h2>
+    <div class="reactive-grid">
+      <div class="reactive-card">
+        <div class="reactive-icon">📊</div>
+        <h4>Audio Spectrum</h4>
+        <p>Visual frequency bars that react to music</p>
+      </div>
+      <div class="reactive-card">
+        <div class="reactive-icon">〰️</div>
+        <h4>Audio Waveform</h4>
+        <p>Dynamic sound wave visualization</p>
+      </div>
+      <div class="reactive-card">
+        <div class="reactive-icon">⚡</div>
+        <h4>Beat Flash</h4>
+        <p>Flash effect synced to the beat</p>
+      </div>
+      <div class="reactive-card">
+        <div class="reactive-icon">🎆</div>
+        <h4>Audio Particles</h4>
+        <p>Particle effects that dance to music</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Templates -->
+  <section class="templates-section">
+    <h2>📋 Video Templates</h2>
+    <div class="templates-grid">
+      <div class="template-card">
+        <div class="template-preview">🎵</div>
+        <div class="template-info">
+          <h3>Music Video Template</h3>
+          <p>Perfect for music videos with beat sync and audio reactive effects</p>
+          <div class="template-meta">
+            <span>⏱️ 3 min</span>
+            <span>🎬 4 tracks</span>
+          </div>
+          <button class="btn-use-template">Use Template</button>
+        </div>
+      </div>
+      
+      <div class="template-card">
+        <div class="template-preview">📝</div>
+        <div class="template-info">
+          <h3>Lyric Video Template</h3>
+          <p>Animated lyrics with kinetic typography</p>
+          <div class="template-meta">
+            <span>⏱️ 4 min</span>
+            <span>🎬 4 tracks</span>
+          </div>
+          <button class="btn-use-template">Use Template</button>
+        </div>
+      </div>
+      
+      <div class="template-card">
+        <div class="template-preview">📱</div>
+        <div class="template-info">
+          <h3>TikTok/Reels (9:16)</h3>
+          <p>Vertical format for social media with trending effects</p>
+          <div class="template-meta">
+            <span>⏱️ 60 sec</span>
+            <span>🎬 1080x1920</span>
+          </div>
+          <button class="btn-use-template">Use Template</button>
+        </div>
+      </div>
+      
+      <div class="template-card">
+        <div class="template-preview">▶️</div>
+        <div class="template-info">
+          <h3>YouTube Intro</h3>
+          <p>Professional intro with logo animation and text reveal</p>
+          <div class="template-meta">
+            <span>⏱️ 10 sec</span>
+            <span>🎬 1080p</span>
+          </div>
+          <button class="btn-use-template">Use Template</button>
+        </div>
+      </div>
+      
+      <div class="template-card">
+        <div class="template-preview">🎭</div>
+        <div class="template-info">
+          <h3>Promo/Trailer</h3>
+          <p>Dynamic cuts, impact text, epic music ready</p>
+          <div class="template-meta">
+            <span>⏱️ 30 sec</span>
+            <span>🎬 4K</span>
+          </div>
+          <button class="btn-use-template">Use Template</button>
+        </div>
+      </div>
+      
+      <div class="template-card">
+        <div class="template-preview">🎙️</div>
+        <div class="template-info">
+          <h3>Podcast Video</h3>
+          <p>Multi-camera setup with lower thirds and waveform</p>
+          <div class="template-meta">
+            <span>⏱️ 60 min</span>
+            <span>🎬 Multi-cam</span>
+          </div>
+          <button class="btn-use-template">Use Template</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Transitions -->
+  <section class="transitions-section">
+    <h2>🔀 Transitions</h2>
+    <div class="transitions-grid">
+      <div class="transition-item">
+        <div class="transition-icon">🌑</div>
+        <div class="transition-name">Fade</div>
+        <div class="transition-duration">1.0s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">🔄</div>
+        <div class="transition-name">Dissolve</div>
+        <div class="transition-duration">1.5s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">➡️</div>
+        <div class="transition-name">Wipe Left</div>
+        <div class="transition-duration">0.8s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">⬅️</div>
+        <div class="transition-name">Wipe Right</div>
+        <div class="transition-duration">0.8s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">⬆️</div>
+        <div class="transition-name">Wipe Up</div>
+        <div class="transition-duration">0.8s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">⬇️</div>
+        <div class="transition-name">Wipe Down</div>
+        <div class="transition-duration">0.8s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">🔍</div>
+        <div class="transition-name">Zoom In</div>
+        <div class="transition-duration">0.6s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">🔎</div>
+        <div class="transition-name">Zoom Out</div>
+        <div class="transition-duration">0.6s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">🌀</div>
+        <div class="transition-name">3D Spin</div>
+        <div class="transition-duration">1.0s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">🔃</div>
+        <div class="transition-name">3D Flip X</div>
+        <div class="transition-duration">0.8s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">🔄</div>
+        <div class="transition-name">3D Flip Y</div>
+        <div class="transition-duration">0.8s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">🎲</div>
+        <div class="transition-name">3D Cube</div>
+        <div class="transition-duration">1.2s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">⚡</div>
+        <div class="transition-name">Glitch</div>
+        <div class="transition-duration">0.5s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">💥</div>
+        <div class="transition-name">Flash</div>
+        <div class="transition-duration">0.3s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">🌙</div>
+        <div class="transition-name">Luma Fade</div>
+        <div class="transition-duration">1.0s</div>
+      </div>
+      <div class="transition-item">
+        <div class="transition-icon">🔮</div>
+        <div class="transition-name">Morph</div>
+        <div class="transition-duration">2.0s</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI Features -->
+  <section class="ai-effects-section">
+    <h2>🤖 AI-Powered Features</h2>
+    <div class="ai-features">
+      <div class="ai-feature">
+        <div class="ai-icon">4️⃣</div>
+        <div>
+          <h4>AI Upscale 4K</h4>
+          <p>Enhance video quality to 4K resolution with AI denoising and sharpening</p>
+        </div>
+      </div>
+      <div class="ai-feature">
+        <div class="ai-icon">✂️</div>
+        <div>
+          <h4>AI Background Removal</h4>
+          <p>Automatically remove or replace backgrounds with precision edge detection</p>
+        </div>
+      </div>
+      <div class="ai-feature">
+        <div class="ai-icon">🎨</div>
+        <div>
+          <h4>AI Colorize</h4>
+          <p>Bring black & white footage to life with intelligent colorization</p>
+        </div>
+      </div>
+      <div class="ai-feature">
+        <div class="ai-icon">📷</div>
+        <div>
+          <h4>AI Stabilization</h4>
+          <p>Smooth shaky footage with advanced stabilization algorithms</p>
+        </div>
+      </div>
+      <div class="ai-feature">
+        <div class="ai-icon">⏱️</div>
+        <div>
+          <h4>AI Slow Motion</h4>
+          <p>Create smooth slow motion effects with frame interpolation</p>
+        </div>
+      </div>
+      <div class="ai-feature">
+        <div class="ai-icon">🖼️</div>
+        <div>
+          <h4>AI Style Transfer</h4>
+          <p>Apply artistic styles from famous paintings to your video</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Export Settings -->
+  <section style="padding: 40px; max-width: 1400px; margin: 0 auto;">
+    <div class="export-section">
+      <h3>📤 Export Settings</h3>
+      <div class="export-options">
+        <div class="export-option selected">
+          <div class="resolution">4K</div>
+          <div class="label">3840x2160</div>
+        </div>
+        <div class="export-option">
+          <div class="resolution">1080p</div>
+          <div class="label">1920x1080</div>
+        </div>
+        <div class="export-option">
+          <div class="resolution">720p</div>
+          <div class="label">1280x720</div>
+        </div>
+        <div class="export-option">
+          <div class="resolution">Vertical</div>
+          <div class="label">1080x1920</div>
+        </div>
+      </div>
+      <div style="text-align: center; margin-bottom: 20px;">
+        <label style="color: var(--text-secondary); margin-right: 10px;">Format:</label>
+        <select style="background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px; color: var(--text-primary);">
+          <option>MP4 (H.264)</option>
+          <option>MP4 (H.265)</option>
+          <option>WebM</option>
+          <option>MOV</option>
+          <option>AVI</option>
+        </select>
+      </div>
+      <button class="btn-export" onclick="startExport()">🚀 Render Video</button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="background: var(--bg-primary); padding: 40px; text-align: center; border-top: 1px solid var(--border);">
+    <p style="color: var(--text-muted);">© 2024 Life Imitates Art Inc. • Ms Money Penny GOAT Royalty Store</p>
+    <p style="color: var(--gold); margin-top: 8px;">👑 The Greatest Of All Time</p>
+  </footer>
+
+  <script>
+    // Export resolution selection
+    document.querySelectorAll('.export-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.export-option').forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+      });
+    });
+    
+    // Start Export
+    function startExport() {
+      alert('🎬 Rendering started!\n\nYour video will be ready shortly.\n\nYou will be notified when the render is complete.');
+    }
+    
+    // Template buttons
+    document.querySelectorAll('.btn-use-template').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const templateName = this.parentElement.querySelector('h3').textContent;
+        alert(`📋 Template "${templateName}" loaded!\n\nYou can now customize it in the timeline editor.`);
+      });
+    });
+  </script>
+</body>
+</html>

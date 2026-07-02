@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Studio Locator | Find Elite Studios Worldwide</title>
+<style>
+  :root{--gold:#d4a03c;--bg:#040608;--panel:#0d1117;--panel2:#131920;--pink:#f472b6;--purple:#a78bfa;--green:#22c55e;--red:#ef4444;--blue:#38bdf8;--text:#e2e8f0;--muted:#64748b;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;}
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:rgba(13,17,23,.97);border-bottom:1px solid rgba(212,160,60,.3);position:sticky;top:0;z-index:100;}
+  .nav-logo span{font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .nav-links a{color:var(--muted);text-decoration:none;padding:6px 14px;border-radius:20px;font-size:13px;transition:.3s;margin:0 3px;}
+  .nav-links a:hover,.nav-links a.active{background:rgba(212,160,60,.15);color:var(--gold);}
+  .btn-gold{background:linear-gradient(135deg,var(--gold),#b8860b);color:#000;padding:8px 20px;border:none;border-radius:20px;font-weight:700;cursor:pointer;font-size:13px;}
+
+  /* HERO */
+  .hero{padding:50px 28px 36px;text-align:center;background:radial-gradient(ellipse at 50% -20%,rgba(212,160,60,.12) 0%,transparent 65%);}
+  .hero-badge{display:inline-block;background:rgba(212,160,60,.1);border:1px solid rgba(212,160,60,.3);color:var(--gold);padding:5px 16px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:14px;}
+  .hero h1{font-size:48px;font-weight:900;margin-bottom:10px;}
+  .hero h1 span{background:linear-gradient(135deg,var(--gold),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .hero p{color:var(--muted);max-width:580px;margin:0 auto 28px;line-height:1.6;}
+
+  /* SEARCH BAR */
+  .search-bar{max-width:700px;margin:0 auto 20px;display:flex;gap:10px;background:var(--panel);border:1px solid rgba(212,160,60,.25);border-radius:16px;padding:8px 8px 8px 16px;}
+  .search-input{flex:1;background:none;border:none;color:var(--text);font-size:15px;outline:none;}
+  .search-input::placeholder{color:var(--muted);}
+  .search-btn{background:linear-gradient(135deg,var(--gold),#b8860b);color:#000;padding:10px 24px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;}
+  .search-filters{max-width:700px;margin:0 auto 32px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .sf{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.1);color:var(--muted);transition:.3s;}
+  .sf.active,.sf:hover{background:rgba(212,160,60,.15);color:var(--gold);border-color:rgba(212,160,60,.3);}
+
+  /* HERO STATS */
+  .hero-stats{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;}
+  .h-stat .val{font-size:26px;font-weight:900;color:var(--gold);}
+  .h-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+
+  /* MAIN LAYOUT */
+  .main{display:grid;grid-template-columns:1fr 420px;min-height:calc(100vh - 320px);}
+
+  /* STUDIOS LIST */
+  .studios-list{padding:24px;overflow-y:auto;border-right:1px solid rgba(255,255,255,.05);}
+  .list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .list-title{font-size:16px;font-weight:700;}
+  .sort-select{background:var(--panel);border:1px solid rgba(255,255,255,.1);color:var(--text);padding:6px 12px;border-radius:8px;font-size:12px;outline:none;}
+
+  /* STUDIO CARD */
+  .studio-card{background:var(--panel);border-radius:16px;padding:18px;margin-bottom:12px;border:1px solid rgba(255,255,255,.05);cursor:pointer;transition:all .3s;display:flex;gap:16px;}
+  .studio-card:hover,.studio-card.selected{border-color:var(--gold);background:rgba(212,160,60,.04);}
+  .studio-thumb{width:90px;height:90px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;}
+  .st-a{background:linear-gradient(135deg,#1a1000,#402800);}
+  .st-b{background:linear-gradient(135deg,#1a0533,#4c1d95);}
+  .st-c{background:linear-gradient(135deg,#001a20,#003340);}
+  .st-d{background:linear-gradient(135deg,#1a1a00,#333300);}
+  .st-e{background:linear-gradient(135deg,#0a1a10,#1a4020);}
+  .st-f{background:linear-gradient(135deg,#1a0a1a,#3d1a5e);}
+  .studio-info{flex:1;min-width:0;}
+  .studio-name{font-size:16px;font-weight:800;margin-bottom:3px;}
+  .studio-location{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:4px;}
+  .studio-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+  .studio-tag{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600;}
+  .tag-rec{background:rgba(212,160,60,.15);color:var(--gold);}
+  .tag-photo{background:rgba(167,139,250,.15);color:var(--purple);}
+  .tag-vid{background:rgba(56,189,248,.15);color:var(--blue);}
+  .tag-fashion{background:rgba(244,114,182,.15);color:var(--pink);}
+  .tag-vr{background:rgba(34,197,94,.15);color:var(--green);}
+  .studio-meta{display:flex;gap:14px;align-items:center;}
+  .studio-rating{color:var(--gold);font-size:13px;font-weight:700;}
+  .studio-reviews{font-size:11px;color:var(--muted);}
+  .studio-price{font-size:13px;font-weight:700;color:var(--text);}
+  .studio-avail{font-size:11px;color:var(--green);}
+  .studio-dist{font-size:11px;color:var(--muted);margin-left:auto;}
+  .studio-action{display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;}
+  .book-btn{background:linear-gradient(135deg,var(--gold),#b8860b);color:#000;border:none;padding:8px 16px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;}
+  .fav-btn{background:rgba(244,114,182,.1);border:1px solid rgba(244,114,182,.2);color:var(--pink);padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;}
+
+  /* MAP PANEL */
+  .map-panel{background:var(--panel2);position:relative;overflow:hidden;}
+  .map-placeholder{width:100%;height:100%;min-height:400px;background:linear-gradient(135deg,#040a10,#0a1520,#040a10);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;position:relative;overflow:hidden;}
+  .map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(212,160,60,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(212,160,60,.04) 1px,transparent 1px);background-size:40px 40px;}
+  .map-pins{position:absolute;inset:0;}
+  .map-pin{position:absolute;transform:translate(-50%,-100%);cursor:pointer;transition:.3s;}
+  .map-pin:hover{transform:translate(-50%,-100%) scale(1.2);}
+  .pin-dot{width:12px;height:12px;border-radius:50%;border:2px solid #fff;margin:0 auto 0;}
+  .pin-label{background:rgba(0,0,0,.8);color:var(--text);font-size:9px;padding:2px 6px;border-radius:4px;white-space:nowrap;margin-top:2px;font-weight:600;}
+  .map-overlay{position:relative;z-index:2;text-align:center;}
+  .map-title{font-size:18px;font-weight:700;color:var(--gold);}
+  .map-sub{font-size:13px;color:var(--muted);margin-top:6px;}
+  .map-controls{display:flex;gap:8px;margin-top:12px;}
+  .mc-btn{background:rgba(212,160,60,.1);border:1px solid rgba(212,160,60,.2);color:var(--gold);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;}
+
+  /* STUDIO DETAIL (right panel) */
+  .studio-detail{padding:20px;border-top:1px solid rgba(255,255,255,.05);}
+  .detail-header{margin-bottom:16px;}
+  .detail-name{font-size:20px;font-weight:900;margin-bottom:4px;}
+  .detail-loc{font-size:13px;color:var(--muted);margin-bottom:10px;}
+  .detail-imgs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;}
+  .detail-img{width:80px;height:60px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;}
+  .detail-amenities{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+  .amenity{font-size:11px;background:var(--panel);padding:4px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.06);}
+  .booking-cal{background:var(--panel);border-radius:12px;padding:14px;margin-bottom:14px;}
+  .cal-title{font-size:13px;font-weight:700;margin-bottom:10px;}
+  .time-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+  .slot{padding:8px;border-radius:8px;text-align:center;font-size:12px;cursor:pointer;transition:.3s;border:1px solid rgba(255,255,255,.06);background:var(--panel2);}
+  .slot.avail:hover,.slot.selected-slot{background:rgba(212,160,60,.15);border-color:var(--gold);color:var(--gold);}
+  .slot.taken{opacity:.3;cursor:not-allowed;text-decoration:line-through;}
+  .book-now-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),#b8860b);border:none;border-radius:12px;color:#000;font-size:15px;font-weight:700;cursor:pointer;}
+
+  @media(max-width:900px){.main{grid-template-columns:1fr;}.map-panel{display:none;}}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="nav-logo"><span>👑 GOAT</span></a>
+  <div class="nav-links">
+    <a href="index.html">Dashboard</a>
+    <a href="goat-studio-locator.html" class="active">Studio Locator</a>
+    <a href="goat-3d-studio.html">3D Studio</a>
+    <a href="goat-entertainment.html">Entertainment</a>
+    <a href="goat-celebrity-lounge.html">VIP Lounge</a>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <span style="color:var(--green);font-size:13px;">📍 Beverly Hills, CA</span>
+    <button class="btn-gold">List My Studio</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">📍 GLOBAL STUDIO NETWORK</div>
+  <h1>Find Your <span>Perfect Studio</span></h1>
+  <p>Discover and book world-class recording studios, photography sets, film locations, and creative spaces used by the world's biggest celebrities.</p>
+
+  <div class="search-bar">
+    <span style="font-size:18px">🔍</span>
+    <input class="search-input" placeholder="Search city, studio name, or type (e.g. 'Recording Studio NYC')" id="searchInput">
+    <button class="search-btn" onclick="searchStudios()">Search</button>
+  </div>
+
+  <div class="search-filters">
+    <div class="sf active">All Types</div>
+    <div class="sf">🎙 Recording</div>
+    <div class="sf">📸 Photography</div>
+    <div class="sf">🎬 Film/Video</div>
+    <div class="sf">👗 Fashion</div>
+    <div class="sf">🥊 Fitness</div>
+    <div class="sf">🎨 Art/Creative</div>
+    <div class="sf">🎮 VR/XR</div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="h-stat"><div class="val">12,400+</div><div class="lbl">Studios Listed</div></div>
+    <div class="h-stat"><div class="val">184</div><div class="lbl">Countries</div></div>
+    <div class="h-stat"><div class="val">4.9★</div><div class="lbl">Avg Rating</div></div>
+    <div class="h-stat"><div class="val">98%</div><div class="lbl">Booking Rate</div></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- STUDIOS LIST -->
+  <div class="studios-list">
+    <div class="list-header">
+      <div class="list-title">128 Studios Near You</div>
+      <select class="sort-select">
+        <option>Sort: Recommended</option>
+        <option>Price: Low to High</option>
+        <option>Highest Rated</option>
+        <option>Nearest First</option>
+        <option>Available Now</option>
+      </select>
+    </div>
+    <div id="studiosList"></div>
+  </div>
+
+  <!-- MAP + DETAIL PANEL -->
+  <div class="map-panel">
+    <div class="map-placeholder" style="height:350px">
+      <div class="map-grid"></div>
+      <!-- Map Pins -->
+      <div class="map-pins" id="mapPins"></div>
+      <div class="map-overlay">
+        <div style="font-size:48px">🗺</div>
+        <div class="map-title">Global Studio Map</div>
+        <div class="map-sub">12,400+ studios in 184 countries</div>
+        <div class="map-controls">
+          <button class="mc-btn">🔍 Zoom In</button>
+          <button class="mc-btn">📍 Near Me</button>
+          <button class="mc-btn">🌍 World View</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDIO DETAIL -->
+    <div class="studio-detail" id="studioDetail">
+      <div class="detail-header">
+        <div class="detail-name" id="detailName">👑 Select a Studio</div>
+        <div class="detail-loc" id="detailLoc">Click any studio to see details & availability</div>
+      </div>
+      <div id="detailContent" style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">
+        <div style="font-size:48px;margin-bottom:10px">🎙</div>
+        Browse the list and tap a studio to see photos, amenities, availability, and book instantly.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const studios = [
+  {
+    id:1,emoji:'🎙',bg:'st-a',name:'Gold Standard Recording',loc:'Beverly Hills, CA • 0.8 mi',
+    tags:['Recording','Podcast','Mixing'],types:['tag-rec','tag-rec','tag-rec'],
+    rating:'5.0',reviews:'284',price:'$450/hr',avail:'Available Now',dist:'0.8 mi',
+    amenities:['Pro Tools HD','Neve 8078 Console','SSL 4000G','Vocal Booth','Lounge','Catering','WiFi','Parking'],
+    imgs:['🎙','🎛','🎚','🎤'],mapX:25,mapY:40,
+    desc:'The gold standard of recording studios. Used by Grammy winners and global superstars. 48-track SSL, full vocal booth, and dedicated engineer included.'
+  },
+  {
+    id:2,emoji:'📸',bg:'st-b',name:'Crown Photography Palace',loc:'Hollywood, CA • 1.2 mi',
+    tags:['Photography','Fashion','Video'],types:['tag-photo','tag-fashion','tag-vid'],
+    rating:'4.9',reviews:'412',price:'$280/hr',avail:'Available Now',dist:'1.2 mi',
+    amenities:['Cyclorama Wall','4K Cameras','Lighting Rig','Makeup Room','Wardrobe','Hair','Backdrop Wall','Props'],
+    imgs:['📸','💡','🎨','👗'],mapX:45,mapY:30,
+    desc:'Hollywood\'s premier celebrity photography studio. 5,000 sq ft with floor-to-ceiling cyclorama, professional lighting grid, and full styling suite.'
+  },
+  {
+    id:3,emoji:'🎬',bg:'st-c',name:'GOAT Film Productions',loc:'Culver City, CA • 3.4 mi',
+    tags:['Film','Green Screen','4K Video'],types:['tag-vid','tag-vid','tag-vid'],
+    rating:'4.8',reviews:'189',price:'$850/hr',avail:'Book for Tomorrow',dist:'3.4 mi',
+    amenities:['LED Volume Wall','Green Screen','RED Cinema 8K','Drone','Lighting Truck','Sound Stage','Director\'s Suite','Craft Services'],
+    imgs:['🎬','🎥','💡','🎭'],mapX:65,mapY:55,
+    desc:'Film-grade production facility with state-of-the-art LED Volume wall for virtual production. Perfect for music videos, commercials, and short films.'
+  },
+  {
+    id:4,emoji:'👗',bg:'st-d',name:'Runway Fashion Studio',loc:'West Hollywood, CA • 2.1 mi',
+    tags:['Fashion','Photography','3D Scan'],types:['tag-fashion','tag-photo','tag-vr'],
+    rating:'4.9',reviews:'321',price:'$380/hr',avail:'Available Now',dist:'2.1 mi',
+    amenities:['120ft Runway','Digital Fitting','3D Body Scanner','Wardrobe Vault','Stylist Suite','Makeup Station','Photography Grid','HVAC'],
+    imgs:['👗','✨','📸','💄'],mapX:35,mapY:60,
+    desc:'The ultimate fashion studio featuring a 120ft catwalk, digital fitting technology, and 3D body scanning. Where fashion meets technology.'
+  },
+  {
+    id:5,emoji:'🎮',bg:'st-e',name:'Metaverse XR Studio',loc:'Santa Monica, CA • 4.8 mi',
+    tags:['VR/XR','Motion Capture','3D'],types:['tag-vr','tag-vid','tag-vr'],
+    rating:'4.7',reviews:'98',price:'$620/hr',avail:'Available Now',dist:'4.8 mi',
+    amenities:['Full-Body MoCap','VR Headsets','Unreal Engine 5','HoloLens 2','Green Volume','Haptic Suits','4K 360 Camera','AI Integration'],
+    imgs:['🎮','🥽','🤖','🌐'],mapX:20,mapY:70,
+    desc:'Next-generation XR studio for virtual production, metaverse content, and immersive experiences. Powered by Unreal Engine 5 and custom GOAT AI.'
+  },
+  {
+    id:6,emoji:'🎵',bg:'st-f',name:'Purple Haze Music Lab',loc:'Compton, CA • 12.4 mi',
+    tags:['Recording','Beat Making','Live'],types:['tag-rec','tag-rec','tag-rec'],
+    rating:'5.0',reviews:'567',price:'$320/hr',avail:'Available Now',dist:'12.4 mi',
+    amenities:['MPC Studio','Roland TR-909','Korg Minilogue','Akai Force','Yamaha Grand','Fender Collection','DJ Setup','Lounge'],
+    imgs:['🎵','🎹','🥁','🎸'],mapX:75,mapY:70,
+    desc:'Legendary music lab with the finest collection of vintage synthesizers, drum machines, and recording equipment. Where hits are born.'
+  },
+];
+
+const listEl = document.getElementById('studiosList');
+function renderStudios(data) {
+  listEl.innerHTML = '';
+  data.forEach(s => {
+    listEl.innerHTML += `
+      <div class="studio-card" id="card-${s.id}" onclick="selectStudio(${s.id})">
+        <div class="studio-thumb ${s.bg}">${s.emoji}</div>
+        <div class="studio-info">
+          <div class="studio-name">${s.name}</div>
+          <div class="studio-location">📍 ${s.loc}</div>
+          <div class="studio-tags">
+            ${s.tags.map((t,i) => `<span class="studio-tag ${s.types[i]}">${t}</span>`).join('')}
+          </div>
+          <div class="studio-meta">
+            <span class="studio-rating">★ ${s.rating}</span>
+            <span class="studio-reviews">(${s.reviews})</span>
+            <span class="studio-price">${s.price}</span>
+            <span class="studio-avail">● ${s.avail}</span>
+          </div>
+        </div>
+        <div class="studio-action">
+          <button class="book-btn" onclick="event.stopPropagation();bookStudio('${s.name}')">Book Now</button>
+          <button class="fav-btn" onclick="event.stopPropagation()">♡ Save</button>
+          <div class="studio-dist">${s.dist}</div>
+        </div>
+      </div>`;
+  });
+}
+renderStudios(studios);
+
+// Map pins
+const pinsEl = document.getElementById('mapPins');
+const pinColors = ['var(--gold)','var(--purple)','var(--blue)','var(--gold)','var(--green)','var(--pink)'];
+studios.forEach((s,i) => {
+  pinsEl.innerHTML += `
+    <div class="map-pin" style="left:${s.mapX}%;top:${s.mapY}%" onclick="selectStudio(${s.id})">
+      <div style="background:${pinColors[i]};width:10px;height:10px;border-radius:50%;border:2px solid #fff;margin:0 auto"></div>
+      <div class="pin-label">${s.emoji} ${s.name.split(' ')[0]}</div>
+    </div>`;
+});
+
+// Select studio
+function selectStudio(id) {
+  const s = studios.find(x => x.id === id);
+  document.querySelectorAll('.studio-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-'+id).classList.add('selected');
+
+  document.getElementById('detailName').textContent = s.emoji + ' ' + s.name;
+  document.getElementById('detailLoc').textContent = '📍 ' + s.loc + ' • ' + s.rating + '★ (' + s.reviews + ' reviews)';
+
+  const slots = ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM'];
+  const takenSlots = [1,3,6];
+
+  document.getElementById('detailContent').innerHTML = `
+    <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px">${s.desc}</div>
+    <div class="detail-imgs">
+      ${s.imgs.map(img => `<div class="detail-img" style="background:var(--panel2)">${img}</div>`).join('')}
+    </div>
+    <div class="detail-amenities">
+      ${s.amenities.map(a => `<span class="amenity">✓ ${a}</span>`).join('')}
+    </div>
+    <div class="booking-cal">
+      <div class="cal-title">📅 Available Today — ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
+      <div class="time-slots">
+        ${slots.map((sl,i) => `
+          <div class="slot ${takenSlots.includes(i)?'taken':'avail'}" onclick="selectSlot(this,'${sl}')">
+            ${sl}<br><span style="font-size:9px;color:var(--muted)">${takenSlots.includes(i)?'Booked':'Open'}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:12px;font-size:13px">
+      <span style="color:var(--muted)">Rate</span><span style="font-weight:700;color:var(--gold)">${s.price}</span>
+    </div>
+    <button class="book-now-btn" onclick="bookStudio('${s.name}')">⚡ Book Instantly — ${s.price}</button>
+  `;
+}
+
+function selectSlot(el, time) {
+  document.querySelectorAll('.slot.avail').forEach(s => s.classList.remove('selected-slot'));
+  el.classList.add('selected-slot');
+}
+
+function bookStudio(name) {
+  const msg = `✅ Booking Request Sent!\n\n📍 ${name}\n📅 Today • Selected Time Slot\n\nYou'll receive confirmation within 10 minutes.`;
+  alert(msg);
+}
+
+function searchStudios() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  if(!q) { renderStudios(studios); return; }
+  const filtered = studios.filter(s => s.name.toLowerCase().includes(q) || s.loc.toLowerCase().includes(q) || s.tags.some(t => t.toLowerCase().includes(q)));
+  renderStudios(filtered.length ? filtered : studios);
+}
+
+// Filter tabs
+document.querySelectorAll('.sf').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.sf').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

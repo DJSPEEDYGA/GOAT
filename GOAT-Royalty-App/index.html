@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOAT Royalty App | Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --goat-gold: #FFD700;
+            --goat-purple: #8B5CF6;
+            --neon-green: #00FF88;
+            --neon-blue: #00BFFF;
+            --neon-pink: #FF00FF;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #0a1a0a 50%, #0a0a1a 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        
+        .glow-gold { text-shadow: 0 0 10px var(--goat-gold), 0 0 20px var(--goat-gold); }
+        .glow-green { text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green); }
+        .glow-purple { text-shadow: 0 0 10px var(--goat-purple), 0 0 20px var(--goat-purple); }
+        
+        .sidebar {
+            background: linear-gradient(180deg, rgba(10, 20, 10, 0.95), rgba(5, 10, 5, 0.98));
+            border-right: 1px solid rgba(0, 255, 136, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .sidebar-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 4px 8px;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .sidebar-item.active {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(139, 92, 246, 0.2));
+            border-left: 3px solid var(--neon-green);
+        }
+        
+        .sidebar-section {
+            padding: 8px 16px;
+            margin-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-section:first-child {
+            border-top: none;
+            margin-top: 0;
+        }
+        
+        .sidebar-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 8px;
+        }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(10, 30, 10, 0.9), rgba(5, 15, 5, 0.95));
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(0, 255, 136, 0.5);
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.1);
+        }
+        
+        .stat-card {
+            background: linear-gradient(145deg, rgba(0, 255, 136, 0.05), rgba(139, 92, 246, 0.05));
+            border: 1px solid rgba(0, 255, 136, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.1);
+        }
+        
+        .big-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--neon-green), var(--goat-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .quick-action {
+            background: linear-gradient(145deg, rgba(20, 20, 30, 0.9), rgba(10, 10, 20, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .quick-action:hover {
+            border-color: var(--neon-green);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+        }
+        
+        .quick-action .icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-green), var(--goat-gold));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .agent-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .agent-online {
+            background: var(--neon-green);
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--neon-pink);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+        
+        .hero-text {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff, var(--neon-green), var(--goat-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+        
+        .floating-card {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="flex">
+    <div class="grid-bg"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar w-64 min-h-screen fixed left-0 top-0 z-50 flex flex-col scrollbar-hide overflow-y-auto">
+        <!-- Logo -->
+        <div class="p-4 border-b border-gray-800">
+            <div class="flex items-center gap-3">
+                <div class="text-3xl">🐐</div>
+                <div>
+                    <div class="font-orbitron font-bold text-lg glow-green">GOAT</div>
+                    <div class="text-xs text-gray-400">Royalty App</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="flex-1 py-4">
+            <!-- Main -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Main</div>
+                <div class="sidebar-item active" onclick="navigate('home')">
+                    <span>🏠</span>
+                    <span>Home</span>
+                </div>
+                <div class="sidebar-item" onclick="navigate('dashboard')">
+                    <span>📊</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="sidebar-item" onclick="navigate('royalties')">
+                    <span>💰</span>
+                    <span>Royalties</span>
+                    <span class="notification-badge">!</span>
+                </div>
+            </div>
+            
+            <!-- GOAT Force HQ -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">GOAT Force HQ</div>
+                <div class="sidebar-item" onclick="navigate('dj-speedy')">
+                    <span>👑</span>
+                    <span>DJ Speedy</span>
+                </div>
+                <div class="sidebar-item" onclick="navigate('waka')">
+                    <span>🔥</span>
+                    <span>Waka Flocka</span>
+                </div>
+                <div class="sidebar-item" onclick="navigate('nexus')">
+                    <span>💜</span>
+                    <span>Nexus (AI)</span>
+                    <div class="agent-indicator agent-online ml-auto"></div>
+                </div>
+                <div class="sidebar-item" onclick="navigate('money-penny')">
+                    <span>💙</span>
+                    <span>Money Penny</span>
+                    <div class="agent-indicator agent-online ml-auto"></div>
+                </div>
+                <div class="sidebar-item" onclick="navigate('codex')">
+                    <span>💚</span>
+                    <span>Codex</span>
+                    <div class="agent-indicator agent-online ml-auto"></div>
+                </div>
+            </div>
+            
+            <!-- Creator Tools -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Creator Tools</div>
+                <div class="sidebar-item" onclick="navigate('royalty-calc')">
+                    <span>🧮</span>
+                    <span>Royalty Calculator</span>
+                </div>
+                <div class="sidebar-item" onclick="navigate('split-sheet')">
+                    <span>📝</span>
+                    <span>Split Sheets</span>
+                </div>
+                <div class="sidebar-item" onclick="navigate('contracts')">
+                    <span>📋</span>
+                    <span>Contracts</span>
+                </div>
+                <div class="sidebar-item" onclick="navigate('catalog')">
+                    <span>📚</span>
+                    <span>Catalog Manager</span>
+                </div>
+            </div>
+            
+            <!-- Gaming & Metaverse -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Gaming & Metaverse</div>
+                <div class="sidebar-item" onclick="navigate('gta-world')">
+                    <span>🌍</span>
+                    <span>GOAT World RP</span>
+                </div>
+                <div class="sidebar-item" onclick="navigate('agent-payments')">
+                    <span>💳</span>
+                    <span>Agent Payments</span>
+                </div>
+                <div class="sidebar-item" onclick="navigate('properties')">
+                    <span>🏠</span>
+                    <span>Properties</span>
+                </div>
+            </div>
+            
+            <!-- System -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">System</div>
+                <div class="sidebar-item" onclick="navigate('settings')">
+                    <span>⚙️</span>
+                    <span>Settings</span>
+                </div>
+                <div class="sidebar-item" onclick="navigate('security')">
+                    <span>🔒</span>
+                    <span>Security</span>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- User -->
+        <div class="p-4 border-t border-gray-800">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                    👑
+                </div>
+                <div class="flex-1">
+                    <div class="font-semibold text-sm">DJ Speedy</div>
+                    <div class="text-xs text-gray-400">Admin</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="flex-1 ml-64 p-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="font-orbitron text-2xl font-bold">Welcome Back</h1>
+                <p class="text-gray-400">GOAT Force is online and operating</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="card px-4 py-2 flex items-center gap-2">
+                    <div class="agent-indicator agent-online"></div>
+                    <span class="text-sm">All Systems Operational</span>
+                </div>
+                <div class="card px-4 py-2">
+                    <span class="text-xs text-gray-400">Last Sync</span>
+                    <div class="font-orbitron text-sm">2 min ago</div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Hero Stats -->
+        <section class="mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="stat-card floating-card" style="animation-delay: 0s;">
+                    <div class="text-gray-400 text-sm mb-2">Total Royalties Recovered</div>
+                    <div class="big-number">$2.7B</div>
+                    <div class="progress-bar mt-3">
+                        <div class="progress-fill" style="width: 77%;"></div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">77% of estimated total</div>
+                </div>
+                
+                <div class="stat-card floating-card" style="animation-delay: 0.5s;">
+                    <div class="text-gray-400 text-sm mb-2">ASCAP Works</div>
+                    <div class="big-number">438</div>
+                    <div class="text-xs text-green-400 mt-3">344 unique song titles</div>
+                </div>
+                
+                <div class="stat-card floating-card" style="animation-delay: 1s;">
+                    <div class="text-gray-400 text-sm mb-2">AI Agents Active</div>
+                    <div class="big-number">3</div>
+                    <div class="flex justify-center gap-2 mt-3">
+                        <span title="Nexus">💜</span>
+                        <span title="Money Penny">💙</span>
+                        <span title="Codex">💚</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card floating-card" style="animation-delay: 1.5s;">
+                    <div class="text-gray-400 text-sm mb-2">GOAT World RP</div>
+                    <div class="big-number">74</div>
+                    <div class="text-xs text-blue-400 mt-3">Properties Available</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Quick Actions -->
+                <section class="card p-6">
+                    <h2 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                        <span>⚡</span> Quick Actions
+                    </h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="quick-action" onclick="navigate('royalty-calc')">
+                            <div class="icon">🧮</div>
+                            <div class="font-semibold">Calculate</div>
+                            <div class="text-xs text-gray-400">Royalties</div>
+                        </div>
+                        <div class="quick-action" onclick="navigate('contracts')">
+                            <div class="icon">📋</div>
+                            <div class="font-semibold">Generate</div>
+                            <div class="text-xs text-gray-400">Contract</div>
+                        </div>
+                        <div class="quick-action" onclick="navigate('gta-world')">
+                            <div class="icon">🌍</div>
+                            <div class="font-semibold">Enter</div>
+                            <div class="text-xs text-gray-400">GOAT World</div>
+                        </div>
+                        <div class="quick-action" onclick="navigate('agent-payments')">
+                            <div class="icon">💳</div>
+                            <div class="font-semibold">Pay</div>
+                            <div class="text-xs text-gray-400">Agents</div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Recent Activity -->
+                <section class="card p-6">
+                    <h2 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                        <span>📊</span> Recent Activity
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-3 bg-gray-900 bg-opacity-50 rounded-lg">
+                            <div class="text-2xl">💰</div>
+                            <div class="flex-1">
+                                <div class="font-semibold">Royalty Payment Received</div>
+                                <div class="text-sm text-gray-400">ASCAP - Q1 Distribution</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-orbitron text-green-400">+$12,450</div>
+                                <div class="text-xs text-gray-500">2 hours ago</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 p-3 bg-gray-900 bg-opacity-50 rounded-lg">
+                            <div class="text-2xl">💜</div>
+                            <div class="flex-1">
+                                <div class="font-semibold">Nexus Task Complete</div>
+                                <div class="text-sm text-gray-400">Catalog verification scan</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs text-gray-500">4 hours ago</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 p-3 bg-gray-900 bg-opacity-50 rounded-lg">
+                            <div class="text-2xl">🏠</div>
+                            <div class="flex-1">
+                                <div class="font-semibold">Property Purchased</div>
+                                <div class="text-sm text-gray-400">Harlem Brownstone - GOAT World RP</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-orbitron text-blue-400">0.8 ETH</div>
+                                <div class="text-xs text-gray-500">Yesterday</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 p-3 bg-gray-900 bg-opacity-50 rounded-lg">
+                            <div class="text-2xl">📋</div>
+                            <div class="flex-1">
+                                <div class="font-semibold">Contract Generated</div>
+                                <div class="text-sm text-gray-400">Production Agreement</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs text-gray-500">Yesterday</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Catalog Overview -->
+                <section class="card p-6">
+                    <h2 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                        <span>📚</span> Catalog Overview
+                    </h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <div class="text-center p-4 bg-gray-900 bg-opacity-50 rounded-lg">
+                            <div class="font-orbitron text-2xl font-bold text-green-400">438</div>
+                            <div class="text-xs text-gray-400">Total Works</div>
+                        </div>
+                        <div class="text-center p-4 bg-gray-900 bg-opacity-50 rounded-lg">
+                            <div class="font-orbitron text-2xl font-bold text-yellow-400">344</div>
+                            <div class="text-xs text-gray-400">Song Titles</div>
+                        </div>
+                        <div class="text-center p-4 bg-gray-900 bg-opacity-50 rounded-lg">
+                            <div class="font-orbitron text-2xl font-bold text-pink-400">77%</div>
+                            <div class="text-xs text-gray-400">Accept Rate</div>
+                        </div>
+                        <div class="text-center p-4 bg-gray-900 bg-opacity-50 rounded-lg">
+                            <div class="font-orbitron text-2xl font-bold text-purple-400">12</div>
+                            <div class="text-xs text-gray-400">Pending</div>
+                        </div>
+                    </div>
+                    <button class="w-full py-3 bg-gradient-to-r from-green-500 to-yellow-500 text-black font-bold rounded-lg hover:opacity-90 transition" onclick="navigate('catalog')">
+                        View Full Catalog →
+                    </button>
+                </section>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- AI Agents Status -->
+                <section class="card p-6">
+                    <h2 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                        <span>🤖</span> AI Agents
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3 p-3 bg-gray-900 bg-opacity-50 rounded-lg cursor-pointer hover:bg-opacity-70 transition" onclick="navigate('nexus')">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-2xl">
+                                💜
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold">Nexus</div>
+                                <div class="text-xs text-gray-400">PR Manager • Online</div>
+                            </div>
+                            <div class="agent-indicator agent-online"></div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-3 bg-gray-900 bg-opacity-50 rounded-lg cursor-pointer hover:bg-opacity-70 transition" onclick="navigate('money-penny')">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-2xl">
+                                💙
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold">Money Penny</div>
+                                <div class="text-xs text-gray-400">Intel & Finance • Online</div>
+                            </div>
+                            <div class="agent-indicator agent-online"></div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-3 bg-gray-900 bg-opacity-50 rounded-lg cursor-pointer hover:bg-opacity-70 transition" onclick="navigate('codex')">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-400 flex items-center justify-center text-2xl">
+                                💚
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold">Codex</div>
+                                <div class="text-xs text-gray-400">Field Operations • Online</div>
+                            </div>
+                            <div class="agent-indicator agent-online"></div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Server Status -->
+                <section class="card p-6">
+                    <h2 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                        <span>🖥️</span> Infrastructure
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">FiveM Server</span>
+                            <div class="flex items-center gap-2">
+                                <div class="agent-indicator agent-online"></div>
+                                <span class="text-xs text-green-400">Online</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Ubuntu 8TB</span>
+                            <div class="flex items-center gap-2">
+                                <div class="agent-indicator agent-online"></div>
+                                <span class="text-xs text-green-400">Connected</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Jetson Thor</span>
+                            <div class="flex items-center gap-2">
+                                <div class="agent-indicator agent-online"></div>
+                                <span class="text-xs text-green-400">Active</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">VPS Cluster</span>
+                            <div class="flex items-center gap-2">
+                                <div class="agent-indicator agent-online"></div>
+                                <span class="text-xs text-green-400">3/3 Nodes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-800">
+                        <div class="text-xs text-gray-400 mb-2">Gaming Server IP</div>
+                        <code class="font-orbitron text-sm text-green-400">72.61.193.184:30120</code>
+                    </div>
+                </section>
+                
+                <!-- Upcoming -->
+                <section class="card p-6">
+                    <h2 class="font-orbitron text-lg mb-4 flex items-center gap-2">
+                        <span>📅</span> Upcoming
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-gradient-to-r from-purple-900 to-pink-900 bg-opacity-30 rounded-lg">
+                            <div class="text-xs text-purple-400">Tomorrow</div>
+                            <div class="font-semibold">Studio Session</div>
+                            <div class="text-sm text-gray-400">Miami - 3:00 PM</div>
+                        </div>
+                        <div class="p-3 bg-gray-900 bg-opacity-50 rounded-lg">
+                            <div class="text-xs text-blue-400">Friday</div>
+                            <div class="font-semibold">Royalty Review</div>
+                            <div class="text-sm text-gray-400">Zoom - 2:00 PM</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        function navigate(page) {
+            const routes = {
+                'home': 'index.html',
+                'dashboard': 'web-app/index.html',
+                'royalties': 'web-app/royalty-calc.html',
+                'dj-speedy': 'goat-force-hq/dj-speedy/command-center.html',
+                'waka': 'goat-force-hq/waka-flocka/operations-hub.html',
+                'nexus': 'goat-force-hq/nexus/home.html',
+                'money-penny': 'goat-force-hq/money-penny/integration-panel.html',
+                'codex': 'goat-force-hq/codex/field-operations.html',
+                'royalty-calc': 'creator-tools/royalty-calculator-pro.html',
+                'split-sheet': 'creator-tools/split-sheet-generator.html',
+                'contracts': 'creator-tools/contract-generator.html',
+                'catalog': 'creator-tools/catalog-manager.html',
+                'gta-world': 'agent-hub/gta-world-property.html',
+                'agent-payments': 'agent-hub/payment-center.html',
+                'properties': 'web-app/goat-properties.html',
+                'settings': 'web-app/settings.html',
+                'security': 'web-app/goat-background-check.html'
+            };
+            
+            if (routes[page]) {
+                window.location.href = routes[page];
+            }
+        }
+        
+        // Simulate real-time updates
+        setInterval(() => {
+            document.querySelectorAll('.floating-card').forEach((card, i) => {
+                card.style.animationDelay = `${i * 0.5}s`;
+            });
+        }, 6000);
+    </script>
+</body>
+</html>

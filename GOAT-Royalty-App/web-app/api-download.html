@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚀 One-Click Model Downloader - Ms Money Penny</title>
+<link rel="stylesheet" href="css/goat-theme.css">
+<style>
+body{background:#0a0e1a;color:#e4e4e7;font-family:-apple-system,Segoe UI,sans-serif;margin:0;padding:20px;min-height:100vh}
+.container{max-width:1200px;margin:0 auto}
+h1{color:#d4a03c;text-align:center;margin:20px 0}
+.subtitle{text-align:center;color:#9ca3af;margin-bottom:30px}
+.download-card{background:linear-gradient(135deg,#1a1f2e,#1f2937);border:1px solid #2a3142;border-radius:12px;padding:20px;margin-bottom:16px;transition:all 0.2s}
+.download-card:hover{border-color:#d4a03c;transform:translateY(-2px)}
+.model-header{display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.model-name{font-size:18px;font-weight:700;color:#d4a03c}
+.model-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:#9ca3af}
+.meta-tag{background:#0f1419;padding:3px 8px;border-radius:10px;border:1px solid #2a3142}
+.model-desc{color:#d1d5db;margin-bottom:12px;line-height:1.5}
+.action-row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{padding:10px 16px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:13px;transition:all 0.2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:linear-gradient(90deg,#d4a03c,#ef4444);color:#fff}
+.btn-primary:hover{filter:brightness(1.1);transform:scale(1.02)}
+.btn-secondary{background:#374151;color:#e4e4e7}
+.btn-outline{background:transparent;border:1px solid #d4a03c;color:#d4a03c}
+.terminal{background:#000;color:#10b981;padding:12px;border-radius:6px;font-family:monospace;font-size:11px;margin-top:10px;white-space:pre-wrap;display:none;max-height:200px;overflow-y:auto}
+.status{display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600}
+.status-ready{background:#10b98120;color:#10b981}
+.status-downloading{background:#f59e0b20;color:#f59e0b}
+.status-done{background:#10b98140;color:#10b981}
+.progress-bar{width:100%;height:6px;background:#2a3142;border-radius:3px;overflow:hidden;margin-top:8px;display:none}
+.progress-fill{height:100%;background:linear-gradient(90deg,#d4a03c,#10b981);width:0%;transition:width 0.3s}
+.category-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center}
+.cat-tab{padding:8px 16px;background:#1a1f2e;border:1px solid #2a3142;border-radius:20px;cursor:pointer;color:#9ca3af;font-size:13px;transition:all 0.2s}
+.cat-tab.active{background:#d4a03c;color:#000;border-color:#d4a03c}
+.cat-tab:hover{color:#fff}
+.nav-bar{background:#0f1419;padding:15px 20px;margin:-20px -20px 20px -20px;border-bottom:1px solid #2a3142;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.nav-bar a{color:#d4a03c;text-decoration:none;font-weight:600}
+.info-box{background:linear-gradient(135deg,#1a1f2e,#2a1f2e);border:2px solid #d4a03c;border-radius:10px;padding:20px;margin-bottom:25px}
+.info-box h3{color:#d4a03c;margin:0 0 10px 0}
+.info-box code{background:#000;padding:2px 6px;border-radius:3px;color:#10b981;font-size:12px}
+.status-indicator{position:fixed;top:20px;right:20px;background:#1a1f2e;border:1px solid #2a3142;padding:10px 15px;border-radius:20px;font-size:12px;display:flex;align-items:center;gap:6px;z-index:100}
+.dot{width:8px;height:8px;border-radius:50%;animation:pulse 2s infinite}
+.dot.green{background:#10b981;box-shadow:0 0 10px #10b981}
+.dot.red{background:#ef4444}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<div class="nav-bar">
+  <a href="index.html">🏠 Home</a>
+  <a href="models.html">🧠 Models Browser</a>
+  <a href="api-download.html" style="color:#fff">📥 One-Click Downloader (Active)</a>
+  <a href="downloads.html">💾 Desktop Apps</a>
+</div>
+
+<div class="status-indicator">
+  <div class="dot red" id="serverDot"></div>
+  <span id="serverStatus">Checking server...</span>
+</div>
+
+<div class="container">
+  <h1>🚀 One-Click Model Downloader</h1>
+  <p class="subtitle">Download AI models DIRECTLY to your server — no terminal, no git, just click</p>
+
+  <div class="info-box">
+    <h3>📋 How It Works</h3>
+    <p>This downloader runs <code>git clone</code> on your <strong>server</strong> (not your browser). Models download to <code>/var/www/models/</code> and can be streamed from there.</p>
+    <p><strong>⚠️ Requires backend:</strong> The downloader needs the backend script installed on your server. <a href="#install" style="color:#d4a03c">See install instructions below</a></p>
+  </div>
+
+  <div class="category-tabs">
+    <div class="cat-tab active" onclick="filterCat('all')">All Models</div>
+    <div class="cat-tab" onclick="filterCat('foundation')">🏛️ Foundation</div>
+    <div class="cat-tab" onclick="filterCat('video')">🎬 Video</div>
+    <div class="cat-tab" onclick="filterCat('audio')">🎵 Audio</div>
+    <div class="cat-tab" onclick="filterCat('lora')">🎨 LoRAs</div>
+    <div class="cat-tab" onclick="filterCat('llm')">🤖 LLMs</div>
+  </div>
+
+  <div id="modelsList"></div>
+
+  <div id="install" class="info-box" style="margin-top:40px">
+    <h3>⚙️ Install the Backend Downloader</h3>
+    <p>Run this ONE command on your server to enable actual downloads:</p>
+    <pre style="background:#000;padding:15px;border-radius:6px;overflow-x:auto;color:#10b981;font-size:12px">curl -fsSL "https://raw.githubusercontent.com/DJSPEEDYGA/GOAT-Royalty-App/main/INSTALL-MODEL-DOWNLOADER.sh" | bash</pre>
+    <p style="margin-top:10px">After install, this page will have working download buttons. Models download to <code>/var/www/goat/models/</code> and are accessible at <code>http://your-server/models/MODEL_NAME/</code></p>
+  </div>
+</div>
+
+<script>
+const MODELS = [
+  // Foundation Models
+  { id: 'flux1dev', cat: 'foundation', name: 'FLUX.1-dev', repo: 'black-forest-labs/FLUX.1-dev', size: '~23GB', task: 'Text-to-Image', desc: 'Current best — highest quality, excellent prompt adherence. Base for most LoRAs.', likes: '745K', base: 'FLUX' },
+  { id: 'fluxschnell', cat: 'foundation', name: 'FLUX.1-schnell', repo: 'black-forest-labs/FLUX.1-schnell', size: '~23GB', task: 'Text-to-Image', desc: 'Fast variant of FLUX — 4-step generation.', likes: '693K', base: 'FLUX' },
+  { id: 'flux2dev', cat: 'foundation', name: 'FLUX.2-dev', repo: 'black-forest-labs/FLUX.2-dev', size: '~25GB', task: 'Image-to-Image', desc: 'Next-gen FLUX for image editing, inpainting, style transfer.', likes: '948K', base: 'FLUX' },
+  { id: 'sdxl', cat: 'foundation', name: 'Stable Diffusion XL 1.0', repo: 'stabilityai/stable-diffusion-xl-base-1.0', size: '~6.9GB', task: 'Text-to-Image', desc: 'Industry standard — massive ecosystem, thousands of LoRAs.', likes: '2.26M', base: 'SDXL' },
+  { id: 'sd35', cat: 'foundation', name: 'Stable Diffusion 3.5 Large', repo: 'stabilityai/stable-diffusion-3.5-large', size: '~16GB', task: 'Text-to-Image', desc: 'Latest SD3 — improved text rendering.', likes: '500K+', base: 'SD3' },
+  { id: 'wan21', cat: 'foundation', name: 'Wan2.1-T2I-14B', repo: 'Wan-AI/Wan2.1-T2I-14B', size: '~28GB', task: 'Text-to-Image', desc: '14B parameter model — excellent for characters.', likes: '200K+', base: 'Wan' },
+  // Video
+  { id: 'ltx23', cat: 'video', name: 'LTX-2.3', repo: 'Lightricks/LTX-2.3', size: '~21GB', task: 'Image-to-Video', desc: 'Leading open video generation model.', likes: '672', base: 'LTX' },
+  // LLMs
+  { id: 'llama32', cat: 'llm', name: 'Llama 3.2 3B', repo: 'meta-llama/Llama-3.2-3B', size: '~2GB', task: 'Text Generation', desc: 'Fast, smart LLM from Meta.', likes: '1.2M', base: 'Llama' },
+  { id: 'gemma2', cat: 'llm', name: 'Gemma 2 2B', repo: 'google/gemma-2-2b', size: '~1.6GB', task: 'Text Generation', desc: 'Google open LLM — fast, efficient.', likes: '800K', base: 'Gemma' }
+];
+
+let currentCat = 'all';
+let serverAvailable = false;
+
+async function checkServer() {
+  try {
+    const r = await fetch('/api/download/status', { signal: AbortSignal.timeout(3000) });
+    if (r.ok) {
+      serverAvailable = true;
+      document.getElementById('serverDot').className = 'dot green';
+      document.getElementById('serverStatus').textContent = 'Download service: ONLINE';
+    } else throw new Error();
+  } catch (e) {
+    serverAvailable = false;
+    document.getElementById('serverDot').className = 'dot red';
+    document.getElementById('serverStatus').textContent = 'Download service: OFFLINE (install backend)';
+  }
+}
+
+function renderModels() {
+  const filtered = currentCat === 'all' ? MODELS : MODELS.filter(m => m.cat === currentCat);
+  document.getElementById('modelsList').innerHTML = filtered.map(m => `
+    <div class="download-card" data-id="${m.id}">
+      <div class="model-header">
+        <div>
+          <div class="model-name">${m.name}</div>
+          <div class="model-meta">
+            <span class="meta-tag">💾 ${m.size}</span>
+            <span class="meta-tag">❤️ ${m.likes}</span>
+            <span class="meta-tag">🏗️ ${m.base}</span>
+            <span class="meta-tag">📝 ${m.task}</span>
+            <span class="status status-ready" id="status-${m.id}">READY</span>
+          </div>
+        </div>
+      </div>
+      <div class="model-desc">${m.desc}</div>
+      <div class="action-row">
+        <button class="btn btn-primary" onclick="downloadModel('${m.id}')">
+          🚀 Download to Server
+        </button>
+        <a href="https://huggingface.co/${m.repo}" target="_blank" class="btn btn-outline">
+          🔗 View on HuggingFace
+        </a>
+        <button class="btn btn-secondary" onclick="copyCmd('${m.id}')">
+          📋 Copy git clone
+        </button>
+        <button class="btn btn-secondary" onclick="toggleTerminal('${m.id}')">
+          💻 Show Terminal
+        </button>
+      </div>
+      <div class="progress-bar" id="progress-${m.id}"><div class="progress-fill" id="fill-${m.id}"></div></div>
+      <div class="terminal" id="terminal-${m.id}"></div>
+    </div>
+  `).join('');
+}
+
+function filterCat(cat) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderModels();
+}
+
+function copyCmd(id) {
+  const m = MODELS.find(x => x.id === id);
+  if (!m) return;
+  const cmd = `git clone https://huggingface.co/${m.repo}`;
+  navigator.clipboard.writeText(cmd);
+  const status = document.getElementById(`status-${id}`);
+  const orig = status.textContent;
+  status.textContent = 'COPIED!';
+  status.className = 'status status-done';
+  setTimeout(() => {
+    status.textContent = orig;
+    status.className = 'status status-ready';
+  }, 2000);
+}
+
+function toggleTerminal(id) {
+  const t = document.getElementById(`terminal-${id}`);
+  t.style.display = t.style.display === 'block' ? 'none' : 'block';
+  if (t.style.display === 'block' && !t.textContent) {
+    const m = MODELS.find(x => x.id === id);
+    t.textContent = `$ cd /var/www/goat/models\n$ git lfs install\n$ git clone https://huggingface.co/${m.repo}\n\n# Or use the backend service:\n$ curl -X POST http://your-server/api/download -H "Content-Type: application/json" -d '{"repo":"${m.repo}"}'`;
+  }
+}
+
+async function downloadModel(id) {
+  const m = MODELS.find(x => x.id === id);
+  if (!m) return;
+  
+  const status = document.getElementById(`status-${id}`);
+  const progress = document.getElementById(`progress-${id}`);
+  const fill = document.getElementById(`fill-${id}`);
+  const terminal = document.getElementById(`terminal-${id}`);
+  
+  if (!serverAvailable) {
+    terminal.style.display = 'block';
+    terminal.textContent = `❌ Backend downloader not installed on server.\n\nRun this on your server to enable:\ncurl -fsSL "https://raw.githubusercontent.com/DJSPEEDYGA/GOAT-Royalty-App/main/INSTALL-MODEL-DOWNLOADER.sh" | bash\n\nAlternatively, run this command yourself:\ncd /var/www/goat/models && git clone https://huggingface.co/${m.repo}`;
+    return;
+  }
+
+  status.textContent = 'DOWNLOADING';
+  status.className = 'status status-downloading';
+  progress.style.display = 'block';
+  terminal.style.display = 'block';
+  terminal.textContent = `Starting download of ${m.name}...\n`;
+
+  try {
+    const r = await fetch('/api/download', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({repo: m.repo, id: m.id})
+    });
+    const data = await r.json();
+    terminal.textContent += data.output || 'Started';
+    
+    // Poll status
+    const poll = setInterval(async () => {
+      const s = await fetch(`/api/download/status/${m.id}`).then(r => r.json()).catch(() => null);
+      if (s) {
+        fill.style.width = (s.progress || 0) + '%';
+        terminal.textContent = s.log || terminal.textContent;
+        if (s.done) {
+          clearInterval(poll);
+          status.textContent = 'COMPLETE';
+          status.className = 'status status-done';
+          fill.style.width = '100%';
+        }
+      }
+    }, 2000);
+  } catch (e) {
+    terminal.textContent += `\nError: ${e.message}`;
+    status.textContent = 'FAILED';
+  }
+}
+
+// Init
+checkServer();
+setInterval(checkServer, 10000);
+renderModels();
+</script>
+</body>
+</html>

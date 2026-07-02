@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏠 GOAT Properties — Celebrity Real Estate</title>
+<link rel="stylesheet" href="css/goat-theme.css">
+<style>
+:root{--bg:#040608;--panel:#0d1117;--panel2:#161b22;--gold:#d4a03c;--gold2:#f0c040;--ink:#f0ece4;--dim:#8b949e;--line:#21262d;--ok:#3fb950;--warn:#d29922;--info:#58a6ff;--glow:rgba(212,160,60,.25);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+nav{position:sticky;top:0;z-index:100;background:rgba(4,6,8,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);padding:0 24px;height:64px;display:flex;align-items:center;gap:16px;}
+.nav-logo{font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;}
+.nav-links{display:flex;gap:4px;margin-left:20px;flex:1;}
+.nav-links a{padding:6px 12px;border-radius:6px;text-decoration:none;color:var(--dim);font-size:13px;transition:all .2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--gold);}
+.nav-btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;}
+.hero{background:linear-gradient(135deg,rgba(212,160,60,.1),rgba(88,166,255,.08));padding:60px 24px;text-align:center;border-bottom:1px solid var(--line);}
+.hero h1{font-size:clamp(32px,5vw,60px);font-weight:900;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;}
+.hero p{color:var(--dim);font-size:18px;max-width:600px;margin:0 auto 30px;}
+.search-bar{display:flex;gap:12px;max-width:700px;margin:0 auto;flex-wrap:wrap;}
+.search-input{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:14px 20px;border-radius:12px;font-size:15px;min-width:200px;}
+.search-input:focus{outline:none;border-color:var(--gold);}
+.search-btn{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;padding:14px 28px;border-radius:12px;font-weight:700;cursor:pointer;font-size:15px;}
+.stats-row{display:flex;justify-content:center;gap:40px;padding:30px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+.stat{text-align:center;}
+.stat .n{font-size:28px;font-weight:800;color:var(--gold);}
+.stat .l{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;}
+.content{max-width:1400px;margin:0 auto;padding:40px 24px;}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:30px;}
+.filter-btn{background:var(--panel);border:1px solid var(--line);color:var(--dim);padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;transition:all .2s;}
+.filter-btn:hover,.filter-btn.active{background:var(--gold);color:#000;border-color:var(--gold);}
+.prop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:24px;}
+.prop-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;overflow:hidden;cursor:pointer;transition:all .3s;}
+.prop-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(212,160,60,.15);border-color:rgba(212,160,60,.3);}
+.prop-img{height:240px;display:flex;align-items:center;justify-content:center;font-size:5rem;position:relative;}
+.prop-badge{position:absolute;top:12px;left:12px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-luxury{background:rgba(212,160,60,.9);color:#000;}
+.badge-new{background:rgba(63,185,80,.9);color:#fff;}
+.badge-hot{background:rgba(230,57,70,.9);color:#fff;}
+.badge-exclusive{background:rgba(167,139,250,.9);color:#fff;}
+.prop-info{padding:20px;}
+.prop-location{font-size:12px;color:var(--gold);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.prop-name{font-size:18px;font-weight:700;margin-bottom:8px;}
+.prop-desc{font-size:13px;color:var(--dim);line-height:1.5;margin-bottom:16px;}
+.prop-features{display:flex;gap:16px;margin-bottom:16px;}
+.prop-feat{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--dim);}
+.prop-price{display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid var(--line);}
+.prop-amount{font-size:22px;font-weight:800;color:var(--gold);}
+.prop-type{font-size:12px;color:var(--dim);}
+.prop-actions{display:flex;gap:8px;margin-top:12px;}
+.prop-btn{flex:1;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+.prop-btn.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;}
+.prop-btn.secondary{background:var(--panel2);border:1px solid var(--line);color:var(--ink);}
+.prop-btn:hover{opacity:.85;}
+.map-section{background:var(--panel);border-radius:20px;padding:30px;margin-top:40px;border:1px solid var(--line);}
+.map-placeholder{height:400px;background:linear-gradient(135deg,rgba(212,160,60,.05),rgba(88,166,255,.05));border-radius:12px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;border:1px solid var(--line);}
+.map-placeholder .map-icon{font-size:4rem;}
+section.rec{padding:40px 0;}
+.sec-title{font-size:28px;font-weight:800;margin-bottom:8px;}
+.sec-sub{color:var(--dim);margin-bottom:30px;}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">🐐 GOAT Properties</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="goat-properties.html" class="active">Properties</a>
+    <a href="goat-studio-locator.html">Studios</a>
+    <a href="goat-bank.html">Finance</a>
+    <a href="agents-brain.html">AI Advisor</a>
+  </div>
+  <a href="goat-celebrity-lounge.html" class="nav-btn">👑 VIP Access</a>
+</nav>
+
+<div class="hero">
+  <h1>🏠 Celebrity Real Estate</h1>
+  <p>Exclusive luxury properties, investment opportunities, and dream homes for the elite. AI-powered search with private showings.</p>
+  <div class="search-bar">
+    <input type="text" class="search-input" placeholder="Search city, neighborhood, or property...">
+    <button class="search-btn" onclick="searchProps()">🔍 Search</button>
+  </div>
+</div>
+
+<div class="stats-row">
+  <div class="stat"><div class="n">$2.4B</div><div class="l">Portfolio Value</div></div>
+  <div class="stat"><div class="n">1,200+</div><div class="l">Luxury Properties</div></div>
+  <div class="stat"><div class="n">48</div><div class="l">Countries</div></div>
+  <div class="stat"><div class="n">95%</div><div class="l">Client Satisfaction</div></div>
+</div>
+
+<div class="content">
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterProps(this,'all')">All Properties</button>
+    <button class="filter-btn" onclick="filterProps(this,'mansion')">Mansions</button>
+    <button class="filter-btn" onclick="filterProps(this,'penthouse')">Penthouses</button>
+    <button class="filter-btn" onclick="filterProps(this,'villa')">Villas</button>
+    <button class="filter-btn" onclick="filterProps(this,'investment')">Investment</button>
+    <button class="filter-btn" onclick="filterProps(this,'studio')">Recording Studios</button>
+    <button class="filter-btn" onclick="filterProps(this,'island')">Private Islands</button>
+  </div>
+
+  <div class="prop-grid" id="propGrid">
+    <!-- Properties injected by JS -->
+  </div>
+
+  <section class="rec">
+    <div class="sec-title">Investment Insights</div>
+    <div class="sec-sub">AI-powered real estate analytics for maximum ROI</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      <div style="background:var(--panel);border-radius:16px;padding:24px;border:1px solid var(--line);">
+        <div style="font-size:2rem;margin-bottom:12px;">📈</div>
+        <h3 style="margin-bottom:8px;">Market Trends</h3>
+        <p style="color:var(--dim);font-size:13px;">Beverly Hills luxury market up 18% YoY. Miami penthouses showing strongest growth.</p>
+      </div>
+      <div style="background:var(--panel);border-radius:16px;padding:24px;border:1px solid var(--line);">
+        <div style="font-size:2rem;margin-bottom:12px;">🤖</div>
+        <h3 style="margin-bottom:8px;">AI Valuations</h3>
+        <p style="color:var(--dim);font-size:13px;">Our AI analyzes 200+ data points for accurate property valuations within 2% margin.</p>
+      </div>
+      <div style="background:var(--panel);border-radius:16px;padding:24px;border:1px solid var(--line);">
+        <div style="font-size:2rem;margin-bottom:12px;">🔐</div>
+        <h3 style="margin-bottom:8px;">Private Showings</h3>
+        <p style="color:var(--dim);font-size:13px;">Exclusive off-market properties available to VIP members only. Zero paparazzi risk.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="map-section">
+    <h3 style="margin-bottom:16px;">🗺️ Property Map</h3>
+    <div class="map-placeholder">
+      <div class="map-icon">🌍</div>
+      <div style="font-size:18px;font-weight:700;">Interactive Property Map</div>
+      <div style="color:var(--dim);font-size:14px;">1,200+ luxury properties across 48 countries</div>
+      <button onclick="loadMap()" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;padding:12px 24px;border-radius:10px;font-weight:700;cursor:pointer;margin-top:8px;">Load Map</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const properties = [
+  {emoji:'🏰',bg:'linear-gradient(135deg,#1a1000,#2a1800)',badge:'LUXURY',badgeClass:'badge-luxury',location:'Beverly Hills, CA',name:'Modern Mega Mansion',desc:'10,000 sq ft estate with home theater, recording studio, pool, and full smart home automation.',beds:8,baths:10,sqft:'10,000',price:'$42M',type:'For Sale'},
+  {emoji:'🌆',bg:'linear-gradient(135deg,#001020,#002040)',badge:'EXCLUSIVE',badgeClass:'badge-exclusive',location:'Manhattan, NY',name:'Ultra-Luxury Sky Penthouse',desc:'360° panoramic views. Private elevator, rooftop terrace, and dedicated concierge service.',beds:5,baths:6,sqft:'8,500',price:'$38M',type:'For Sale'},
+  {emoji:'🌴',bg:'linear-gradient(135deg,#001a10,#003020)',badge:'NEW',badgeClass:'badge-new',location:'Miami Beach, FL',name:'Oceanfront Villa',desc:'Direct beach access, infinity pool, 6-car garage, recording-ready soundproofed studio suite.',beds:7,baths:8,sqft:'12,000',price:'$28M',type:'For Sale'},
+  {emoji:'🏝️',bg:'linear-gradient(135deg,#001520,#003040)',badge:'HOT',badgeClass:'badge-hot',location:'Maldives',name:'Private Island Resort',desc:'6-acre private island with overwater villas, private beach, helipad, and luxury staff quarters.',beds:12,baths:14,sqft:'25,000',price:'$95M',type:'For Sale'},
+  {emoji:'🌇',bg:'linear-gradient(135deg,#100010,#200020)',badge:'EXCLUSIVE',badgeClass:'badge-exclusive',location:'Los Angeles, CA',name:'Hollywood Hills Compound',desc:'Gated compound with main house, guest house, recording studio, gym, and city views.',beds:9,baths:11,sqft:'14,000',price:'$55M',type:'For Sale'},
+  {emoji:'🗼',bg:'linear-gradient(135deg,#100a00,#201400)',badge:'LUXURY',badgeClass:'badge-luxury',location:'Paris, France',name:'Champs-Élysées Penthouse',desc:'Iconic address with Eiffel Tower views. Designer interiors, private wine cellar, rooftop garden.',beds:4,baths:5,sqft:'6,200',price:'$22M',type:'For Sale'},
+];
+
+function renderProps(list){
+  document.getElementById('propGrid').innerHTML = list.map(p=>`
+    <div class="prop-card">
+      <div class="prop-img" style="background:${p.bg}">
+        ${p.emoji}
+        <span class="prop-badge ${p.badgeClass}">${p.badge}</span>
+      </div>
+      <div class="prop-info">
+        <div class="prop-location">📍 ${p.location}</div>
+        <div class="prop-name">${p.name}</div>
+        <div class="prop-desc">${p.desc}</div>
+        <div class="prop-features">
+          <div class="prop-feat">🛏 ${p.beds} Beds</div>
+          <div class="prop-feat">🚿 ${p.baths} Baths</div>
+          <div class="prop-feat">📐 ${p.sqft} sq ft</div>
+        </div>
+        <div class="prop-price">
+          <div>
+            <div class="prop-amount">${p.price}</div>
+            <div class="prop-type">${p.type}</div>
+          </div>
+        </div>
+        <div class="prop-actions">
+          <button class="prop-btn primary" onclick="viewProp('${p.name}')">View Details</button>
+          <button class="prop-btn secondary" onclick="scheduleTour('${p.name}')">Schedule Tour</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+renderProps(properties);
+
+function filterProps(btn, type){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  toast(`Filtering: ${type}`);
+}
+
+function searchProps(){toast('🔍 Searching luxury properties...');}
+function viewProp(n){toast(`🏠 Loading details: ${n}`);}
+function scheduleTour(n){toast(`📅 Private tour scheduled: ${n}`);}
+function loadMap(){toast('🗺️ Loading interactive map...');}
+
+function toast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;top:70px;right:16px;background:linear-gradient(135deg,#d4a03c,#f0c040);color:#000;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},2500);
+}
+</script>
+</body>
+</html>

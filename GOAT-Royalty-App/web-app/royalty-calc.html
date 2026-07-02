@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>💰 Royalty Calculator — GOAT Force</title>
+<meta name="description" content="Live royalty calculator for streams, sales, sync, mechanical, and performance royalties. Based on real DSP payout rates and your actual catalog data." />
+<style>
+:root { --bg:#0a0e17; --card:#121826; --border:#1e2535; --text:#e4e4e7; --muted:#8b92a7; --gold:#FFD700; --hot:#FF3D00; --cyan:#00E5FF; --green:#10b981; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; background: #0c1220; border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.brand { padding: 0 20px 20px; border-bottom: 1px solid var(--border); }
+.brand h1 { font-size: 20px; color: var(--gold); }
+.brand small { color: var(--muted); font-size: 11px; }
+.nav { padding: 12px 0; }
+.nav a { display: flex; gap: 10px; padding: 10px 20px; color: var(--text); text-decoration: none; font-size: 14px; border-left: 3px solid transparent; }
+.nav a:hover { background: #1a2035; border-left-color: var(--gold); }
+.nav a.active { background: #1a2035; border-left-color: var(--gold); color: var(--gold); }
+.nav .section-title { padding: 16px 20px 8px; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.main { flex: 1; padding: 40px; max-width: 1400px; }
+.hero { padding: 40px; border-radius: 16px; background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(255,215,0,0.08)); border: 1px solid var(--green); margin-bottom: 40px; }
+.hero h2 { font-size: clamp(32px, 5vw, 48px); color: var(--green); margin-bottom: 12px; font-weight: 900; }
+.hero p { font-size: 17px; color: #d4d4d8; max-width: 700px; }
+
+.calc-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
+@media (max-width: 900px) { .calc-wrap { grid-template-columns: 1fr; } }
+.panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+.panel h3 { color: var(--gold); margin-bottom: 20px; font-size: 18px; }
+.input-group { margin-bottom: 16px; }
+.input-group label { display: block; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.input-group input, .input-group select { width: 100%; padding: 12px; background: #1a2035; border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 15px; }
+.input-group input:focus, .input-group select:focus { outline: none; border-color: var(--gold); }
+
+.result-item { padding: 14px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.result-item:last-child { border: none; }
+.result-label { color: var(--muted); font-size: 13px; }
+.result-value { font-weight: 700; font-size: 18px; color: var(--green); }
+.result-total { padding: 20px 0; border-top: 2px solid var(--gold); margin-top: 12px; }
+.result-total .result-label { color: var(--gold); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.result-total .result-value { font-size: 32px; color: var(--gold); }
+
+.rates-table { width: 100%; margin-top: 20px; }
+.rates-table th, .rates-table td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+.rates-table th { color: var(--cyan); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+
+.presets { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+.preset-btn { padding: 8px 16px; background: #1a2035; border: 1px solid var(--border); color: var(--text); border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+.preset-btn:hover, .preset-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
+
+.catalog-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-top: 20px; }
+.cstat { text-align: center; padding: 16px; background: #1a2035; border-radius: 10px; border: 1px solid var(--border); }
+.cstat .num { font-size: 24px; font-weight: 800; color: var(--gold); }
+.cstat .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand"><h1>🐐 GOAT Force</h1><small>Empire Edition v6</small></div>
+    <nav class="nav">
+      <div class="section-title">Main</div>
+      <a href="index.html">🏠 Home</a>
+      <a href="goat-royalty/">👑 GOAT Royalty App</a>
+      <a href="videos.html">🎬 Video Vault</a>
+      <a href="unreal-copilot.html">🎮 Unreal Copilot</a>
+      <div class="section-title">AI</div>
+      <a href="models.html">🔓 Free AI Models</a>
+      <a href="agents.html">🤖 11 AI Agents</a>
+      <a href="ai-dashboard.html">📊 AI Dashboard</a>
+      <div class="section-title">Royalty</div>
+      <a href="royalty-calc.html" class="active">💰 Royalty Calculator</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="dsp.html">🎵 DSP Distribution</a>
+      <a href="shop.html">🛍️ GOAT Shop</a>
+      <div class="section-title">Studios</div>
+      <a href="music-studio.html">🎚️ Music Studio</a>
+      <a href="movie-studio.html">🎥 Movie Studio</a>
+      <a href="screenwriting.html">✍️ Screenwriting</a>
+      <div class="section-title">Resources</div>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="roadmap.html">🗺️ Roadmap</a>
+      <a href="about.html">ℹ️ About</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <section class="hero">
+      <h2>💰 Royalty Calculator</h2>
+      <p>Calculate your royalties from streams, sales, sync, mechanical, and performance royalties. Based on real DSP payout rates. Your catalog: <strong>2,980 entries</strong>, <strong>Waka Flocka Flame</strong>, <strong>Fastassman Publishing</strong>.</p>
+    </section>
+
+    <div class="catalog-stats">
+      <div class="cstat"><div class="num">2,980</div><div class="lbl">Total Entries</div></div>
+      <div class="cstat"><div class="num">1,247</div><div class="lbl">With ISRCs</div></div>
+      <div class="cstat"><div class="num">892</div><div class="lbl">With Splits</div></div>
+      <div class="cstat"><div class="num">14</div><div class="lbl">Catalog Files</div></div>
+    </div>
+
+    <h3 style="margin: 30px 0 16px">Quick Presets</h3>
+    <div class="presets">
+      <button class="preset-btn" onclick="preset('small')">🌱 Indie Artist (100K streams)</button>
+      <button class="preset-btn active" onclick="preset('mid')">🎤 Mid-tier (1M streams)</button>
+      <button class="preset-btn" onclick="preset('major')">⭐ Major (10M streams)</button>
+      <button class="preset-btn" onclick="preset('viral')">🔥 Viral hit (100M streams)</button>
+      <button class="preset-btn" onclick="preset('waka')">🐐 Waka Catalog Estimate</button>
+    </div>
+
+    <div class="calc-wrap">
+      <!-- INPUT PANEL -->
+      <div class="panel">
+        <h3>📊 Input Data</h3>
+
+        <div class="input-group">
+          <label>Spotify Streams</label>
+          <input type="number" id="spotifyStreams" value="1000000" oninput="calculate()" />
+        </div>
+        <div class="input-group">
+          <label>Apple Music Streams</label>
+          <input type="number" id="appleStreams" value="300000" oninput="calculate()" />
+        </div>
+        <div class="input-group">
+          <label>YouTube Views (monetized)</label>
+          <input type="number" id="ytViews" value="500000" oninput="calculate()" />
+        </div>
+        <div class="input-group">
+          <label>Amazon Music Streams</label>
+          <input type="number" id="amazonStreams" value="150000" oninput="calculate()" />
+        </div>
+        <div class="input-group">
+          <label>Tidal Streams</label>
+          <input type="number" id="tidalStreams" value="50000" oninput="calculate()" />
+        </div>
+        <div class="input-group">
+          <label>Digital Sales (units)</label>
+          <input type="number" id="sales" value="500" oninput="calculate()" />
+        </div>
+        <div class="input-group">
+          <label>Sync Placements ($)</label>
+          <input type="number" id="sync" value="0" oninput="calculate()" />
+        </div>
+        <div class="input-group">
+          <label>Your Ownership % (after splits)</label>
+          <input type="number" id="ownership" value="100" min="0" max="100" oninput="calculate()" />
+        </div>
+        <div class="input-group">
+          <label>Publisher Cut %</label>
+          <input type="number" id="pubCut" value="50" min="0" max="100" oninput="calculate()" />
+        </div>
+      </div>
+
+      <!-- RESULTS PANEL -->
+      <div class="panel">
+        <h3>💵 Estimated Gross Royalties</h3>
+
+        <div class="result-item">
+          <span class="result-label">🟢 Spotify</span>
+          <span class="result-value" id="r_spotify">$0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">🍎 Apple Music</span>
+          <span class="result-value" id="r_apple">$0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">📺 YouTube</span>
+          <span class="result-value" id="r_yt">$0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">📦 Amazon Music</span>
+          <span class="result-value" id="r_amazon">$0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">🌊 Tidal</span>
+          <span class="result-value" id="r_tidal">$0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">💿 Digital Sales</span>
+          <span class="result-value" id="r_sales">$0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">🎬 Sync</span>
+          <span class="result-value" id="r_sync">$0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">⚖️ Mechanical (publishing)</span>
+          <span class="result-value" id="r_mech">$0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">🎤 Performance (PRO)</span>
+          <span class="result-value" id="r_perf">$0</span>
+        </div>
+
+        <div class="result-total">
+          <div class="result-item" style="border:none">
+            <span class="result-label">💰 Gross Total</span>
+            <span class="result-value" id="r_gross">$0</span>
+          </div>
+          <div class="result-item" style="border:none">
+            <span class="result-label">🎯 Your Take (after splits)</span>
+            <span class="result-value" id="r_net">$0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rates reference -->
+    <div class="panel" style="margin-bottom:40px">
+      <h3>📖 DSP Payout Rates (Industry Avg — 2024)</h3>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px">These rates are industry averages. Your actual payout depends on territory, subscriber tier, and distributor. Use the calculator above to model your specific numbers.</p>
+      <table class="rates-table">
+        <thead><tr><th>Platform</th><th>Per Stream</th><th>Per 1M Streams</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>🟢 Spotify</td><td>$0.003 - $0.005</td><td>~$4,000</td><td>Lowest tier major DSP</td></tr>
+          <tr><td>🍎 Apple Music</td><td>$0.007 - $0.010</td><td>~$8,500</td><td>2x Spotify rate</td></tr>
+          <tr><td>📺 YouTube</td><td>$0.002 - $0.008</td><td>~$5,000</td><td>Varies by ad revenue</td></tr>
+          <tr><td>📦 Amazon Music</td><td>$0.004</td><td>~$4,000</td><td>Similar to Spotify</td></tr>
+          <tr><td>🌊 Tidal</td><td>$0.01 - $0.0125</td><td>~$12,500</td><td>Highest per-stream</td></tr>
+          <tr><td>⚖️ Mechanical (MLC)</td><td>9.1¢ per sale/stream-equiv</td><td>varies</td><td>US statutory rate</td></tr>
+          <tr><td>🎤 ASCAP/BMI</td><td>Variable</td><td>~$3k-8k per 1M spins</td><td>Performance royalties</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script>
+// DSP rates (per stream, USD, industry avg)
+const RATES = {
+  spotify: 0.004,
+  apple: 0.0085,
+  yt: 0.002,
+  amazon: 0.004,
+  tidal: 0.012,
+  sale: 1.2,      // net per download
+  mechanical: 0.00091, // mechanical per stream (MLC rate)
+  performance: 0.003   // PRO rate per stream-equivalent
+};
+
+function fmt(n) {
+  return '$' + Math.round(n).toLocaleString('en-US');
+}
+
+function calculate() {
+  const spot = +document.getElementById('spotifyStreams').value || 0;
+  const apple = +document.getElementById('appleStreams').value || 0;
+  const yt = +document.getElementById('ytViews').value || 0;
+  const amz = +document.getElementById('amazonStreams').value || 0;
+  const tdl = +document.getElementById('tidalStreams').value || 0;
+  const sales = +document.getElementById('sales').value || 0;
+  const sync = +document.getElementById('sync').value || 0;
+  const ownership = (+document.getElementById('ownership').value || 100) / 100;
+  const pubCut = (+document.getElementById('pubCut').value || 50) / 100;
+
+  const spotAmt = spot * RATES.spotify;
+  const appleAmt = apple * RATES.apple;
+  const ytAmt = yt * RATES.yt;
+  const amzAmt = amz * RATES.amazon;
+  const tdlAmt = tdl * RATES.tidal;
+  const salesAmt = sales * RATES.sale;
+
+  const totalStreams = spot + apple + yt + amz + tdl;
+  const mech = totalStreams * RATES.mechanical * pubCut;
+  const perf = totalStreams * RATES.performance;
+
+  const gross = spotAmt + appleAmt + ytAmt + amzAmt + tdlAmt + salesAmt + sync + mech + perf;
+  const net = gross * ownership;
+
+  document.getElementById('r_spotify').textContent = fmt(spotAmt);
+  document.getElementById('r_apple').textContent = fmt(appleAmt);
+  document.getElementById('r_yt').textContent = fmt(ytAmt);
+  document.getElementById('r_amazon').textContent = fmt(amzAmt);
+  document.getElementById('r_tidal').textContent = fmt(tdlAmt);
+  document.getElementById('r_sales').textContent = fmt(salesAmt);
+  document.getElementById('r_sync').textContent = fmt(sync);
+  document.getElementById('r_mech').textContent = fmt(mech);
+  document.getElementById('r_perf').textContent = fmt(perf);
+  document.getElementById('r_gross').textContent = fmt(gross);
+  document.getElementById('r_net').textContent = fmt(net);
+}
+
+const PRESETS = {
+  small: { spotifyStreams: 70000, appleStreams: 20000, ytViews: 80000, amazonStreams: 10000, tidalStreams: 2000, sales: 50, sync: 0 },
+  mid:   { spotifyStreams: 1000000, appleStreams: 300000, ytViews: 500000, amazonStreams: 150000, tidalStreams: 50000, sales: 500, sync: 0 },
+  major: { spotifyStreams: 10000000, appleStreams: 3000000, ytViews: 5000000, amazonStreams: 1500000, tidalStreams: 500000, sales: 5000, sync: 25000 },
+  viral: { spotifyStreams: 100000000, appleStreams: 30000000, ytViews: 50000000, amazonStreams: 15000000, tidalStreams: 5000000, sales: 50000, sync: 250000 },
+  waka:  { spotifyStreams: 50000000, appleStreams: 15000000, ytViews: 100000000, amazonStreams: 8000000, tidalStreams: 3000000, sales: 12000, sync: 75000 }
+};
+
+function preset(key) {
+  const p = PRESETS[key];
+  Object.entries(p).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  });
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  calculate();
+}
+
+calculate();
+</script>
+</body>
+</html>

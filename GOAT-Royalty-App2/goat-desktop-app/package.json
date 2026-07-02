@@ -1,0 +1,93 @@
+{
+  "name": "goat-royalty-app",
+  "version": "3.0.0",
+  "description": "The Greatest of All Time Royalty Management Platform with Advanced AI Agents",
+  "author": {
+    "name": "DJ Speedy",
+    "email": "djspeedy@goatroyalty.com"
+  },
+  "homepage": "https://github.com/DJSPEEDYGA/GOAT-Royalty-App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win --x64",
+    "build:mac": "electron-builder --mac --x64 --arm64",
+    "build:linux": "electron-builder --linux --x64",
+    "build:portable": "electron-builder --win portable",
+    "build:all": "electron-builder --win --mac --linux",
+    "pack": "electron-builder --dir"
+  },
+  "build": {
+    "appId": "com.goatroyalty.app",
+    "productName": "GOAT Royalty App",
+    "publish": null,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/*/{CHANGELOG.md,README.md,readme.md,LICENSE,license}",
+      "!node_modules/.cache/*",
+      "!dist/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.png"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.productivity"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "icon": "assets/icon.png",
+      "category": "Office",
+      "maintainer": "DJ Speedy <djspeedy@goatroyalty.com>"
+    }
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0",
+    "axios": "^1.6.0",
+    "ethers": "^6.9.0",
+    "marked": "^11.0.0",
+    "highlight.js": "^11.9.0",
+    "chart.js": "^4.4.0",
+    "pdfmake": "^0.2.10",
+    "xlsx": "^0.18.5",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  }
+}

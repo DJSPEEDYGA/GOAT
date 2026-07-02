@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0a">
+<title>🏗️ GOAT Channel Strip — VMR Style</title>
+<link rel="stylesheet" href="css/goat-touch.css">
+<style>
+:root{--red:#c1121f;--gold:#ffd700;--black:#0a0a0a;--char:#1a1a1a;--gray:#2a2a2a;--cream:#f5f5dc;--green:#22c55e;--cyan:#06b6d4;--purple:#a855f7;--orange:#f97316;--silver:#9ca3af;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+body{background:var(--black);color:var(--cream);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overscroll-behavior:none;touch-action:manipulation;}
+
+.page{padding:70px 10px 90px;min-height:100vh;display:flex;flex-direction:column;gap:12px;}
+.topbar{position:fixed;top:0;left:0;right:0;height:60px;background:rgba(10,10,10,.97);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,215,0,.25);display:flex;align-items:center;padding:0 12px;gap:10px;z-index:100;}
+.brand{font-size:16px;font-weight:900;color:var(--gold);letter-spacing:.5px;}
+.spacer{flex:1;}
+.topbtn{min-height:40px;padding:6px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:var(--cream);font-size:13px;font-weight:700;cursor:pointer;}
+.topbtn:active{background:rgba(255,255,255,.15);}
+.chip{padding:5px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;font-size:11px;font-weight:700;color:var(--silver);}
+.chip.ai{background:linear-gradient(135deg,rgba(168,85,247,.3),rgba(107,33,168,.3));color:#c084fc;border-color:#a855f7;}
+
+/* ── CHANNEL STRIP ── */
+.vmr-strip{display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;background:#0d0d0d;border-radius:20px;border:2px solid rgba(255,215,0,.2);box-shadow:0 8px 32px rgba(0,0,0,.6);}
+.module{flex-shrink:0;min-width:100px;background:linear-gradient(180deg,#1a1a1a 0%,#111 100%);border-right:1px solid rgba(255,255,255,.06);padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;}
+.module:last-child{border-right:none;}
+.module.on .mod-header{color:var(--gold);}
+.mod-header{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--silver);text-align:center;display:flex;align-items:center;gap:4px;}
+.mod-power{width:20px;height:20px;border-radius:50%;background:#222;border:1px solid #444;display:flex;align-items:center;justify-content:center;font-size:8px;cursor:pointer;}
+.mod-power.on{background:var(--green);border-color:var(--green);box-shadow:0 0 6px var(--green);}
+.mod-knob{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#3a3a3a,#0a0a0a 70%);border:2px solid #555;position:relative;cursor:pointer;touch-action:none;}
+.mod-knob.gold{border-color:rgba(255,215,0,.6);}
+.mod-knob.red{border-color:rgba(193,18,31,.6);}
+.mod-knob.cyan{border-color:rgba(6,182,212,.6);}
+.mod-knob.green{border-color:rgba(34,197,94,.6);}
+.mod-knob.purple{border-color:rgba(168,85,247,.6);}
+.mk-dot{position:absolute;left:50%;top:5px;width:3px;height:16px;border-radius:2px;transform-origin:50% 21px;transform:translateX(-50%) rotate(-45deg);}
+.mod-label{font-size:8px;color:var(--silver);text-transform:uppercase;letter-spacing:.5px;text-align:center;}
+.mod-val{font-size:10px;font-weight:800;color:var(--cream);font-variant-numeric:tabular-nums;text-align:center;}
+.mod-switch{min-height:28px;padding:4px 8px;background:#0a0a0a;border:1px solid rgba(255,255,255,.1);border-radius:6px;font-size:9px;font-weight:800;color:var(--silver);cursor:pointer;text-align:center;text-transform:uppercase;letter-spacing:.3px;}
+.mod-switch.on{background:var(--red);color:white;border-color:var(--red);}
+
+/* ── FADER MODULE ── */
+.fader-mod{width:100%;height:180px;position:relative;background:#0a0a0a;border-radius:8px;border:1px solid rgba(255,255,255,.08);}
+.fader-mod-fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--red),var(--gold));border-radius:8px;transition:height .04s;}
+.fader-mod-thumb{position:absolute;left:-8px;right:-8px;height:32px;background:linear-gradient(180deg,#d4d4b8,#888);border-radius:5px;box-shadow:0 2px 8px rgba(0,0,0,.6);bottom:75%;transition:bottom .04s;}
+.fader-mod-thumb::after{content:'';position:absolute;left:4px;right:4px;top:50%;height:2px;background:var(--red);border-radius:1px;}
+
+/* ── METER MODULE ── */
+.meter-col{display:flex;gap:3px;align-items:flex-end;height:120px;}
+.mc-bar{width:10px;background:linear-gradient(to top,#22c55e 0%,#ffd700 70%,#e63946 95%);border-radius:2px;transition:height .08s;}
+
+/* ── AI SUGGEST BOX ── */
+.ai-box{background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(107,33,168,.1));border:1px solid rgba(168,85,247,.3);border-radius:14px;padding:14px;}
+.ai-box-title{font-size:11px;font-weight:900;color:#c084fc;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.ai-suggestion{padding:10px 12px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:10px;font-size:12px;color:var(--cream);line-height:1.5;margin-bottom:6px;cursor:pointer;}
+.ai-suggestion:active{background:rgba(168,85,247,.2);}
+.ai-suggestion strong{color:#c084fc;}
+
+/* ── PRESET BROWSER ── */
+.preset-browser{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.preset-card{background:var(--char);border:2px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;cursor:pointer;}
+.preset-card:active{border-color:var(--gold);background:rgba(255,215,0,.06);}
+.pc-name{font-size:13px;font-weight:800;color:var(--cream);}
+.pc-desc{font-size:10px;color:var(--silver);margin-top:2px;line-height:1.4;}
+.pc-tag{display:inline-block;padding:2px 8px;background:rgba(193,18,31,.2);border-radius:8px;font-size:9px;font-weight:800;color:var(--red);text-transform:uppercase;margin-top:4px;}
+
+/* ── BOTTOM NAV ── */
+.t-tabbar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,10,.98);backdrop-filter:blur(20px);border-top:1px solid rgba(255,215,0,.2);display:flex;justify-content:space-around;padding:8px 0;z-index:100;}
+.t-tab{flex:1;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--silver);text-decoration:none;}
+.t-tab .ic{font-size:22px;}
+.t-tab .lb{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.t-tab.active{color:var(--gold);}
+
+/* ── VIEW TABS ── */
+.view-tabs{display:flex;gap:6px;background:var(--char);padding:6px;border-radius:14px;}
+.view-tab{flex:1;padding:10px;text-align:center;font-size:11px;font-weight:800;border-radius:10px;cursor:pointer;color:var(--silver);text-transform:uppercase;}
+.view-tab.active{background:linear-gradient(135deg,#c1121f,#780000);color:white;}
+</style>
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms Money Penny">
+    <span>Ms Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+
+<header class="topbar">
+  <button class="topbtn" onclick="history.back()">←</button>
+  <div class="brand">🏗️ CHANNEL STRIP</div>
+  <span class="spacer"></span>
+  <span class="chip ai">🤖 AI</span>
+  <button class="topbtn" onclick="aiAnalyze()">✨ ANALYZE</button>
+</header>
+
+<main class="page">
+
+  <div class="view-tabs">
+    <div class="view-tab active" onclick="switchView('strip')">🏗️ STRIP</div>
+    <div class="view-tab" onclick="switchView('presets')">💾 PRESETS</div>
+    <div class="view-tab" onclick="switchView('ai')">🤖 AI</div>
+    <div class="view-tab" onclick="switchView('chain')">🔗 CHAIN</div>
+  </div>
+
+  <!-- STRIP VIEW -->
+  <div id="viewStrip">
+    <div style="font-size:10px;color:var(--gold);font-weight:800;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;">← Scroll for all modules →</div>
+    <div class="vmr-strip" id="vmrStrip"></div>
+  </div>
+
+  <!-- PRESETS VIEW -->
+  <div id="viewPresets" style="display:none;">
+    <div style="font-size:10px;color:var(--gold);font-weight:800;letter-spacing:1px;margin-bottom:10px;text-transform:uppercase;">💾 Signature Presets</div>
+    <div class="preset-browser" id="presetBrowser"></div>
+  </div>
+
+  <!-- AI VIEW -->
+  <div id="viewAI" style="display:none;">
+    <div class="ai-box">
+      <div class="ai-box-title">🤖 AI Mix Suggestions</div>
+      <div id="aiSuggestions"></div>
+      <button onclick="aiAnalyze()" style="width:100%;min-height:48px;background:linear-gradient(135deg,#a855f7,#6b21a8);border:none;border-radius:12px;color:white;font-weight:900;font-size:14px;cursor:pointer;margin-top:8px;">
+        🔄 RE-ANALYZE
+      </button>
+    </div>
+  </div>
+
+  <!-- CHAIN VIEW -->
+  <div id="viewChain" style="display:none;">
+    <div style="padding:14px;background:var(--char);border-radius:16px;border:1px solid rgba(255,255,255,.06);">
+      <div style="font-size:11px;color:var(--gold);font-weight:800;letter-spacing:1px;margin-bottom:12px;">🔗 Module Chain</div>
+      <div id="chainList" style="display:flex;flex-direction:column;gap:8px;"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button class="topbtn" onclick="randomizeChain()">🎲 RANDOMIZE</button>
+        <button class="topbtn" onclick="resetChain()">↺ RESET</button>
+        <button class="topbtn" style="background:linear-gradient(135deg,#c1121f,#780000);border-color:var(--red);" onclick="saveChain()">💾 SAVE</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<nav class="t-tabbar">
+  <a class="t-tab" href="touch-hub.html"><span class="ic">🏠</span><span class="lb">Hub</span></a>
+  <a class="t-tab" href="goat-mpc.html"><span class="ic">🥁</span><span class="lb">MPC</span></a>
+  <a class="t-tab" href="goat-sampler.html"><span class="ic">🎛️</span><span class="lb">Sampler</span></a>
+  <a class="t-tab" href="goat-autotune.html"><span class="ic">🎤</span><span class="lb">Tune</span></a>
+  <a class="t-tab active" href="goat-channel-strip.html"><span class="ic">🏗️</span><span class="lb">Strip</span></a>
+</nav>
+
+<script>
+const MODULES = [
+  { id:'input',  label:'INPUT',   color:'gold',
+    knobs:[{l:'GAIN',min:-20,max:20,v:0,u:'dB'},{l:'TRIM',min:-20,max:20,v:0,u:'dB'}],
+    switches:[{l:'PAD -20',on:false},{l:'PHASE ⌀',on:false},{l:'48V',on:false}] },
+  { id:'hpf',    label:'HPF / LPF', color:'cyan',
+    knobs:[{l:'HPF',min:20,max:500,v:80,u:'Hz'},{l:'LPF',min:1000,max:20000,v:18000,u:'Hz'}],
+    switches:[{l:'HPF ON',on:true},{l:'LPF ON',on:false}] },
+  { id:'eq3',    label:'3-BAND EQ', color:'gold',
+    knobs:[{l:'HI',min:-15,max:15,v:2,u:'dB'},{l:'MID',min:-15,max:15,v:0,u:'dB'},{l:'LO',min:-15,max:15,v:3,u:'dB'},{l:'MID F',min:200,max:8000,v:2000,u:'Hz'}],
+    switches:[{l:'EQ IN',on:true},{l:'HI BELL',on:false}] },
+  { id:'comp',   label:'COMPRESSOR', color:'red',
+    knobs:[{l:'THRESH',min:-40,max:0,v:-12,u:'dB'},{l:'RATIO',min:1,max:20,v:4,u:':1'},{l:'ATTACK',min:0,max:100,v:10,u:'ms'},{l:'RELEASE',min:0,max:500,v:80,u:'ms'},{l:'MAKEUP',min:0,max:20,v:4,u:'dB'}],
+    switches:[{l:'COMP IN',on:true},{l:'SIDECHAIN',on:false}] },
+  { id:'de-ess', label:'DE-ESSER', color:'purple',
+    knobs:[{l:'THRESH',min:-40,max:0,v:-18,u:'dB'},{l:'FREQ',min:4000,max:16000,v:7500,u:'Hz'},{l:'RANGE',min:0,max:24,v:8,u:'dB'}],
+    switches:[{l:'LISTEN',on:false},{l:'WIDE',on:false}] },
+  { id:'sat2',   label:'SATURATION', color:'orange',
+    knobs:[{l:'DRIVE',min:0,max:100,v:20,u:'%'},{l:'TONE',min:0,max:100,v:50,u:''},{l:'MIX',min:0,max:100,v:30,u:'%'}],
+    switches:[{l:'TUBE',on:true},{l:'TAPE',on:false},{l:'CLIP',on:false}] },
+  { id:'rev2',   label:'REVERB', color:'cyan',
+    knobs:[{l:'ROOM',min:0,max:100,v:30,u:'%'},{l:'DAMP',min:0,max:100,v:60,u:'%'},{l:'MIX',min:0,max:100,v:20,u:'%'}],
+    switches:[{l:'PLATE',on:true},{l:'HALL',on:false}] },
+  { id:'dly2',   label:'DELAY', color:'purple',
+    knobs:[{l:'TIME',min:0,max:100,v:25,u:'ms'},{l:'FEED',min:0,max:95,v:20,u:'%'},{l:'MIX',min:0,max:100,v:15,u:'%'}],
+    switches:[{l:'SYNC',on:true},{l:'PING',on:false}] },
+  { id:'fader',  label:'FADER', color:'gold',
+    fader:true, knobs:[{l:'PAN',min:-100,max:100,v:0,u:''}] },
+  { id:'meter',  label:'METER', color:'green', meter:true },
+];
+
+const strip = document.getElementById('vmrStrip');
+
+function buildStrip() {
+  strip.innerHTML = '';
+  MODULES.forEach(mod => {
+    const el = document.createElement('div');
+    el.className = 'module on';
+    el.id = 'mod-' + mod.id;
+    let inner = `
+      <div class="mod-header">
+        <div class="mod-power on" onclick="toggleMod('${mod.id}')">⏻</div>
+        <span>${mod.label}</span>
+      </div>`;
+    if (mod.knobs) {
+      mod.knobs.forEach(k => {
+        inner += `
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;" data-plugin="${mod.id}" data-knob="${k.l}">
+            <div class="mod-knob ${mod.color}"><div class="mk-dot" style="background:${dotColor(mod.color)};"></div></div>
+            <div class="mod-label">${k.l}</div>
+            <div class="mod-val" id="mv-${mod.id}-${k.l}">${k.v}${k.u}</div>
+          </div>`;
+      });
+    }
+    if (mod.switches) {
+      mod.switches.forEach(sw => {
+        inner += `<div class="mod-switch ${sw.on?'on':''}" onclick="this.classList.toggle('on')">${sw.l}</div>`;
+      });
+    }
+    if (mod.fader) {
+      inner += `
+        <div class="fader-mod" id="fader-${mod.id}" style="touch-action:none;">
+          <div class="fader-mod-fill" style="height:75%;"></div>
+          <div class="fader-mod-thumb" style="bottom:calc(75% - 16px);"></div>
+        </div>
+        <div class="mod-val" id="fader-val-${mod.id}">0.0 dB</div>`;
+    }
+    if (mod.meter) {
+      inner += `<div class="meter-col" id="mcol-${mod.id}">
+        ${Array.from({length:3},()=>'<div class="mc-bar" style="height:40%;"></div>').join('')}
+      </div>`;
+    }
+    el.innerHTML = inner;
+    strip.appendChild(el);
+  });
+  bindModKnobs();
+  bindFaders();
+}
+
+function dotColor(c) {
+  const map={gold:'#ffd700',red:'#c1121f',cyan:'#06b6d4',green:'#22c55e',purple:'#a855f7',orange:'#f97316'};
+  return map[c]||'#ffd700';
+}
+
+function toggleMod(id) {
+  const el=document.getElementById('mod-'+id);
+  const pw=el.querySelector('.mod-power');
+  el.classList.toggle('on');
+  pw.classList.toggle('on',el.classList.contains('on'));
+  if(navigator.vibrate) navigator.vibrate(10);
+}
+
+// ============== KNOB BINDING ==============
+function bindModKnobs() {
+  document.querySelectorAll('#vmrStrip [data-knob]').forEach(wrap => {
+    const knob = wrap.querySelector('.mod-knob');
+    if (!knob) return;
+    const pluginId = wrap.dataset.plugin;
+    const knobLabel = wrap.dataset.knob;
+    const def = MODULES.find(m=>m.id===pluginId);
+    const kDef = def?.knobs?.find(k=>k.l===knobLabel);
+    if (!kDef) return;
+    let val = kDef.v, lastY = null;
+    const range = kDef.max - kDef.min;
+    const valEl = document.getElementById(`mv-${pluginId}-${knobLabel}`);
+    function setVal(v) {
+      val = Math.max(kDef.min, Math.min(kDef.max, v));
+      const angle = ((val-kDef.min)/range - 0.5)*270;
+      const dot = knob.querySelector('.mk-dot');
+      if(dot) dot.style.transform=`translateX(-50%) rotate(${angle}deg)`;
+      if(valEl) valEl.textContent=val.toFixed(Math.abs(val)<10?1:0)+kDef.u;
+    }
+    setVal(val);
+    knob.addEventListener('touchstart',e=>{e.preventDefault();lastY=e.touches[0].clientY;if(navigator.vibrate)navigator.vibrate(4);},{passive:false});
+    knob.addEventListener('touchmove',e=>{e.preventDefault();const dy=lastY-e.touches[0].clientY;lastY=e.touches[0].clientY;setVal(val+dy*range/120);},{passive:false});
+    knob.addEventListener('mousedown',e=>{lastY=e.clientY;const mv=ev=>{const dy=lastY-ev.clientY;lastY=ev.clientY;setVal(val+dy*range/120);};const up=()=>{document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);});
+  });
+}
+
+// ============== FADER BINDING ==============
+function bindFaders() {
+  document.querySelectorAll('[id^="fader-"]').forEach(faderEl => {
+    if(!faderEl.classList||!faderEl.id.includes('fader-')) return;
+    const id = faderEl.id.replace('fader-','');
+    const fill = faderEl.querySelector('.fader-mod-fill');
+    const thumb = faderEl.querySelector('.fader-mod-thumb');
+    const valEl = document.getElementById('fader-val-'+id);
+    if(!fill||!thumb) return;
+    function handle(e) {
+      const touch=e.touches?e.touches[0]:e;
+      const rect=faderEl.getBoundingClientRect();
+      const pct=1-Math.max(0,Math.min(1,(touch.clientY-rect.top)/rect.height));
+      if(fill) fill.style.height=(pct*100)+'%';
+      if(thumb) thumb.style.bottom=`calc(${pct*100}% - 16px)`;
+      const dB=((pct*2-1)*12).toFixed(1);
+      if(valEl) valEl.textContent=(dB>0?'+':'')+dB+' dB';
+      if(navigator.vibrate&&Math.random()<.1) navigator.vibrate(4);
+    }
+    faderEl.addEventListener('touchstart',e=>{e.preventDefault();handle(e);},{passive:false});
+    faderEl.addEventListener('touchmove',e=>{e.preventDefault();handle(e);},{passive:false});
+    faderEl.addEventListener('mousedown',e=>{handle(e);const mv=ev=>handle(ev);const up=()=>{document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);});
+  });
+}
+
+// ============== METERS ============== 
+setInterval(()=>{
+  document.querySelectorAll('[id^="mcol-"]').forEach(col=>{
+    col.querySelectorAll('.mc-bar').forEach(b=>b.style.height=(10+Math.random()*75)+'%');
+  });
+},150);
+
+// ============== PRESETS ==============
+const PRESETS = [
+  {name:'Speedy Signature',desc:'Warm SSL EQ, gentle 1176 comp, plate reverb, subtle saturation.',tag:'Vocals'},
+  {name:'Waka Vocal Chain',desc:'Heavy 808-ready de-esser, aggressive comp, trap reverb tail.',tag:'Vocals'},
+  {name:'Mix Buss Glue',desc:'SSL G-comp, Pultec low-end, limiter, stereo widener.',tag:'Mix Buss'},
+  {name:'Trap Drum Buss',desc:'Fast 1176, HPF at 60Hz, SSL transient shaper, loud limit.',tag:'Drums'},
+  {name:'808 Channel',desc:'Low shelve boost, sub comp, harmonic saturation, long tail.',tag:'808'},
+  {name:'Hip-Hop Master',desc:'Tonal balance, multiband comp, IRC limiter, -0.3 true peak.',tag:'Master'},
+  {name:'Lo-Fi Vintage',desc:'Tape sat, vinyl noise, old radio HPF/LPF, spring reverb.',tag:'Creative'},
+  {name:'Radio Ready',desc:'Full chain optimized for streaming (-14 LUFS), bright high end.',tag:'Master'},
+];
+function buildPresets(){
+  const box=document.getElementById('presetBrowser'); box.innerHTML='';
+  PRESETS.forEach(p=>{
+    const card=document.createElement('div'); card.className='preset-card';
+    card.innerHTML=`<div class="pc-name">${p.name}</div><div class="pc-desc">${p.desc}</div><div class="pc-tag">${p.tag}</div>`;
+    card.addEventListener('click',()=>{
+      if(navigator.vibrate) navigator.vibrate([10,30,10]);
+      const t=document.createElement('div');
+      t.textContent='✅ Loaded: '+p.name;
+      t.style.cssText='position:fixed;bottom:110px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:2px solid #ffd700;color:#ffd700;padding:10px 20px;border-radius:20px;font-weight:800;z-index:999;pointer-events:none;';
+      document.body.appendChild(t); setTimeout(()=>t.remove(),2000);
+    });
+    box.appendChild(card);
+  });
+}
+buildPresets();
+
+// ============== AI SUGGESTIONS ==============
+const AI_SUGGESTIONS = [
+  '<strong>High-Pass Filter:</strong> Your low end is muddy below 120Hz on the vocal track. Try HPF at 120Hz.',
+  '<strong>De-esser:</strong> Detected harsh sibilance at ~7.8kHz. Reduce de-esser threshold by 4dB.',
+  '<strong>Compression:</strong> Dynamic range is too wide (22dB). Suggest 4:1 ratio, -14dB threshold, 10ms attack.',
+  '<strong>EQ:</strong> Boxiness detected at 400Hz. Cut -3dB with a narrow Q at 400Hz.',
+  '<strong>Saturation:</strong> Add subtle tube saturation (15%) to add harmonic warmth to the 808.',
+  '<strong>Reverb:</strong> Pre-delay of 18ms will separate the vocal from the room and add clarity.',
+  '<strong>Stereo Image:</strong> Kick and 808 should be mono below 100Hz. Enable Low Mono on the stereo bus.',
+];
+function buildAISuggestions(){
+  const box=document.getElementById('aiSuggestions'); box.innerHTML='';
+  const picks=AI_SUGGESTIONS.sort(()=>Math.random()-.5).slice(0,4);
+  picks.forEach(s=>{
+    const el=document.createElement('div'); el.className='ai-suggestion'; el.innerHTML=s;
+    el.addEventListener('click',()=>{el.style.background='rgba(168,85,247,.3)';setTimeout(()=>el.style.background='',400);});
+    box.appendChild(el);
+  });
+}
+buildAISuggestions();
+
+function aiAnalyze(){
+  const box=document.getElementById('aiSuggestions');
+  box.innerHTML='<div style="color:#c084fc;font-size:13px;text-align:center;padding:20px;">⏳ Analyzing signal chain…</div>';
+  setTimeout(buildAISuggestions,1500);
+  if(navigator.vibrate) navigator.vibrate([10,50,10]);
+}
+
+// ============== CHAIN LIST ==============
+function buildChainList(){
+  const list=document.getElementById('chainList'); list.innerHTML='';
+  MODULES.forEach((m,i)=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:10px;padding:10px;background:var(--char);border-radius:10px;border:1px solid rgba(255,255,255,.06);';
+    row.innerHTML=`<span style="font-size:10px;color:var(--silver);font-weight:700;min-width:20px;">${i+1}</span>
+      <span style="flex:1;font-size:13px;font-weight:800;">${m.label}</span>
+      <div class="mod-switch on" id="chain-sw-${m.id}" onclick="this.classList.toggle('on')">${m.id==='meter'?'METER':'IN'}</div>
+      <span style="font-size:16px;cursor:grab;color:var(--silver);">⠿</span>`;
+    list.appendChild(row);
+  });
+}
+buildChainList();
+
+function randomizeChain(){
+  const shuffled=[...MODULES].sort(()=>Math.random()-.5);
+  const list=document.getElementById('chainList'); list.innerHTML='';
+  shuffled.forEach((m,i)=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:10px;padding:10px;background:var(--char);border-radius:10px;border:1px solid rgba(255,215,0,.3);';
+    row.innerHTML=`<span style="font-size:10px;color:var(--gold);font-weight:700;min-width:20px;">${i+1}</span>
+      <span style="flex:1;font-size:13px;font-weight:800;">${m.label}</span>
+      <div class="mod-switch on">IN</div>`;
+    list.appendChild(row);
+  });
+  if(navigator.vibrate) navigator.vibrate([10,30,10]);
+}
+function resetChain(){ buildChainList(); }
+function saveChain(){ localStorage.setItem('goat.chain',JSON.stringify(MODULES.map(m=>m.id))); alert('💾 Chain saved!'); }
+
+// ============== VIEW SWITCH ==============
+function switchView(v){
+  ['Strip','Presets','AI','Chain'].forEach(n=>document.getElementById('view'+n).style.display='none');
+  document.getElementById('view'+v.charAt(0).toUpperCase()+v.slice(1)).style.display='block';
+  document.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+buildStrip();
+</script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>
