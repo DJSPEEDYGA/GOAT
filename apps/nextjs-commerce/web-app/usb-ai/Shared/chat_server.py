@@ -63,7 +63,11 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CHATS_DIR = os.path.join(SCRIPT_DIR, "chat_data")
 CHATS_FILE = os.path.join(CHATS_DIR, "chats.json")
 SETTINGS_FILE = os.path.join(CHATS_DIR, "settings.json")
-HTML_FILE = os.path.join(SCRIPT_DIR, "FastChatUI.html")
+# Default UI: prefer the full Oscar Console (touch Studio, generative UI,
+# customization, voice); fall back to the classic FastChatUI if it's missing.
+_CONSOLE_FILE = os.path.join(SCRIPT_DIR, "OscarConsole.html")
+_LEGACY_FILE = os.path.join(SCRIPT_DIR, "FastChatUI.html")
+HTML_FILE = _CONSOLE_FILE if os.path.exists(_CONSOLE_FILE) else _LEGACY_FILE
 
 
 # ── Pure-Python Hardware Stats (no psutil needed) ──────────────
