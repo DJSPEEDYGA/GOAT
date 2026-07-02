@@ -1,1 +1,0 @@
-// React app entry point
