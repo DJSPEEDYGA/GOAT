@@ -1,0 +1,36 @@
+name: Build GOAT App Installers
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+
+    steps:
+      - name: 🔄 Checkout repository
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🛠 Build installers with Electron Builder
+        run: npm run electron-builder
+
+      - name: 📤 Upload installers
+        uses: actions/upload-artifact@main
+        with:
+          name: GOAT-App-${{ matrix.os }}
+          path: |
+            dist/*.exe
+            dist/*.dmg

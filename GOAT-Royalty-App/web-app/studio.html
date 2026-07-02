@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GOAT Recording Studio — Pro DAW</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c14;--bg2:#0d1420;--bg3:#111928;--bg4:#1a2336;
+  --border:rgba(212,160,60,0.18);--gold:#d4a03c;--gold2:#f0c040;
+  --red:#e74c3c;--green:#2ecc71;--blue:#3498db;--purple:#9b59b6;
+  --cyan:#00d4ff;--orange:#f39c12;--pink:#e91e8c;
+  --text:#f0ece4;--sub:#7a7060;
+  --radius:8px;--tr:all .2s ease;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px}
+/* ── LAYOUT ── */
+#app{display:flex;flex-direction:column;height:100vh}
+#topbar{height:44px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 12px;flex-shrink:0}
+#main{display:flex;flex:1;overflow:hidden}
+#left-panel{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#center{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#right-panel{width:220px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#transport{height:52px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:0 14px;flex-shrink:0}
+#ruler-wrap{height:28px;display:flex;flex-shrink:0;background:var(--bg3);border-bottom:1px solid var(--border)}
+#lane-wrap{flex:1;overflow:auto;display:flex}
+#track-controls{width:220px;flex-shrink:0;border-right:1px solid var(--border)}
+#lanes-canvas-wrap{flex:1;position:relative;overflow:auto}
+#mini-mixer{height:120px;background:var(--bg2);border-top:1px solid var(--border);display:flex;flex-shrink:0}
+/* ── TOPBAR ── */
+.logo{font-size:15px;font-weight:800;color:var(--gold);letter-spacing:1px;margin-right:8px}
+.nav-btn{padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:11px;font-family:inherit;transition:var(--tr)}
+.nav-btn:hover,.nav-btn.active{background:var(--bg4);color:var(--text);border-color:var(--gold)}
+.spacer{flex:1}
+.tempo-display{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 10px}
+.tempo-val{font-size:18px;font-weight:700;color:var(--gold);cursor:ew-resize;user-select:none;min-width:50px;text-align:center}
+.tempo-lbl{font-size:10px;color:var(--sub)}
+.sig-btn{font-size:13px;font-weight:700;color:var(--text);background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 8px;cursor:pointer;font-family:inherit}
+/* ── TRANSPORT ── */
+.t-btn{width:34px;height:34px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:var(--tr);flex-shrink:0}
+.t-btn:hover{background:var(--bg4);border-color:var(--gold)}
+.t-btn.active{background:rgba(231,76,60,0.25);border-color:var(--red);color:var(--red)}
+.t-btn.play-btn.active{background:rgba(46,204,113,0.2);border-color:var(--green);color:var(--green)}
+.t-btn.loop-btn.active{background:rgba(52,152,219,0.2);border-color:var(--blue);color:var(--blue)}
+.pos-display{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:13px;font-weight:700;color:var(--cyan);font-family:'JetBrains Mono',monospace;min-width:120px;text-align:center}
+.pos-time{font-size:11px;color:var(--sub);font-family:'JetBrains Mono',monospace;min-width:90px;text-align:center}
+.meter-box{display:flex;gap:3px;align-items:flex-end;height:32px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 8px}
+.meter-bar{width:6px;border-radius:2px;background:var(--green);transition:height .05s}
+/* ── TRACK CONTROLS ── */
+.track-row{height:56px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:6px;background:var(--bg2)}
+.track-row:hover{background:var(--bg3)}
+.track-num{width:18px;font-size:10px;color:var(--sub);text-align:center;flex-shrink:0}
+.track-color{width:4px;height:40px;border-radius:2px;flex-shrink:0}
+.track-name{flex:1;font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track-type{font-size:9px;color:var(--sub);white-space:nowrap}
+.trk-btn{width:20px;height:20px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:var(--tr);flex-shrink:0;font-family:inherit}
+.trk-btn:hover,.trk-btn.on{border-color:var(--gold);color:var(--gold)}
+.trk-btn.m.on{border-color:var(--orange);color:var(--orange)}
+.trk-btn.s.on{border-color:var(--green);color:var(--green)}
+.trk-btn.r.on{border-color:var(--red);color:var(--red);background:rgba(231,76,60,.18)}
+.vol-mini{width:50px;height:4px;border-radius:2px;background:var(--bg4);position:relative;cursor:pointer}
+.vol-fill{height:100%;border-radius:2px;background:var(--green);pointer-events:none}
+/* ── RULER ── */
+#ruler-spacer{width:220px;border-right:1px solid var(--border);flex-shrink:0;background:var(--bg3)}
+#ruler-canvas{flex:1;display:block}
+/* ── LANES ── */
+#track-controls-inner{background:var(--bg2)}
+#lanes-canvas{display:block;cursor:pointer}
+/* ── RIGHT PANEL ── */
+.rpanel-section{border-bottom:1px solid var(--border);padding:10px}
+.rpanel-title{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.insert-slot{height:28px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;margin-bottom:4px;display:flex;align-items:center;padding:0 8px;gap:6px;cursor:pointer;transition:var(--tr)}
+.insert-slot:hover{border-color:var(--gold);background:var(--bg4)}
+.insert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.insert-name{font-size:10px;color:var(--text);flex:1}
+.insert-bypass{font-size:9px;color:var(--sub);background:var(--bg4);border:1px solid var(--border);border-radius:3px;padding:1px 5px;cursor:pointer}
+.send-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.send-lbl{font-size:10px;color:var(--sub);width:50px}
+.send-knob-wrap{position:relative}
+/* ── MONITOR ── */
+#monitor-canvas{display:block;width:100%;border-radius:6px;border:1px solid var(--border)}
+/* ── MINI MIXER ── */
+.mm-ch{width:52px;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:6px 4px;gap:3px;flex-shrink:0}
+.mm-ch-name{font-size:9px;color:var(--sub);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}
+.mm-meter{width:8px;height:50px;background:var(--bg4);border-radius:3px;position:relative;overflow:hidden}
+.mm-fill{width:100%;border-radius:3px;background:linear-gradient(to top,var(--green),var(--gold),var(--red));position:absolute;bottom:0;transition:height .06s}
+.mm-fader-wrap{width:40px;height:6px;background:var(--bg4);border-radius:3px;position:relative;cursor:pointer;margin-top:2px}
+.mm-fader-fill{height:100%;border-radius:3px;background:var(--blue);pointer-events:none}
+.mm-fader-thumb{width:10px;height:14px;background:var(--text);border-radius:2px;position:absolute;top:-4px;cursor:ew-resize;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+/* ── LEFT PANEL ── */
+.lpanel-section{border-bottom:1px solid var(--border);padding:10px}
+.lpanel-title{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.browser-item{height:26px;display:flex;align-items:center;padding:0 6px;gap:6px;border-radius:4px;cursor:pointer;transition:var(--tr)}
+.browser-item:hover{background:var(--bg4)}
+.browser-icon{font-size:12px;width:16px;text-align:center}
+.browser-name{font-size:11px;color:var(--text)}
+.ai-btn{width:100%;padding:7px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:11px;font-family:inherit;transition:var(--tr);text-align:left;display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.ai-btn:hover{border-color:var(--purple);color:var(--purple);background:rgba(155,89,182,.1)}
+.ai-btn .icon{font-size:14px}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<div id="app">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <span class="logo">🐐 STUDIO</span>
+    <button class="nav-btn active">Arrange</button>
+    <button class="nav-btn">Mixer</button>
+    <button class="nav-btn">Clip</button>
+    <button class="nav-btn">MIDI</button>
+    <button class="nav-btn">Score</button>
+    <div class="spacer"></div>
+    <div class="tempo-display">
+      <span class="tempo-lbl">BPM</span>
+      <span class="tempo-val" id="bpmVal" title="Drag to change BPM">140</span>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <button onclick="changeBpm(1)" style="background:none;border:none;color:var(--gold);cursor:pointer;line-height:1;font-size:10px">▲</button>
+        <button onclick="changeBpm(-1)" style="background:none;border:none;color:var(--gold);cursor:pointer;line-height:1;font-size:10px">▼</button>
+      </div>
+    </div>
+    <span class="sig-btn">4/4</span>
+    <div class="spacer"></div>
+    <a href="powerhouse.html" style="text-decoration:none"><button class="nav-btn">⬅ Home</button></a>
+  </div>
+
+  <div id="main">
+    <!-- LEFT PANEL -->
+    <div id="left-panel">
+      <div class="lpanel-section">
+        <div class="lpanel-title">🗂 Browser</div>
+        <div class="browser-item"><span class="browser-icon">🎵</span><span class="browser-name">Samples</span></div>
+        <div class="browser-item"><span class="browser-icon">🎛</span><span class="browser-name">Instruments</span></div>
+        <div class="browser-item"><span class="browser-icon">🔧</span><span class="browser-name">Effects</span></div>
+        <div class="browser-item"><span class="browser-icon">📂</span><span class="browser-name">Projects</span></div>
+        <div class="browser-item"><span class="browser-icon">⚡</span><span class="browser-name">Loops</span></div>
+        <div class="browser-item"><span class="browser-icon">🥁</span><span class="browser-name">Drum Kits</span></div>
+        <div class="browser-item"><span class="browser-icon">🎹</span><span class="browser-name">MIDI Files</span></div>
+      </div>
+      <div class="lpanel-section">
+        <div class="lpanel-title">🤖 AI Tools</div>
+        <button class="ai-btn"><span class="icon">✨</span>AI Compose</button>
+        <button class="ai-btn"><span class="icon">🎯</span>Auto-Arrange</button>
+        <button class="ai-btn"><span class="icon">🔊</span>Stem Split</button>
+        <button class="ai-btn"><span class="icon">🎸</span>Chord Suggest</button>
+        <button class="ai-btn"><span class="icon">🥁</span>Fill Generator</button>
+      </div>
+      <div class="lpanel-section">
+        <div class="lpanel-title">📋 Snapshots</div>
+        <div class="browser-item"><span class="browser-icon">💾</span><span class="browser-name">Session A</span></div>
+        <div class="browser-item"><span class="browser-icon">💾</span><span class="browser-name">Session B</span></div>
+        <div class="browser-item"><span class="browser-icon">➕</span><span class="browser-name">New Snapshot</span></div>
+      </div>
+      <div class="lpanel-section">
+        <div class="lpanel-title">🔁 Routing</div>
+        <div id="routing-info" style="font-size:10px;color:var(--sub);line-height:1.8">
+          Master → Stereo Out<br>
+          Bus A → Drums<br>
+          Bus B → Synths<br>
+          Bus C → Vocals<br>
+          FX1 → Reverb Hall<br>
+          FX2 → Delay Sync
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div id="center">
+      <!-- TRANSPORT -->
+      <div id="transport">
+        <button class="t-btn" onclick="seekStart()" title="Return to Start">⏮</button>
+        <button class="t-btn" id="btnRew" onclick="seek(-4)" title="Rewind">⏪</button>
+        <button class="t-btn play-btn" id="btnPlay" onclick="togglePlay()" title="Play/Stop">▶</button>
+        <button class="t-btn" id="btnRec" onclick="toggleRec()" title="Record">⏺</button>
+        <button class="t-btn" id="btnFwd" onclick="seek(4)" title="Fast Forward">⏩</button>
+        <button class="t-btn loop-btn" id="btnLoop" onclick="toggleLoop()" title="Loop">🔁</button>
+        <div class="spacer"></div>
+        <span class="pos-display" id="posDisplay">001 | 1 | 000</span>
+        <span class="pos-time" id="posTime">00:00:00.000</span>
+        <div class="spacer"></div>
+        <div class="meter-box">
+          <div class="meter-bar" id="mL" style="height:60%;background:var(--green)"></div>
+          <div class="meter-bar" id="mR" style="height:55%;background:var(--green)"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;font-size:9px;color:var(--sub)">
+          <span id="lufs">-14.2 LUFS</span>
+          <span id="dbtp">-1.8 dBTP</span>
+        </div>
+        <button class="t-btn" onclick="openExport()" title="Export">📤</button>
+        <button class="t-btn" onclick="window.location.href='ssl-mixer.html'" title="Mixer">🎛</button>
+      </div>
+
+      <!-- RULER -->
+      <div id="ruler-wrap">
+        <div id="ruler-spacer"></div>
+        <canvas id="ruler-canvas" height="28"></canvas>
+      </div>
+
+      <!-- LANES -->
+      <div id="lane-wrap">
+        <div id="track-controls-inner" id="track-controls"></div>
+        <div id="lanes-canvas-wrap">
+          <canvas id="lanes-canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- MINI MIXER -->
+      <div id="mini-mixer" id="mini-mix"></div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div id="right-panel">
+      <div class="rpanel-section">
+        <div class="rpanel-title">📊 Monitor</div>
+        <canvas id="monitor-canvas" height="70"></canvas>
+      </div>
+      <div class="rpanel-section">
+        <div class="rpanel-title">🔌 Inserts — Track 1</div>
+        <div id="inserts-list"></div>
+        <button class="ai-btn" style="margin-top:4px"><span class="icon">➕</span>Add Insert</button>
+      </div>
+      <div class="rpanel-section">
+        <div class="rpanel-title">📤 Sends</div>
+        <canvas id="send-canvas" width="198" height="90"></canvas>
+      </div>
+      <div class="rpanel-section">
+        <div class="rpanel-title">🎚 Selected Track</div>
+        <div id="sel-track-info" style="font-size:10px;color:var(--sub);line-height:2">
+          Track: —<br>Type: —<br>Color: —<br>Vol: —<br>Pan: —
+        </div>
+      </div>
+      <div class="rpanel-section">
+        <div class="rpanel-title">⚙ Clip Info</div>
+        <div id="clip-info" style="font-size:10px;color:var(--sub);line-height:2">
+          Start: —<br>Length: —<br>Gain: —<br>Fade In: —<br>Fade Out: —
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+const TRACK_H = 56, BEAT_W = 28, BEATS_PER_BAR = 4;
+let bpm = 140, playing = false, recording = false, looping = false;
+let currentBeat = 0, currentBar = 1, startTime = 0, totalBeats = 0;
+let rafId = null, bpmDrag = false, bpmStartX = 0, bpmStartVal = 0;
+
+const COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6','#e91e8c','#00d4ff','#ff6b35','#a8e063','#ff4081'];
+
+const tracks = [
+  {name:'Kick + Snare',   type:'Audio', color:COLORS[0],  vol:0.9, pan:0, m:false, s:false, r:false,
+    clips:[{bar:1,len:8,name:'Kick Loop'},{bar:12,len:4,name:'Snare Fill'},{bar:20,len:8,name:'Drum Break'}]},
+  {name:'Hi-Hats',        type:'Audio', color:COLORS[1],  vol:0.8, pan:0, m:false, s:false, r:false,
+    clips:[{bar:1,len:16,name:'HH Pattern'},{bar:18,len:6,name:'Open HH'}]},
+  {name:'808 Bass',       type:'MIDI',  color:COLORS[2],  vol:0.95,pan:0, m:false, s:false, r:false,
+    clips:[{bar:1,len:4,name:'808 Root'},{bar:5,len:4,name:'808 Walk'},{bar:9,len:8,name:'808 Drop'}]},
+  {name:'Lead Synth',     type:'MIDI',  color:COLORS[3],  vol:0.75,pan:-0.2,m:false,s:false,r:false,
+    clips:[{bar:5,len:8,name:'Lead Melody'},{bar:17,len:4,name:'Lead Alt'}]},
+  {name:'Pad / Atmos',    type:'MIDI',  color:COLORS[4],  vol:0.6, pan:0.1,m:false,s:false,r:false,
+    clips:[{bar:1,len:32,name:'Pad Wash'}]},
+  {name:'Vocals Lead',    type:'Audio', color:COLORS[5],  vol:1.0, pan:0, m:false, s:false, r:false,
+    clips:[{bar:5,len:4,name:'Hook A'},{bar:9,len:4,name:'Hook B'},{bar:13,len:4,name:'Bridge'}]},
+  {name:'Vocals BG',      type:'Audio', color:COLORS[6],  vol:0.7, pan:0.3,m:false,s:false,r:false,
+    clips:[{bar:5,len:8,name:'BG Stack'},{bar:17,len:4,name:'Ad-libs'}]},
+  {name:'Guitar',         type:'Audio', color:COLORS[7],  vol:0.65,pan:-0.3,m:false,s:false,r:false,
+    clips:[{bar:9,len:4,name:'Guitar Riff'},{bar:17,len:8,name:'Guitar Solo'}]},
+  {name:'Strings',        type:'MIDI',  color:COLORS[8],  vol:0.55,pan:0, m:false, s:false, r:false,
+    clips:[{bar:1,len:16,name:'String Swell'},{bar:21,len:8,name:'String Outro'}]},
+  {name:'FX / Riser',     type:'Audio', color:COLORS[9],  vol:0.8, pan:0, m:false, s:false, r:false,
+    clips:[{bar:4,len:1,name:'Riser 1'},{bar:8,len:1,name:'Sweep'},{bar:16,len:1,name:'Impact'}]},
+  {name:'Master Bus',     type:'Bus',   color:COLORS[10], vol:1.0, pan:0, m:false, s:false, r:false,
+    clips:[{bar:1,len:32,name:'Master'}]},
+  {name:'Aux Return',     type:'Aux',   color:COLORS[11], vol:0.9, pan:0, m:false, s:false, r:false,
+    clips:[{bar:1,len:32,name:'Reverb Tail'}]},
+];
+
+const INSERTS = [
+  {name:'Pro-Q 4',       color:'#3498db', active:true},
+  {name:'Pro-C 2',       color:'#e74c3c', active:true},
+  {name:'Pro-L 2',       color:'#f1c40f', active:true},
+  {name:'CLA-76',        color:'#9b59b6', active:false},
+  {name:'H-Reverb',      color:'#1abc9c', active:false},
+  {name:'MicroShift',    color:'#e67e22', active:false},
+];
+
+// ── INIT ──
+function init(){
+  buildTrackControls();
+  buildRuler();
+  buildLanesCanvas();
+  buildInserts();
+  buildMiniMixer();
+  drawSendCanvas();
+  drawMonitor();
+  setupBpmDrag();
+  loop();
+}
+
+// ── TRACK CONTROLS ──
+function buildTrackControls(){
+  const el = document.getElementById('track-controls-inner');
+  el.innerHTML = '';
+  tracks.forEach((t,i)=>{
+    const row = document.createElement('div');
+    row.className = 'track-row';
+    row.style.cursor = 'pointer';
+    row.onclick = () => selectTrack(i);
+    row.innerHTML = `
+      <span class="track-num">${i+1}</span>
+      <div class="track-color" style="background:${t.color}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="track-name">${t.name}</div>
+        <div class="track-type">${t.type}</div>
+      </div>
+      <button class="trk-btn m ${t.m?'on':''}" onclick="toggleM(${i},event)">M</button>
+      <button class="trk-btn s ${t.s?'on':''}" onclick="toggleS(${i},event)">S</button>
+      <button class="trk-btn r ${t.r?'on':''}" onclick="toggleR(${i},event)">R</button>
+    `;
+    el.appendChild(row);
+  });
+}
+
+function toggleM(i,e){e.stopPropagation();tracks[i].m=!tracks[i].m;buildTrackControls();}
+function toggleS(i,e){e.stopPropagation();tracks[i].s=!tracks[i].s;buildTrackControls();}
+function toggleR(i,e){e.stopPropagation();tracks[i].r=!tracks[i].r;buildTrackControls();}
+
+let selTrack = 0;
+function selectTrack(i){
+  selTrack = i;
+  const t = tracks[i];
+  document.getElementById('sel-track-info').innerHTML =
+    `Track: ${t.name}<br>Type: ${t.type}<br>Color: <span style="color:${t.color}">■</span><br>Vol: ${Math.round(t.vol*100)}<br>Pan: ${t.pan===0?'C':t.pan>0?`R${Math.round(t.pan*100)}`:`L${Math.round(-t.pan*100)}`}`;
+}
+
+// ── RULER ──
+function buildRuler(){
+  const wrap = document.getElementById('ruler-wrap');
+  const cv = document.getElementById('ruler-canvas');
+  const w = document.getElementById('lanes-canvas-wrap').clientWidth || 800;
+  cv.width = w;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#111928';
+  ctx.fillRect(0,0,w,28);
+  const totalBars = 64;
+  ctx.strokeStyle = 'rgba(212,160,60,0.25)';
+  ctx.fillStyle = '#7a7060';
+  ctx.font = '9px JetBrains Mono, monospace';
+  for(let bar=1;bar<=totalBars;bar++){
+    const x = (bar-1)*BEAT_W*BEATS_PER_BAR;
+    if(x>w) break;
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,28);ctx.strokeStyle='rgba(212,160,60,0.35)';ctx.stroke();
+    ctx.fillStyle='#f0ece4';ctx.fillText(bar,x+3,18);
+    for(let b=1;b<BEATS_PER_BAR;b++){
+      const bx = x + b*BEAT_W;
+      ctx.beginPath();ctx.moveTo(bx,14);ctx.lineTo(bx,28);ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.stroke();
+    }
+  }
+}
+
+// ── LANES CANVAS ──
+function buildLanesCanvas(){
+  const wrap = document.getElementById('lanes-canvas-wrap');
+  const cv = document.getElementById('lanes-canvas');
+  const w = Math.max(wrap.clientWidth, 64*BEAT_W*BEATS_PER_BAR);
+  const h = tracks.length * TRACK_H;
+  cv.width = w; cv.height = h;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#080c14';
+  ctx.fillRect(0,0,w,h);
+
+  // grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  for(let bar=0;bar<64;bar++){
+    const x = bar*BEAT_W*BEATS_PER_BAR;
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+  for(let bar=0;bar<64;bar++){
+    for(let b=1;b<4;b++){
+      const x = bar*BEAT_W*BEATS_PER_BAR+b*BEAT_W;
+      ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();
+    }
+  }
+
+  // tracks
+  tracks.forEach((t,i)=>{
+    const y = i*TRACK_H;
+    // row bg
+    ctx.fillStyle = i%2===0?'rgba(255,255,255,0.01)':'rgba(0,0,0,0.01)';
+    ctx.fillRect(0,y,w,TRACK_H);
+    // track separator
+    ctx.strokeStyle='rgba(255,255,255,0.06)';
+    ctx.beginPath();ctx.moveTo(0,y+TRACK_H-1);ctx.lineTo(w,y+TRACK_H-1);ctx.stroke();
+    // clips
+    t.clips.forEach(c=>{
+      const cx = (c.bar-1)*BEAT_W*BEATS_PER_BAR;
+      const cw = c.len*BEAT_W*BEATS_PER_BAR;
+      const cy = y+4, ch = TRACK_H-8;
+      // clip bg
+      const grad = ctx.createLinearGradient(cx,cy,cx,cy+ch);
+      grad.addColorStop(0, hexAlpha(t.color,0.55));
+      grad.addColorStop(1, hexAlpha(t.color,0.25));
+      ctx.fillStyle = grad;
+      roundRect(ctx,cx+1,cy,cw-2,ch,4);
+      ctx.fill();
+      // clip border
+      ctx.strokeStyle = hexAlpha(t.color,0.8);
+      ctx.lineWidth = 1;
+      roundRect(ctx,cx+1,cy,cw-2,ch,4);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+      // waveform/midi squiggle
+      ctx.strokeStyle = hexAlpha(t.color,0.7);
+      ctx.lineWidth = 1;
+      if(t.type==='Audio'){
+        ctx.beginPath();
+        for(let px=cx+4;px<cx+cw-4;px++){
+          const amp = (ch/2-6)*Math.sin(px*0.18)*Math.random()*0.6;
+          const py2 = cy+ch/2+amp;
+          px===cx+4?ctx.moveTo(px,py2):ctx.lineTo(px,py2);
+        }
+        ctx.stroke();
+      } else {
+        // MIDI note blocks
+        for(let n=0;n<8;n++){
+          const nx = cx+4+n*(cw-8)/8;
+          const nw = (cw-8)/8-2;
+          const nh = 4+Math.random()*8;
+          const ny2 = cy+ch/2-nh/2 + (Math.random()-0.5)*10;
+          ctx.fillStyle = hexAlpha(t.color,0.9);
+          roundRect(ctx,nx,ny2,nw,nh,1);
+          ctx.fill();
+        }
+      }
+      ctx.lineWidth = 1;
+      // clip label
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px JetBrains Mono, monospace';
+      ctx.fillText(c.name, cx+6, cy+13);
+    });
+  });
+
+  // playhead
+  const phX = totalBeats * BEAT_W;
+  ctx.strokeStyle = '#e74c3c';
+  ctx.lineWidth = 2;
+  ctx.beginPath();ctx.moveTo(phX,0);ctx.lineTo(phX,h);ctx.stroke();
+  // playhead triangle
+  ctx.fillStyle = '#e74c3c';
+  ctx.beginPath();ctx.moveTo(phX-6,0);ctx.lineTo(phX+6,0);ctx.lineTo(phX,10);ctx.closePath();ctx.fill();
+  ctx.lineWidth = 1;
+}
+
+function hexAlpha(hex,a){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+// ── INSERTS ──
+function buildInserts(){
+  const el = document.getElementById('inserts-list');
+  el.innerHTML = INSERTS.map(p=>`
+    <div class="insert-slot">
+      <div class="insert-dot" style="background:${p.color};box-shadow:0 0 6px ${p.color}"></div>
+      <span class="insert-name">${p.name}</span>
+      <span class="insert-bypass" style="${p.active?'color:var(--green)':'color:var(--sub)'}">${p.active?'ON':'OFF'}</span>
+    </div>
+  `).join('');
+}
+
+// ── MINI MIXER ──
+function buildMiniMixer(){
+  const mm = document.getElementById('mini-mixer');
+  mm.innerHTML = tracks.map((t,i)=>`
+    <div class="mm-ch">
+      <div class="mm-meter"><div class="mm-fill" id="mmf${i}" style="height:${Math.round(t.vol*70)}%"></div></div>
+      <div class="mm-fader-wrap">
+        <div class="mm-fader-fill" style="width:${Math.round(t.vol*100)}%"></div>
+        <div class="mm-fader-thumb" style="left:${Math.round(t.vol*30)}px"></div>
+      </div>
+      <div class="mm-ch-name" style="color:${t.color}">${t.name.split(' ')[0]}</div>
+    </div>
+  `).join('') + `
+    <div class="mm-ch" style="background:rgba(212,160,60,0.05)">
+      <div class="mm-meter"><div class="mm-fill" id="mmfM" style="height:75%"></div></div>
+      <div style="font-size:9px;color:var(--gold);font-weight:700;margin-top:4px">MASTER</div>
+    </div>
+  `;
+}
+
+// ── SEND CANVAS ──
+function drawSendCanvas(){
+  const cv = document.getElementById('send-canvas');
+  const ctx = cv.getContext('2d');
+  const sends = [{lbl:'FX1',val:0.6,color:'#1abc9c'},{lbl:'FX2',val:0.3,color:'#3498db'},
+                  {lbl:'FX3',val:0.1,color:'#9b59b6'},{lbl:'FX4',val:0.0,color:'#e67e22'}];
+  ctx.fillStyle = '#0d1420';
+  ctx.fillRect(0,0,198,90);
+  sends.forEach((s,i)=>{
+    const x = 8+i*48, cy2 = 45, r = 18;
+    // track arc
+    ctx.beginPath();ctx.arc(x+r,cy2,r,-2.4,0.7);
+    ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=5;ctx.stroke();
+    // value arc
+    const angle = -2.4 + s.val*3.1;
+    ctx.beginPath();ctx.arc(x+r,cy2,r,-2.4,angle);
+    ctx.strokeStyle=s.color;ctx.lineWidth=5;ctx.stroke();
+    // label
+    ctx.fillStyle='#f0ece4';ctx.font='bold 9px monospace';ctx.textAlign='center';
+    ctx.fillText(s.lbl,x+r,cy2+4);
+    ctx.fillStyle='#7a7060';ctx.font='8px monospace';
+    ctx.fillText(Math.round(s.val*100),x+r,cy2+16);
+    ctx.textAlign='left';
+  });
+}
+
+// ── MONITOR CANVAS ──
+let monPhase = 0;
+function drawMonitor(){
+  const cv = document.getElementById('monitor-canvas');
+  cv.width = cv.offsetWidth||198;
+  const ctx = cv.getContext('2d');
+  const w=cv.width, h=70;
+  ctx.fillStyle='#080c14';ctx.fillRect(0,0,w,h);
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,0.04)';
+  for(let y=10;y<h;y+=10){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+  // L waveform
+  ctx.beginPath();
+  for(let x=0;x<w;x++){
+    const v = playing ? 0.35*Math.sin(x*0.08+monPhase)+0.15*Math.sin(x*0.22+monPhase*1.3) : 0;
+    const y2 = h/2-v*h*0.35;
+    x===0?ctx.moveTo(x,y2):ctx.lineTo(x,y2);
+  }
+  ctx.strokeStyle='rgba(0,212,255,0.8)';ctx.lineWidth=1.5;ctx.stroke();
+  // R waveform
+  ctx.beginPath();
+  for(let x=0;x<w;x++){
+    const v = playing ? 0.3*Math.sin(x*0.08+monPhase+0.3)+0.12*Math.sin(x*0.2+monPhase) : 0;
+    const y2 = h/2-v*h*0.35;
+    x===0?ctx.moveTo(x,y2):ctx.lineTo(x,y2);
+  }
+  ctx.strokeStyle='rgba(231,76,60,0.6)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.lineWidth=1;
+  monPhase += playing?0.06:0;
+}
+
+// ── TRANSPORT ──
+function togglePlay(){
+  playing=!playing;
+  const btn=document.getElementById('btnPlay');
+  btn.classList.toggle('active',playing);
+  btn.textContent=playing?'⏸':'▶';
+  if(playing)startTime=performance.now()-totalBeats*(60000/bpm/BEATS_PER_BAR);
+}
+function toggleRec(){
+  recording=!recording;
+  document.getElementById('btnRec').classList.toggle('active',recording);
+}
+function toggleLoop(){
+  looping=!looping;
+  document.getElementById('btnLoop').classList.toggle('active',looping);
+}
+function seekStart(){playing=false;totalBeats=0;currentBar=1;currentBeat=0;
+  document.getElementById('btnPlay').classList.remove('active');document.getElementById('btnPlay').textContent='▶';}
+function seek(bars){totalBeats=Math.max(0,totalBeats+bars*BEATS_PER_BAR);}
+function changeBpm(d){bpm=Math.max(40,Math.min(280,bpm+d));document.getElementById('bpmVal').textContent=bpm;}
+
+function updatePosition(){
+  if(!playing)return;
+  const now=performance.now();
+  const elapsed=(now-startTime)/1000;
+  totalBeats=elapsed*(bpm/60);
+  currentBar=Math.floor(totalBeats/BEATS_PER_BAR)+1;
+  currentBeat=Math.floor(totalBeats%BEATS_PER_BAR)+1;
+  const tick=Math.floor((totalBeats%1)*960);
+  document.getElementById('posDisplay').textContent=
+    `${String(currentBar).padStart(3,'0')} | ${currentBeat} | ${String(tick).padStart(3,'0')}`;
+  const secs=elapsed;
+  const hh=String(Math.floor(secs/3600)).padStart(2,'0');
+  const mm=String(Math.floor((secs%3600)/60)).padStart(2,'0');
+  const ss=String(Math.floor(secs%60)).padStart(2,'0');
+  const ms=String(Math.floor((secs%1)*1000)).padStart(3,'0');
+  document.getElementById('posTime').textContent=`${hh}:${mm}:${ss}.${ms}`;
+  if(looping && currentBar>32){seekStart();togglePlay();}
+}
+
+// ── METERS ──
+function animMeters(){
+  const lh = playing?(50+Math.random()*40):(2+Math.random()*3);
+  const rh = playing?(48+Math.random()*42):(2+Math.random()*3);
+  document.getElementById('mL').style.height=lh+'%';
+  document.getElementById('mR').style.height=rh+'%';
+  document.getElementById('mL').style.background=lh>85?'var(--red)':lh>65?'var(--gold)':'var(--green)';
+  document.getElementById('mR').style.background=rh>85?'var(--red)':rh>65?'var(--gold)':'var(--green)';
+  if(playing){
+    document.getElementById('lufs').textContent=(-14-Math.random()*2).toFixed(1)+' LUFS';
+    document.getElementById('dbtp').textContent=(-1.5-Math.random()*1.5).toFixed(1)+' dBTP';
+  }
+  tracks.forEach((_,i)=>{
+    const f=document.getElementById('mmf'+i);
+    if(f)f.style.height=(playing?(20+Math.random()*65):(2+Math.random()*4))+'%';
+  });
+  const fm=document.getElementById('mmfM');
+  if(fm)fm.style.height=(playing?(55+Math.random()*35):(2+Math.random()*4))+'%';
+}
+
+// ── BPM DRAG ──
+function setupBpmDrag(){
+  const el=document.getElementById('bpmVal');
+  el.addEventListener('mousedown',e=>{bpmDrag=true;bpmStartX=e.clientX;bpmStartVal=bpm;e.preventDefault();});
+  document.addEventListener('mousemove',e=>{
+    if(!bpmDrag)return;
+    bpm=Math.max(40,Math.min(280,bpmStartVal+Math.round((e.clientX-bpmStartX)/2)));
+    el.textContent=bpm;
+  });
+  document.addEventListener('mouseup',()=>{bpmDrag=false;});
+}
+
+// ── EXPORT MODAL ──
+function openExport(){
+  const m=document.createElement('div');
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:999';
+  m.innerHTML=`<div style="background:#111928;border:1px solid var(--border);border-radius:12px;padding:28px;min-width:340px">
+    <h3 style="color:var(--gold);margin-bottom:16px">📤 Export Session</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      ${['WAV 24-bit','WAV 32-bit Float','MP3 320kbps','FLAC Lossless','Stems (Zip)','MIDI Export'].map(f=>`
+        <label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px">
+          <input type="radio" name="fmt" ${f.includes('WAV 24')?'checked':''} style="accent-color:var(--gold)">
+          ${f}
+        </label>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="this.closest('div[style]').remove()" style="flex:1;padding:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);border-radius:6px;cursor:pointer;font-family:inherit">Cancel</button>
+      <button onclick="startExportAnim(this)" style="flex:1;padding:8px;background:var(--gold);color:#000;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-family:inherit">Export</button>
+    </div>
+    <div id="exp-prog" style="margin-top:12px;display:none">
+      <div style="background:var(--bg4);border-radius:4px;height:6px;overflow:hidden">
+        <div id="exp-bar" style="height:100%;background:var(--gold);width:0%;transition:width .1s"></div>
+      </div>
+      <div id="exp-lbl" style="font-size:10px;color:var(--sub);margin-top:4px;text-align:center"></div>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+}
+function startExportAnim(btn){
+  const prog=document.getElementById('exp-prog');
+  const bar=document.getElementById('exp-bar');
+  const lbl=document.getElementById('exp-lbl');
+  prog.style.display='block';btn.disabled=true;btn.textContent='Exporting…';
+  const stages=['Rendering tracks…','Applying master chain…','Encoding audio…','Writing file…','Done ✓'];
+  let p=0;
+  const iv=setInterval(()=>{
+    p+=4+Math.random()*6;if(p>100)p=100;
+    bar.style.width=p+'%';
+    lbl.textContent=stages[Math.min(Math.floor(p/25),stages.length-1)];
+    if(p>=100){clearInterval(iv);btn.textContent='✓ Exported';btn.style.background='var(--green)';}
+  },120);
+}
+
+// ── MAIN LOOP ──
+function loop(){
+  updatePosition();
+  buildLanesCanvas();
+  animMeters();
+  drawMonitor();
+  rafId=requestAnimationFrame(loop);
+}
+
+window.addEventListener('DOMContentLoaded', init);
+window.addEventListener('resize',()=>{buildRuler();buildLanesCanvas();});
+</script>
+</body>
+</html>

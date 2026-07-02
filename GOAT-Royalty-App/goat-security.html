@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ GOAT Security Center | GOAT Royalty</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <link rel="stylesheet" href="css/goat-brand.css">
+    <style>
+        :root {
+            --bg: #040608; --panel: #0d1117; --panel2: #161b22;
+            --gold: #d4a03c; --gold2: #f0c040; --gold3: #ffd700;
+            --red: #c1121f; --green: #3fb950; --blue: #58a6ff;
+            --ink: #f0ece4; --dim: #8b949e; --line: #21262d;
+            --glow: rgba(212,160,60,.25);
+        }
+        body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .security-dashboard { max-width: 1400px; margin: 0 auto; padding: 80px 20px 40px; width: 100%; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .dashboard-title h1 { font-size: 28px; font-weight: 700; color: var(--gold); margin: 0; display: flex; align-items: center; gap: 12px; }
+        .dashboard-title span { font-size: 14px; color: var(--dim); font-weight: 400; }
+        
+        .security-score-card { background: linear-gradient(135deg, var(--panel) 0%, #1a1d26 100%); border: 1px solid var(--line); border-radius: 16px; padding: 32px; margin-bottom: 24px; display: flex; align-items: center; gap: 32px; position: relative; overflow: hidden; }
+        .security-score-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--red), var(--gold3), var(--green)); }
+        
+        .score-circle { width: 160px; height: 160px; position: relative; flex-shrink: 0; }
+        .score-circle svg { transform: rotate(-90deg); }
+        .score-circle circle { fill: none; stroke-width: 12; stroke-linecap: round; }
+        .score-circle .circle-bg { stroke: var(--panel2); }
+        .score-circle .circle-progress { stroke: var(--gold3); stroke-dasharray: 440; stroke-dashoffset: 66; transition: stroke-dashoffset 1s ease; }
+        .score-value { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .score-value .number { font-size: 42px; font-weight: 700; color: var(--gold3); line-height: 1; }
+        .score-value .label { font-size: 12px; color: var(--dim); margin-top: 4px; }
+        
+        .score-details { flex: 1; }
+        .score-title { font-size: 24px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+        .score-subtitle { font-size: 14px; color: var(--dim); margin-bottom: 16px; }
+        .score-status { font-size: 15px; color: var(--green); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .score-status.warning { color: var(--gold3); }
+        .score-status.danger { color: var(--red); }
+        
+        .security-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+        .security-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; position: relative; overflow: hidden; }
+        .security-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .security-card.secure::before { background: var(--green); }
+        .security-card.warning::before { background: var(--gold3); }
+        .security-card.danger::before { background: var(--red); }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .card-icon { font-size: 28px; margin-bottom: 8px; }
+        .card-title { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+        .card-desc { font-size: 13px; color: var(--dim); line-height: 1.4; margin-bottom: 12px; }
+        
+        .card-status { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
+        .card-status.green { background: rgba(63,185,80,.15); color: var(--green); }
+        .card-status.yellow { background: rgba(212,160,60,.15); color: var(--gold3); }
+        .card-status.red { background: rgba(193,18,31,.15); color: var(--red); }
+        
+        .card-btn { width: 100%; padding: 10px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; }
+        .card-btn:hover { border-color: var(--gold); }
+        .card-btn.primary { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #040608; border-color: var(--gold); }
+        
+        .sessions-section { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .section-title { font-size: 18px; font-weight: 600; color: var(--gold3); display: flex; align-items: center; gap: 8px; }
+        
+        .sessions-list { display: flex; flex-direction: column; gap: 12px; }
+        .session-item { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; align-items: center; justify-content: space-between; }
+        .session-info { display: flex; align-items: center; gap: 16px; }
+        .session-icon { width: 44px; height: 44px; border-radius: 10px; background: rgba(212,160,60,.1); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .session-details { flex: 1; }
+        .device-name { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+        .device-info { font-size: 12px; color: var(--dim); display: flex; align-items: center; gap: 8px; }
+        .active-badge { padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: rgba(63,185,80,.15); color: var(--green); }
+        
+        .session-actions { display: flex; gap: 8px; }
+        .session-btn { padding: 8px 16px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; }
+        .session-btn:hover { border-color: var(--gold); }
+        .session-btn.danger { border-color: var(--red); color: var(--red); }
+        .session-btn.danger:hover { background: rgba(193,18,31,.1); }
+        
+        .activity-log { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px; }
+        .activity-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; }
+        .activity-item { padding: 12px 16px; background: var(--panel2); border-left: 3px solid var(--line); border-radius: 6px; display: flex; align-items: center; gap: 16px; }
+        .activity-item.success { border-left-color: var(--green); }
+        .activity-item.warning { border-left-color: var(--gold3); }
+        .activity-item.danger { border-left-color: var(--red); }
+        
+        .activity-icon { font-size: 20px; }
+        .activity-text { flex: 1; }
+        .activity-desc { font-size: 14px; color: var(--ink); margin-bottom: 2px; }
+        .activity-meta { font-size: 12px; color: var(--dim); }
+        .activity-time { font-size: 12px; color: var(--dim); text-align: right; }
+        
+        @media (max-width: 768px) {
+            .security-score-card { flex-direction: column; text-align: center; }
+            .security-grid { grid-template-columns: 1fr; }
+            .session-item { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .session-actions { width: 100%; }
+            .session-btn { flex: 1; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-emoji">🐐</span>
+            <span class="brand-name">GOAT Royalty</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="goat-bank.html" class="nav-link">Bank</a>
+            <a href="goat-security.html" class="nav-link active">Security</a>
+            <a href="goat-auth.html" class="nav-link">Auth</a>
+            <a href="settings.html" class="nav-link">Settings</a>
+        </div>
+    </nav>
+
+    <div class="security-dashboard">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>🛡️ Security Center</h1>
+                <span>Manage your account security and privacy</span>
+            </div>
+            <button class="card-btn primary" style="width: auto; padding: 12px 24px;">🔄 Run Security Scan</button>
+        </div>
+
+        <!-- Security Score -->
+        <div class="security-score-card">
+            <div class="score-circle">
+                <svg width="160" height="160" viewBox="0 0 160 160">
+                    <circle class="circle-bg" cx="80" cy="80" r="70"></circle>
+                    <circle class="circle-progress" cx="80" cy="80" r="70"></circle>
+                </svg>
+                <div class="score-value">
+                    <div class="number">85</div>
+                    <div class="label">SECURE</div>
+                </div>
+            </div>
+            <div class="score-details">
+                <div class="score-title">Your account is secure</div>
+                <div class="score-subtitle">3 of 4 security features are enabled. Enable 2FA for maximum protection.</div>
+                <div class="score-status warning">
+                    <span>⚠️</span> Enable Two-Factor Authentication to improve your score
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Cards Grid -->
+        <div class="security-grid">
+            <!-- Password -->
+            <div class="security-card secure">
+                <div class="card-header">
+                    <div>
+                        <div class="card-icon">🔐</div>
+                        <div class="card-title">Password</div>
+                    </div>
+                    <span class="card-status green">STRONG</span>
+                </div>
+                <p class="card-desc">Your password was last updated 30 days ago</p>
+                <button class="card-btn" onclick="openPasswordModal()">Change Password</button>
+            </div>
+
+            <!-- 2FA -->
+            <div class="security-card warning">
+                <div class="card-header">
+                    <div>
+                        <div class="card-icon">📱</div>
+                        <div class="card-title">Two-Factor Auth</div>
+                    </div>
+                    <span class="card-status yellow">DISABLED</span>
+                </div>
+                <p class="card-desc">Add an extra layer of security to your account</p>
+                <button class="card-btn primary" onclick="open2FAModal()">Enable 2FA</button>
+            </div>
+
+            <!-- Biometrics -->
+            <div class="security-card secure">
+                <div class="card-header">
+                    <div>
+                        <div class="card-icon">👆</div>
+                        <div class="card-title">Biometrics</div>
+                    </div>
+                    <span class="card-status green">ENABLED</span>
+                </div>
+                <p class="card-desc">Face ID and Touch ID are active</p>
+                <button class="card-btn">Manage Biometrics</button>
+            </div>
+
+            <!-- Login Alerts -->
+            <div class="security-card secure">
+                <div class="card-header">
+                    <div>
+                        <div class="card-icon">🔔</div>
+                        <div class="card-title">Login Alerts</div>
+                    </div>
+                    <span class="card-status green">ON</span>
+                </div>
+                <p class="card-desc">Get notified on new sign-ins</p>
+                <button class="card-btn">Configure Alerts</button>
+            </div>
+
+            <!-- Recovery -->
+            <div class="security-card warning">
+                <div class="card-header">
+                    <div>
+                        <div class="card-icon">🔑</div>
+                        <div class="card-title">Recovery</div>
+                    </div>
+                    <span class="card-status yellow">SETUP</span>
+                </div>
+                <p class="card-desc">Set up recovery options for account access</p>
+                <button class="card-btn primary">Setup Recovery</button>
+            </div>
+
+            <!-- Device Management -->
+            <div class="security-card secure">
+                <div class="card-header">
+                    <div>
+                        <div class="card-icon">💻</div>
+                        <div class="card-title">Devices</div>
+                    </div>
+                    <span class="card-status green">3 ACTIVE</span>
+                </div>
+                <p class="card-desc">View and manage connected devices</p>
+                <button class="card-btn">Manage Devices</button>
+            </div>
+        </div>
+
+        <!-- Active Sessions -->
+        <div class="sessions-section">
+            <div class="section-header">
+                <div class="section-title">
+                    <span>🖥️</span> Active Sessions
+                </div>
+                <button class="session-btn danger">Revoke All Other Sessions</button>
+            </div>
+            
+            <div class="sessions-list">
+                <div class="session-item">
+                    <div class="session-info">
+                        <div class="session-icon">🖥️</div>
+                        <div class="session-details">
+                            <div class="device-name">MacBook Pro - Chrome</div>
+                            <div class="device-info">
+                                <span>Los Angeles, CA</span>
+                                <span>•</span>
+                                <span>192.168.1.105</span>
+                                <span class="active-badge">CURRENT</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="session-actions">
+                        <span style="font-size: 12px; color: var(--dim);">Active now</span>
+                    </div>
+                </div>
+
+                <div class="session-item">
+                    <div class="session-info">
+                        <div class="session-icon">📱</div>
+                        <div class="session-details">
+                            <div class="device-name">iPhone 15 Pro Max - Safari</div>
+                            <div class="device-info">
+                                <span>Los Angeles, CA</span>
+                                <span>•</span>
+                                <span>192.168.1.108</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="session-actions">
+                        <span style="font-size: 12px; color: var(--dim);">Last active 2 hours ago</span>
+                        <button class="session-btn danger">Revoke</button>
+                    </div>
+                </div>
+
+                <div class="session-item">
+                    <div class="session-info">
+                        <div class="session-icon">💻</div>
+                        <div class="session-details">
+                            <div class="device-name">Windows PC - Firefox</div>
+                            <div class="device-info">
+                                <span>Atlanta, GA</span>
+                                <span>•</span>
+                                <span>172.16.0.42</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="session-actions">
+                        <span style="font-size: 12px; color: var(--dim);">Last active 1 day ago</span>
+                        <button class="session-btn danger">Revoke</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="activity-log">
+            <div class="section-header">
+                <div class="section-title">
+                    <span>📊</span> Recent Activity
+                </div>
+                <button class="session-btn">View Full Log</button>
+            </div>
+            
+            <div class="activity-list">
+                <div class="activity-item success">
+                    <div class="activity-icon">✅</div>
+                    <div class="activity-text">
+                        <div class="activity-desc">Successful login from MacBook Pro</div>
+                        <div class="activity-meta">Los Angeles, CA • Chrome macOS</div>
+                    </div>
+                    <div class="activity-time">Just now</div>
+                </div>
+
+                <div class="activity-item success">
+                    <div class="activity-icon">✅</div>
+                    <div class="activity-text">
+                        <div class="activity-desc">Password changed successfully</div>
+                        <div class="activity-meta">MacBook Pro • Chrome macOS</div>
+                    </div>
+                    <div class="activity-time">2 hours ago</div>
+                </div>
+
+                <div class="activity-item warning">
+                    <div class="activity-icon">⚠️</div>
+                    <div class="activity-text">
+                        <div class="activity-desc">Failed login attempt detected</div>
+                        <div class="activity-meta">Unknown IP • Firefox Windows</div>
+                    </div>
+                    <div class="activity-time">5 hours ago</div>
+                </div>
+
+                <div class="activity-item success">
+                    <div class="activity-icon">✅</div>
+                    <div class="activity-text">
+                        <div class="activity-desc">2FA verified for wallet access</div>
+                        <div class="activity-meta">iPhone 15 Pro Max • Safari iOS</div>
+                    </div>
+                    <div class="activity-time">1 day ago</div>
+                </div>
+
+                <div class="activity-item warning">
+                    <div class="activity-icon">⚠️</div>
+                    <div class="activity-text">
+                        <div class="activity-desc">New device login attempt blocked</div>
+                        <div class="activity-meta">China • Unknown Device</div>
+                    </div>
+                    <div class="activity-time">2 days ago</div>
+                </div>
+
+                <div class="activity-item success">
+                    <div class="activity-icon">✅</div>
+                    <div class="activity-text">
+                        <div class="activity-desc">API key generated for production</div>
+                        <div class="activity-meta">MacBook Pro • Chrome macOS</div>
+                    </div>
+                    <div class="activity-time">3 days ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Change Modal -->
+    <div class="modal-overlay" id="password-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Change Password</div>
+                <button class="modal-close" onclick="closePasswordModal()">✕</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input type="password" class="form-input" placeholder="Enter current password">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" class="form-input" placeholder="Enter new password" id="new-password">
+                <div style="font-size: 11px; color: var(--dim); margin-top: 4px;">Minimum 8 characters, include uppercase, lowercase, numbers</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" class="form-input" placeholder="Confirm new password">
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closePasswordModal()">Cancel</button>
+                <button class="modal-btn confirm" onclick="confirmPasswordChange()">Change Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2FA Setup Modal -->
+    <div class="modal-overlay" id="2fa-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Enable Two-Factor Authentication</div>
+                <button class="modal-close" onclick="close2FAModal()">✕</button>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 48px; margin-bottom: 12px;">📱</div>
+                <p style="font-size: 14px; color: var(--dim);">Scan this QR code with your authenticator app</p>
+            </div>
+
+            <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 16px;">
+                <div style="width: 200px; height: 200px; margin: 0 auto; background: repeating-linear-gradient(0deg, #000 0px, #000 10px, #fff 10px, #fff 20px, #000 20px, #000 30px, #fff 30px, #fff 40px);"></div>
+                <div style="margin-top: 12px; font-weight: 600; color: #000;">2F7A-8G9H-1J2K</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Enter 6-digit code</label>
+                <input type="text" class="form-input" placeholder="123456" maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 4px;">
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="close2FAModal()">Cancel</button>
+                <button class="modal-btn confirm" onclick="confirm2FA()">Enable 2FA</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px; max-width: 450px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 18px; font-weight: 600; color: var(--gold3); }
+        .modal-close { background: none; border: none; color: var(--dim); font-size: 24px; cursor: pointer; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 6px; }
+        .form-input { width: 100%; padding: 12px 16px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); border-radius: 8px; font-size: 14px; transition: all .2s; }
+        .form-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,160,60,.1); }
+        .modal-actions { display: flex; gap: 12px; }
+        .modal-btn { flex: 1; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; }
+        .modal-btn.cancel { border: 1px solid var(--line); background: var(--panel2); color: var(--ink); }
+        .modal-btn.confirm { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #040608; border: none; }
+    </style>
+
+    <script>
+        function openPasswordModal() {
+            document.getElementById('password-modal').classList.add('active');
+        }
+
+        function closePasswordModal() {
+            document.getElementById('password-modal').classList.remove('active');
+        }
+
+        function confirmPasswordChange() {
+            alert('Password changed successfully! 🔐');
+            closePasswordModal();
+        }
+
+        function open2FAModal() {
+            document.getElementById('2fa-modal').classList.add('active');
+        }
+
+        function close2FAModal() {
+            document.getElementById('2fa-modal').classList.remove('active');
+        }
+
+        function confirm2FA() {
+            alert('Two-Factor Authentication enabled! 📱');
+            close2FAModal();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Entertainment | Movies, Music, TV & Content</title>
+<style>
+  :root {
+    --gold:#d4a03c;--gold2:#f5c842;--bg:#040608;--panel:#0d1117;--panel2:#131920;
+    --pink:#f472b6;--purple:#a78bfa;--green:#22c55e;--red:#ef4444;--blue:#38bdf8;
+    --text:#e2e8f0;--muted:#64748b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;}
+
+  /* NAV */
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:rgba(13,17,23,0.97);border-bottom:1px solid rgba(212,160,60,.3);position:sticky;top:0;z-index:100;}
+  .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+  .nav-logo span{font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .nav-links{display:flex;gap:6px;}
+  .nav-links a{color:var(--muted);text-decoration:none;padding:6px 14px;border-radius:20px;font-size:13px;transition:all .3s;}
+  .nav-links a:hover,.nav-links a.active{background:rgba(212,160,60,.15);color:var(--gold);}
+  .btn-gold{background:linear-gradient(135deg,var(--gold),#b8860b);color:#000;padding:8px 20px;border:none;border-radius:20px;font-weight:700;cursor:pointer;font-size:13px;}
+
+  /* HERO BANNER */
+  .hero-banner{position:relative;height:520px;overflow:hidden;display:flex;align-items:flex-end;}
+  .hero-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0a0015 0%,#1a0533 40%,#040608 100%);}
+  .hero-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(167,139,250,.2) 0%,transparent 60%);}
+  .hero-content{position:relative;z-index:2;padding:40px 40px;width:100%;}
+  .hero-super{font-size:11px;letter-spacing:3px;color:var(--purple);font-weight:700;margin-bottom:8px;text-transform:uppercase;}
+  .hero-title{font-size:56px;font-weight:900;line-height:1.05;margin-bottom:16px;}
+  .hero-title span{background:linear-gradient(135deg,var(--gold),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .hero-desc{font-size:15px;color:rgba(255,255,255,.7);max-width:560px;margin-bottom:24px;line-height:1.6;}
+  .hero-actions{display:flex;gap:12px;flex-wrap:wrap;}
+  .btn-primary{background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff;padding:14px 28px;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;display:flex;align-items:center;gap:8px;}
+  .btn-secondary{background:rgba(255,255,255,.1);color:#fff;padding:14px 28px;border:1px solid rgba(255,255,255,.2);border-radius:12px;font-weight:600;font-size:15px;cursor:pointer;backdrop-filter:blur(8px);}
+  .hero-ratings{position:absolute;top:30px;right:40px;z-index:2;display:flex;flex-direction:column;gap:10px;}
+  .rating-badge{background:rgba(0,0,0,.6);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 16px;text-align:center;}
+  .rating-num{font-size:24px;font-weight:900;color:var(--gold);}
+  .rating-lbl{font-size:10px;color:var(--muted);}
+
+  /* LIVE TICKER */
+  .live-ticker{background:rgba(167,139,250,.08);border-top:1px solid rgba(167,139,250,.2);border-bottom:1px solid rgba(167,139,250,.2);padding:10px 0;overflow:hidden;}
+  .ticker-inner{display:flex;gap:50px;animation:tickerMove 40s linear infinite;white-space:nowrap;}
+  .ticker-item{font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px;}
+  @keyframes tickerMove{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+  /* MAIN CONTENT */
+  .main-content{padding:32px 28px;}
+
+  /* SECTION HEADERS */
+  .sec-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .sec-title{font-size:20px;font-weight:800;}
+  .sec-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+  .see-all{color:var(--gold);font-size:13px;cursor:pointer;text-decoration:none;}
+
+  /* HORIZONTAL SCROLL ROW */
+  .h-scroll{display:flex;gap:16px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;}
+  .h-scroll::-webkit-scrollbar{display:none;}
+
+  /* MOVIE CARDS */
+  .movie-card{flex-shrink:0;width:180px;cursor:pointer;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.05);transition:all .3s;background:var(--panel);}
+  .movie-card:hover{transform:translateY(-6px) scale(1.02);border-color:var(--gold);}
+  .movie-thumb{height:260px;display:flex;align-items:center;justify-content:center;font-size:72px;position:relative;}
+  .thumb-a{background:linear-gradient(135deg,#0a0020,#200a40);}
+  .thumb-b{background:linear-gradient(135deg,#0a1520,#0a2040);}
+  .thumb-c{background:linear-gradient(135deg,#200a0a,#400a0a);}
+  .thumb-d{background:linear-gradient(135deg,#0a2010,#0a4020);}
+  .thumb-e{background:linear-gradient(135deg,#201000,#402000);}
+  .thumb-f{background:linear-gradient(135deg,#100020,#200040);}
+  .movie-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 60%,rgba(0,0,0,.9));display:flex;align-items:flex-end;padding:10px;}
+  .movie-rating{font-size:11px;color:var(--gold);font-weight:700;}
+  .movie-badge{position:absolute;top:10px;left:10px;font-size:9px;font-weight:700;padding:3px 8px;border-radius:6px;}
+  .badge-new{background:var(--red);color:#fff;}
+  .badge-exclusive{background:var(--gold);color:#000;}
+  .badge-trending{background:var(--purple);color:#fff;}
+  .movie-info{padding:10px;}
+  .movie-title{font-size:13px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .movie-genre{font-size:11px;color:var(--muted);}
+
+  /* MUSIC SECTION */
+  .music-player{background:linear-gradient(135deg,var(--panel),rgba(167,139,250,.08));border:1px solid rgba(167,139,250,.2);border-radius:20px;padding:24px;margin-bottom:28px;}
+  .now-playing-label{font-size:11px;color:var(--purple);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+  .player-main{display:flex;gap:20px;align-items:center;}
+  .album-art{width:80px;height:80px;border-radius:12px;background:linear-gradient(135deg,#1a0533,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;animation:spinSlow 8s linear infinite paused;}
+  .album-art.playing{animation-play-state:running;}
+  @keyframes spinSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  .player-info{flex:1;}
+  .track-title{font-size:18px;font-weight:800;margin-bottom:4px;}
+  .track-artist{font-size:13px;color:var(--muted);margin-bottom:12px;}
+  .progress-wrap{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .progress-time{font-size:11px;color:var(--muted);min-width:35px;}
+  .progress-bar{flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:2px;cursor:pointer;}
+  .progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--purple),var(--pink));width:38%;}
+  .player-controls{display:flex;gap:16px;align-items:center;}
+  .ctrl-btn{background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;transition:all .3s;}
+  .ctrl-btn:hover{color:var(--gold);}
+  .play-btn{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .music-tracks{margin-top:20px;display:flex;flex-direction:column;gap:6px;}
+  .track-row{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer;transition:all .3s;}
+  .track-row:hover,.track-row.active{background:rgba(167,139,250,.1);}
+  .track-num{width:20px;font-size:12px;color:var(--muted);text-align:center;}
+  .track-art-mini{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .track-name{flex:1;}
+  .track-nm{font-size:13px;font-weight:600;}
+  .track-ar{font-size:11px;color:var(--muted);}
+  .track-dur{font-size:12px;color:var(--muted);}
+  .track-actions{display:flex;gap:8px;}
+  .track-act{font-size:16px;cursor:pointer;opacity:.5;transition:.3s;}
+  .track-act:hover{opacity:1;}
+
+  /* LIVE EVENTS */
+  .events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:28px;}
+  .event-card{background:var(--panel);border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.05);transition:all .3s;cursor:pointer;}
+  .event-card:hover{transform:translateY(-4px);border-color:var(--purple);}
+  .event-banner{height:130px;display:flex;align-items:center;justify-content:center;font-size:52px;position:relative;}
+  .ev-a{background:linear-gradient(135deg,#1a0533,#2d1b69);}
+  .ev-b{background:linear-gradient(135deg,#1a1000,#2d2000);}
+  .ev-c{background:linear-gradient(135deg,#001a33,#003366);}
+  .ev-d{background:linear-gradient(135deg,#1a0a1a,#330a33);}
+  .ev-live{position:absolute;top:10px;right:10px;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;animation:pulse .8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .ev-date{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.7);color:var(--gold);font-size:10px;padding:3px 8px;border-radius:6px;font-weight:600;}
+  .event-info{padding:16px;}
+  .event-name{font-size:15px;font-weight:800;margin-bottom:4px;}
+  .event-artist{font-size:12px;color:var(--muted);margin-bottom:10px;}
+  .event-meta{display:flex;gap:12px;margin-bottom:12px;}
+  .ev-meta{font-size:11px;color:var(--muted);}
+  .ev-meta span{color:var(--text);}
+  .event-price{display:flex;justify-content:space-between;align-items:center;}
+  .ev-price{font-size:16px;font-weight:800;color:var(--gold);}
+  .ev-btn{background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
+
+  /* CELEB TV */
+  .tv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:28px;}
+  .tv-card{background:var(--panel);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .3s;border:1px solid rgba(255,255,255,.05);}
+  .tv-card:hover{transform:scale(1.02);border-color:var(--pink);}
+  .tv-thumb{height:150px;display:flex;align-items:center;justify-content:center;font-size:52px;position:relative;}
+  .tv-a{background:linear-gradient(135deg,#0a1520,#153040);}
+  .tv-b{background:linear-gradient(135deg,#150a20,#301550);}
+  .tv-c{background:linear-gradient(135deg,#200a0a,#500a0a);}
+  .tv-d{background:linear-gradient(135deg,#0a2010,#154020);}
+  .tv-episodes{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.8);color:var(--text);font-size:10px;padding:3px 8px;border-radius:6px;}
+  .tv-new{position:absolute;top:8px;left:8px;background:var(--green);color:#000;font-size:9px;font-weight:700;padding:2px 8px;border-radius:6px;}
+  .tv-info{padding:14px;}
+  .tv-title{font-size:14px;font-weight:800;margin-bottom:4px;}
+  .tv-sub{font-size:11px;color:var(--muted);margin-bottom:8px;}
+  .tv-stars{color:var(--gold);font-size:12px;}
+
+  /* PODCAST */
+  .podcast-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:28px;}
+  .pod-card{flex:1;min-width:220px;background:var(--panel);border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center;border:1px solid rgba(255,255,255,.05);cursor:pointer;transition:all .3s;}
+  .pod-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .pod-art{width:56px;height:56px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
+  .pod-info{flex:1;}
+  .pod-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+  .pod-host{font-size:11px;color:var(--muted);}
+  .pod-ep{font-size:11px;color:var(--purple);margin-top:4px;}
+  .pod-play{font-size:22px;cursor:pointer;}
+
+  /* STUDIO */
+  .studio-section{background:linear-gradient(135deg,rgba(212,160,60,.08),rgba(167,139,250,.08));border:1px solid rgba(212,160,60,.2);border-radius:20px;padding:28px;margin-bottom:28px;display:flex;gap:28px;align-items:center;flex-wrap:wrap;}
+  .studio-text{flex:1;min-width:260px;}
+  .studio-title{font-size:26px;font-weight:900;margin-bottom:10px;}
+  .studio-desc{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:16px;}
+  .studio-features{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+  .studio-feat{background:rgba(212,160,60,.1);color:var(--gold);font-size:11px;padding:4px 12px;border-radius:10px;border:1px solid rgba(212,160,60,.2);}
+  .studio-actions{display:flex;gap:10px;}
+  .studio-visual{font-size:100px;text-align:center;flex-shrink:0;}
+
+  /* TRENDING */
+  .trending-list{display:flex;flex-direction:column;gap:8px;margin-bottom:28px;}
+  .trend-item{display:flex;align-items:center;gap:14px;background:var(--panel);padding:14px;border-radius:12px;cursor:pointer;transition:all .3s;border:1px solid rgba(255,255,255,.04);}
+  .trend-item:hover{border-color:var(--gold);}
+  .trend-rank{font-size:22px;font-weight:900;width:36px;text-align:center;}
+  .trend-art{width:52px;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;}
+  .trend-info{flex:1;}
+  .trend-title{font-size:14px;font-weight:700;}
+  .trend-cat{font-size:11px;color:var(--muted);}
+  .trend-change{font-size:12px;padding:3px 10px;border-radius:8px;}
+  .up{color:var(--green);background:rgba(34,197,94,.1);}
+  .down{color:var(--red);background:rgba(239,68,68,.1);}
+  .new-entry{color:var(--purple);background:rgba(167,139,250,.1);}
+  .trend-plays{font-size:13px;font-weight:700;color:var(--gold);min-width:70px;text-align:right;}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="nav-logo"><span>👑 GOAT</span></a>
+  <div class="nav-links">
+    <a href="index.html">Dashboard</a>
+    <a href="goat-entertainment.html" class="active">Entertainment</a>
+    <a href="goat-3d-studio.html">3D Studio</a>
+    <a href="goat-nft-studio.html">NFT Studio</a>
+    <a href="goat-celebrity-lounge.html">VIP Lounge</a>
+  </div>
+  <div class="nav-right">
+    <span style="font-size:13px;color:var(--purple)">🎬 4K Streaming Active</span>
+    <button class="btn-gold">Go Premium 👑</button>
+  </div>
+</nav>
+
+<!-- HERO BANNER -->
+<div class="hero-banner">
+  <div class="hero-bg"></div>
+  <div class="hero-glow"></div>
+  <div style="position:absolute;right:0;top:0;bottom:0;width:55%;background:linear-gradient(135deg,transparent 0%,rgba(167,139,250,.08) 100%);display:flex;align-items:center;justify-content:center;font-size:140px;filter:drop-shadow(0 0 40px rgba(167,139,250,.4))">🎬</div>
+  <div class="hero-content">
+    <div class="hero-super">🎬 Exclusive Content Platform</div>
+    <h1 class="hero-title">GOAT <span>Entertainment</span><br>Universe</h1>
+    <p class="hero-desc">Stream celebrity-exclusive movies, live events, behind-the-scenes content, and GOAT Originals — all in breathtaking 4K.</p>
+    <div class="hero-actions">
+      <button class="btn-primary">▶ Watch Now</button>
+      <button class="btn-secondary">🎵 Browse Music</button>
+      <button class="btn-secondary">📅 Live Events</button>
+    </div>
+  </div>
+  <div class="hero-ratings">
+    <div class="rating-badge"><div class="rating-num">4K</div><div class="rating-lbl">Ultra HD</div></div>
+    <div class="rating-badge"><div class="rating-num">∞</div><div class="rating-lbl">Dolby Atmos</div></div>
+  </div>
+</div>
+
+<!-- LIVE TICKER -->
+<div class="live-ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item">🔴 LIVE: Beyoncé World Tour — Tokyo Night 3</span>
+    <span class="ticker-item">🎬 NEW: GOAT Original "Crown Dynasty" Season 2 — Ep 5 Drops Tonight</span>
+    <span class="ticker-item">🎵 #1: Future & Drake "GOAT Mode" — 48M Streams</span>
+    <span class="ticker-item">📺 TRENDING: Behind The Throne Documentary — 2.1M Views</span>
+    <span class="ticker-item">🏆 EXCLUSIVE: Met Gala Full Coverage — Now Streaming</span>
+    <span class="ticker-item">🎙 PODCAST: No Jumper x GOAT Episode 200 — Out Now</span>
+    <span class="ticker-item">🔴 LIVE: Beyoncé World Tour — Tokyo Night 3</span>
+    <span class="ticker-item">🎬 NEW: GOAT Original "Crown Dynasty" Season 2 — Ep 5 Drops Tonight</span>
+    <span class="ticker-item">🎵 #1: Future & Drake "GOAT Mode" — 48M Streams</span>
+    <span class="ticker-item">📺 TRENDING: Behind The Throne Documentary — 2.1M Views</span>
+  </div>
+</div>
+
+<div class="main-content">
+
+  <!-- MOVIES / GOAT ORIGINALS -->
+  <div class="sec-head">
+    <div><div class="sec-title">🎬 GOAT Originals</div><div class="sec-sub">Exclusive celebrity-produced films & series</div></div>
+    <a class="see-all">View All 847 Titles →</a>
+  </div>
+  <div class="h-scroll" style="margin-bottom:28px">
+    <div class="movie-card">
+      <div class="movie-thumb thumb-a">👑<div class="movie-overlay"><div class="movie-rating">★ 9.4</div></div><div class="movie-badge badge-exclusive">EXCLUSIVE</div></div>
+      <div class="movie-info"><div class="movie-title">Crown Dynasty</div><div class="movie-genre">Drama • S2</div></div>
+    </div>
+    <div class="movie-card">
+      <div class="movie-thumb thumb-b">🎭<div class="movie-overlay"><div class="movie-rating">★ 8.9</div></div><div class="movie-badge badge-new">NEW</div></div>
+      <div class="movie-info"><div class="movie-title">Velvet Underground</div><div class="movie-genre">Thriller</div></div>
+    </div>
+    <div class="movie-card">
+      <div class="movie-thumb thumb-c">🔥<div class="movie-overlay"><div class="movie-rating">★ 9.1</div></div><div class="movie-badge badge-trending">TRENDING</div></div>
+      <div class="movie-info"><div class="movie-title">Street Kings Rise</div><div class="movie-genre">Action • 4K</div></div>
+    </div>
+    <div class="movie-card">
+      <div class="movie-thumb thumb-d">💎<div class="movie-overlay"><div class="movie-rating">★ 8.7</div></div></div>
+      <div class="movie-info"><div class="movie-title">Diamonds & Dreams</div><div class="movie-genre">Romance</div></div>
+    </div>
+    <div class="movie-card">
+      <div class="movie-thumb thumb-e">🌍<div class="movie-overlay"><div class="movie-rating">★ 9.2</div></div><div class="movie-badge badge-exclusive">GOAT</div></div>
+      <div class="movie-info"><div class="movie-title">Global Empire</div><div class="movie-genre">Documentary</div></div>
+    </div>
+    <div class="movie-card">
+      <div class="movie-thumb thumb-f">🎵<div class="movie-overlay"><div class="movie-rating">★ 9.6</div></div><div class="movie-badge badge-exclusive">EXCLUSIVE</div></div>
+      <div class="movie-info"><div class="movie-title">Sound of Legacy</div><div class="movie-genre">Music Film</div></div>
+    </div>
+    <div class="movie-card">
+      <div class="movie-thumb thumb-a">🚀<div class="movie-overlay"><div class="movie-rating">★ 8.8</div></div><div class="movie-badge badge-new">NEW</div></div>
+      <div class="movie-info"><div class="movie-title">Beyond The Stars</div><div class="movie-genre">Sci-Fi</div></div>
+    </div>
+    <div class="movie-card">
+      <div class="movie-thumb thumb-b">👗<div class="movie-overlay"><div class="movie-rating">★ 9.0</div></div></div>
+      <div class="movie-info"><div class="movie-title">Fashion Week</div><div class="movie-genre">Reality</div></div>
+    </div>
+  </div>
+
+  <!-- MUSIC PLAYER -->
+  <div class="sec-head">
+    <div><div class="sec-title">🎵 GOAT Music Player</div><div class="sec-sub">Celebrity playlists & exclusive drops</div></div>
+    <a class="see-all">Browse 50M+ Tracks →</a>
+  </div>
+  <div class="music-player">
+    <div class="now-playing-label">▶ NOW PLAYING — GOAT PLAYLIST: ROYAL VIBES</div>
+    <div class="player-main">
+      <div class="album-art playing" id="albumArt">🎵</div>
+      <div class="player-info">
+        <div class="track-title">GOAT Mode (feat. Drake)</div>
+        <div class="track-artist">Future • 2024 • Gold Certified</div>
+        <div class="progress-wrap">
+          <span class="progress-time">1:24</span>
+          <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+          <span class="progress-time">3:47</span>
+        </div>
+        <div class="player-controls">
+          <button class="ctrl-btn">⏮</button>
+          <button class="ctrl-btn">🔀</button>
+          <button class="play-btn" id="playBtn" onclick="togglePlay()">⏸</button>
+          <button class="ctrl-btn">🔁</button>
+          <button class="ctrl-btn">⏭</button>
+          <button class="ctrl-btn" style="margin-left:auto">🔊</button>
+          <button class="ctrl-btn">♡</button>
+          <button class="ctrl-btn">⋯</button>
+        </div>
+      </div>
+    </div>
+    <div class="music-tracks" id="musicTracks"></div>
+  </div>
+
+  <!-- LIVE EVENTS -->
+  <div class="sec-head">
+    <div><div class="sec-title">🔴 Live Events & Concerts</div><div class="sec-sub">Stream or attend in person</div></div>
+    <a class="see-all">All Events →</a>
+  </div>
+  <div class="events-grid">
+    <div class="event-card">
+      <div class="event-banner ev-a">🎤<div class="ev-live">● LIVE NOW</div><div class="ev-date">🗓 Tonight</div></div>
+      <div class="event-info">
+        <div class="event-name">Beyoncé Renaissance World Tour</div>
+        <div class="event-artist">Beyoncé • Tokyo Dome</div>
+        <div class="event-meta">
+          <div class="ev-meta">👥 <span>84,000 Attending</span></div>
+          <div class="ev-meta">📍 <span>Tokyo, Japan</span></div>
+        </div>
+        <div class="event-price"><div class="ev-price">$129 — $2,400</div><button class="ev-btn">Stream Live</button></div>
+      </div>
+    </div>
+    <div class="event-card">
+      <div class="event-banner ev-b">🎹<div class="ev-date">🗓 Dec 15</div></div>
+      <div class="event-info">
+        <div class="event-name">Drake & 21 Savage GOAT Tour</div>
+        <div class="event-artist">OVO Sound Live Experience</div>
+        <div class="event-meta">
+          <div class="ev-meta">👥 <span>62,000 Capacity</span></div>
+          <div class="ev-meta">📍 <span>Madison Square Garden</span></div>
+        </div>
+        <div class="event-price"><div class="ev-price">$89 — $1,800</div><button class="ev-btn">Get Tickets</button></div>
+      </div>
+    </div>
+    <div class="event-card">
+      <div class="event-banner ev-c">🥊<div class="ev-date">🗓 Dec 20</div></div>
+      <div class="event-info">
+        <div class="event-name">GOAT Fight Night: Championship</div>
+        <div class="event-artist">Premium Pay-Per-View Event</div>
+        <div class="event-meta">
+          <div class="ev-meta">💰 <span>PPV: $59.99</span></div>
+          <div class="ev-meta">📍 <span>Las Vegas, NV</span></div>
+        </div>
+        <div class="event-price"><div class="ev-price">$59.99 PPV</div><button class="ev-btn">Order Now</button></div>
+      </div>
+    </div>
+    <div class="event-card">
+      <div class="event-banner ev-d">👗<div class="ev-date">🗓 Jan 10</div></div>
+      <div class="event-info">
+        <div class="event-name">Met Gala 2025 — GOAT Edition</div>
+        <div class="event-artist">Exclusive Celebrity Coverage + Live</div>
+        <div class="event-meta">
+          <div class="ev-meta">👥 <span>Invite Only + Stream</span></div>
+          <div class="ev-meta">📍 <span>New York, NY</span></div>
+        </div>
+        <div class="event-price"><div class="ev-price">VIP Stream: $199</div><button class="ev-btn">Pre-Order</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CELEB TV SHOWS -->
+  <div class="sec-head">
+    <div><div class="sec-title">📺 Celebrity Reality & Series</div><div class="sec-sub">Behind the crown — exclusive access</div></div>
+    <a class="see-all">All Shows →</a>
+  </div>
+  <div class="tv-grid">
+    <div class="tv-card">
+      <div class="tv-thumb tv-a">🎭<div class="tv-episodes">12 Episodes</div><div class="tv-new">NEW EP</div></div>
+      <div class="tv-info"><div class="tv-title">Life of a GOAT</div><div class="tv-sub">Reality • Celebrity Documentary</div><div class="tv-stars">★★★★★ 9.4</div></div>
+    </div>
+    <div class="tv-card">
+      <div class="tv-thumb tv-b">👑<div class="tv-episodes">8 Episodes</div></div>
+      <div class="tv-info"><div class="tv-title">Royal Closet</div><div class="tv-sub">Fashion Reality • Style</div><div class="tv-stars">★★★★☆ 8.8</div></div>
+    </div>
+    <div class="tv-card">
+      <div class="tv-thumb tv-c">💰<div class="tv-episodes">Season 3</div><div class="tv-new">TRENDING</div></div>
+      <div class="tv-info"><div class="tv-title">Billion Dollar Empire</div><div class="tv-sub">Business Reality</div><div class="tv-stars">★★★★★ 9.1</div></div>
+    </div>
+    <div class="tv-card">
+      <div class="tv-thumb tv-d">🏡<div class="tv-episodes">10 Episodes</div></div>
+      <div class="tv-info"><div class="tv-title">Celebrity Cribs GOAT</div><div class="tv-sub">Real Estate • Lifestyle</div><div class="tv-stars">★★★★☆ 8.6</div></div>
+    </div>
+  </div>
+
+  <!-- PODCASTS -->
+  <div class="sec-head">
+    <div><div class="sec-title">🎙 GOAT Podcasts</div><div class="sec-sub">Deep conversations with the greats</div></div>
+    <a class="see-all">All Podcasts →</a>
+  </div>
+  <div class="podcast-row">
+    <div class="pod-card">
+      <div class="pod-art" style="background:linear-gradient(135deg,#1a0533,#7c3aed)">👑</div>
+      <div class="pod-info">
+        <div class="pod-title">The GOAT Mindset</div>
+        <div class="pod-host">Hosted by DJ Speedyga</div>
+        <div class="pod-ep">Ep 142 • 1h 24min</div>
+      </div>
+      <div class="pod-play">▶️</div>
+    </div>
+    <div class="pod-card">
+      <div class="pod-art" style="background:linear-gradient(135deg,#1a1000,#402000)">💰</div>
+      <div class="pod-info">
+        <div class="pod-title">Billionaire Blueprint</div>
+        <div class="pod-host">Celebrity Finance Talk</div>
+        <div class="pod-ep">Ep 89 • 58min</div>
+      </div>
+      <div class="pod-play">▶️</div>
+    </div>
+    <div class="pod-card">
+      <div class="pod-art" style="background:linear-gradient(135deg,#001a20,#003340)">🎵</div>
+      <div class="pod-info">
+        <div class="pod-title">Behind The Beat</div>
+        <div class="pod-host">Music Industry Secrets</div>
+        <div class="pod-ep">Ep 67 • 1h 12min</div>
+      </div>
+      <div class="pod-play">▶️</div>
+    </div>
+    <div class="pod-card">
+      <div class="pod-art" style="background:linear-gradient(135deg,#1a0a0a,#401010)">👗</div>
+      <div class="pod-info">
+        <div class="pod-title">Fashion Royalty</div>
+        <div class="pod-host">Style & Culture Weekly</div>
+        <div class="pod-ep">Ep 203 • 44min</div>
+      </div>
+      <div class="pod-play">▶️</div>
+    </div>
+  </div>
+
+  <!-- CONTENT CREATOR STUDIO -->
+  <div class="studio-section">
+    <div class="studio-visual">🎬</div>
+    <div class="studio-text">
+      <div class="studio-title">🚀 GOAT Creator Studio</div>
+      <div class="studio-desc">Produce and monetize your own content alongside the world's biggest celebrities. Access professional-grade editing tools, AI-powered production assistants, and instant distribution to 180+ countries.</div>
+      <div class="studio-features">
+        <span class="studio-feat">4K Video Editor</span>
+        <span class="studio-feat">AI Voice-Over</span>
+        <span class="studio-feat">Beat Maker</span>
+        <span class="studio-feat">Live Streaming</span>
+        <span class="studio-feat">Monetization</span>
+        <span class="studio-feat">Sora 2 AI Video</span>
+        <span class="studio-feat">Auto-Distribution</span>
+        <span class="studio-feat">Collab Tools</span>
+      </div>
+      <div class="studio-actions">
+        <button class="btn-primary" onclick="window.location='goat-3d-studio.html'">Open 3D Studio 🎬</button>
+        <button class="btn-secondary" onclick="window.location='goat-ai-video.html'">AI Video Generator</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRENDING -->
+  <div class="sec-head">
+    <div><div class="sec-title">🔥 Trending Now</div><div class="sec-sub">What the culture is watching</div></div>
+    <a class="see-all">Full Charts →</a>
+  </div>
+  <div class="trending-list">
+    <div class="trend-item">
+      <div class="trend-rank" style="color:var(--gold)">1</div>
+      <div class="trend-art" style="background:linear-gradient(135deg,#1a0533,#7c3aed)">🎵</div>
+      <div class="trend-info"><div class="trend-title">GOAT Mode (feat. Drake) — Future</div><div class="trend-cat">Music • Hip-Hop</div></div>
+      <span class="trend-change up">↑ +4</span>
+      <div class="trend-plays">48.2M</div>
+    </div>
+    <div class="trend-item">
+      <div class="trend-rank" style="color:#c0c0c0">2</div>
+      <div class="trend-art" style="background:linear-gradient(135deg,#1a1000,#402000)">🎬</div>
+      <div class="trend-info"><div class="trend-title">Crown Dynasty — Season 2 Ep 5</div><div class="trend-cat">TV • Drama</div></div>
+      <span class="trend-change new-entry">★ NEW</span>
+      <div class="trend-plays">21.8M</div>
+    </div>
+    <div class="trend-item">
+      <div class="trend-rank" style="color:#cd7f32">3</div>
+      <div class="trend-art" style="background:linear-gradient(135deg,#0a1520,#153040)">🎤</div>
+      <div class="trend-info"><div class="trend-title">Beyoncé Live Tokyo — Night 3</div><div class="trend-cat">Live Concert</div></div>
+      <span class="trend-change up">↑ +12</span>
+      <div class="trend-plays">18.4M</div>
+    </div>
+    <div class="trend-item">
+      <div class="trend-rank">4</div>
+      <div class="trend-art" style="background:linear-gradient(135deg,#001a10,#003320)">🏆</div>
+      <div class="trend-info"><div class="trend-title">Met Gala 2025 Preview</div><div class="trend-cat">Fashion • Event</div></div>
+      <span class="trend-change down">↓ -1</span>
+      <div class="trend-plays">14.2M</div>
+    </div>
+    <div class="trend-item">
+      <div class="trend-rank">5</div>
+      <div class="trend-art" style="background:linear-gradient(135deg,#1a0a1a,#4a1060)">👑</div>
+      <div class="trend-info"><div class="trend-title">The GOAT Mindset Podcast Ep 142</div><div class="trend-cat">Podcast</div></div>
+      <span class="trend-change up">↑ +8</span>
+      <div class="trend-plays">9.8M</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Music tracks data
+  const tracks = [
+    {num:1,emoji:'🎵',color:'#7c3aed',title:'GOAT Mode (feat. Drake)',artist:'Future',dur:'3:47',active:true},
+    {num:2,emoji:'💎',color:'#d4a03c',title:'Crown Life',artist:'Drake & PARTYNEXTDOOR',dur:'4:12',active:false},
+    {num:3,emoji:'🔥',color:'#ef4444',title:'Rich Flex',artist:'21 Savage, Drake',dur:'3:24',active:false},
+    {num:4,emoji:'👑',color:'#f472b6',title:'Bejeweled',artist:'Taylor Swift',dur:'3:54',active:false},
+    {num:5,emoji:'🌟',color:'#38bdf8',title:'Creepin\' (Remix)',artist:'Metro Boomin, 21 Savage',dur:'4:02',active:false},
+  ];
+  const tracksEl = document.getElementById('musicTracks');
+  tracks.forEach(t => {
+    tracksEl.innerHTML += `
+      <div class="track-row ${t.active?'active':''}">
+        <div class="track-num">${t.num}</div>
+        <div class="track-art-mini" style="background:linear-gradient(135deg,${t.color}33,${t.color}66)">${t.emoji}</div>
+        <div class="track-name"><div class="track-nm">${t.title}</div><div class="track-ar">${t.artist}</div></div>
+        <div class="track-actions"><span class="track-act">♡</span><span class="track-act">⋯</span></div>
+        <div class="track-dur">${t.dur}</div>
+      </div>`;
+  });
+
+  // Music progress animation
+  let progress = 38;
+  let playing = true;
+  setInterval(() => {
+    if(playing) {
+      progress = (progress + 0.05) % 100;
+      document.getElementById('progressFill').style.width = progress + '%';
+    }
+  }, 500);
+
+  function togglePlay() {
+    playing = !playing;
+    document.getElementById('playBtn').textContent = playing ? '⏸' : '▶';
+    const art = document.getElementById('albumArt');
+    art.style.animationPlayState = playing ? 'running' : 'paused';
+  }
+</script>
+</body>
+</html>

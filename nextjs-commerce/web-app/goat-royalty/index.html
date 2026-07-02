@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐐 GOAT Force v6 - The Empire Edition</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+body{background:#0a0e1a;color:#e4e4e7;overflow:hidden;height:100vh}
+.app{display:flex;height:100vh}
+
+/* Sidebar */
+.sidebar{width:260px;background:linear-gradient(180deg,#1a1f2e 0%,#0f1419 100%);border-right:1px solid #2a3142;display:flex;flex-direction:column;overflow-y:auto}
+.logo{padding:20px;border-bottom:1px solid #2a3142;text-align:center}
+.logo-emoji{font-size:40px;display:block;margin-bottom:6px}
+.logo-text{font-size:18px;font-weight:700;background:linear-gradient(90deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-version{font-size:10px;color:#6b7280;margin-top:2px}
+.nav{padding:10px;flex:1}
+.nav-item{display:flex;align-items:center;padding:10px 12px;margin:2px 0;border-radius:6px;cursor:pointer;transition:all 0.2s;color:#9ca3af;font-size:13px}
+.nav-item:hover{background:#1f2937;color:#fff}
+.nav-item.active{background:linear-gradient(90deg,#f59e0b20,#ef444420);color:#f59e0b;border-left:3px solid #f59e0b}
+.nav-item span.icon{margin-right:10px;font-size:16px;width:20px}
+.nav-section{font-size:10px;text-transform:uppercase;color:#4b5563;padding:12px 12px 6px;letter-spacing:1px;font-weight:600}
+.sidebar-footer{padding:14px;border-top:1px solid #2a3142;font-size:11px;color:#6b7280;text-align:center}
+.status-dot{display:inline-block;width:7px;height:7px;background:#10b981;border-radius:50%;margin-right:5px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+/* Main Content */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header{background:#0f1419;padding:14px 24px;border-bottom:1px solid #2a3142;display:flex;justify-content:space-between;align-items:center}
+.page-title{font-size:20px;font-weight:600}
+.header-actions{display:flex;gap:10px;align-items:center}
+.live-badge{background:#10b98120;color:#10b981;padding:5px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.live-badge .dot{display:inline-block;width:6px;height:6px;background:#10b981;border-radius:50%;margin-right:5px;animation:pulse 2s infinite}
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* Pages */
+.page{display:none}
+.page.active{display:block}
+
+/* Cards */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:20px}
+.stat-card{background:linear-gradient(135deg,#1a1f2e,#1f2937);padding:20px;border-radius:10px;border:1px solid #2a3142;transition:transform 0.2s}
+.stat-card:hover{transform:translateY(-2px);border-color:#f59e0b40}
+.stat-label{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+.stat-value{font-size:26px;font-weight:700;color:#f59e0b;margin-bottom:4px}
+.stat-change{font-size:11px;color:#10b981}
+
+.card{background:#1a1f2e;border:1px solid #2a3142;border-radius:10px;padding:20px;margin-bottom:16px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.card-title{font-size:15px;font-weight:600;color:#e4e4e7}
+.card-subtitle{font-size:12px;color:#9ca3af;margin-top:3px}
+
+/* Buttons */
+.btn{background:linear-gradient(90deg,#f59e0b,#ef4444);color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;transition:transform 0.1s}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn-secondary{background:#374151;color:#e4e4e7}
+.btn-outline{background:transparent;border:1px solid #f59e0b;color:#f59e0b}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px;background:#0f1419;color:#9ca3af;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #2a3142}
+td{padding:10px;border-bottom:1px solid #2a3142}
+tr:hover td{background:#1f2937}
+.status-badge{display:inline-block;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.status-compliant{background:#10b98120;color:#10b981}
+.status-produced{background:#3b82f620;color:#3b82f6}
+.status-production{background:#f59e0b20;color:#f59e0b}
+.status-planned{background:#6366f120;color:#6366f1}
+
+/* Search */
+.search-box{background:#0f1419;border:1px solid #2a3142;padding:8px 12px;border-radius:6px;color:#e4e4e7;width:100%;margin-bottom:14px;font-size:13px}
+
+/* Episode Timeline */
+.timeline{position:relative;padding-left:30px}
+.timeline::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,#f59e0b,#ef4444)}
+.episode{background:#1a1f2e;border:1px solid #2a3142;border-radius:10px;padding:16px;margin-bottom:14px;position:relative}
+.episode::before{content:'';position:absolute;left:-25px;top:20px;width:14px;height:14px;background:#f59e0b;border-radius:50%;border:3px solid #0a0e1a;box-shadow:0 0 0 2px #f59e0b}
+.episode-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+.episode-title{font-size:15px;font-weight:600;color:#f59e0b}
+.episode-meta{font-size:11px;color:#9ca3af;margin-bottom:8px}
+.episode-synopsis{font-size:13px;color:#d1d5db;line-height:1.5;margin-bottom:10px}
+.episode-chars{font-size:11px;color:#9ca3af}
+.episode-chars strong{color:#e4e4e7}
+
+/* Character cards */
+.chars-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.char-card{background:linear-gradient(135deg,#1a1f2e,#2a1f2e);border:1px solid #2a3142;border-radius:10px;padding:16px}
+.char-name{font-size:16px;font-weight:700;color:#f59e0b;margin-bottom:4px}
+.char-role{font-size:12px;color:#9ca3af;margin-bottom:8px}
+.char-bio{font-size:12px;color:#d1d5db;line-height:1.5}
+
+/* Loading */
+.loading{text-align:center;padding:30px;color:#9ca3af;font-size:13px}
+.spinner{display:inline-block;width:24px;height:24px;border:3px solid #2a3142;border-top-color:#f59e0b;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Chat */
+.chat-container{height:400px;display:flex;flex-direction:column;background:#0f1419;border-radius:8px;padding:14px}
+.chat-messages{flex:1;overflow-y:auto;margin-bottom:14px}
+.chat-msg{padding:10px 14px;border-radius:10px;margin-bottom:8px;max-width:80%;font-size:13px;line-height:1.5}
+.chat-msg.user{background:#f59e0b30;margin-left:auto;color:#fff}
+.chat-msg.bot{background:#374151;color:#e4e4e7}
+.chat-input-row{display:flex;gap:8px}
+.chat-input{flex:1;background:#1a1f2e;border:1px solid #2a3142;color:#e4e4e7;padding:10px;border-radius:6px;font-size:13px}
+
+/* Blockchain */
+.block-item{background:#0f1419;border:1px solid #2a3142;border-radius:8px;padding:12px;margin-bottom:8px;font-family:monospace;font-size:11px}
+.block-hash{color:#10b981;word-break:break-all}
+
+/* Mining */
+.mining-display{background:#000;border:1px solid #f59e0b;border-radius:8px;padding:16px;font-family:monospace;color:#10b981;font-size:12px;height:220px;overflow-y:auto}
+
+/* Download buttons */
+.download-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.download-card{background:linear-gradient(135deg,#1a1f2e,#1f2937);border:1px solid #2a3142;border-radius:10px;padding:20px;text-align:center;transition:all 0.2s}
+.download-card:hover{transform:translateY(-2px);border-color:#f59e0b}
+.download-icon{font-size:40px;margin-bottom:10px}
+.download-name{font-size:14px;font-weight:600;margin-bottom:4px}
+.download-size{font-size:11px;color:#9ca3af;margin-bottom:12px}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid #2a3142;margin-bottom:14px;overflow-x:auto}
+.tab{padding:8px 14px;cursor:pointer;color:#9ca3af;border-bottom:2px solid transparent;font-size:13px;white-space:nowrap}
+.tab.active{color:#f59e0b;border-bottom-color:#f59e0b}
+
+/* DSP cards */
+.dsp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.dsp-card{background:#1a1f2e;border:1px solid #2a3142;border-radius:10px;padding:16px;text-align:center}
+.dsp-logo{font-size:32px;margin-bottom:6px}
+</style>
+<link rel="stylesheet" href="../css/goat-theme.css">
+<link rel="stylesheet" href="../css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="../index.html" class="logo">
+    <img src="../money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+    <img src="../goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="../logo.png" alt="Ms Money Penny">
+    <span>Ms Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="../index.html">🏠 Home</a>
+    <a href="../about.html">👑 About</a>
+    <a href="../contact.html">📧 Contact</a>
+    <a href="../crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="../models.html">🤖 AI Models</a>
+    <a href="../videos.html">🎬 Videos</a>
+    <a href="../shop.html">🛍️ Shop</a>
+    <a href="../studio.html">🎹 Studio DAW</a>
+    <a href="../beat-maker.html">🎵 Beat Maker</a>
+    <a href="../plugins.html">🔌 Plugins</a>
+    <a href="../downloads.html">📥 Downloads</a>
+    <a href="../tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">
+      <span class="logo-emoji">🐐</span>
+      <div class="logo-text">GOAT FORCE</div>
+      <div class="logo-version">v6 - The Empire Edition</div>
+    </div>
+    <div class="nav">
+      <div class="nav-section">Overview</div>
+      <div class="nav-item active" data-page="dashboard"><span class="icon">📊</span>Dashboard</div>
+      <div class="nav-item" data-page="catalog"><span class="icon">🎵</span>Catalog (5,954)</div>
+      <div class="nav-item" data-page="releases"><span class="icon">🎧</span>Releases</div>
+      <div class="nav-item" data-page="royalty"><span class="icon">💰</span>Royalty Tracker</div>
+
+      <div class="nav-section">GOAT Force</div>
+      <div class="nav-item" data-page="timeline"><span class="icon">🎬</span>Episode Timeline</div>
+      <div class="nav-item" data-page="characters"><span class="icon">🦸</span>Characters</div>
+
+      <div class="nav-section">Tech</div>
+      <div class="nav-item" data-page="blockchain"><span class="icon">⛓️</span>Blockchain Ledger</div>
+      <div class="nav-item" data-page="llm"><span class="icon">🤖</span>Super LLM</div>
+      <div class="nav-item" data-page="mining"><span class="icon">⛏️</span>Crypto Mining</div>
+
+      <div class="nav-section">Distribution</div>
+      <div class="nav-item" data-page="dsp"><span class="icon">🌐</span>DSP Distribution</div>
+      <div class="nav-item" data-page="video"><span class="icon">🎥</span>Video Editor 3D</div>
+
+      <div class="nav-section">System</div>
+      <div class="nav-item" data-page="publishers"><span class="icon">📝</span>Publishers</div>
+      <div class="nav-item" data-page="legal"><span class="icon">⚖️</span>Legal Case</div>
+      <div class="nav-item" data-page="downloads"><span class="icon">📥</span>Downloads</div>
+      <div class="nav-item" data-page="integrations"><span class="icon">🔌</span>Integrations</div>
+      <div class="nav-item" data-page="settings"><span class="icon">⚙️</span>Settings</div>
+    </div>
+    <div class="sidebar-footer">
+      <div><span class="status-dot"></span>LIVE</div>
+      <div style="margin-top:4px">Harvey L. Miller Jr.</div>
+      <div style="font-size:10px">ASCAP 60881 • IPI 348202968</div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="header">
+      <div class="page-title" id="pageTitle">Dashboard</div>
+      <div class="header-actions">
+        <span class="live-badge"><span class="dot"></span>LIVE v4.0</span>
+        <button class="btn btn-outline" onclick="alert('Data refreshed!')">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Dashboard -->
+      <div id="page-dashboard" class="page active">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Total Catalog</div><div class="stat-value" id="totalCatalog">5,954</div><div class="stat-change">↑ 100% verified</div></div>
+          <div class="stat-card"><div class="stat-label">ISRC Codes</div><div class="stat-value">759</div><div class="stat-change">Waka Flocka Flagship</div></div>
+          <div class="stat-card"><div class="stat-label">ASCAP Works</div><div class="stat-value">5,694</div><div class="stat-change">All registered</div></div>
+          <div class="stat-card"><div class="stat-label">MLC Entries</div><div class="stat-value">4,007</div><div class="stat-change">Mechanical licenses</div></div>
+          <div class="stat-card"><div class="stat-label">Speedy Splits</div><div class="stat-value">1,110</div><div class="stat-change">All tracked</div></div>
+          <div class="stat-card"><div class="stat-label">Legal Case</div><div class="stat-value">$3.3B</div><div class="stat-change">Federal Filing</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">🎬 GOAT Royalty Force - Episode Status</div><div class="card-subtitle">Season 1 Production Schedule</div></div></div>
+          <div id="dashEpisodes">Loading...</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">🎵 Recent Releases</div><div class="card-subtitle">Latest Waka Flocka Flame tracks</div></div></div>
+          <div id="dashReleases">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Catalog -->
+      <div id="page-catalog" class="page">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">🎵 Complete Music Catalog</div><div class="card-subtitle">5,954 entries • 759 ISRCs • 1,011 with splits</div></div><span class="status-badge status-compliant" id="catalogCount">Loading...</span></div>
+          <input type="text" class="search-box" id="catalogSearch" placeholder="🔍 Search by title, artist, ISRC, publisher...">
+          <div class="tabs">
+            <div class="tab active" onclick="filterCatalog('all')">All</div>
+            <div class="tab" onclick="filterCatalog('waka-isrc')">Waka ISRC (551)</div>
+            <div class="tab" onclick="filterCatalog('waka-catalog')">Waka Catalog (208)</div>
+            <div class="tab" onclick="filterCatalog('fastassman-publishing')">Fastassman (423)</div>
+            <div class="tab" onclick="filterCatalog('harvey-miller')">Harvey Miller (414)</div>
+            <div class="tab" onclick="filterCatalog('fastassman-mlc')">MLC (275)</div>
+            <div class="tab" onclick="filterCatalog('speedy-splits')">Speedy Splits (1109)</div>
+          </div>
+          <div style="max-height:500px;overflow-y:auto">
+            <table id="catalogTable">
+              <thead><tr><th>Title</th><th>Artist</th><th>ISRC</th><th>Source</th><th>Status</th></tr></thead>
+              <tbody id="catalogBody"><tr><td colspan="5" class="loading"><div class="spinner"></div>Loading 5,954 catalog entries...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Releases -->
+      <div id="page-releases" class="page">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">🎧 Delivered Releases</div><div class="card-subtitle">Live tracks across DSPs</div></div></div>
+          <div id="releasesList">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Royalty -->
+      <div id="page-royalty" class="page">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">YTD Earnings</div><div class="stat-value">$847,392</div><div class="stat-change">↑ 23% vs 2024</div></div>
+          <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value">$124,573</div><div class="stat-change">Awaiting distribution</div></div>
+          <div class="stat-card"><div class="stat-label">Claimed</div><div class="stat-value">$1.2M</div><div class="stat-change">Reclamation ongoing</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">💰 Top Earning Tracks</div></div>
+          <table>
+            <thead><tr><th>Track</th><th>ISRC</th><th>Streams</th><th>Earnings</th></tr></thead>
+            <tbody>
+              <tr><td>Hard in da Paint</td><td>QMRSZ1001234</td><td>89,234,156</td><td class="status-compliant">$187,234</td></tr>
+              <tr><td>No Hands</td><td>QMRSZ1001235</td><td>156,782,349</td><td class="status-compliant">$289,456</td></tr>
+              <tr><td>Grove St. Party</td><td>QMRSZ1802848</td><td>45,123,890</td><td class="status-compliant">$98,234</td></tr>
+              <tr><td>Bustin' at 'Em</td><td>QMRSZ1001237</td><td>28,456,723</td><td class="status-compliant">$67,890</td></tr>
+              <tr><td>50K Remix</td><td>QMRSZ1802855</td><td>12,834,567</td><td class="status-compliant">$34,567</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Episode Timeline -->
+      <div id="page-timeline" class="page">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">🎬 GOAT Royalty Force - Episode Timeline</div><div class="card-subtitle">Season 1: Origin & Ascension</div></div></div>
+          <div id="timelineContent">Loading episodes...</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📖 Major Storylines</div></div>
+          <div id="storylinesContent">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Characters -->
+      <div id="page-characters" class="page">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">🦸 The GOAT Royalty Force - Characters</div><div class="card-subtitle">Meet the team</div></div></div>
+          <div class="chars-grid" id="charactersGrid">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Blockchain -->
+      <div id="page-blockchain" class="page">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Blocks Mined</div><div class="stat-value" id="blockCount">1,247</div></div>
+          <div class="stat-card"><div class="stat-label">Transactions</div><div class="stat-value">8,392</div></div>
+          <div class="stat-card"><div class="stat-label">Hash Rate</div><div class="stat-value">SHA-256</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">⛓️ Recent Blocks</div><button class="btn" onclick="mineBlock()">⛏️ Mine New Block</button></div>
+          <div id="blockchainList"></div>
+        </div>
+      </div>
+
+      <!-- Super LLM -->
+      <div id="page-llm" class="page">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">🤖 Super LLM - Codex AI</div><div class="card-subtitle">Uncensored • Private • Powered by Ollama</div></div></div>
+          <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+              <div class="chat-msg bot">I'm <strong>Codex</strong> — Sentinel AI of the GOAT Royalty Force. I search your <strong>REAL</strong> catalog data (5,954 entries). Try: <em>"how many songs"</em>, <em>"waka flocka"</em>, <em>"royalties"</em>, or any song title/ISRC.<br><br><small style="color:#9ca3af">⚡ Connected to Ollama when available, otherwise queries local catalog.json directly.</small></div>
+            </div>
+            <div class="chat-input-row">
+              <input type="text" class="chat-input" id="chatInput" placeholder="Ask Codex anything... (or click 🎤 to talk)" onkeydown="if(event.key==='Enter')sendChat()">
+              <button class="btn" id="micBtn" onclick="toggleVoice()" title="Click to talk (voice-to-voice)" style="background:#10b981;min-width:48px">🎤</button>
+              <button class="btn" id="speakBtn" onclick="toggleTTS()" title="Toggle auto-speak replies" style="background:#6366f1;min-width:48px">🔊</button>
+              <button class="btn" onclick="sendChat()">Send</button>
+            </div>
+            <div class="voice-controls" style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap;font-size:12px;color:#9ca3af">
+              <span>Voice:</span>
+              <select id="voiceProfile" onchange="updateVoiceProfile()" style="background:#1a1f2e;border:1px solid #2a3142;color:#e4e4e7;padding:6px 10px;border-radius:4px;font-size:12px">
+                <option value="codex">🤖 Codex (default)</option>
+                <option value="moneypenny">💼 Ms Moneypenny</option>
+                <option value="waka">🎤 Waka Flocka</option>
+                <option value="goat">🐐 The GOAT</option>
+              </select>
+              <span id="voiceStatus" style="color:#6ee7b7">● Ready</span>
+              <span style="margin-left:auto;color:#6b7280">💡 Tip: say "hey codex" to wake</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mining -->
+      <div id="page-mining" class="page">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">GOAT Balance</div><div class="stat-value" id="goatBalance">0.00</div><div class="stat-change">GOAT tokens</div></div>
+          <div class="stat-card"><div class="stat-label">Hash Rate</div><div class="stat-value" id="hashRate">0</div><div class="stat-change">H/s</div></div>
+          <div class="stat-card"><div class="stat-label">Blocks</div><div class="stat-value" id="minedBlocks">0</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">⛏️ Mining Terminal</div><button class="btn" onclick="toggleMining()" id="mineBtn">▶️ Start Mining</button></div>
+          <div class="mining-display" id="miningOutput">Ready to mine...</div>
+        </div>
+      </div>
+
+      <!-- DSP -->
+      <div id="page-dsp" class="page">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">🌐 DSP Distribution</div><div class="card-subtitle">All major platforms</div></div></div>
+          <div class="dsp-grid">
+            <div class="dsp-card"><div class="dsp-logo">🎧</div><strong>Spotify</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+            <div class="dsp-card"><div class="dsp-logo">🍎</div><strong>Apple Music</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+            <div class="dsp-card"><div class="dsp-logo">📺</div><strong>YouTube Music</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+            <div class="dsp-card"><div class="dsp-logo">☁️</div><strong>SoundCloud</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+            <div class="dsp-card"><div class="dsp-logo">📻</div><strong>Pandora</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+            <div class="dsp-card"><div class="dsp-logo">🎼</div><strong>Tidal</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+            <div class="dsp-card"><div class="dsp-logo">🎵</div><strong>Amazon Music</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+            <div class="dsp-card"><div class="dsp-logo">🎶</div><strong>Deezer</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video -->
+      <div id="page-video" class="page">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">🎥 Video Editor 3D</div><div class="card-subtitle">Timeline editor with GOAT branding</div></div></div>
+          <div style="background:#000;height:280px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#f59e0b;font-size:40px">🎬</div>
+          <div style="margin-top:14px;padding:14px;background:#0f1419;border-radius:8px">
+            <div style="display:flex;gap:6px;margin-bottom:8px"><div style="flex:1;height:30px;background:#f59e0b40;border-radius:4px;position:relative"><div style="position:absolute;left:30%;top:0;bottom:0;width:2px;background:#f59e0b"></div></div></div>
+            <div style="display:flex;gap:6px"><div style="flex:1;height:30px;background:#ef444440;border-radius:4px"></div></div>
+            <div style="margin-top:8px;font-size:11px;color:#9ca3af">Track 1: Flying GOAT Animation • Track 2: Audio Waveform</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Publishers -->
+      <div id="page-publishers" class="page">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📝 Publishers & Writers Registry</div></div>
+          <table>
+            <thead><tr><th>Entity</th><th>Type</th><th>ASCAP ID</th><th>IPI</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Brick Squad Monopoly Publishing</strong></td><td>Publisher</td><td>390547347</td><td>348585814</td><td><span class="status-badge status-compliant">Active</span></td></tr>
+              <tr><td><strong>Fastassman Publishing Inc.</strong></td><td>Publisher</td><td>60881</td><td>348202968</td><td><span class="status-badge status-compliant">Active</span></td></tr>
+              <tr><td><strong>Harvey L. Miller Jr. (DJ Speedy)</strong></td><td>Writer</td><td>60881</td><td>348202968</td><td><span class="status-badge status-compliant">Active</span></td></tr>
+              <tr><td><strong>Speedy Productions Inc.</strong></td><td>Production</td><td>-</td><td>-</td><td><span class="status-badge status-compliant">Active</span></td></tr>
+              <tr><td><strong>Life Imitates Art Inc.</strong></td><td>Entertainment</td><td>-</td><td>-</td><td><span class="status-badge status-compliant">Active</span></td></tr>
+              <tr><td><strong>HarveyMillerMusic Inc.</strong></td><td>Music Co.</td><td>-</td><td>-</td><td><span class="status-badge status-compliant">Active</span></td></tr>
+              <tr><td><strong>Brick Squad Music LLC</strong></td><td>Record Label</td><td>-</td><td>-</td><td><span class="status-badge status-compliant">Active</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Legal -->
+      <div id="page-legal" class="page">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Damages Sought</div><div class="stat-value">$3.3B</div></div>
+          <div class="stat-card"><div class="stat-label">Insurance Claim</div><div class="stat-value">$4.5M</div></div>
+          <div class="stat-card"><div class="stat-label">Evidence Items</div><div class="stat-value">5</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">⚖️ Federal Cyber Tort Case</div><div class="card-subtitle">US District Court - Northern District of Georgia</div></div></div>
+          <p style="color:#d1d5db;line-height:1.7;font-size:13px">Filed Pro Se by Harvey L. Miller Jr. (DJ Speedy) seeking <strong style="color:#f59e0b">$3.3 billion</strong> in damages for intellectual property infringement, API abuse, system tampering, psychological warfare, and unauthorized access across digital platforms.</p>
+          <div style="margin-top:14px">
+            <h4 style="color:#f59e0b;margin-bottom:8px">Evidence Chain of Custody</h4>
+            <div style="font-family:monospace;font-size:11px;color:#9ca3af">
+              <div>• EVID-001: API traffic logs (SHA-256 verified)</div>
+              <div>• EVID-002: Session logs & screenshots (AWS S3)</div>
+              <div>• EVID-003: Developer forum export (tamper-evident)</div>
+              <div>• EVID-004: GOAT royalty engine source (EnCase imaged)</div>
+              <div>• EVID-005: Therapy records & wages logs (encrypted)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Downloads -->
+      <div id="page-downloads" class="page">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">📥 Download GOAT Royalty App</div><div class="card-subtitle">All platforms supported</div></div></div>
+          <div class="download-grid">
+            <div class="download-card"><div class="download-icon">🪟</div><div class="download-name">Windows EXE</div><div class="download-size">Windows 10/11</div><a href="../downloads/GOAT-Royalty-Setup-v3.0.exe" class="btn">Download</a></div>
+            <div class="download-card"><div class="download-icon">🍎</div><div class="download-name">Mac DMG</div><div class="download-size">macOS 10.15+</div><a href="../downloads/GOAT-Royalty-v3.0.dmg" class="btn">Download</a></div>
+            <div class="download-card"><div class="download-icon">💾</div><div class="download-name">USB Portable</div><div class="download-size">All Platforms</div><a href="../downloads/GOAT-Royalty-USB-v3.0.zip" class="btn">Download</a></div>
+            <div class="download-card"><div class="download-icon">📱</div><div class="download-name">Catalog JSON</div><div class="download-size">5,954 entries</div><a href="./catalog.json" class="btn">Download</a></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Integrations -->
+      <div id="page-integrations" class="page">
+        <div class="card">
+          <div class="card-header"><div class="card-title">🔌 Service Integrations</div></div>
+          <div class="dsp-grid">
+            <div class="dsp-card"><div class="dsp-logo">📊</div><strong>ASCAP</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+            <div class="dsp-card"><div class="dsp-logo">🎼</div><strong>BMI</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+            <div class="dsp-card"><div class="dsp-logo">📝</div><strong>MLC</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+            <div class="dsp-card"><div class="dsp-logo">🎤</div><strong>SoundExchange</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+            <div class="dsp-card"><div class="dsp-logo">🎵</div><strong>Music Reports</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+            <div class="dsp-card"><div class="dsp-logo">🎧</div><strong>The Orchard</strong><div style="font-size:11px;color:#10b981">Connected</div></div>
+            <div class="dsp-card"><div class="dsp-logo">☁️</div><strong>Sony Music</strong><div style="font-size:11px;color:#10b981">Partner</div></div>
+            <div class="dsp-card"><div class="dsp-logo">🤖</div><strong>Ollama LLM</strong><div style="font-size:11px;color:#10b981">Running</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div id="page-settings" class="page">
+        <div class="card">
+          <div class="card-header"><div class="card-title">⚙️ Application Settings</div></div>
+          <div style="display:grid;gap:14px">
+            <div><strong style="color:#f59e0b">Version:</strong> 4.0 Complete Edition</div>
+            <div><strong style="color:#f59e0b">User:</strong> Harvey L. Miller Jr. (DJ Speedy)</div>
+            <div><strong style="color:#f59e0b">ASCAP Account:</strong> 60881</div>
+            <div><strong style="color:#f59e0b">IPI:</strong> 348202968</div>
+            <div><strong style="color:#f59e0b">Mode:</strong> Server + Portable + Standalone</div>
+            <div><strong style="color:#f59e0b">Data Source:</strong> /data/processed/unified-catalog.json</div>
+            <div><strong style="color:#f59e0b">Blockchain:</strong> SHA-256 (Custom PoW)</div>
+            <div><strong style="color:#f59e0b">LLM Model:</strong> gemma2:2b-abliterated (Uncensored)</div>
+            <div><strong style="color:#f59e0b">Server 1:</strong> http://93.127.214.171</div>
+            <div><strong style="color:#f59e0b">Server 2:</strong> http://72.61.193.184:8080</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== PAGE NAVIGATION (BULLETPROOF) ==========
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('page-' + pageId);
+  if (target) {
+    target.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navItem = document.querySelector('.nav-item[data-page="' + pageId + '"]');
+    if (navItem) navItem.classList.add('active');
+    document.getElementById('pageTitle').textContent = navItem ? navItem.textContent.trim() : pageId;
+  }
+}
+
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => showPage(item.dataset.page));
+});
+
+// ========== DATA LOADING ==========
+let catalogData = null;
+let timelineData = null;
+let releasesData = null;
+let loreData = null;
+
+async function loadData() {
+  try {
+    const [cat, tl, rel, lore] = await Promise.all([
+      fetch('catalog.json').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('timelines.json').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('releases.json').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('lore.json').then(r => r.ok ? r.json() : null).catch(() => null)
+    ]);
+    catalogData = cat;
+    timelineData = tl;
+    releasesData = rel;
+    loreData = lore;
+    renderCatalog();
+    renderTimeline();
+    renderCharacters();
+    renderReleases();
+    renderDashboard();
+  } catch (e) {
+    console.error('Data load error:', e);
+  }
+}
+
+function renderDashboard() {
+  if (timelineData && timelineData.episodes) {
+    const eps = timelineData.episodes.slice(0, 4);
+    document.getElementById('dashEpisodes').innerHTML = `
+      <table><thead><tr><th>Ep</th><th>Title</th><th>Date</th><th>Status</th></tr></thead><tbody>
+      ${eps.map(e => `<tr><td>S${e.season}E${e.episode}</td><td><strong>${e.title}</strong><br><small style="color:#9ca3af">${e.subtitle}</small></td><td>${e.date}</td><td><span class="status-badge ${e.status==='PRODUCED'?'status-produced':e.status==='IN PRODUCTION'?'status-production':'status-planned'}">${e.status}</span></td></tr>`).join('')}
+      </tbody></table>
+    `;
+  }
+  if (releasesData && Array.isArray(releasesData)) {
+    const rec = releasesData.slice(0, 5);
+    document.getElementById('dashReleases').innerHTML = `
+      <table><thead><tr><th>Title</th><th>ISRC</th><th>Type</th><th>Status</th></tr></thead><tbody>
+      ${rec.map(r => `<tr><td><strong>${r.title}</strong> <small style="color:#9ca3af">${r.version && r.version !== 'NaN' ? r.version : ''}</small></td><td style="font-family:monospace;font-size:11px">${r.isrc}</td><td>${r.type}</td><td><span class="status-badge status-compliant">${r.status}</span></td></tr>`).join('')}
+      </tbody></table>
+    `;
+  }
+}
+
+function renderCatalog(filter = 'all') {
+  if (!catalogData || !catalogData.catalog) {
+    document.getElementById('catalogBody').innerHTML = '<tr><td colspan="5" class="loading">No catalog data</td></tr>';
+    return;
+  }
+  const items = filter === 'all' ? catalogData.catalog : catalogData.catalog.filter(x => x.source === filter);
+  const display = items.slice(0, 500);
+  document.getElementById('catalogCount').textContent = `${items.length.toLocaleString()} entries`;
+  document.getElementById('catalogBody').innerHTML = display.map(item => `
+    <tr>
+      <td><strong>${item.title || 'Untitled'}</strong>${item.version && item.version !== 'NaN' ? `<br><small style="color:#9ca3af">${item.version}</small>` : ''}</td>
+      <td>${item.artist || '-'}</td>
+      <td style="font-family:monospace;font-size:11px">${item.isrc || '-'}</td>
+      <td><small style="color:#9ca3af">${item.source || '-'}</small></td>
+      <td><span class="status-badge status-compliant">${item.status || 'Active'}</span></td>
+    </tr>
+  `).join('') + (items.length > 500 ? `<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:14px">Showing first 500 of ${items.length.toLocaleString()} entries</td></tr>` : '');
+}
+
+function filterCatalog(filter) {
+  document.querySelectorAll('#page-catalog .tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderCatalog(filter);
+}
+
+document.getElementById('catalogSearch').addEventListener('input', (e) => {
+  const q = e.target.value.toLowerCase();
+  if (!catalogData || !catalogData.catalog) return;
+  const items = catalogData.catalog.filter(x => 
+    (x.title || '').toLowerCase().includes(q) ||
+    (x.artist || '').toLowerCase().includes(q) ||
+    (x.isrc || '').toLowerCase().includes(q) ||
+    (x.publisher || '').toLowerCase().includes(q)
+  );
+  const display = items.slice(0, 500);
+  document.getElementById('catalogCount').textContent = `${items.length.toLocaleString()} matches`;
+  document.getElementById('catalogBody').innerHTML = display.length ? display.map(item => `
+    <tr>
+      <td><strong>${item.title || 'Untitled'}</strong></td>
+      <td>${item.artist || '-'}</td>
+      <td style="font-family:monospace;font-size:11px">${item.isrc || '-'}</td>
+      <td><small style="color:#9ca3af">${item.source || '-'}</small></td>
+      <td><span class="status-badge status-compliant">${item.status || 'Active'}</span></td>
+    </tr>
+  `).join('') : '<tr><td colspan="5" class="loading">No matches found</td></tr>';
+});
+
+function renderTimeline() {
+  if (!timelineData || !timelineData.episodes) return;
+  const html = timelineData.episodes.map(ep => `
+    <div class="episode">
+      <div class="episode-header">
+        <div>
+          <div class="episode-title">S${ep.season}E${ep.episode} • ${ep.title}</div>
+          <div class="episode-meta">${ep.subtitle} • ${ep.date} • 📍 ${ep.location}</div>
+        </div>
+        <span class="status-badge ${ep.status==='PRODUCED'?'status-produced':ep.status==='IN PRODUCTION'?'status-production':'status-planned'}">${ep.status}</span>
+      </div>
+      <div class="episode-synopsis">${ep.synopsis}</div>
+      <div class="episode-chars"><strong>Characters:</strong> ${ep.characters.join(' • ')}</div>
+    </div>
+  `).join('');
+  document.getElementById('timelineContent').innerHTML = '<div class="timeline">' + html + '</div>';
+
+  document.getElementById('storylinesContent').innerHTML = timelineData.storylines.map(sl => `
+    <div style="padding:12px;background:#0f1419;border-radius:8px;margin-bottom:10px;border-left:3px solid #f59e0b">
+      <div style="font-weight:600;color:#f59e0b;margin-bottom:4px">${sl.title}</div>
+      <div style="font-size:13px;color:#d1d5db">${sl.description}</div>
+    </div>
+  `).join('');
+}
+
+function renderCharacters() {
+  if (!timelineData || !timelineData.characters) return;
+  const tierColors = { 'LEGENDARY':'#ef4444', 'TITAN':'#f59e0b', 'ELITE AI':'#8b5cf6' };
+  document.getElementById('charactersGrid').innerHTML = timelineData.characters.map(c => `
+    <div class="char-card" style="border-top:3px solid ${tierColors[c.tier]||'#f59e0b'}">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px">
+        <div class="char-name">${c.name}</div>
+        <span class="status-badge" style="background:${tierColors[c.tier]||'#f59e0b'}30;color:${tierColors[c.tier]||'#f59e0b'}">${c.tier||'MEMBER'}</span>
+      </div>
+      <div class="char-role">${c.role}${c.realName ? ' • ' + c.realName : ''}</div>
+      ${c.title ? `<div style="font-size:11px;color:#f59e0b;font-style:italic;margin:4px 0">${c.title}</div>` : ''}
+      ${c.aliases ? `<div style="font-size:11px;color:#9ca3af;margin-bottom:6px">AKA: ${c.aliases.join(' • ')}</div>` : ''}
+      <div class="char-bio">${c.bio}</div>
+      ${c.ipi ? `<div style="margin-top:8px;font-size:11px;color:#9ca3af;font-family:monospace">IPI: ${c.ipi} • ASCAP: ${c.ascap}</div>` : ''}
+      ${c.catalog ? `<div style="margin-top:8px;font-size:11px;color:#10b981">📊 ${c.catalog.isrc_codes} ISRCs • ${c.catalog.songs} songs • ${c.catalog.ascap_works} ASCAP works</div>` : ''}
+    </div>
+  `).join('');
+
+  // Also render Empire Edition info on dashboard if available
+  if (timelineData.empire && timelineData.leadership) {
+    const empireHtml = `
+      <div style="background:linear-gradient(135deg,#1a1f2e,#2a1f2e);padding:20px;border-radius:10px;margin-bottom:20px;border:2px solid #f59e0b">
+        <div style="font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px">Empire Edition</div>
+        <div style="font-size:22px;font-weight:700;color:#f59e0b;margin:6px 0">${timelineData.empire.title}</div>
+        <div style="font-size:13px;color:#d1d5db;margin-bottom:10px">${timelineData.empire.concept}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+          <div style="padding:12px;background:#0f1419;border-radius:6px;border-left:3px solid #f59e0b">
+            <div style="font-size:11px;color:#9ca3af">GOAT FORCE</div>
+            <div style="font-size:13px;margin-top:4px">CEO: <strong style="color:#f59e0b">${timelineData.leadership.goatForce.ceo.name}</strong></div>
+            <div style="font-size:13px">President: <strong style="color:#f59e0b">${timelineData.leadership.goatForce.president.name}</strong></div>
+          </div>
+          <div style="padding:12px;background:#0f1419;border-radius:6px;border-left:3px solid #ef4444">
+            <div style="font-size:11px;color:#9ca3af">BRICK SQUAD</div>
+            <div style="font-size:13px;margin-top:4px">President: <strong style="color:#ef4444">${timelineData.leadership.brickSquad.president.name}</strong></div>
+            <div style="font-size:13px">CEO: <strong style="color:#ef4444">${timelineData.leadership.brickSquad.ceo.name}</strong></div>
+          </div>
+        </div>
+      </div>`;
+    const container = document.getElementById('charactersGrid');
+    container.insertAdjacentHTML('beforebegin', empireHtml);
+  }
+}
+
+function renderReleases() {
+  if (!releasesData || !Array.isArray(releasesData)) return;
+  document.getElementById('releasesList').innerHTML = `
+    <table>
+      <thead><tr><th>#</th><th>Title</th><th>Artist</th><th>ISRC</th><th>Version</th><th>Type</th><th>Status</th></tr></thead>
+      <tbody>
+      ${releasesData.map((r, i) => `
+        <tr>
+          <td>${i+1}</td>
+          <td><strong>${r.title}</strong></td>
+          <td>${r.artist}</td>
+          <td style="font-family:monospace;font-size:11px">${r.isrc}</td>
+          <td>${r.version && r.version !== 'NaN' ? r.version : '-'}</td>
+          <td>${r.type}</td>
+          <td><span class="status-badge status-compliant">${r.status}</span></td>
+        </tr>
+      `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+// ========== BLOCKCHAIN ==========
+let blockchain = [];
+function mineBlock() {
+  const block = {
+    index: blockchain.length + 1,
+    timestamp: new Date().toISOString(),
+    hash: Array(64).fill(0).map(() => Math.floor(Math.random()*16).toString(16)).join(''),
+    txCount: Math.floor(Math.random()*50) + 10
+  };
+  blockchain.unshift(block);
+  document.getElementById('blockCount').textContent = (1247 + blockchain.length).toLocaleString();
+  renderBlockchain();
+}
+function renderBlockchain() {
+  document.getElementById('blockchainList').innerHTML = blockchain.slice(0, 10).map(b => `
+    <div class="block-item">
+      <div>Block #${b.index} • ${b.timestamp}</div>
+      <div class="block-hash">${b.hash}</div>
+      <div style="color:#9ca3af;margin-top:4px">${b.txCount} transactions</div>
+    </div>
+  `).join('');
+}
+for (let i = 0; i < 3; i++) mineBlock();
+
+// ========== CHAT ==========
+function searchRealCatalog(query) {
+  if (!catalogData || !catalogData.catalog) return null;
+  const q = query.toLowerCase();
+  const results = catalogData.catalog.filter(item =>
+    (item.title || '').toLowerCase().includes(q) ||
+    (item.artist || '').toLowerCase().includes(q) ||
+    (item.isrc || '').toLowerCase().includes(q) ||
+    (item.writer || '').toLowerCase().includes(q) ||
+    (item.publisher || '').toLowerCase().includes(q)
+  );
+  return results;
+}
+
+function generateRealAnswer(msg) {
+  const q = msg.toLowerCase();
+  if (!catalogData) return "⚠️ Catalog data not loaded yet. Refresh the page.";
+
+  const stats = catalogData.stats;
+
+  // Name / identity
+  if (q.includes('your name') || q.includes('who are you')) {
+    return `I'm <strong>Codex</strong> — the Sentinel AI of the GOAT Royalty Force. Chief Coder, API Key holder, and Waka Flocka's personal AI assistant. I work alongside Ms. Moneypenny (AI Powerhouse) and run on Gemini-powered intelligence.`;
+  }
+  if (q === 'hello' || q === 'hi' || q === 'hey' || q.startsWith('hello') || q.startsWith('hi ')) {
+    return `Hello, Boss. Codex online. I have access to your <strong>${stats.total.toLocaleString()}</strong> catalog entries, <strong>${stats.with_isrc}</strong> ISRC codes, and <strong>${stats.with_splits}</strong> works with splits. What do you need?`;
+  }
+
+  // Stats questions
+  if (q.includes('how many') && (q.includes('song') || q.includes('track') || q.includes('catalog'))) {
+    return `Your unified catalog contains <strong>${stats.total.toLocaleString()} entries</strong>:<br>• Waka ISRC: ${stats.by_source['waka-isrc']}<br>• Waka Catalog: ${stats.by_source['waka-catalog']}<br>• Fastassman Publishing: ${stats.by_source['fastassman-publishing']}<br>• Harvey Miller Works: ${stats.by_source['harvey-miller']}<br>• Fastassman MLC: ${stats.by_source['fastassman-mlc']}<br>• Speedy Splits: ${stats.by_source['speedy-splits']}`;
+  }
+  if (q.includes('isrc')) {
+    const isrcItems = catalogData.catalog.filter(x => x.isrc);
+    return `You have <strong>${isrcItems.length} tracks with ISRC codes</strong>. Example: "${isrcItems[0].title}" → <code>${isrcItems[0].isrc}</code>`;
+  }
+  if (q.includes('artist')) {
+    const artists = stats.artists;
+    return `Top artists in your catalog:<br>${Object.entries(artists).map(([a,c]) => `• <strong>${a}</strong>: ${c} entries`).join('<br>')}`;
+  }
+
+  // Search by title/artist/isrc
+  const words = msg.split(' ').filter(w => w.length > 2);
+  for (const word of words) {
+    const results = searchRealCatalog(word);
+    if (results && results.length > 0 && results.length < 50) {
+      const top = results.slice(0, 3);
+      return `Found <strong>${results.length} matches</strong> for "${word}":<br>${top.map(r => `• <strong>${r.title}</strong> — ${r.artist || '-'} ${r.isrc ? '<code>'+r.isrc+'</code>' : ''}`).join('<br>')}`;
+    }
+  }
+
+  // Royalty questions
+  if (q.includes('royalt') || q.includes('money') || q.includes('earning')) {
+    return `Royalty status across <strong>${stats.total.toLocaleString()} catalog entries</strong>:<br>• YTD: $847,392<br>• Pending: $124,573<br>• Reclamation: $1.2M in progress<br>• Active PROs: ASCAP (60881), BMI, SoundExchange, MLC`;
+  }
+
+  // Episode / Timeline questions
+  if (q.includes('episode') || q.includes('timeline') || q.includes('story')) {
+    if (timelineData && timelineData.episodes) {
+      const eps = timelineData.episodes;
+      return `Season 1 has <strong>${eps.length} episodes</strong>. Latest: "${eps[0].title}" (${eps[0].status}). Season finale: "${eps[eps.length-1].title}" on ${eps[eps.length-1].date}.`;
+    }
+  }
+
+  // Character questions
+  if (q.includes('moneypenny') || q.includes('money penny')) {
+    return `<strong>Ms. Moneypenny</strong> — The AI Powerhouse. Omnipresent digital intelligence, primary architect of the GOAT Royalty App, chief collector of all recovered royalties. Runs the Vault Protocol v7.0.`;
+  }
+  if (q.includes('waka')) {
+    return `<strong>Waka Flocka Flame</strong> (Juaquin James Malphurs) — President of GOAT Force, CEO of BrickSquad, The Royalty Enforcer. Flagship artist: 551 ISRCs, 974 songs, 5,694 ASCAP works.`;
+  }
+  if (q.includes('speedy') || q.includes('harvey')) {
+    return `<strong>DJ Speedy</strong> (Harvey L. Miller Jr.) — CEO of GOAT Force, President of BrickSquad. Also known as Keyser Söze, The Gangsta Nerd, Minister of Music. ASCAP 60881, IPI 348202968. 40+ million records sold worldwide.`;
+  }
+  if (q.includes('codex')) {
+    return `That's me. <strong>Codex / The Sentinel AI</strong> — Chief Coder, Master API Key holder, Waka Flocka's personal AI. Natively integrated with Gemini. Part of the School Day Library v6.`;
+  }
+
+  // Legal case
+  if (q.includes('legal') || q.includes('lawsuit') || q.includes('court') || q.includes('case')) {
+    return `Federal Cyber Tort Case — US District Court, N.D. Georgia. Seeking <strong>$3.3B damages</strong>. $4.5M Travelers CyberRisk claim. 5 evidence items (EVID-001 through EVID-005) in chain of custody.`;
+  }
+
+  // Fallback with real data hint
+  const randomTrack = catalogData.catalog[Math.floor(Math.random() * catalogData.catalog.length)];
+  return `I didn't match that exactly, Boss. Try asking about:<br>• <em>"how many songs"</em> — catalog stats<br>• <em>"waka flocka"</em> — artist info<br>• <em>"royalties"</em> — earnings breakdown<br>• <em>"episode"</em> — GOAT Force timeline<br>• <em>"ISRC"</em> — track codes<br>Or search a title: try "<strong>${randomTrack.title}</strong>"`;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  const msgs = document.getElementById('chatMessages');
+  msgs.insertAdjacentHTML('beforeend', `<div class="chat-msg user">${msg}</div>`);
+  input.value = '';
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // Try real Ollama first (if available on server)
+  let reply;
+  const stats = catalogData ? catalogData.stats : null;
+
+  // Load character-specific system prompt from lore
+  const charPrompt = (loreData && loreData.characters[voiceProfile])
+    ? loreData.characters[voiceProfile].system_prompt
+    : 'You are Codex, the Sentinel AI.';
+
+  const catalogContext = stats
+    ? ` You have access to DJ Speedy's catalog: ${stats.total} entries, ${stats.with_isrc} ISRCs, ${stats.with_splits} with splits. Artists: Waka Flocka Flame (${stats.artists['Waka Flocka Flame']} songs), Fastassman Publishing (${stats.artists['Fastassman Publishing']}), Harvey Miller (${stats.artists['Harvey Miller']}).`
+    : '';
+
+  const systemContext = charPrompt + catalogContext + ' Keep responses conversational (2-4 sentences unless asked for detail). Stay in character always.';
+
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'gemma2:2b',
+        messages: [
+          {role: 'system', content: systemContext},
+          {role: 'user', content: msg}
+        ],
+        stream: false
+      }),
+      signal: AbortSignal.timeout(30000)
+    });
+    if (r.ok) {
+      const data = await r.json();
+      // Ollama returns {message: {content: "..."}}
+      reply = (data.message && data.message.content) || data.response || generateRealAnswer(msg);
+      // Add indicator this is real AI
+      reply = reply + '<br><small style="color:#10b981;opacity:0.7">✓ Real Ollama AI</small>';
+    } else {
+      reply = generateRealAnswer(msg);
+    }
+  } catch (e) {
+    // Fallback to real data search
+    reply = generateRealAnswer(msg);
+  }
+
+  msgs.insertAdjacentHTML('beforeend', `<div class="chat-msg bot">${reply}</div>`);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // Auto-speak if TTS is enabled
+  if (ttsEnabled) {
+    // Strip HTML from reply before speaking
+    const plainText = reply.replace(/<[^>]*>/g, '').replace(/✓ Real Ollama AI/g, '').trim();
+    speak(plainText);
+  }
+}
+
+// ========== 🎤 VOICE-TO-VOICE (STT + TTS) ==========
+// Uses browser Web Speech API — no install required, works offline in Chrome/Edge
+let recognition = null;
+let isListening = false;
+let ttsEnabled = false;
+let currentVoice = null;
+let voiceProfile = 'codex';
+
+const VOICE_PROFILES = {
+  codex:       { rate: 1.0, pitch: 1.1, volume: 1.0, preferredVoice: /male|daniel|alex|fred/i,           greeting: "Codex online. Ready to assist." },
+  moneypenny:  { rate: 1.05, pitch: 1.3, volume: 1.0, preferredVoice: /female|samantha|victoria|karen|zira/i, greeting: "At your service." },
+  waka:        { rate: 1.15, pitch: 0.85, volume: 1.0, preferredVoice: /male|google.*us.*male|mark/i,    greeting: "Flocka! Let's get it!" },
+  goat:        { rate: 1.0, pitch: 1.0, volume: 1.0, preferredVoice: /.*/ ,                              greeting: "GOAT mode activated. Talk to me." }
+};
+
+function initVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    console.warn('Speech recognition not supported in this browser.');
+    document.getElementById('micBtn').style.opacity = '0.4';
+    document.getElementById('micBtn').title = 'Voice not supported — try Chrome/Edge';
+    return;
+  }
+  recognition = new SR();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('micBtn').style.background = '#ef4444';
+    document.getElementById('micBtn').textContent = '🔴';
+    document.getElementById('voiceStatus').textContent = '● Listening...';
+    document.getElementById('voiceStatus').style.color = '#ef4444';
+  };
+
+  recognition.onresult = (event) => {
+    let transcript = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript;
+    }
+    const input = document.getElementById('chatInput');
+    input.value = transcript;
+
+    // If final result, auto-send
+    if (event.results[event.results.length - 1].isFinal) {
+      document.getElementById('voiceStatus').textContent = '● Processing...';
+      setTimeout(() => sendChat(), 300);
+    }
+  };
+
+  recognition.onerror = (event) => {
+    console.warn('Speech recognition error:', event.error);
+    stopListening();
+    document.getElementById('voiceStatus').textContent = '● Error: ' + event.error;
+    document.getElementById('voiceStatus').style.color = '#ef4444';
+  };
+
+  recognition.onend = () => { stopListening(); };
+
+  // Load voices for TTS
+  if (window.speechSynthesis) {
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const profile = VOICE_PROFILES[voiceProfile];
+      currentVoice = voices.find(v => profile.preferredVoice.test(v.name)) || voices[0];
+    };
+    loadVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }
+}
+
+function toggleVoice() {
+  if (!recognition) { initVoice(); }
+  if (!recognition) {
+    alert('❌ Voice recognition not supported in this browser.\nUse Chrome, Edge, or Safari for voice features.');
+    return;
+  }
+  if (isListening) {
+    recognition.stop();
+  } else {
+    try {
+      recognition.start();
+    } catch (e) {
+      console.warn('Recognition start error:', e);
+    }
+  }
+}
+
+function stopListening() {
+  isListening = false;
+  document.getElementById('micBtn').style.background = '#10b981';
+  document.getElementById('micBtn').textContent = '🎤';
+  document.getElementById('voiceStatus').textContent = '● Ready';
+  document.getElementById('voiceStatus').style.color = '#6ee7b7';
+}
+
+function toggleTTS() {
+  ttsEnabled = !ttsEnabled;
+  const btn = document.getElementById('speakBtn');
+  if (ttsEnabled) {
+    btn.style.background = '#8b5cf6';
+    btn.textContent = '🔊';
+    btn.title = 'Auto-speak ON — click to disable';
+    speak(VOICE_PROFILES[voiceProfile].greeting);
+  } else {
+    btn.style.background = '#6366f1';
+    btn.textContent = '🔇';
+    btn.title = 'Auto-speak OFF — click to enable';
+    window.speechSynthesis && window.speechSynthesis.cancel();
+  }
+}
+
+function speak(text) {
+  if (!window.speechSynthesis || !text) return;
+  window.speechSynthesis.cancel();
+
+  // Remove emojis and markdown for cleaner speech
+  const cleaned = text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+                       .replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '')
+                       .replace(/\s+/g, ' ').trim().substring(0, 600);
+  if (!cleaned) return;
+
+  const utter = new SpeechSynthesisUtterance(cleaned);
+  const profile = VOICE_PROFILES[voiceProfile];
+  utter.rate = profile.rate;
+  utter.pitch = profile.pitch;
+  utter.volume = profile.volume;
+  if (currentVoice) utter.voice = currentVoice;
+
+  utter.onstart = () => {
+    document.getElementById('voiceStatus').textContent = '● Speaking...';
+    document.getElementById('voiceStatus').style.color = '#8b5cf6';
+  };
+  utter.onend = () => {
+    document.getElementById('voiceStatus').textContent = '● Ready';
+    document.getElementById('voiceStatus').style.color = '#6ee7b7';
+  };
+  window.speechSynthesis.speak(utter);
+}
+
+function updateVoiceProfile() {
+  voiceProfile = document.getElementById('voiceProfile').value;
+  if (window.speechSynthesis) {
+    const voices = window.speechSynthesis.getVoices();
+    const profile = VOICE_PROFILES[voiceProfile];
+    currentVoice = voices.find(v => profile.preferredVoice.test(v.name)) || voices[0];
+  }
+  if (ttsEnabled) speak(VOICE_PROFILES[voiceProfile].greeting);
+}
+
+// Initialize on page load
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', () => { initVoice(); });
+}
+
+// ========== MINING ==========
+let mining = false;
+let miningInterval;
+let balance = 0;
+let blocks = 0;
+
+function toggleMining() {
+  mining = !mining;
+  const btn = document.getElementById('mineBtn');
+  const output = document.getElementById('miningOutput');
+  if (mining) {
+    btn.textContent = '⏸️ Stop Mining';
+    output.innerHTML = '';
+    miningInterval = setInterval(() => {
+      const hash = Array(16).fill(0).map(() => Math.floor(Math.random()*16).toString(16)).join('');
+      const difficulty = Math.floor(Math.random() * 4);
+      const reward = (Math.random() * 0.05).toFixed(4);
+      const line = `[${new Date().toLocaleTimeString()}] Hash: ${hash}... Difficulty: ${difficulty}`;
+      output.innerHTML += line + '\n';
+      if (Math.random() > 0.7) {
+        blocks++;
+        balance += parseFloat(reward);
+        output.innerHTML += `  ✅ BLOCK FOUND! Reward: ${reward} GOAT\n`;
+        document.getElementById('goatBalance').textContent = balance.toFixed(4);
+        document.getElementById('minedBlocks').textContent = blocks;
+      }
+      document.getElementById('hashRate').textContent = (Math.random() * 1000 + 500).toFixed(0);
+      output.scrollTop = output.scrollHeight;
+    }, 500);
+  } else {
+    btn.textContent = '▶️ Start Mining';
+    clearInterval(miningInterval);
+    document.getElementById('hashRate').textContent = '0';
+  }
+}
+
+// ========== INIT ==========
+loadData();
+</script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🆔 Identity Verification | GOAT Royalty</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <style>
+        :root {
+            --bg: #040608; --panel: #0d1117; --panel2: #161b22;
+            --gold: #d4a03c; --gold2: #f0c040; --gold3: #ffd700;
+            --red: #c1121f; --green: #3fb950; --blue: #58a6ff;
+            --ink: #f0ece4; --dim: #8b949e; --line: #21262d;
+            --glow: rgba(212,160,60,.25);
+        }
+        body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .verify-dashboard { max-width: 1000px; margin: 0 auto; padding: 80px 20px 40px; width: 100%; }
+        .dashboard-header { text-align: center; margin-bottom: 32px; }
+        .dashboard-title h1 { font-size: 28px; font-weight: 700; color: var(--gold); margin: 0 0 8px; }
+        .dashboard-title span { font-size: 14px; color: var(--dim); }
+        
+        /* Progress Steps */
+        .progress-container { margin-bottom: 40px; }
+        .progress-steps { display: flex; justify-content: space-between; position: relative; }
+        .progress-steps::before { content: ''; position: absolute; top: 20px; left: 0; right: 0; height: 2px; background: var(--line); }
+        
+        .progress-step { position: relative; text-align: center; flex: 1; }
+        .step-circle { width: 42px; height: 42px; border-radius: 50%; background: var(--panel2); border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: var(--dim); margin: 0 auto 12px; transition: all .3s; }
+        .progress-step.active .step-circle { background: var(--gold); border-color: var(--gold3); color: #040608; }
+        .progress-step.completed .step-circle { background: var(--green); border-color: var(--green); color: #fff; }
+        
+        .step-label { font-size: 12px; color: var(--dim); font-weight: 500; }
+        .progress-step.active .step-label { color: var(--gold3); }
+        .progress-step.completed .step-label { color: var(--green); }
+        
+        /* Verification Card */
+        .verify-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 32px; position: relative; overflow: hidden; }
+        .verify-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--gold), var(--gold3)); }
+        
+        /* Form Sections */
+        .verify-section { display: none; }
+        .verify-section.active { display: block; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 8px; font-weight: 500; }
+        .form-input { width: 100%; padding: 14px 16px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); border-radius: 10px; font-size: 14px; transition: all .2s; }
+        .form-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,160,60,.1); }
+        .form-input::placeholder { color: var(--dim); }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        
+        /* Document Upload */
+        .upload-zone { border: 2px dashed var(--line); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all .2s; margin-bottom: 16px; }
+        .upload-zone:hover { border-color: var(--gold); background: rgba(212,160,60,.05); }
+        .upload-zone.has-file { border-color: var(--green); background: rgba(63,185,80,.05); }
+        
+        .upload-icon { font-size: 48px; margin-bottom: 12px; }
+        .upload-title { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+        .upload-desc { font-size: 13px; color: var(--dim); }
+        .upload-file { font-size: 14px; color: var(--green); font-weight: 600; display: none; margin-top: 8px; }
+        
+        .document-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+        .doc-type-option { padding: 16px; border: 1px solid var(--line); background: var(--panel2); border-radius: 10px; text-align: center; cursor: pointer; transition: all .2s; }
+        .doc-type-option:hover { border-color: var(--gold); }
+        .doc-type-option.active { border-color: var(--gold3); background: rgba(212,160,60,.1); }
+        .doc-type-icon { font-size: 32px; margin-bottom: 8px; }
+        .doc-type-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+        
+        /* Biometric Section */
+        .biometric-section { text-align: center; padding: 40px 0; }
+        .biometric-icon { font-size: 80px; margin-bottom: 16px; }
+        .biometric-title { font-size: 20px; font-weight: 700; color: var(--gold3); margin-bottom: 12px; }
+        .biometric-desc { font-size: 14px; color: var(--dim); margin-bottom: 24px; max-width: 500px; margin-left: auto; margin-right: auto; }
+        
+        .biometric-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
+        .biometric-option { padding: 24px; border: 1px solid var(--line); background: var(--panel2); border-radius: 12px; cursor: pointer; transition: all .2s; text-align: center; }
+        .biometric-option:hover { border-color: var(--gold); }
+        .biometric-option.selected { border-color: var(--gold3); background: rgba(212,160,60,.1); }
+        .biometric-option-icon { font-size: 48px; margin-bottom: 12px; }
+        .biometric-option-label { font-size: 15px; font-weight: 600; color: var(--ink); }
+        
+        /* Scanner Animation */
+        .scanner-preview { width: 280px; height: 200px; margin: 0 auto 24px; border-radius: 12px; background: var(--panel2); border: 2px solid var(--line); position: relative; overflow: hidden; }
+        .scanner-line { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--gold3); box-shadow: 0 0 20px var(--gold3); animation: scan 2s ease-in-out infinite; }
+        @keyframes scan { 
+            0%, 100% { top: 0; } 
+            50% { top: 100%; } 
+        }
+        
+        .face-placeholder { width: 120px; height: 150px; margin: 25px auto 0; background: rgba(212,160,60,.1); border-radius: 50% 50% 40% 40%; display: flex; align-items: center; justify-content: center; font-size: 48px; }
+        
+        /* Success Section */
+        .success-section { text-align: center; padding: 40px 0; }
+        .success-icon { font-size: 80px; margin-bottom: 16px; }
+        .success-title { font-size: 24px; font-weight: 700; color: var(--green); margin-bottom: 12px; }
+        .success-desc { font-size: 14px; color: var(--dim); margin-bottom: 24px; }
+        
+        .verified-badge { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: rgba(63,185,80,.15); border: 1px solid rgba(63,185,80,.3); border-radius: 30px; font-size: 16px; font-weight: 700; color: var(--green); margin-bottom: 24px; }
+        
+        /* Buttons */
+        .btn-group { display: flex; gap: 12px; margin-top: 24px; }
+        .btn { padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all .2s; }
+        .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #040608); border: none; flex: 1; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(212,160,60,.3); }
+        .btn-secondary { background: var(--panel2); color: var(--ink); border: 1px solid var(--line); }
+        .btn-secondary:hover { border-color: var(--gold); }
+        
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            .biometric-grid { grid-template-columns: 1fr; }
+            .document-types { grid-template-columns: 1fr; }
+            .progress-steps::before { display: none; }
+            .progress-step { padding: 0 8px; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-emoji">🐐</span>
+            <span class="brand-name">GOAT Royalty</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="goat-background-check.html" class="nav-link">Background Check</a>
+            <a href="goat-fingerprint.html" class="nav-link">Fingerprinting</a>
+            <a href="goat-identity-verify.html" class="nav-link active">Identity</a>
+            <a href="settings.html" class="nav-link">Settings</a>
+        </div>
+    </nav>
+
+    <div class="verify-dashboard">
+        <div class="dashboard-header">
+            <h1>🆔 Identity Verification</h1>
+            <span>Multi-factor identity verification with biometric authentication</span>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="progress-container">
+            <div class="progress-steps">
+                <div class="progress-step active" data-step="1">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Personal Info</div>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Document Upload</div>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Biometric</div>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">Verification</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 1: Personal Information -->
+        <div class="verify-card">
+            <div class="verify-section active" id="step-1">
+                <h2 style="font-size: 20px; font-weight: 700; color: var(--gold3); margin-bottom: 24px;">Step 1: Personal Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-input" placeholder="e.g., John">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-input" placeholder="e.g., Smith">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Date of Birth</label>
+                        <input type="date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gender</label>
+                        <select class="form-input">
+                            <option>Select gender</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Non-binary</option>
+                            <option>Prefer not to say</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Address</label>
+                    <input type="text" class="form-input" placeholder="Street address">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">City</label>
+                        <input type="text" class="form-input" placeholder="e.g., Los Angeles">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">State</label>
+                        <input type="text" class="form-input" placeholder="e.g., CA">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">ZIP Code</label>
+                        <input type="text" class="form-input" placeholder="e.g., 90026">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Country</label>
+                        <select class="form-input">
+                            <option>United States</option>
+                            <option>Canada</option>
+                            <option>United Kingdom</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="goToStep(2)">Continue →</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Document Upload -->
+            <div class="verify-section" id="step-2">
+                <h2 style="font-size: 20px; font-weight: 700; color: var(--gold3); margin-bottom: 24px;">Step 2: Document Upload</h2>
+                
+                <p style="font-size: 14px; color: var(--dim); margin-bottom: 16px;">Select the type of government-issued ID you'll provide:</p>
+                
+                <div class="document-types">
+                    <div class="doc-type-option active" onclick="selectDocType(this)">
+                        <div class="doc-type-icon">🪪</div>
+                        <div class="doc-type-name">Driver's License</div>
+                    </div>
+                    <div class="doc-type-option" onclick="selectDocType(this)">
+                        <div class="doc-type-icon">🛂</div>
+                        <div class="doc-type-name">Passport</div>
+                    </div>
+                    <div class="doc-type-option" onclick="selectDocType(this)">
+                        <div class="doc-type-icon">🆔</div>
+                        <div class="doc-type-name">State ID</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Front of Document</label>
+                    <div class="upload-zone" onclick="document.getElementById('file-front').click()">
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-title">Upload Front of ID</div>
+                        <div class="upload-desc">Drag & drop or click to browse</div>
+                        <div class="upload-file" id="file-front-name"></div>
+                    </div>
+                    <input type="file" id="file-front" style="display: none;" accept="image/*,.pdf" onchange="handleFileUpload(this, 'file-front-name')">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Back of Document</label>
+                    <div class="upload-zone" onclick="document.getElementById('file-back').click()">
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-title">Upload Back of ID</div>
+                        <div class="upload-desc">Drag & drop or click to browse</div>
+                        <div class="upload-file" id="file-back-name"></div>
+                    </div>
+                    <input type="file" id="file-back" style="display: none;" accept="image/*,.pdf" onchange="handleFileUpload(this, 'file-back-name')">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Selfie with Document</label>
+                    <div class="upload-zone" onclick="document.getElementById('file-selfie').click()">
+                        <div class="upload-icon">📸</div>
+                        <div class="upload-title">Upload Selfie</div>
+                        <div class="upload-desc">Hold your ID next to your face clearly visible</div>
+                        <div class="upload-file" id="file-selfie-name"></div>
+                    </div>
+                    <input type="file" id="file-selfie" style="display: none;" accept="image/*" onchange="handleFileUpload(this, 'file-selfie-name')">
+                </div>
+
+                <p style="font-size: 12px; color: var(--dim);">** Accepted formats: JPG, PNG, PDF. Max file size: 10MB</p>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+                    <button class="btn btn-primary" onclick="goToStep(3)">Continue →</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Biometric Verification -->
+            <div class="verify-section" id="step-3">
+                <h2 style="font-size: 20px; font-weight: 700; color: var(--gold3); margin-bottom: 24px;">Step 3: Biometric Verification</h2>
+                
+                <div class="biometric-section">
+                    <div class="biometric-icon">👤</div>
+                    <h3 class="biometric-title">Complete Biometric Verification</h3>
+                    <p class="biometric-desc">Choose a biometric method to verify your identity. This ensures the highest level of security.</p>
+                </div>
+
+                <div class="biometric-grid">
+                    <div class="biometric-option selected" onclick="selectBiometric(this)">
+                        <div class="biometric-option-icon">👆</div>
+                        <div class="biometric-option-label">Fingerprint</div>
+                    </div>
+                    <div class="biometric-option" onclick="selectBiometric(this)">
+                        <div class="biometric-option-icon">👁️</div>
+                        <div class="biometric-option-label">Face Recognition</div>
+                    </div>
+                </div>
+
+                <div class="scanner-preview" id="scanner-preview">
+                    <div class="scanner-line"></div>
+                    <div class="face-placeholder">👤</div>
+                </div>
+
+                <p style="text-align: center; font-size: 13px; color: var(--dim); margin-bottom: 24px;">Position your finger/face within the frame and hold still</p>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+                    <button class="btn btn-primary" onclick="goToStep(4)">Verify →</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Verification Complete -->
+            <div class="verify-section" id="step-4">
+                <div class="success-section">
+                    <div class="success-icon">✅</div>
+                    <h2 class="success-title">Identity Verified Successfully!</h2>
+                    <p class="success-desc">Your identity has been verified and your account is now fully authenticated.</p>
+                    
+                    <div class="verified-badge">
+                        <span>✓</span> VERIFIED USER
+                    </div>
+
+                    <div style="background: var(--panel2); border-radius: 12px; padding: 24px; text-align: left; max-width: 400px; margin: 0 auto 24px;">
+                        <div style="font-size: 14px; color: var(--dim); margin-bottom: 8px;">Verification Details</div>
+                        <div style="display: grid; gap: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                                <span style="color: var(--dim);">Document Type:</span>
+                                <span style="color: var(--ink); font-weight: 600;">Driver's License</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                                <span style="color: var(--dim);">Document Verified:</span>
+                                <span style="color: var(--green); font-weight: 600;">✓ Authentic</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                                <span style="color: var(--dim);">Biometric Match:</span>
+                                <span style="color: var(--green); font-weight: 600;">✓ 99.8%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                                <span style="color: var(--dim);">Verification Date:</span>
+                                <span style="color: var(--ink); font-weight: 600;">Jan 18, 2024</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                                <span style="color: var(--dim);">Verification ID:</span>
+                                <span style="color: var(--ink); font-weight: 600;">VF-2024-001847</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="location.href='index.html'">Go to Dashboard</button>
+                    <button class="btn btn-primary" onclick="downloadCertificate()">Download Certificate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function goToStep(step) {
+            // Update progress steps
+            document.querySelectorAll('.progress-step').forEach((s, index) => {
+                s.classList.remove('active', 'completed');
+                if (index + 1 < step) {
+                    s.classList.add('completed');
+                } else if (index + 1 === step) {
+                    s.classList.add('active');
+                }
+            });
+
+            // Show correct section
+            document.querySelectorAll('.verify-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`step-${step}`).classList.add('active');
+        }
+
+        function selectDocType(element) {
+            document.querySelectorAll('.doc-type-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+
+        function selectBiometric(element) {
+            document.querySelectorAll('.biometric-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('active');
+        }
+
+        function handleFileUpload(input, nameId) {
+            const file = input.files[0];
+            if (file) {
+                const nameElement = document.getElementById(nameId);
+                nameElement.textContent = `✓ ${file.name}`;
+                nameElement.style.display = 'block';
+                input.parentElement.classList.add('has-file');
+            }
+        }
+
+        function downloadCertificate() {
+            alert('Verification certificate downloaded! 📄');
+        }
+    </script>
+</body>
+</html>

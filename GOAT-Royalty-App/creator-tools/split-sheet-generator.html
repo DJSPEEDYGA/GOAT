@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split Sheet Generator | GOAT Royalty App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --goat-gold: #FFD700;
+            --goat-purple: #8B5CF6;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        .glow-gold { text-shadow: 0 0 10px var(--goat-gold), 0 0 20px var(--goat-gold); }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(20, 20, 40, 0.9), rgba(10, 10, 20, 0.95));
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .input-field {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--goat-gold);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--goat-gold), #FF6B00);
+            color: black;
+            font-weight: 700;
+            padding: 14px 28px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(255, 215, 0, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(139, 92, 246, 0.3);
+        }
+        
+        .contributor-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .contributor-card:hover {
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+        
+        .role-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 20px;
+            font-size: 12px;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .role-tag:hover, .role-tag.selected {
+            background: rgba(255, 215, 0, 0.3);
+            color: var(--goat-gold);
+        }
+        
+        .split-bar {
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .split-segment {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            transition: width 0.5s ease;
+        }
+        
+        .preview-sheet {
+            background: white;
+            color: black;
+            padding: 32px;
+            border-radius: 12px;
+            font-family: 'Times New Roman', serif;
+        }
+        
+        @media print {
+            body { background: white; }
+            .no-print { display: none; }
+            .preview-sheet { box-shadow: none; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Header -->
+    <header class="mb-8 no-print">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400 to-yellow-500 flex items-center justify-center">
+                <span class="text-2xl">📝</span>
+            </div>
+            <div>
+                <h1 class="text-3xl md:text-4xl font-orbitron font-bold glow-gold">SPLIT SHEET GENERATOR</h1>
+                <p class="text-gray-400">Create professional royalty split agreements</p>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Input Form -->
+        <div class="space-y-6 no-print">
+            <!-- Song Information -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🎵 SONG INFORMATION</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Song Title *</label>
+                        <input type="text" id="song-title" class="input-field" placeholder="Enter song title">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">ISRC Code</label>
+                        <input type="text" id="isrc-code" class="input-field" placeholder="e.g., QZ-ABC-12-34567">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Release Date</label>
+                        <input type="date" id="release-date" class="input-field">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contributors -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">👥 CONTRIBUTORS</h2>
+                <div id="contributors-list">
+                    <!-- Contributors will be added here -->
+                </div>
+                <button class="btn-secondary w-full mt-4" onclick="addContributor()">
+                    + ADD CONTRIBUTOR
+                </button>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex gap-4">
+                <button class="btn-primary flex-1" onclick="generateSplitSheet()">
+                    📄 GENERATE SPLIT SHEET
+                </button>
+                <button class="btn-secondary" onclick="printSheet()">
+                    🖨️ PRINT
+                </button>
+            </div>
+        </div>
+        
+        <!-- Preview -->
+        <div class="space-y-6">
+            <!-- Visual Split -->
+            <div class="card p-6 no-print">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📊 SPLIT OVERVIEW</h2>
+                <div class="split-bar mb-4" id="split-bar">
+                    <div class="text-gray-500 text-center w-full py-2">Add contributors to see split</div>
+                </div>
+                <div class="grid grid-cols-2 gap-2" id="split-legend">
+                    <!-- Legend items -->
+                </div>
+            </div>
+            
+            <!-- Preview Sheet -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold no-print">👁️ PREVIEW</h2>
+                <div class="preview-sheet" id="preview-sheet">
+                    <div style="text-align: center; margin-bottom: 24px;">
+                        <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">SPLIT SHEET AGREEMENT</h1>
+                        <p style="color: #666;">Royalty Distribution Agreement</p>
+                    </div>
+                    <hr style="margin: 16px 0;">
+                    <div id="preview-content">
+                        <p style="color: #999; text-align: center;">Fill in the form to generate your split sheet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="mt-8 text-center text-gray-500 text-sm no-print">
+        <p>🐐 GOAT Royalty App | Split Sheet Generator</p>
+        <p class="text-xs mt-1">For The Kingdom. For The Code. For The Crown. 👑</p>
+    </footer>
+    
+    <script>
+        const COLORS = [
+            '#FFD700', '#8B5CF6', '#00CED1', '#FF6B00', '#00FF88',
+            '#FF69B4', '#4169E1', '#32CD32', '#FF4500', '#9400D3'
+        ];
+        
+        const ROLES = [
+            'Songwriter', 'Composer', 'Producer', 'Artist', 'Featured Artist',
+            'Publisher', 'Label', 'Engineer', 'Mixer', 'Mastering'
+        ];
+        
+        let contributors = [];
+        
+        function addContributor() {
+            const id = Date.now();
+            contributors.push({
+                id,
+                name: '',
+                role: 'Songwriter',
+                split: 0,
+                pro: '',
+                ipi: ''
+            });
+            renderContributors();
+            updateSplitBar();
+        }
+        
+        function removeContributor(id) {
+            contributors = contributors.filter(c => c.id !== id);
+            renderContributors();
+            updateSplitBar();
+        }
+        
+        function updateContributor(id, field, value) {
+            const contributor = contributors.find(c => c.id === id);
+            if (contributor) {
+                contributor[field] = value;
+            }
+            updateSplitBar();
+        }
+        
+        function renderContributors() {
+            const container = document.getElementById('contributors-list');
+            container.innerHTML = contributors.map((c, index) => `
+                <div class="contributor-card">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-sm text-gray-400">Contributor #${index + 1}</span>
+                        <button class="text-red-400 hover:text-red-300 text-sm" onclick="removeContributor(${c.id})">Remove</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <input type="text" class="input-field" placeholder="Name *" value="${c.name}" 
+                               onchange="updateContributor(${c.id}, 'name', this.value)">
+                        <input type="number" class="input-field" placeholder="Split %" min="0" max="100" value="${c.split}"
+                               onchange="updateContributor(${c.id}, 'split', this.value)">
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-xs text-gray-400 mb-2">Role</div>
+                        <div class="flex flex-wrap">
+                            ${ROLES.map(role => `
+                                <span class="role-tag ${c.role === role ? 'selected' : ''}" 
+                                      onclick="selectRole(${c.id}, '${role}')">${role}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" class="input-field" placeholder="PRO (e.g., ASCAP)" value="${c.pro}"
+                               onchange="updateContributor(${c.id}, 'pro', this.value)">
+                        <input type="text" class="input-field" placeholder="IPI/CAE #" value="${c.ipi}"
+                               onchange="updateContributor(${c.id}, 'ipi', this.value)">
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function selectRole(id, role) {
+            const contributor = contributors.find(c => c.id === id);
+            if (contributor) {
+                contributor.role = role;
+            }
+            renderContributors();
+        }
+        
+        function updateSplitBar() {
+            const total = contributors.reduce((sum, c) => sum + (parseFloat(c.split) || 0), 0);
+            const bar = document.getElementById('split-bar');
+            const legend = document.getElementById('split-legend');
+            
+            if (contributors.length === 0) {
+                bar.innerHTML = '<div class="text-gray-500 text-center w-full py-2">Add contributors to see split</div>';
+                legend.innerHTML = '';
+                return;
+            }
+            
+            bar.innerHTML = contributors.map((c, i) => {
+                const percent = parseFloat(c.split) || 0;
+                return `<div class="split-segment" style="width: ${percent}%; background: ${COLORS[i % COLORS.length]};">
+                    ${percent >= 10 ? percent + '%' : ''}
+                </div>`;
+            }).join('');
+            
+            legend.innerHTML = contributors.map((c, i) => `
+                <div class="flex items-center gap-2 text-sm">
+                    <div class="w-3 h-3 rounded" style="background: ${COLORS[i % COLORS.length]};"></div>
+                    <span>${c.name || 'Unnamed'}</span>
+                    <span class="text-gray-400">(${c.split}%)</span>
+                </div>
+            `).join('');
+        }
+        
+        function generateSplitSheet() {
+            const songTitle = document.getElementById('song-title').value;
+            const isrc = document.getElementById('isrc-code').value;
+            const releaseDate = document.getElementById('release-date').value;
+            const total = contributors.reduce((sum, c) => sum + (parseFloat(c.split) || 0), 0);
+            
+            if (!songTitle) {
+                alert('Please enter a song title');
+                return;
+            }
+            
+            if (contributors.length === 0) {
+                alert('Please add at least one contributor');
+                return;
+            }
+            
+            if (total !== 100) {
+                alert(`Total split must equal 100%. Current total: ${total}%`);
+                return;
+            }
+            
+            const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            const preview = document.getElementById('preview-content');
+            preview.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <strong>Song Title:</strong> ${songTitle}<br>
+                    <strong>ISRC:</strong> ${isrc || 'N/A'}<br>
+                    <strong>Release Date:</strong> ${releaseDate || 'TBD'}<br>
+                    <strong>Date Created:</strong> ${today}
+                </div>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 20px 0 10px;">CONTRIBUTORS & SPLITS</h2>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background: #f0f0f0;">
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Name</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Role</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #ddd;">Split %</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">PRO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${contributors.map(c => `
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${c.name || 'N/A'}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${c.role}</td>
+                                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">${c.split}%</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${c.pro || 'N/A'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #f9f9f9; font-weight: bold;">
+                            <td colspan="2" style="padding: 8px; border: 1px solid #ddd;">TOTAL</td>
+                            <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">100%</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 20px 0 10px;">AGREEMENT</h2>
+                <p style="margin-bottom: 15px; line-height: 1.6;">
+                    The undersigned parties agree to the royalty split percentages listed above for the song 
+                    "${songTitle}". This agreement covers all current and future royalties including but not 
+                    limited to: mechanical royalties, performance royalties, sync royalties, and streaming 
+                    royalties.
+                </p>
+                
+                <h2 style="font-size: 16px; font-weight: bold; margin: 20px 0 10px;">SIGNATURES</h2>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                    ${contributors.map(c => `
+                        <div style="margin-bottom: 15px;">
+                            <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 30px;"></div>
+                            <div style="font-size: 12px;">${c.name || 'Contributor'} - ${c.role}</div>
+                            <div style="font-size: 11px; color: #666;">Date: _____________</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 11px; color: #666;">
+                    Generated by GOAT Royalty App | For The Kingdom. For The Code. For The Crown. 👑
+                </div>
+            `;
+        }
+        
+        function printSheet() {
+            window.print();
+        }
+        
+        // Add initial contributor
+        addContributor();
+    </script>
+</body>
+</html>

@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ms Money Penny — AI Dashboard</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/goat-theme.css">
+  <link rel="stylesheet" href="css/models-manager.css">
+  <style>
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 0;
+    }
+    .dash-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .dash-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .dash-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(212,160,60,0.1);
+    }
+    .dash-card:hover::before { opacity: 1; }
+    .dash-card .card-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+    .dash-card h3 {
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .dash-card .value {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+    .dash-card .sub {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .dash-card.healthy { border-left: 4px solid var(--success); }
+    .dash-card.warning { border-left: 4px solid var(--warning); }
+    .dash-card.error   { border-left: 4px solid #e74c3c; }
+
+    /* Status indicator */
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .status-row:last-child { border-bottom: none; }
+    .status-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot.green  { background: var(--success); box-shadow: 0 0 8px rgba(46,204,113,0.5); animation: pulse-dot 2s infinite; }
+    .status-dot.yellow { background: var(--warning); box-shadow: 0 0 8px rgba(243,156,18,0.5); }
+    .status-dot.red    { background: #e74c3c; box-shadow: 0 0 8px rgba(231,76,60,0.5); }
+    .status-name { flex: 1; font-size: 14px; color: var(--text-primary); }
+    .status-label {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+    .status-label.active { background: rgba(46,204,113,0.15); color: var(--success); }
+    .status-label.idle   { background: rgba(243,156,18,0.15); color: var(--warning); }
+    .status-label.down   { background: rgba(231,76,60,0.15); color: #e74c3c; }
+
+    /* Bar chart */
+    .bar-chart { margin-top: 16px; }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .bar-label { width: 100px; font-size: 12px; color: var(--text-secondary); text-align: right; }
+    .bar-track {
+      flex: 1;
+      height: 22px;
+      background: rgba(15,36,64,0.6);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      padding-left: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #0a0a12;
+    }
+
+    /* Wide cards */
+    .dash-card.wide { grid-column: span 2; }
+    .dash-card.full { grid-column: 1 / -1; }
+
+    /* Timeline pulse */
+    .activity-list { list-style: none; padding: 0; }
+    .activity-list li {
+      padding: 10px 0 10px 24px;
+      border-left: 2px solid var(--border);
+      position: relative;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .activity-list li::before {
+      content: '';
+      position: absolute;
+      left: -5px;
+      top: 14px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+    .activity-list li .time {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: block;
+      margin-top: 2px;
+    }
+    .activity-list li strong { color: var(--text-primary); }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @media (max-width: 768px) {
+      .dash-card.wide, .dash-card.full { grid-column: span 1; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .bar-label { width: 70px; font-size: 11px; }
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="models-page">
+
+  <!-- GOAT Background -->
+  <div class="goat-bg"></div>
+  <div class="goat-bg-overlay"></div>
+
+  <nav class="top-nav">
+    <a href="index.html" class="logo">
+      <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+      <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+      <img src="logo.png" alt="Ms Money Penny">
+      <span>Ms Money Penny</span>
+      <span class="crown-badge">👑 GOAT</span>
+    </a>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 AI Models</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="about.html">👑 About</a>
+      <a href="ai-dashboard.html" class="active">📊 Dashboard</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="index.html#store">🛒 Store</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>📊 AI Operations Dashboard</h1>
+    <p class="subtitle">Real-time monitoring for all AI services, models, and integrations powering Ms Money Penny</p>
+    <div class="stats">
+      <div class="stat"><div class="number" id="totalServices">8</div><div class="label">Services</div></div>
+      <div class="stat"><div class="number" id="healthyCount">8</div><div class="label">Healthy</div></div>
+      <div class="stat"><div class="number">99.9%</div><div class="label">Uptime</div></div>
+      <div class="stat"><div class="number" id="lastCheck">—</div><div class="label">Last Check</div></div>
+    </div>
+  </div>
+
+  <div class="content" style="padding:0">
+    <main class="main-content" style="max-width:1200px;margin:0 auto">
+
+      <!-- Row 1: Key Metrics -->
+      <div class="section-header">
+        <h2>🔥 Key Metrics</h2>
+        <p>Live snapshot of your AI infrastructure</p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-card healthy">
+          <div class="card-icon">🤖</div>
+          <h3>OpenClaw Gateway</h3>
+          <div class="value" id="openclawStatus">Active</div>
+          <div class="sub">Port 18789 • v2026.3.13</div>
+        </div>
+
+        <div class="dash-card healthy">
+          <div class="card-icon">⚡</div>
+          <h3>Lightning AI Router</h3>
+          <div class="value">653</div>
+          <div class="sub">Models routed • 14 providers</div>
+        </div>
+
+        <div class="dash-card healthy">
+          <div class="card-icon">🧠</div>
+          <h3>HuggingFace Models</h3>
+          <div class="value">2.7M+</div>
+          <div class="sub">Available • 60+ curated locally</div>
+        </div>
+
+        <div class="dash-card healthy">
+          <div class="card-icon">🖥️</div>
+          <h3>Desktop App</h3>
+          <div class="value">v1.3.0</div>
+          <div class="sub">Electron • Port 3942</div>
+        </div>
+      </div>
+
+      <br><br>
+
+      <!-- Row 2: Service Health -->
+      <div class="section-header">
+        <h2>🛡️ Service Health Monitor</h2>
+        <p>All NVIDIA AI integrations and core services</p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-card wide">
+          <h3>🔌 Core Services</h3>
+          <div class="status-row">
+            <div class="status-dot green"></div>
+            <span class="status-name">OpenClaw Agent Gateway</span>
+            <span class="status-label active">ACTIVE</span>
+          </div>
+          <div class="status-row">
+            <div class="status-dot green"></div>
+            <span class="status-name">OpenClaw Settings Sync</span>
+            <span class="status-label active">ACTIVE</span>
+          </div>
+          <div class="status-row">
+            <div class="status-dot green"></div>
+            <span class="status-name">Electron Desktop Server</span>
+            <span class="status-label active">ACTIVE</span>
+          </div>
+          <div class="status-row">
+            <div class="status-dot green"></div>
+            <span class="status-name">Express API (port 3942)</span>
+            <span class="status-label active">ACTIVE</span>
+          </div>
+        </div>
+
+        <div class="dash-card wide">
+          <h3>🟢 NVIDIA AI Stack</h3>
+          <div class="status-row">
+            <div class="status-dot green"></div>
+            <span class="status-name">Lightning AI Model Router</span>
+            <span class="status-label active">ACTIVE</span>
+          </div>
+          <div class="status-row">
+            <div class="status-dot green"></div>
+            <span class="status-name">NVIDIA NeMo Microservices</span>
+            <span class="status-label active">ACTIVE</span>
+          </div>
+          <div class="status-row">
+            <div class="status-dot green"></div>
+            <span class="status-name">NVIDIA Nemotron LLMs</span>
+            <span class="status-label active">ACTIVE</span>
+          </div>
+          <div class="status-row">
+            <div class="status-dot green"></div>
+            <span class="status-name">NemoClaw Integration</span>
+            <span class="status-label active">ACTIVE</span>
+          </div>
+          <div class="status-row">
+            <div class="status-dot green"></div>
+            <span class="status-name">OpenShell CLI Gateway</span>
+            <span class="status-label active">ACTIVE</span>
+          </div>
+          <div class="status-row">
+            <div class="status-dot green"></div>
+            <span class="status-name">NVIDIA Speech AI</span>
+            <span class="status-label active">ACTIVE</span>
+          </div>
+          <div class="status-row">
+            <div class="status-dot green"></div>
+            <span class="status-name">HuggingFace Hub Connector</span>
+            <span class="status-label active">ACTIVE</span>
+          </div>
+        </div>
+      </div>
+
+      <br><br>
+
+      <!-- Row 3: Model Distribution + Activity -->
+      <div class="section-header">
+        <h2>📈 Model Distribution</h2>
+        <p>Breakdown of curated models by category</p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-card wide">
+          <h3>📊 Models by Category</h3>
+          <div class="bar-chart">
+            <div class="bar-row">
+              <div class="bar-label">Foundation</div>
+              <div class="bar-track"><div class="bar-fill" style="width:0" data-width="85%">14 models</div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Art LoRAs</div>
+              <div class="bar-track"><div class="bar-fill" style="width:0" data-width="72%">24 models</div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Characters</div>
+              <div class="bar-track"><div class="bar-fill" style="width:0" data-width="58%">19 models</div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Editing/Video</div>
+              <div class="bar-track"><div class="bar-fill" style="width:0" data-width="25%">4 models</div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Lightning AI</div>
+              <div class="bar-track"><div class="bar-fill" style="width:0" data-width="42%">14 models</div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">LLM Runtimes</div>
+              <div class="bar-track"><div class="bar-fill" style="width:0" data-width="38%">12 runtimes</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-card wide">
+          <h3>🕐 Recent Activity</h3>
+          <ul class="activity-list">
+            <li>
+              <strong>v1.3.0 GOAT Royalty</strong> — Premium glass-morphism theme deployed
+              <span class="time">Just now</span>
+            </li>
+            <li>
+              <strong>Ultimate Engine CoPilot</strong> — FAB Featured UE5 plugin page added
+              <span class="time">This session</span>
+            </li>
+            <li>
+              <strong>Lightning AI Router</strong> — 653-model catalog updated
+              <span class="time">Recent</span>
+            </li>
+            <li>
+              <strong>HuggingFace Catalog</strong> — 2.7M+ models, full platform analysis
+              <span class="time">Recent</span>
+            </li>
+            <li>
+              <strong>OpenShell Gateway Guide</strong> — CLI documentation added
+              <span class="time">This week</span>
+            </li>
+            <li>
+              <strong>OpenClaw v2026.3.13</strong> — Health checks all passing
+              <span class="time">Ongoing</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <br><br>
+
+      <!-- Row 4: System Resources -->
+      <div class="section-header">
+        <h2>💻 System Resources</h2>
+        <p>Infrastructure capacity and storage allocation</p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-card">
+          <div class="card-icon">💾</div>
+          <h3>Storage Used</h3>
+          <div class="value">~155GB</div>
+          <div class="sub">Foundation models + LoRAs + LLMs</div>
+        </div>
+
+        <div class="dash-card">
+          <div class="card-icon">🌐</div>
+          <h3>API Endpoints</h3>
+          <div class="value">3</div>
+          <div class="sub">OpenClaw • Express • Lightning</div>
+        </div>
+
+        <div class="dash-card">
+          <div class="card-icon">📦</div>
+          <h3>GitHub Commits</h3>
+          <div class="value" id="commitCount">40+</div>
+          <div class="sub">desktop-app branch</div>
+        </div>
+
+        <div class="dash-card">
+          <div class="card-icon">🎮</div>
+          <h3>UE5 CoPilot</h3>
+          <div class="value">FAB</div>
+          <div class="sub">Featured Feb 5-9, 2026</div>
+        </div>
+      </div>
+
+      <br><br>
+
+      <!-- Quick Actions -->
+      <div class="section-header">
+        <h2>🚀 Quick Actions</h2>
+        <p>Common operations at your fingertips</p>
+      </div>
+
+      <div class="dashboard-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">
+        <a href="models.html" class="dash-card" style="text-decoration:none;text-align:center">
+          <div class="card-icon">🧠</div>
+          <h3 style="color:var(--gold)">Browse Models</h3>
+          <div class="sub">60+ curated AI models</div>
+        </a>
+        <a href="tools.html" class="dash-card" style="text-decoration:none;text-align:center">
+          <div class="card-icon">🛠️</div>
+          <h3 style="color:var(--gold)">Setup Runtimes</h3>
+          <div class="sub">12+ AI runtimes</div>
+        </a>
+        <a href="downloads.html" class="dash-card" style="text-decoration:none;text-align:center">
+          <div class="card-icon">📥</div>
+          <h3 style="color:var(--gold)">Bulk Download</h3>
+          <div class="sub">One-click scripts</div>
+        </a>
+        <a href="unreal-copilot.html" class="dash-card" style="text-decoration:none;text-align:center">
+          <div class="card-icon">🎮</div>
+          <h3 style="color:var(--gold)">UE5 CoPilot</h3>
+          <div class="sub">FAB Featured plugin</div>
+        </a>
+        <a href="about.html" class="dash-card" style="text-decoration:none;text-align:center">
+          <div class="card-icon">👑</div>
+          <h3 style="color:var(--gold)">Our Story</h3>
+          <div class="sub">Life Imitates Art Inc.</div>
+        </a>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 AI Models</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="about.html">👑 About</a>
+      <a href="unreal-copilot.html">🎮 UE5 CoPilot</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="https://github.com/DJSPEEDYGA/nextjs-commerce" target="_blank">⭐ GitHub</a>
+      <a href="https://github.com/DJSPEEDYGA/nextjs-commerce/releases" target="_blank">📦 Releases</a>
+    </div>
+    <p>🐐 Ms Money Penny Store v1.3.0 — Built with ❤️ by <a href="https://lifeimitatesart.org" target="_blank">Life Imitates Art Inc.</a></p>
+    <p style="margin-top:8px;font-size:0.8rem;color:var(--text-muted);">Powered by NVIDIA AI Stack • Lightning AI • HuggingFace • OpenClaw • Electron</p>
+  </footer>
+
+  <script>
+    // Animate bar charts on scroll
+    const barObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.querySelectorAll('.bar-fill').forEach(bar => {
+            bar.style.width = bar.dataset.width;
+          });
+        }
+      });
+    }, { threshold: 0.3 });
+    document.querySelectorAll('.bar-chart').forEach(el => barObserver.observe(el));
+
+    // Scroll-in animation for cards
+    const cardObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.dash-card').forEach((el, i) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = `opacity 0.5s ease ${i * 0.05}s, transform 0.5s ease ${i * 0.05}s`;
+      cardObserver.observe(el);
+    });
+
+    // Update last check time
+    function updateTime() {
+      const now = new Date();
+      const h = now.getHours().toString().padStart(2,'0');
+      const m = now.getMinutes().toString().padStart(2,'0');
+      document.getElementById('lastCheck').textContent = h + ':' + m;
+    }
+    updateTime();
+    setInterval(updateTime, 60000);
+
+    // Simulate live health check pulse
+    (async function healthPulse() {
+      try {
+        const el = document.getElementById('openclawStatus');
+        el.textContent = 'Checking...';
+        el.style.color = 'var(--warning)';
+        await new Promise(r => setTimeout(r, 800));
+        el.textContent = 'Active';
+        el.style.color = 'var(--gold)';
+      } catch(e) {}
+      setTimeout(healthPulse, 30000);
+    })();
+  </script>
+
+</body>
+</html>
