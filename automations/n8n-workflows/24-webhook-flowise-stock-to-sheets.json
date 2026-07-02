@@ -1,0 +1,121 @@
+{
+  "name": "Webhook Flowise Stock Data to Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "375cee94-11b9-4280-9dea-332bd54cd542",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "753507c4-303f-40e1-a338-ed034edf4426",
+      "name": "Webhook",
+      "webhookId": "375cee94-11b9-4280-9dea-332bd54cd542"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1N1mLTaGZ2bT5iOEIjYxAXYCBHxHtsaieuIwKu3lRJ5k",
+          "mode": "list",
+          "cachedResultName": "n8n Kurs test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N1mLTaGZ2bT5iOEIjYxAXYCBHxHtsaieuIwKu3lRJ5k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Tabellenblatt1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N1mLTaGZ2bT5iOEIjYxAXYCBHxHtsaieuIwKu3lRJ5k/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "stockticker": "={{ $json.body.stockticker }}",
+            "price": "={{ $json.body.price }}",
+            "Summary": "={{ $json.body.summary }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "stockticker",
+              "displayName": "stockticker",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "id": "77f1e610-902f-4bf3-a431-13eb543889cd",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bqJNeeTP15452iPi",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d9b031d9-20e9-424d-8f86-e62be9fa16c4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "89d6b5241e3d0c6b62682a09a72213abeeffd34a6110f442c15fc0b560f12919"
+  },
+  "id": "I1P0y3Zb23RyqkOu",
+  "tags": []
+}

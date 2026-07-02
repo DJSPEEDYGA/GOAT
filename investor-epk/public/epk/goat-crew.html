@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Force Crew | 3D Avatars + Launch Deck</title>
+<meta name="description" content="GOAT Force crew as live 3D avatars that idle, walk, and talk — plus one-tap launch buttons into every working GOAT surface.">
+<link rel="icon" href="favicon.ico">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:#050609;color:#f7f1e8;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  a{color:inherit}
+  .nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;
+    padding:12px 20px;background:rgba(5,6,9,.92);border-bottom:1px solid rgba(255,255,255,.1);
+    backdrop-filter:blur(16px)}
+  .nav img{width:34px;height:34px;border-radius:8px;object-fit:cover;
+    border:1px solid rgba(242,199,102,.4)}
+  .nav .brand{font-weight:900;color:#f2c766}
+  .nav .spacer{flex:1}
+  .nav a.home{color:#9ca6b4;text-decoration:none;font-weight:800;font-size:14px}
+  .nav a.home:hover{color:#f7f1e8}
+  .wrap{max-width:1080px;margin:0 auto;padding:26px 20px 70px}
+  h1{font-size:30px;margin:6px 0 2px;letter-spacing:.5px}
+  .sub{color:#9ca6b4;margin:0 0 22px;max-width:640px;line-height:1.5}
+  .stagecard{background:linear-gradient(180deg,#0c0e14,#07080c);
+    border:1px solid rgba(242,199,102,.22);border-radius:18px;overflow:hidden;
+    box-shadow:0 30px 70px rgba(0,0,0,.5)}
+  #crew-stage{width:100%;height:440px;display:block}
+  @media(max-width:640px){#crew-stage{height:340px}}
+  .stagebar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+    padding:14px 16px;border-top:1px solid rgba(255,255,255,.08)}
+  .who{margin-right:auto}
+  .who .n{font-weight:900;font-size:18px;color:#f2c766}
+  .who .r{font-size:13px;color:#9ca6b4}
+  .ctl{min-height:40px;padding:9px 16px;border-radius:10px;font-weight:800;font-size:14px;
+    border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:#f7f1e8;
+    cursor:pointer}
+  .ctl:hover{background:rgba(255,255,255,.12)}
+  .ctl.go{background:#f2c766;color:#161009;border-color:#f2c766}
+  .ctl.go:hover{filter:brightness(1.08)}
+  #crew-select{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
+  .crew-chip{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:8px 14px;
+    border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);
+    color:#cdd3dc;font-weight:800;font-size:13px;cursor:pointer}
+  .crew-chip:hover{color:#fff;background:rgba(255,255,255,.1)}
+  .crew-chip.active{color:#161009;background:#f2c766;border-color:#f2c766}
+  .crew-chip .dot{width:11px;height:11px;border-radius:50%;
+    box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+  .section-title{margin:38px 0 12px;font-size:15px;letter-spacing:2px;text-transform:uppercase;
+    color:#9ca6b4}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+  .launch{display:block;text-decoration:none;padding:18px;border-radius:14px;
+    background:linear-gradient(180deg,#0e1016,#0a0b10);border:1px solid rgba(255,255,255,.1)}
+  .launch:hover{border-color:rgba(242,199,102,.5);transform:translateY(-2px);
+    transition:.15s}
+  .launch .mark{display:inline-block;font-size:11px;font-weight:900;letter-spacing:1px;
+    padding:4px 8px;border-radius:6px;background:rgba(242,199,102,.15);color:#f2c766;
+    margin-bottom:10px}
+  .launch .t{font-weight:900;font-size:16px;margin-bottom:4px}
+  .launch .d{font-size:13px;color:#9ca6b4;line-height:1.45}
+  .note{margin-top:24px;font-size:12px;color:#6b7280;line-height:1.5}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <img src="goat-logo.png" alt="GOAT">
+  <span class="brand">GOAT Force Crew</span>
+  <span class="spacer"></span>
+  <a class="home" href="goat-investor-living-epk.html">Living EPK</a>
+  <a class="home" href="goat-apps.html" style="margin-left:14px">Apps</a>
+</nav>
+
+<div class="wrap">
+  <h1>Meet the crew — live 3D, walking and talking.</h1>
+  <p class="sub">Pick a crew member. They idle on the stage, walk on command, and
+    talk out loud through your computer. Then launch straight into any working
+    GOAT surface below.</p>
+
+  <div class="stagecard">
+    <div id="crew-stage"></div>
+    <div class="stagebar">
+      <div class="who">
+        <div class="n" id="crew-name">—</div>
+        <div class="r" id="crew-role">—</div>
+      </div>
+      <button class="ctl" id="btn-idle">Idle</button>
+      <button class="ctl" id="btn-walk">Walk</button>
+      <button class="ctl" id="btn-talk">Talk</button>
+      <a class="ctl go" id="crew-launch" href="#">Launch</a>
+    </div>
+  </div>
+
+  <div id="crew-select" aria-label="Choose a crew member"></div>
+
+  <div class="section-title">Launch Deck</div>
+  <div class="grid">
+    <a class="launch" href="goat-investor-living-epk.html">
+      <span class="mark">EPK</span>
+      <div class="t">Living Investor EPK</div>
+      <div class="d">Money snapshot, proof, product map, and hardware gates.</div>
+    </a>
+    <a class="launch" href="casino/">
+      <span class="mark">VIP</span>
+      <div class="t">GOAT Casino</div>
+      <div class="d">29-game provably-fair casino floor with VIP rewards.</div>
+    </a>
+    <a class="launch" href="super-goat-royalties.html">
+      <span class="mark">MNY</span>
+      <div class="t">Money Engine</div>
+      <div class="d">Royalties, splits, catalog, distribution, and payout gates.</div>
+    </a>
+    <a class="launch" href="money-breakdown.html">
+      <span class="mark">$</span>
+      <div class="t">Money Breakdown</div>
+      <div class="d">Full valuation and money math for the platform.</div>
+    </a>
+    <a class="launch" href="agents-brain.html">
+      <span class="mark">007</span>
+      <div class="t">Agents Brain</div>
+      <div class="d">Local agent crew, model lanes, memory, and computer control.</div>
+    </a>
+    <a class="launch" href="goat-apps.html">
+      <span class="mark">APPS</span>
+      <div class="t">GOAT Apps</div>
+      <div class="d">Full standalone app launcher across every lane.</div>
+    </a>
+    <a class="launch" href="goat-cinema-forge.html">
+      <span class="mark">CINE</span>
+      <div class="t">Cinema Forge</div>
+      <div class="d">Local-first studio router for movie, 3D, and AI video.</div>
+    </a>
+    <a class="launch" href="goat-virtual-world-rp.html">
+      <span class="mark">CITY</span>
+      <div class="t">Virtual World RP</div>
+      <div class="d">Virtual-world and server package lane with VIP events.</div>
+    </a>
+  </div>
+
+  <p class="note">Avatars render with three.js locally and speak through your
+    browser's built-in voice — no install, no network needed once the page is open.
+    Tap Talk after selecting a crew member; some browsers require a click before
+    they allow audio.</p>
+</div>
+
+<script src="js/vendor/three.min.js"></script>
+<script src="js/goat-crew-avatars.js"></script>
+</body>
+</html>
