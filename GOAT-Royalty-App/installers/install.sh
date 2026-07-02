@@ -150,9 +150,10 @@ cd ..
 sleep 3
 
 # Open browser
-URL="http://localhost:8090/powerhouse.html"
+URL="http://localhost:8090/launcher.html"
 echo -e "${GREEN}✅ GOAT Royalty App is live!${NC}"
 echo ""
+echo -e "   🚀 Launcher:       ${CYAN}http://localhost:8090/launcher.html${NC}"
 echo -e "   🌐 Powerhouse:     ${CYAN}http://localhost:8090/powerhouse.html${NC}"
 echo -e "   🧠 AI Brain:        ${CYAN}http://localhost:8090/agents-brain.html${NC}"
 echo -e "   💼 Moneypenny:      ${CYAN}http://localhost:8090/moneypenny.html${NC}"

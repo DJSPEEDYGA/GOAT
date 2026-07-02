@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GOAT Launcher — DJ Speedy's Creative Universe</title>
+<meta name="description" content="One cinematic launcher for the entire GOAT ecosystem: Royalty Powerhouse, Oscar AI, Money Penny, Anigo Alley, GOAT City RP, Investor EPK and more.">
+<link rel="icon" href="assets/launcher/goat-app-icon.webp">
+<style>
+:root{
+  --bg:#050505; --bg2:#0a0a0c; --card:#111114; --line:#1e1e24;
+  --ink:#f5f2ec; --dim:#9a96a0; --gold:#d6a84f; --gold2:#f2d58a;
+  --red:#e63946; --ok:#3fb950; --warn:#d29922;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;}
+a{color:inherit;text-decoration:none;}
+img{display:block;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;gap:14px;height:64px;padding:0 22px;background:rgba(5,5,5,.72);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.06);}
+.nv-logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px;letter-spacing:.5px;}
+.nv-logo img{width:34px;height:34px;border-radius:9px;}
+.nv-logo b{background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nv-links{display:flex;gap:2px;margin-left:14px;flex:1;}
+.nv-links a{padding:7px 13px;border-radius:99px;font-size:13.5px;color:var(--dim);transition:.2s;}
+.nv-links a:hover{color:var(--ink);background:rgba(255,255,255,.07);}
+.nv-cta{margin-left:auto;display:flex;gap:8px;}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:99px;font-size:13.5px;font-weight:700;cursor:pointer;border:1px solid var(--line);color:var(--ink);transition:.2s;}
+.pill:hover{border-color:var(--gold);color:var(--gold2);}
+.pill.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#141005;border:none;}
+.pill.gold:hover{transform:translateY(-1px);box-shadow:0 6px 30px rgba(214,168,79,.35);color:#141005;}
+@media(max-width:860px){.nv-links{display:none;}}
+
+/* HERO */
+.hero{position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:120px 5vw 40px;overflow:hidden;}
+.hero-media{position:absolute;inset:0;z-index:0;}
+.hero-media img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.4s ease;position:absolute;inset:0;}
+.hero-media img.on{opacity:.5;}
+.hero-shade{position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(5,5,5,.92) 0%,rgba(5,5,5,.55) 45%,rgba(5,5,5,.35) 70%,rgba(5,5,5,.85) 100%),linear-gradient(180deg,rgba(5,5,5,.3),transparent 30%,rgba(5,5,5,.98) 92%);}
+.hero-in{position:relative;z-index:2;max-width:820px;}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;padding:7px 15px;border-radius:99px;background:rgba(214,168,79,.1);border:1px solid rgba(214,168,79,.35);font-size:12.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold2);margin-bottom:26px;}
+.eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.hero h1{font-size:clamp(44px,7.4vw,96px);font-weight:900;line-height:.98;letter-spacing:-.03em;margin-bottom:20px;}
+.hero h1 span{display:block;background:linear-gradient(120deg,var(--gold) 10%,var(--gold2) 55%,#fff2c9 90%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero p{font-size:clamp(16px,2vw,20px);color:#c9c4bb;max-width:560px;line-height:1.65;margin-bottom:36px;}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:54px;}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:15px 30px;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;border:none;transition:.2s;}
+.btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#141005;box-shadow:0 0 46px rgba(214,168,79,.28);}
+.btn.gold:hover{transform:translateY(-2px);box-shadow:0 10px 56px rgba(214,168,79,.42);}
+.btn.ghost{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink);backdrop-filter:blur(8px);}
+.btn.ghost:hover{border-color:var(--gold);color:var(--gold2);}
+.hero-stats{display:flex;gap:38px;flex-wrap:wrap;}
+.hs .n{font-size:30px;font-weight:900;color:var(--gold2);}
+.hs .l{font-size:11.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.12em;margin-top:3px;}
+
+/* RAIL */
+.rail-wrap{position:relative;padding:26px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg2);overflow:hidden;}
+.rail{display:flex;gap:14px;width:max-content;animation:rail 60s linear infinite;padding:0 14px;}
+.rail:hover{animation-play-state:paused;}
+@keyframes rail{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.rail a{position:relative;flex:0 0 auto;width:300px;height:180px;border-radius:16px;overflow:hidden;border:1px solid var(--line);transition:.25s;}
+.rail a:hover{border-color:var(--gold);transform:translateY(-3px) scale(1.02);}
+.rail img{width:100%;height:100%;object-fit:cover;}
+.rail .cap{position:absolute;left:0;right:0;bottom:0;padding:26px 14px 10px;font-size:13px;font-weight:800;background:linear-gradient(transparent,rgba(0,0,0,.88));}
+
+/* SECTIONS */
+section{padding:90px 5vw;max-width:1400px;margin:0 auto;}
+.sec-eyebrow{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.22em;color:var(--gold);margin-bottom:14px;}
+.sec-title{font-size:clamp(30px,4.4vw,52px);font-weight:900;letter-spacing:-.02em;margin-bottom:14px;}
+.sec-sub{color:var(--dim);font-size:17px;max-width:640px;line-height:1.65;margin-bottom:46px;}
+
+/* APP GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;}
+.app{position:relative;background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;transition:.25s;display:flex;flex-direction:column;}
+.app:hover{border-color:rgba(214,168,79,.6);transform:translateY(-4px);box-shadow:0 18px 60px rgba(0,0,0,.55),0 0 0 1px rgba(214,168,79,.15);}
+.app .art{position:relative;height:190px;overflow:hidden;}
+.app .art img{width:100%;height:100%;object-fit:cover;transition:transform .5s;}
+.app:hover .art img{transform:scale(1.06);}
+.app .art::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(17,17,20,.95));}
+.status{position:absolute;top:12px;left:12px;z-index:2;display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);}
+.status .d{width:7px;height:7px;border-radius:50%;}
+.status.on .d{background:var(--ok);box-shadow:0 0 8px var(--ok);}
+.status.off .d{background:var(--red);}
+.status.chk .d{background:var(--warn);animation:pulse 1.2s infinite;}
+.badge-tag{position:absolute;top:12px;right:12px;z-index:2;padding:5px 11px;border-radius:99px;font-size:10.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:rgba(214,168,79,.92);color:#141005;}
+.app .body{padding:20px 20px 22px;display:flex;flex-direction:column;flex:1;}
+.app h3{font-size:19px;font-weight:800;margin-bottom:7px;}
+.app p{font-size:13.5px;color:var(--dim);line-height:1.6;flex:1;margin-bottom:18px;}
+.app .row{display:flex;gap:9px;}
+.launch{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:12px;font-size:14px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#141005;transition:.2s;}
+.launch:hover{filter:brightness(1.08);box-shadow:0 6px 24px rgba(214,168,79,.35);}
+.launch.alt{background:rgba(255,255,255,.07);color:var(--ink);border:1px solid var(--line);}
+.launch.alt:hover{border-color:var(--gold);color:var(--gold2);box-shadow:none;}
+
+/* CATALOG STRIP */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:20px;overflow:hidden;margin-top:56px;}
+.strip div{background:var(--card);padding:30px 18px;text-align:center;}
+.strip .n{font-size:34px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.strip .l{font-size:11.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.12em;margin-top:5px;}
+
+/* FOOTER */
+footer{border-top:1px solid var(--line);padding:44px 5vw;display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;color:var(--dim);font-size:13.5px;background:var(--bg2);}
+footer .links{display:flex;gap:18px;flex-wrap:wrap;}
+footer a:hover{color:var(--gold2);}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nv-logo" href="#top"><img src="assets/launcher/goat-app-icon.webp" alt="GOAT"><span><b>GOAT</b>&nbsp;Launcher</span></a>
+  <div class="nv-links">
+    <a href="#apps">Apps</a>
+    <a href="#catalog">Catalog</a>
+    <a href="moneypenny.html">Money Penny</a>
+    <a href="music-studio.html">Studio</a>
+    <a href="powerhouse.html">Powerhouse</a>
+  </div>
+  <div class="nv-cta">
+    <a class="pill" href="index.html">Classic Home</a>
+    <a class="pill gold" href="powerhouse.html">Enter Powerhouse</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-media" id="heroMedia">
+    <img src="assets/launcher/waka-goat-flying.webp" alt="" class="on">
+    <img src="assets/launcher/surface_master_oscar_core.png" alt="">
+    <img src="assets/launcher/gangsta-nerds.webp" alt="">
+    <img src="assets/launcher/surface_speedy_studio_and_creator_tools.png" alt="">
+  </div>
+  <div class="hero-shade"></div>
+  <div class="hero-in">
+    <div class="eyebrow"><span class="dot"></span>DJ Speedy &middot; Harvey Miller Jr. &middot; Live Ecosystem</div>
+    <h1>Every GOAT app.<span>One launcher.</span></h1>
+    <p>Royalty intelligence, Oscar AI, Money Penny, studios, worlds and business — the whole DJ Speedy universe, launched from a single cinematic hub.</p>
+    <div class="hero-cta">
+      <a class="btn gold" href="#apps">Launch an App</a>
+      <a class="btn ghost" href="powerhouse.html">Open Powerhouse</a>
+      <a class="btn ghost" href="https://srv1473464.hstgr.cloud/" target="_blank" rel="noopener">Production Server</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hs"><div class="n" id="stTotal">5,954</div><div class="l">Catalog Entries</div></div>
+      <div class="hs"><div class="n" id="stAscap">5,694</div><div class="l">ASCAP Works</div></div>
+      <div class="hs"><div class="n" id="stMlc">4,007</div><div class="l">MLC Entries</div></div>
+      <div class="hs"><div class="n" id="stSplits">1,110</div><div class="l">Speedy Splits</div></div>
+      <div class="hs"><div class="n" id="stIsrc">551</div><div class="l">ISRC Codes</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="rail-wrap" aria-label="Ecosystem artwork">
+  <div class="rail" id="rail"></div>
+</div>
+
+<section id="apps">
+  <div class="sec-eyebrow">Launch Center</div>
+  <h2 class="sec-title">The GOAT ecosystem</h2>
+  <p class="sec-sub">Every card is a real, working destination — local tools run in this app, live services are pinged for status before you jump in.</p>
+  <div class="grid" id="appGrid"></div>
+</section>
+
+<section id="catalog" style="padding-top:0;">
+  <div class="sec-eyebrow">Business, Not Placeholders</div>
+  <h2 class="sec-title">Catalog at a glance</h2>
+  <p class="sec-sub">Numbers below load straight from the catalog data files shipped with this app — Waka Flocka Flame, Brick Squad Monopoly Publishing and Fastassman Publishing.</p>
+  <div class="strip">
+    <div><div class="n" id="cWaka">974</div><div class="l">Waka Songs Tracked</div></div>
+    <div><div class="n" id="cHarvey">414</div><div class="l">Harvey Miller Works</div></div>
+    <div><div class="n" id="cFam">423</div><div class="l">Fastassman Works</div></div>
+    <div><div class="n">2</div><div class="l">ASCAP Publishers</div></div>
+    <div><div class="n" id="cAlbums">2</div><div class="l">Five Deuces Albums</div></div>
+  </div>
+</section>
+
+<footer>
+  <div>&copy; 2026 GOAT Royalty &middot; DJ Speedy (Harvey L. Miller Jr.) &middot; Brick Squad Monopoly Publishing / Fastassman Pub Inc.</div>
+  <div class="links">
+    <a href="index.html">Classic Home</a>
+    <a href="powerhouse.html">Powerhouse</a>
+    <a href="https://srv1473464.hstgr.cloud/" target="_blank" rel="noopener">Server</a>
+    <a href="https://anigoalley.com" target="_blank" rel="noopener">Anigo Alley</a>
+    <a href="https://cfx.re/join/3ygz8lo" target="_blank" rel="noopener">GOAT City RP</a>
+  </div>
+</footer>
+
+<script>
+/* ---------- App registry (real destinations only) ---------- */
+const APPS = [
+  {id:'powerhouse', name:'GOAT Royalty Powerhouse', tag:'Core',
+   desc:'Main command dashboard — royalties, catalog, agents, distribution and business intel in one cockpit.',
+   art:'assets/launcher/surface_goat_royalty_app_launcher.png',
+   href:'powerhouse.html', local:true},
+  {id:'oscar', name:'Oscar — Master AI Core', tag:'AI',
+   desc:'The production Oscar chat server: voice library, security bridges and self-healing brain. Runs on the VPS at port 3333.',
+   art:'assets/launcher/surface_master_oscar_core.png',
+   href:'https://srv1473464.hstgr.cloud/', ping:'https://srv1473464.hstgr.cloud/',
+   alt:{label:'Local :3333', href:'http://localhost:3333/'}},
+  {id:'brain', name:'Agent Brain & Autopilot', tag:'AI',
+   desc:'LLM tools, the six-agent crew and autopilot workflows — Money Penny, Tech Ninja and the rest of the team.',
+   art:'assets/launcher/surface_agent_brain_llm_tools_and_autopilot.png',
+   href:'agents-brain.html', local:true,
+   alt:{label:'Autopilot', href:'autopilot.html'}},
+  {id:'penny', name:'Ms. Money Penny', tag:'AI',
+   desc:'Your business-side agent: royalty questions, catalog lookups and money moves, with full context injection.',
+   art:'assets/launcher/surface_business_royalty_catalog_and_distribution.png',
+   href:'moneypenny.html', local:true,
+   alt:{label:'Intel', href:'intel.html'}},
+  {id:'studio', name:'Speedy Studio & Creator Tools', tag:'Studio',
+   desc:'Beat maker, SSL mixer, vocal studio, autotune, MPC pads, mastering chain and the full plugin rack.',
+   art:'assets/launcher/surface_speedy_studio_and_creator_tools.png',
+   href:'music-studio.html', local:true,
+   alt:{label:'Beat Maker', href:'beat-maker.html'}},
+  {id:'catalogApp', name:'Catalog & Distribution', tag:'Business',
+   desc:'The full works catalog — ISRC tracking, splits, MLC entries, DSP distribution and smart links.',
+   art:'assets/launcher/live_catalog_status_wall.png',
+   href:'catalog.html', local:true,
+   alt:{label:'Distribution', href:'distribution.html'}},
+  {id:'vault', name:'Security Vault & Identity', tag:'Security',
+   desc:'API vault, fingerprint auth, identity verification, license manager and background-check tools.',
+   art:'assets/launcher/surface_security_vault_identity_and_api_controls.png',
+   href:'goat-vault.html', local:true,
+   alt:{label:'Auth', href:'goat-auth.html'}},
+  {id:'payments', name:'Payments, Wallet & Store', tag:'Business',
+   desc:'Payments hub, crypto wallet, VIP lifestyle and the GOAT store — money in, money tracked.',
+   art:'assets/launcher/surface_payments_wallet_crypto_vip_lifestyle_and_store.png',
+   href:'goat-payments.html', local:true,
+   alt:{label:'Shop', href:'shop.html'}},
+  {id:'anigo', name:'Anigo Alley', tag:'World',
+   desc:'The dim-lit after-hours platform — consent-first creator commerce and discovery. Live on the web now.',
+   art:'assets/launcher/surface_anigo_alley.png',
+   href:'https://anigoalley.com', ping:'https://anigoalley.com'},
+  {id:'fivem', name:'GOAT City RP (FiveM)', tag:'World',
+   desc:'Jump straight into the GOAT City roleplay server on FiveM — opens the cfx.re join link in your client.',
+   art:'assets/launcher/surface_goat_casino.png',
+   href:'https://cfx.re/join/3ygz8lo',
+   alt:{label:'Bourré Rules', href:'goat-celebrity-lounge.html'}},
+  {id:'halito', name:'Halito Chat', tag:'Social',
+   desc:'The Halito chat relay — real-time rooms wired to the production node service on the live server.',
+   art:'assets/launcher/surface_halito_chat.png',
+   href:'https://srv1473464.hstgr.cloud/', ping:'https://srv1473464.hstgr.cloud/'},
+  {id:'video', name:'AI Video & Film Score', tag:'Studio',
+   desc:'GOAT AI video lab, 3D studio and film-scoring suite for trailers, visuals and screen work.',
+   art:'assets/launcher/surface_training_and_transcription_engine.png',
+   href:'goat-ai-video.html', local:true,
+   alt:{label:'Film Score', href:'film-score.html'}},
+  {id:'spotify', name:'Spotify Dashboard', tag:'Analytics',
+   desc:'Streaming analytics wired to the Spotify setup flow — artists, tracks and playlist performance.',
+   art:'assets/launcher/profitability_map.png',
+   href:'spotify-dashboard.html', local:true,
+   alt:{label:'Setup', href:'spotify-setup.html'}},
+  {id:'oscarBrain', name:'Oscar Self-Heal & Maintenance', tag:'Ops',
+   desc:'Command center for the machines — installer dashboard, network map and system maintenance.',
+   art:'assets/launcher/surface_oscar_brain_self-heal_and_maintenance.png',
+   href:'command-center.html', local:true,
+   alt:{label:'Network', href:'network.html'}},
+  {id:'bourre', name:'Ultimate Bourré', tag:'IP',
+   desc:'The Ultimate Bourré IP — rules advantage engine and the celebrity lounge experience.',
+   art:'assets/launcher/surface_ultimate_bourre_ip_and_rules_advantage.png',
+   href:'goat-celebrity-lounge.html', local:true,
+   alt:{label:'Entertainment', href:'goat-entertainment.html'}},
+];
+
+/* ---------- Render cards ---------- */
+const grid = document.getElementById('appGrid');
+for (const a of APPS){
+  const el = document.createElement('div');
+  el.className = 'app';
+  const ext = /^https?:/.test(a.href);
+  el.innerHTML = `
+    <div class="art">
+      <span class="status ${a.local ? 'on' : (a.ping ? 'chk' : 'on')}" data-ping="${a.ping || ''}" id="st-${a.id}">
+        <span class="d"></span><span class="t">${a.local ? 'Ready' : (a.ping ? 'Checking' : 'Link')}</span>
+      </span>
+      <span class="badge-tag">${a.tag}</span>
+      <img src="${a.art}" alt="${a.name} artwork" loading="lazy">
+    </div>
+    <div class="body">
+      <h3>${a.name}</h3>
+      <p>${a.desc}</p>
+      <div class="row">
+        <a class="launch" href="${a.href}" ${ext ? 'target="_blank" rel="noopener"' : ''}>Launch &rarr;</a>
+        ${a.alt ? `<a class="launch alt" href="${a.alt.href}" ${/^https?:/.test(a.alt.href) ? 'target="_blank" rel="noopener"' : ''}>${a.alt.label}</a>` : ''}
+      </div>
+    </div>`;
+  grid.appendChild(el);
+}
+
+/* ---------- Live status pings ---------- */
+async function ping(url){
+  try{
+    const ctl = new AbortController();
+    const t = setTimeout(()=>ctl.abort(), 6000);
+    await fetch(url, {mode:'no-cors', signal:ctl.signal, cache:'no-store'});
+    clearTimeout(t);
+    return true;
+  }catch(e){ return false; }
+}
+document.querySelectorAll('.status[data-ping]').forEach(async el=>{
+  const url = el.dataset.ping;
+  if(!url) return;
+  const ok = await ping(url);
+  el.classList.remove('chk');
+  el.classList.add(ok ? 'on' : 'off');
+  el.querySelector('.t').textContent = ok ? 'Online' : 'Offline';
+});
+
+/* ---------- Artwork rail (all launcher assets) ---------- */
+const RAIL = [
+  ['assets/launcher/waka-goat-flying.webp','Waka x GOAT'],
+  ['assets/launcher/surface_master_oscar_core.png','Oscar Core'],
+  ['assets/launcher/surface_speedy_studio_and_creator_tools.png','Speedy Studio'],
+  ['assets/launcher/gangsta-nerds.webp','The Gangsta Nerds'],
+  ['assets/launcher/surface_agent_brain_llm_tools_and_autopilot.png','Agent Brain'],
+  ['assets/launcher/surface_anigo_alley.png','Anigo Alley'],
+  ['assets/launcher/surface_goat_casino.png','GOAT Casino'],
+  ['assets/launcher/surface_security_vault_identity_and_api_controls.png','Security Vault'],
+  ['assets/launcher/surface_payments_wallet_crypto_vip_lifestyle_and_store.png','Payments & Wallet'],
+  ['assets/launcher/live_catalog_status_wall.png','Live Catalog Wall'],
+  ['assets/launcher/surface_halito_chat.png','Halito Chat'],
+  ['assets/launcher/surface_ultimate_bourre_ip_and_rules_advantage.png','Ultimate Bourré'],
+];
+const rail = document.getElementById('rail');
+for (const list of [RAIL, RAIL]){ // duplicate for seamless loop
+  for (const [src, cap] of list){
+    const a = document.createElement('a');
+    a.href = '#apps';
+    a.innerHTML = `<img src="${src}" alt="${cap}" loading="lazy"><span class="cap">${cap}</span>`;
+    rail.appendChild(a);
+  }
+}
+
+/* ---------- Hero slideshow ---------- */
+const slides = document.querySelectorAll('#heroMedia img');
+let cur = 0;
+setInterval(()=>{
+  slides[cur].classList.remove('on');
+  cur = (cur+1) % slides.length;
+  slides[cur].classList.add('on');
+}, 6000);
+
+/* ---------- Live catalog stats from shipped data ---------- */
+const fmt = n => Number(n).toLocaleString('en-US');
+fetch('data/catalog-complete-summary.json').then(r=>r.json()).then(d=>{
+  if(d.total_catalog_entries) document.getElementById('stTotal').textContent = fmt(d.total_catalog_entries);
+  if(d.mlc_entries) document.getElementById('stMlc').textContent = fmt(d.mlc_entries);
+  if(d.speedy_splits) document.getElementById('stSplits').textContent = fmt(d.speedy_splits);
+  if(d.harvey_miller_works) document.getElementById('cHarvey').textContent = fmt(d.harvey_miller_works);
+  if(d.fastassman_publishing_works) document.getElementById('cFam').textContent = fmt(d.fastassman_publishing_works);
+}).catch(()=>{});
+fetch('data/catalog-summary.json').then(r=>r.json()).then(d=>{
+  const w = d.waka_flocka || {};
+  if(w.total_ascap_works) document.getElementById('stAscap').textContent = fmt(w.total_ascap_works);
+  if(w.total_isrc_codes) document.getElementById('stIsrc').textContent = fmt(w.total_isrc_codes);
+  if(w.total_songs) document.getElementById('cWaka').textContent = fmt(w.total_songs);
+  const f = d.fastassman_publishing || {};
+  if(f.albums) document.getElementById('cAlbums').textContent = f.albums.length;
+}).catch(()=>{});
+</script>
+</body>
+</html>
