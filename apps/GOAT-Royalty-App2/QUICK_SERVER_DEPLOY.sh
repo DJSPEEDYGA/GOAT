@@ -39,7 +39,7 @@ if [ ! -f .env.local ]; then
     cat > .env.local << 'ENVEOF'
 NEXT_PUBLIC_SUPABASE_URL=https://xmvlnonsxmrpvlssjstl.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhtdmxub25zeG1ycHZsc3Nqc3RsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI3OTkzMTgsImV4cCI6MjA1ODM3NTMxOH0.ZXlKaGJHY2lPaU4xWWlJNk1qTSkuMC4wLjAuMA
-GOOGLE_AI_API_KEY=***REMOVED***
+GOOGLE_API_KEY=${GOOGLE_API_KEY}
 NODE_ENV=production
 PORT=3000
 ENVEOF

@@ -92,7 +92,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 OPENAI_API_KEY=
 
 # Hostinger API
-HOSTINGER_API_TOKEN=***REMOVED***
+HOSTINGER_API_TOKEN=${HOSTINGER_API_TOKEN}
 ENVEOF
   warn "Created .env.local — EDIT IT with your actual API keys!"
   warn "  nano $APP_DIR/.env.local"

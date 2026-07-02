@@ -152,7 +152,7 @@ ANTHROPIC_API_KEY=your-anthropic-api-key
 COHERE_API_KEY=your-cohere-api-key
 
 # Hostinger API Configuration
-HOSTINGER_API_TOKEN=***REMOVED***
+HOSTINGER_API_TOKEN=${HOSTINGER_API_TOKEN}
 
 # Agent Settings
 AGENT_MODEL=gpt-4o

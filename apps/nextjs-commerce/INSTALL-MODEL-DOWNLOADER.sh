@@ -184,7 +184,9 @@ nvidia_jobs = {}
 def nvidia_pull_worker(job_id, models):
     """Pull NVIDIA Docker images sequentially."""
     nvidia_jobs[job_id] = {'status': 'running', 'total': len(models), 'done': 0, 'success': 0, 'failed': 0, 'current': '', 'log': []}
-    ngc_key = os.environ.get('NGC_API_KEY', '***REMOVED***')
+    ngc_key = os.environ.get('NVIDIA_NGC_API_KEY')
+    if not ngc_key:
+        raise RuntimeError('Set NVIDIA_NGC_API_KEY')
     try:
         subprocess.run(['docker', 'login', 'nvcr.io', '-u', '$oauthtoken', '--password-stdin'],
                        input=ngc_key.encode(), check=True, timeout=30)

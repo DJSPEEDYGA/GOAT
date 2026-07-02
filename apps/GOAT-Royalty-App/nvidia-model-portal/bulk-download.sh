@@ -3,7 +3,8 @@
 # Run this on your 2TB machine
 
 # Your API Key
-export NGC_API_KEY="***REMOVED***"
+: "${NVIDIA_NGC_API_KEY:?Set NVIDIA_NGC_API_KEY}"
+export NGC_API_KEY="${NVIDIA_NGC_API_KEY}"
 
 # Login to NGC
 echo "$NGC_API_KEY" | docker login nvcr.io -u '$oauthtoken' --password-stdin

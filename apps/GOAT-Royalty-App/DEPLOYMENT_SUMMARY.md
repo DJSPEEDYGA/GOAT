@@ -185,7 +185,7 @@ Created:
 ### Environment Variables Added
 ```bash
 # Hostinger API Configuration
-HOSTINGER_API_TOKEN=***REMOVED***
+HOSTINGER_API_TOKEN=<HOSTINGER_API_TOKEN>
 ```
 
 ### Dependencies

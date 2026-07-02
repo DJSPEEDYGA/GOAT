@@ -5,7 +5,7 @@ const { execSync } = require('child_process');
 
 // Configuration
 const CONFIG = {
-  apiToken: process.env.HOSTINGER_API_TOKEN || '***REMOVED***',
+  apiToken: process.env.HOSTINGER_API_TOKEN,
   host: process.env.HOSTINGER_HOST || 'your-hostinger-server.com',
   username: process.env.HOSTINGER_USERNAME || 'your-username',
   domain: process.env.HOSTINGER_DOMAIN || 'your-domain.com',

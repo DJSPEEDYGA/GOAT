@@ -29,7 +29,7 @@ PORT=5001
 MONGODB_URI=mongodb://localhost:27017/royalty-app
 JWT_SECRET=your-secret-key-here
 CLIENT_URL=http://localhost:3000
-HOSTINGER_API_TOKEN=***REMOVED***
+HOSTINGER_API_TOKEN=<HOSTINGER_API_TOKEN>
 ```
 
 ### 3. Start Development (1 minute)
