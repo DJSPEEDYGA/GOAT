@@ -10,9 +10,9 @@
  * @version 1.0.0
  */
 
-const { GoogleDriveAPI } = require('../services/googleDriveService');
-const { DataProcessor } = require('../services/dataProcessor');
-const { AIAssistantHub } = require('../services/aiAssistantHub');
+const { GoogleDriveAPI } = require('../src/services/googleDriveService');
+const { DataProcessor } = require('../src/services/dataProcessor');
+const { AIAssistantHub } = require('../src/services/aiAssistantHub');
 const { EventEmitter } = require('events');
 const fs = require('fs').promises;
 const path = require('path');
