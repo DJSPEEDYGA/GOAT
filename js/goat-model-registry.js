@@ -67,7 +67,14 @@
     // Microsoft Phi
     { id: "phi-3-mini", name: "Phi-3 Mini 128K", provider: "microsoft", size: "3.8B", runtime: "ollama" },
     { id: "phi-3-medium", name: "Phi-3 Medium 128K", provider: "microsoft", size: "14B", runtime: "nim" },
+    // DeepSeek
+    { id: "deepseek-r1-7b", name: "DeepSeek R1 7B", provider: "deepseek", size: "7B", runtime: "ollama" },
+    { id: "deepseek-r1-14b", name: "DeepSeek R1 14B", provider: "deepseek", size: "14B", runtime: "ollama" },
+    { id: "deepseek-r1-70b", name: "DeepSeek R1 70B", provider: "deepseek", size: "70B", runtime: "ollama" },
+    { id: "deepseek-coder-v2-16b", name: "DeepSeek Coder V2 16B", provider: "deepseek", size: "16B", runtime: "ollama" },
     // Community / other
+    { id: "llava-1.6-7b", name: "LLaVA 1.6 7B (vision)", provider: "community", size: "7B", runtime: "ollama" },
+    { id: "nomic-embed-text", name: "Nomic Embed Text", provider: "community", size: "0.1B", runtime: "ollama" },
     { id: "starcoder2-15b", name: "StarCoder2 15B", provider: "bigcode", size: "15B", runtime: "nim" },
     { id: "neural-chat-7b", name: "Neural Chat 7B", provider: "intel", size: "7B", runtime: "ollama" },
     { id: "solar-10.7b", name: "Solar 10.7B", provider: "upstage", size: "10.7B", runtime: "ollama" },
