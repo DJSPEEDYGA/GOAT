@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Master Oscar | GOAT Ops Brain</title>
+  <meta name="description" content="Master Oscar — the separate ops brain for the GOAT Royalty platform. Local-first agent console for operations, routing, and status.">
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/goat-theme.css">
+  <link rel="stylesheet" href="css/goat-brand.css">
+  <link rel="stylesheet" href="css/goat-touch-global.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #04050a;
+      color: #f0ece4;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .bg {
+      position: fixed; inset: 0; z-index: -2;
+      background:
+        radial-gradient(ellipse at 20% 0%, rgba(63,185,80,.12), transparent 45%),
+        radial-gradient(ellipse at 90% 100%, rgba(240,192,64,.12), transparent 50%),
+        #04050a;
+    }
+    .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    header.top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 0; gap: 14px; flex-wrap: wrap;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .brand img { width: 44px; height: 44px; border-radius: 12px; border: 1px solid rgba(240,192,64,.4); }
+    .brand b { color: #f0c040; font-size: 16px; }
+    .brand span { display: block; color: #8b9276; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+    .toplinks { display: flex; gap: 8px; flex-wrap: wrap; }
+    .toplinks a {
+      padding: 8px 14px; border-radius: 999px; font-size: 13px; text-decoration: none;
+      color: #c8bfa8; border: 1px solid rgba(240,192,64,.25);
+    }
+    .toplinks a:hover { color: #f0c040; border-color: #f0c040; }
+    .hero { padding: 46px 0 26px; }
+    .eyebrow { color: #3fb950; font-size: 12px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; margin-bottom: 10px; }
+    h1 {
+      font-size: clamp(30px, 5vw, 50px); line-height: 1.08;
+      background: linear-gradient(135deg, #9be8a8, #3fb950 40%, #f0c040);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p { color: #a99f88; max-width: 680px; margin-top: 14px; line-height: 1.6; font-size: 15.5px; }
+    .stage { display: grid; grid-template-columns: 1.15fr .85fr; gap: 20px; padding: 24px 0 40px; align-items: start; }
+    .console {
+      border-radius: 18px; overflow: hidden;
+      background: rgba(10,13,18,.95); border: 1px solid rgba(63,185,80,.35);
+      box-shadow: 0 18px 60px rgba(0,0,0,.55);
+    }
+    .console-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; background: rgba(63,185,80,.08);
+      border-bottom: 1px solid rgba(63,185,80,.25); font-size: 13px;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: #3fb950; box-shadow: 0 0 10px #3fb950; }
+    .console-head b { color: #9be8a8; }
+    .console-head span { color: #6f7a68; margin-left: auto; font-size: 11px; letter-spacing: .1em; }
+    .log { padding: 16px; display: grid; gap: 10px; min-height: 300px; max-height: 380px; overflow-y: auto; }
+    .msg { max-width: 88%; padding: 10px 14px; border-radius: 12px; font-size: 13.5px; line-height: 1.5; }
+    .msg.oscar { background: rgba(63,185,80,.1); border: 1px solid rgba(63,185,80,.3); color: #d7ecd4; }
+    .msg.you { background: rgba(240,192,64,.1); border: 1px solid rgba(240,192,64,.3); color: #efe3c0; justify-self: end; }
+    .msg small { display: block; margin-bottom: 4px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; opacity: .7; }
+    .composer { display: flex; gap: 8px; padding: 12px; border-top: 1px solid rgba(63,185,80,.25); }
+    .composer input {
+      flex: 1; background: rgba(255,255,255,.04); border: 1px solid rgba(63,185,80,.3);
+      border-radius: 10px; padding: 11px 14px; color: #f0ece4; font-size: 14px; outline: none;
+    }
+    .composer button {
+      padding: 11px 20px; border-radius: 10px; border: none; cursor: pointer;
+      background: linear-gradient(135deg, #2f9e44, #3fb950); color: #04140a; font-weight: 800;
+    }
+    .side { display: grid; gap: 14px; }
+    .panel {
+      padding: 18px; border-radius: 16px;
+      background: rgba(13,17,23,.9); border: 1px solid rgba(240,192,64,.24);
+    }
+    .panel h3 { color: #f0c040; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 12px; }
+    .stat-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px dashed rgba(240,192,64,.14); font-size: 13px; }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-row span { color: #a99f88; }
+    .stat-row b { color: #9be8a8; }
+    .stat-row b.gold { color: #f0c040; }
+    .lanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; padding-bottom: 50px; }
+    .lane { padding: 18px; border-radius: 14px; background: rgba(63,185,80,.05); border: 1px solid rgba(63,185,80,.22); }
+    .lane b { display: block; color: #9be8a8; margin-bottom: 6px; font-size: 14.5px; }
+    .lane span { color: #a99f88; font-size: 13px; line-height: 1.5; }
+    .note { color: #6f7a68; font-size: 12px; padding-bottom: 40px; }
+    .note code { color: #9be8a8; }
+    @media (max-width: 880px) { .stage { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <header class="top wrap">
+    <a class="brand" href="index.html">
+      <img src="goat-logo.png" alt="GOAT Royalty">
+      <div><b>Master Oscar</b><span>Separate Ops Brain · GOAT Royalty Force</span></div>
+    </a>
+    <nav class="toplinks">
+      <a href="index.html">Store</a>
+      <a href="agents-brain.html">Agents Brain</a>
+      <a href="goat-royalty-force.html">Royalty Force</a>
+      <a href="goat-server-field-hub.html">Server Field</a>
+    </nav>
+  </header>
+
+  <section class="hero wrap">
+    <div class="eyebrow">Ops Brain Online · Local-First</div>
+    <h1>Master Oscar runs the ops lane.</h1>
+    <p>Money Penny commands. AGENT-007 enforces. Oscar operates — the separate ops brain that watches routes, servers, builds, and money lanes so the rest of the crew can create. Cody/Oscar parity keeps the ops picture honest on every box.</p>
+  </section>
+
+  <section class="stage wrap" aria-label="Oscar console">
+    <div class="console">
+      <div class="console-head"><span class="dot"></span><b>OSCAR // OPS CONSOLE</b><span>LOCAL LANE · NO CLOUD REQUIRED</span></div>
+      <div class="log" id="log">
+        <div class="msg oscar"><small>Oscar</small>Ops brain online. Routes green, money lanes tracked, servers watched. What do you need handled?</div>
+      </div>
+      <div class="composer">
+        <input id="in" type="text" placeholder="Ask Oscar about status, money, servers, agents..." aria-label="Message Oscar">
+        <button id="send" type="button">Send</button>
+      </div>
+    </div>
+
+    <aside class="side">
+      <div class="panel">
+        <h3>Ops Status</h3>
+        <div class="stat-row"><span>Store surfaces</span><b>ONLINE</b></div>
+        <div class="stat-row"><span>Living EPK data</span><b>SYNCED</b></div>
+        <div class="stat-row"><span>Money engine lane</span><b class="gold">TRACKED</b></div>
+        <div class="stat-row"><span>Server field hub</span><b>WATCHING</b></div>
+        <div class="stat-row"><span>Casino real-money gate</span><b class="gold">LOCKED</b></div>
+        <div class="stat-row"><span>Local model lanes</span><b>53+ CATALOGED</b></div>
+      </div>
+      <div class="panel">
+        <h3>Crew Parity</h3>
+        <div class="stat-row"><span>Money Penny</span><b class="gold">LLM BOSS</b></div>
+        <div class="stat-row"><span>AGENT-007</span><b>TOOLS / ENFORCER</b></div>
+        <div class="stat-row"><span>Cody</span><b>SIDEKICK PARITY</b></div>
+        <div class="stat-row"><span>Oscar</span><b>OPS BRAIN</b></div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="wrap" aria-label="Oscar ops lanes">
+    <div class="lanes">
+      <div class="lane"><b>Route Watch</b><span>Keeps eyes on server routes, phones, Halito Chat, HELLO Email, and field test lanes.</span></div>
+      <div class="lane"><b>Build Inventory</b><span>Tracks desktop builds, boot media, GPU/Thor assets, and deploy readiness.</span></div>
+      <div class="lane"><b>Money Lane Audit</b><span>Reads catalog, splits, ISRC/UPC, and payout gates alongside the Money Engine.</span></div>
+      <div class="lane"><b>Gate Keeper</b><span>Holds security, legal, and real-money gates locked until owner approval.</span></div>
+    </div>
+    <p class="note">Full Oscar agent runs on the local workbench route (<code>localhost:3333</code>) — this page is the platform-side ops console shell. The packaged "Oscar — Local Agent" app shortcut points at that route.</p>
+  </section>
+
+  <script>
+    (function () {
+      var log = document.getElementById("log");
+      var input = document.getElementById("in");
+      var send = document.getElementById("send");
+      var replies = [
+        [/money|royalt|pay/i, "Money lane check: $3.5M seed ask tracked, splits and ISRC lanes synced with the Money Engine. Payout gates stay locked until the owner signs off. We getting to that moneyy — the right way."],
+        [/server|route|field|thor|nano|agx/i, "Server field status: Thor migration lane in progress, AGX/Nano boot images pending board validation, Halito Chat mesh proven at 2 hops. Local 3333 is workbench only."],
+        [/agent|crew|penny|007|cody/i, "Crew parity: Money Penny holds command, AGENT-007 holds tools and enforcement, Cody mirrors me on the sidekick lane. Nobody moves without the ops picture."],
+        [/casino|vip/i, "Casino stays Fun Play. Real-money gate is LOCKED behind licensing, KYC/AML, and owner approval. That is not negotiable."],
+        [/status|report|check/i, "All store surfaces online, EPK data synced, 53+ local model lanes cataloged, zero cloud dependencies required. Ops picture is clean."]
+      ];
+      function add(cls, who, text) {
+        var d = document.createElement("div");
+        d.className = "msg " + cls;
+        d.innerHTML = "<small>" + who + "</small>" + text;
+        log.appendChild(d);
+        log.scrollTop = log.scrollHeight;
+      }
+      function reply(q) {
+        for (var i = 0; i < replies.length; i++) {
+          if (replies[i][0].test(q)) return replies[i][1];
+        }
+        return "Logged. I run ops — ask me about status, money lanes, servers, the crew, or the casino gate. For deep work, open the full agent on the local workbench route.";
+      }
+      function go() {
+        var v = input.value.trim();
+        if (!v) return;
+        add("you", "You", v.replace(/[<>]/g, ""));
+        input.value = "";
+        setTimeout(function () { add("oscar", "Oscar", reply(v)); }, 450);
+      }
+      send.addEventListener("click", go);
+      input.addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
+    }());
+  </script>
+</body>
+</html>
