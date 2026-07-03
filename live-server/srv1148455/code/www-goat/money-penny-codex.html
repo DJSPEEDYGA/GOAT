@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ms. Money Penny Codex - AI Assistant Hub | GOAT Royalty App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .bg-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        .orb-1 { width: 400px; height: 400px; background: #FFD700; top: -100px; left: -100px; }
+        .orb-2 { width: 300px; height: 300px; background: #00D4FF; bottom: -50px; right: -50px; animation-delay: -10s; }
+        .orb-3 { width: 200px; height: 200px; background: #FF6B35; top: 50%; left: 50%; animation-delay: -5s; }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(50px, 50px); }
+        }
+        
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,215,0,0.05));
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.8rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500, #FFD700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            color: #888;
+            font-size: 1.2rem;
+        }
+        
+        .header .tagline {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: rgba(0,212,255,0.1);
+            border-radius: 10px;
+            display: inline-block;
+            border: 1px solid rgba(0,212,255,0.3);
+        }
+        
+        /* Navigation */
+        .nav {
+            background: rgba(255,255,255,0.05);
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        
+        .nav a:hover {
+            background: rgba(255,215,0,0.3);
+        }
+        
+        /* AI Assistants Grid */
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .section-title .icon {
+            font-size: 2rem;
+        }
+        
+        .assistants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .assistant-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .assistant-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255,215,0,0.5);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 30px rgba(255,215,0,0.1);
+        }
+        
+        .assistant-card.featured {
+            border-color: rgba(255,215,0,0.5);
+            background: linear-gradient(145deg, rgba(255,215,0,0.1), rgba(255,215,0,0.02));
+        }
+        
+        .assistant-card .badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-featured { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
+        .badge-new { background: #00D4FF; color: #000; }
+        .badge-popular { background: #FF6B35; color: #fff; }
+        .badge-local { background: #10B981; color: #fff; }
+        
+        .assistant-card .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .assistant-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+        
+        .assistant-card .provider {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .assistant-card .description {
+            color: #aaa;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .assistant-card .capabilities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .capability-tag {
+            padding: 5px 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+        
+        .assistant-card .actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 5px 20px rgba(255,215,0,0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        /* Chat Interface */
+        .chat-section {
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .chat-container {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+        
+        .message.user {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            margin-left: auto;
+        }
+        
+        .message.assistant {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .message .sender {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+        
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1rem;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: #FFD700;
+        }
+        
+        .chat-input::placeholder {
+            color: #666;
+        }
+        
+        .model-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .model-option {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .model-option:hover, .model-option.active {
+            background: rgba(255,215,0,0.2);
+            border-color: #FFD700;
+        }
+        
+        /* Stats Section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .stat-card .value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-card .label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        /* Features Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .feature-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .feature-card .icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+        
+        .feature-card h4 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        
+        .feature-card p {
+            color: #aaa;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 40px;
+        }
+        
+        .footer p {
+            color: #666;
+        }
+        
+        .footer a {
+            color: #FFD700;
+            text-decoration: none;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.8rem; }
+            .assistants-grid { grid-template-columns: 1fr; }
+            .chat-container { min-height: 300px; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="bg-effects">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+    </div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🔮 Ms. Money Penny Codex</h1>
+            <p class="subtitle">Your Gateway to AI Assistants</p>
+            <div class="tagline">
+                💬 Interact with 50+ AI Models • No API Keys • 100% Private • Local LLM Support
+            </div>
+        </header>
+        
+        <!-- Navigation -->
+        <nav class="nav">
+            <a href="index.html">🏠 Home</a>
+            <a href="money-penny-codex.html" class="active">🔮 Codex</a>
+            <a href="ai-models-download.html">📦 Downloads</a>
+            <a href="models.html">🧠 Models</a>
+            <a href="ai-dashboard.html">📊 Dashboard</a>
+            <a href="studio.html">🎵 Studio</a>
+        </nav>
+        
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="value">50+</div>
+                <div class="label">AI Assistants</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">100%</div>
+                <div class="label">Private & Local</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">0</div>
+                <div class="label">API Keys Required</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">∞</div>
+                <div class="label">Possibilities</div>
+            </div>
+        </div>
+        
+        <!-- AI Assistants Grid -->
+        <h2 class="section-title"><span class="icon">🤖</span> Featured AI Assistants</h2>
+        <div class="assistants-grid">
+            <!-- SuperNinja -->
+            <div class="assistant-card featured">
+                <span class="badge badge-featured">⭐ FEATURED</span>
+                <div class="avatar" style="background: linear-gradient(135deg, #FFD700, #FFA500);">🥷</div>
+                <h3>SuperNinja</h3>
+                <p class="provider">by NinjaTech AI • Autonomous Agent</p>
+                <p class="description">Full-spectrum autonomous agent capable of executing complex tasks across domains including information gathering, content creation, software development, data analysis, and problem-solving.</p>
+                <div class="capabilities">
+                    <span class="capability-tag">Code Generation</span>
+                    <span class="capability-tag">Web Search</span>
+                    <span class="capability-tag">File Operations</span>
+                    <span class="capability-tag">Data Analysis</span>
+                    <span class="capability-tag">Autonomous</span>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="selectAssistant('superninja')">💬 Chat Now</button>
+                    <a href="#" class="btn btn-secondary">📖 Learn More</a>
+                </div>
+            </div>
+            
+            <!-- Ms. Money Penny -->
+            <div class="assistant-card featured">
+                <span class="badge badge-featured">👑 HOST</span>
+                <div class="avatar" style="background: linear-gradient(135deg, #E8B4D8, #C77DFF);">👸</div>
+                <h3>Ms. Money Penny</h3>
+                <p class="provider">by Life Imitates Art • Store Host</p>
+                <p class="description">Your personal AI host for the GOAT Royalty App Store. Helps with product recommendations, store navigation, royalty calculations, and managing your AI empire.</p>
+                <div class="capabilities">
+                    <span class="capability-tag">Store Management</span>
+                    <span class="capability-tag">Product Guide</span>
+                    <span class="capability-tag">Royalty Calculator</span>
+                    <span class="capability-tag">Customer Service</span>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="selectAssistant('moneypenny')">💬 Chat Now</button>
+                    <a href="moneypenny.html" class="btn btn-secondary">📖 Learn More</a>
+                </div>
+            </div>
+            
+            <!-- Claude -->
+            <div class="assistant-card">
+                <span class="badge badge-popular">🔥 POPULAR</span>
+                <div class="avatar" style="background: linear-gradient(135deg, #D4A574, #B8956E);">🧠</div>
+                <h3>Claude</h3>
+                <p class="provider">by Anthropic • Constitutional AI</p>
+                <p class="description">Thoughtful AI assistant with strong reasoning capabilities, excellent for analysis, writing, and complex tasks. Known for nuanced, helpful responses.</p>
+                <div class="capabilities">
+                    <span class="capability-tag">Analysis</span>
+                    <span class="capability-tag">Writing</span>
+                    <span class="capability-tag">Coding</span>
+                    <span class="capability-tag">Research</span>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="selectAssistant('claude')">💬 Chat Now</button>
+                    <a href="#" class="btn btn-secondary">📖 Learn More</a>
+                </div>
+            </div>
+            
+            <!-- GPT -->
+            <div class="assistant-card">
+                <span class="badge badge-popular">🔥 POPULAR</span>
+                <div class="avatar" style="background: linear-gradient(135deg, #10A37F, #0D8A6A);">💬</div>
+                <h3>GPT</h3>
+                <p class="provider">by OpenAI • General Purpose</p>
+                <p class="description">Versatile AI assistant with broad capabilities including conversation, coding, creative writing, and complex problem-solving.</p>
+                <div class="capabilities">
+                    <span class="capability-tag">Conversation</span>
+                    <span class="capability-tag">Coding</span>
+                    <span class="capability-tag">Creative</span>
+                    <span class="capability-tag">Analysis</span>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="selectAssistant('gpt')">💬 Chat Now</button>
+                    <a href="#" class="btn btn-secondary">📖 Learn More</a>
+                </div>
+            </div>
+            
+            <!-- Gemini -->
+            <div class="assistant-card">
+                <span class="badge badge-new">✨ NEW</span>
+                <div class="avatar" style="background: linear-gradient(135deg, #4285F4, #34A853);">💎</div>
+                <h3>Gemini</h3>
+                <p class="provider">by Google • Multimodal AI</p>
+                <p class="description">Google's most capable AI model with multimodal capabilities including text, images, code, and more. Excellent for research and complex tasks.</p>
+                <div class="capabilities">
+                    <span class="capability-tag">Multimodal</span>
+                    <span class="capability-tag">Vision</span>
+                    <span class="capability-tag">Code</span>
+                    <span class="capability-tag">1M Context</span>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="selectAssistant('gemini')">💬 Chat Now</button>
+                    <a href="#" class="btn btn-secondary">📖 Learn More</a>
+                </div>
+            </div>
+            
+            <!-- DeepSeek -->
+            <div class="assistant-card">
+                <span class="badge badge-new">✨ NEW</span>
+                <div class="avatar" style="background: linear-gradient(135deg, #6366F1, #4F46E5);">🔮</div>
+                <h3>DeepSeek</h3>
+                <p class="provider">by DeepSeek • Reasoning AI</p>
+                <p class="description">Advanced reasoning AI with exceptional coding and mathematical capabilities. Great for complex problem-solving and technical tasks.</p>
+                <div class="capabilities">
+                    <span class="capability-tag">Reasoning</span>
+                    <span class="capability-tag">Coding</span>
+                    <span class="capability-tag">Math</span>
+                    <span class="capability-tag">Analysis</span>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="selectAssistant('deepseek')">💬 Chat Now</button>
+                    <a href="#" class="btn btn-secondary">📖 Learn More</a>
+                </div>
+            </div>
+            
+            <!-- Llama -->
+            <div class="assistant-card">
+                <span class="badge badge-local">🏠 LOCAL</span>
+                <div class="avatar" style="background: linear-gradient(135deg, #7C3AED, #5B21B6);">🦙</div>
+                <h3>Llama 3.1</h3>
+                <p class="provider">by Meta • Open Source</p>
+                <p class="description">Meta's open-source LLM available in multiple sizes. Run locally on your machine for complete privacy and no API costs.</p>
+                <div class="capabilities">
+                    <span class="capability-tag">Open Source</span>
+                    <span class="capability-tag">Local</span>
+                    <span class="capability-tag">Private</span>
+                    <span class="capability-tag">Free</span>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="selectAssistant('llama')">💬 Chat Now</button>
+                    <a href="ai-models-download.html" class="btn btn-secondary">📥 Download</a>
+                </div>
+            </div>
+            
+            <!-- Mistral -->
+            <div class="assistant-card">
+                <span class="badge badge-local">🏠 LOCAL</span>
+                <div class="avatar" style="background: linear-gradient(135deg, #FF7000, #FF5500);">🌀</div>
+                <h3>Mistral</h3>
+                <p class="provider">by Mistral AI • Efficient LLM</p>
+                <p class="description">Highly efficient open-source models with excellent performance-to-size ratio. Perfect for local deployment and resource-constrained environments.</p>
+                <div class="capabilities">
+                    <span class="capability-tag">Efficient</span>
+                    <span class="capability-tag">Open Source</span>
+                    <span class="capability-tag">Local</span>
+                    <span class="capability-tag">Fast</span>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="selectAssistant('mistral')">💬 Chat Now</button>
+                    <a href="ai-models-download.html" class="btn btn-secondary">📥 Download</a>
+                </div>
+            </div>
+            
+            <!-- Qwen -->
+            <div class="assistant-card">
+                <span class="badge badge-local">🏠 LOCAL</span>
+                <div class="avatar" style="background: linear-gradient(135deg, #00D4AA, #00B894);">⚡</div>
+                <h3>Qwen 2.5</h3>
+                <p class="provider">by Alibaba • Multilingual AI</p>
+                <p class="description">Powerful multilingual model with strong coding and reasoning capabilities. Excellent for international applications and technical tasks.</p>
+                <div class="capabilities">
+                    <span class="capability-tag">Multilingual</span>
+                    <span class="capability-tag">Coding</span>
+                    <span class="capability-tag">Open Source</span>
+                    <span class="capability-tag">Local</span>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="selectAssistant('qwen')">💬 Chat Now</button>
+                    <a href="ai-models-download.html" class="btn btn-secondary">📥 Download</a>
+                </div>
+            </div>
+            
+            <!-- Gemma -->
+            <div class="assistant-card">
+                <span class="badge badge-local">🏠 LOCAL</span>
+                <div class="avatar" style="background: linear-gradient(135deg, #EA4335, #C5221F);">💠</div>
+                <h3>Gemma 3</h3>
+                <p class="provider">by Google • Lightweight Open</p>
+                <p class="description">Google's lightweight open model family. Great balance of performance and efficiency, ideal for local deployment and edge devices.</p>
+                <div class="capabilities">
+                    <span class="capability-tag">Lightweight</span>
+                    <span class="capability-tag">Open Source</span>
+                    <span class="capability-tag">Efficient</span>
+                    <span class="capability-tag">Local</span>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="selectAssistant('gemma')">💬 Chat Now</button>
+                    <a href="ai-models-download.html" class="btn btn-secondary">📥 Download</a>
+                </div>
+            </div>
+            
+            <!-- Nemotron -->
+            <div class="assistant-card">
+                <span class="badge badge-new">✨ NEW</span>
+                <div class="avatar" style="background: linear-gradient(135deg, #76B900, #5A8F00);">🟢</div>
+                <h3>Nemotron</h3>
+                <p class="provider">by NVIDIA • Enterprise AI</p>
+                <p class="description">NVIDIA's enterprise-grade models optimized for business applications. Excellent reasoning and domain-specific knowledge.</p>
+                <div class="capabilities">
+                    <span class="capability-tag">Enterprise</span>
+                    <span class="capability-tag">Reasoning</span>
+                    <span class="capability-tag">256K Context</span>
+                    <span class="capability-tag">Optimized</span>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="selectAssistant('nemotron')">💬 Chat Now</button>
+                    <a href="#" class="btn btn-secondary">📖 Learn More</a>
+                </div>
+            </div>
+            
+            <!-- Phi -->
+            <div class="assistant-card">
+                <span class="badge badge-local">🏠 LOCAL</span>
+                <div class="avatar" style="background: linear-gradient(135deg, #00BCF2, #0078D4);">φ</div>
+                <h3>Phi-4</h3>
+                <p class="provider">by Microsoft • Compact AI</p>
+                <p class="description">Microsoft's compact yet powerful model. Excellent performance in a small package, perfect for local deployment.</p>
+                <div class="capabilities">
+                    <span class="capability-tag">Compact</span>
+                    <span class="capability-tag">Efficient</span>
+                    <span class="capability-tag">Open Source</span>
+                    <span class="capability-tag">Local</span>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="selectAssistant('phi')">💬 Chat Now</button>
+                    <a href="ai-models-download.html" class="btn btn-secondary">📥 Download</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Interface -->
+        <h2 class="section-title"><span class="icon">💬</span> Chat with AI Assistants</h2>
+        <div class="chat-section">
+            <div class="model-selector">
+                <div class="model-option active" onclick="setModel('superninja')">🥷 SuperNinja</div>
+                <div class="model-option" onclick="setModel('moneypenny')">👸 Ms. Money Penny</div>
+                <div class="model-option" onclick="setModel('claude')">🧠 Claude</div>
+                <div class="model-option" onclick="setModel('gpt')">💬 GPT</div>
+                <div class="model-option" onclick="setModel('gemini')">💎 Gemini</div>
+                <div class="model-option" onclick="setModel('llama')">🦙 Llama</div>
+                <div class="model-option" onclick="setModel('mistral')">🌀 Mistral</div>
+                <div class="model-option" onclick="setModel('qwen')">⚡ Qwen</div>
+                <div class="model-option" onclick="setModel('deepseek')">🔮 DeepSeek</div>
+                <div class="model-option" onclick="setModel('gemma')">💠 Gemma</div>
+                <div class="model-option" onclick="setModel('phi')">φ Phi</div>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant">
+                        <div class="sender">🥷 SuperNinja</div>
+                        <div class="content">Hello! I'm SuperNinja, your autonomous AI assistant. I can help you with code generation, web search, file operations, data analysis, and much more. How can I assist you today?</div>
+                    </div>
+                </div>
+                
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Type your message here..." onkeypress="handleKeyPress(event)">
+                    <button class="btn btn-primary" onclick="sendMessage()">📤 Send</button>
+                </div>
+            </div>
+            
+            <p style="margin-top: 15px; color: #666; font-size: 0.9rem;">
+                💡 <strong>Tip:</strong> For local models (Llama, Mistral, Qwen, Gemma, Phi), make sure Ollama is running locally on port 11434.
+                <a href="ai-models-download.html" style="color: #FFD700;">Download models here →</a>
+            </p>
+        </div>
+        
+        <!-- Features -->
+        <h2 class="section-title"><span class="icon">⚡</span> Codex Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="icon">🔒</div>
+                <h4>100% Private</h4>
+                <p>Local models run entirely on your machine. Your data never leaves your computer.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">💰</div>
+                <h4>No API Costs</h4>
+                <p>Local models are completely free to use. No subscriptions, no usage limits, no surprise bills.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🚀</div>
+                <h4>Multiple Providers</h4>
+                <p>Access AI from Google, Meta, Mistral, Alibaba, NVIDIA, Microsoft, OpenAI, and more.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🔄</div>
+                <h4>Easy Switching</h4>
+                <p>Switch between models instantly. Compare responses from different AI assistants.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📦</div>
+                <h4>One-Click Download</h4>
+                <p>Download 50+ AI models directly to your drive. No complicated setup required.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🌐</div>
+                <h4>Offline Capable</h4>
+                <p>Once downloaded, local models work without internet connection.</p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="footer">
+            <p>👑 <strong>Ms. Money Penny Codex</strong> — Part of the GOAT Royalty App by Life Imitates Art Inc.</p>
+            <p style="margin-top: 10px;">
+                <a href="index.html">Home</a> • 
+                <a href="ai-models-download.html">Downloads</a> • 
+                <a href="models.html">Models</a> • 
+                <a href="https://github.com/DJSPEEDYGA/nextjs-commerce">GitHub</a>
+            </p>
+        </footer>
+    </div>
+    
+    <script>
+        // Current selected model
+        let currentModel = 'superninja';
+        
+        // Model configurations
+        const models = {
+            superninja: { name: 'SuperNinja', icon: '🥷', type: 'api', endpoint: 'https://api.ninjatech.ai/v1/chat' },
+            moneypenny: { name: 'Ms. Money Penny', icon: '👸', type: 'local', model: 'moneypenny' },
+            claude: { name: 'Claude', icon: '🧠', type: 'api', endpoint: 'https://api.anthropic.com/v1/messages' },
+            gpt: { name: 'GPT', icon: '💬', type: 'api', endpoint: 'https://api.openai.com/v1/chat/completions' },
+            gemini: { name: 'Gemini', icon: '💎', type: 'api', endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent' },
+            llama: { name: 'Llama 3.1', icon: '🦙', type: 'local', model: 'llama3.1:8b' },
+            mistral: { name: 'Mistral', icon: '🌀', type: 'local', model: 'mistral:7b' },
+            qwen: { name: 'Qwen 2.5', icon: '⚡', type: 'local', model: 'qwen2.5:7b' },
+            deepseek: { name: 'DeepSeek', icon: '🔮', type: 'local', model: 'deepseek-r1:7b' },
+            gemma: { name: 'Gemma 3', icon: '💠', type: 'local', model: 'gemma3:4b' },
+            phi: { name: 'Phi-4', icon: 'φ', type: 'local', model: 'phi4:14b' }
+        };
+        
+        // Set active model
+        function setModel(modelId) {
+            currentModel = modelId;
+            
+            // Update UI
+            document.querySelectorAll('.model-option').forEach(el => {
+                el.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Add welcome message
+            const model = models[modelId];
+            addMessage('assistant', `Hello! I'm ${model.name}. How can I help you today?`, model.icon);
+        }
+        
+        // Select assistant from card
+        function selectAssistant(modelId) {
+            currentModel = modelId;
+            
+            // Update model selector
+            document.querySelectorAll('.model-option').forEach(el => {
+                el.classList.remove('active');
+                if (el.textContent.toLowerCase().includes(modelId)) {
+                    el.classList.add('active');
+                }
+            });
+            
+            // Scroll to chat
+            document.querySelector('.chat-section').scrollIntoView({ behavior: 'smooth' });
+            
+            // Add welcome message
+            const model = models[modelId];
+            addMessage('assistant', `Hello! I'm ${model.name}. I'm ready to assist you. What would you like to do?`, model.icon);
+        }
+        
+        // Add message to chat
+        function addMessage(type, content, icon = '') {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `
+                <div class="sender">${icon} ${type === 'assistant' ? models[currentModel].name : 'You'}</div>
+                <div class="content">${content}</div>
+            `;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage('user', message);
+            input.value = '';
+            
+            // Get model config
+            const model = models[currentModel];
+            
+            // Show typing indicator
+            addMessage('assistant', '...', model.icon);
+            
+            try {
+                let response;
+                
+                if (model.type === 'local') {
+                    // Use Ollama for local models
+                    response = await fetch('http://localhost:11434/api/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            model: model.model,
+                            prompt: message,
+                            stream: false
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    // Remove typing indicator and add response
+                    const messagesDiv = document.getElementById('chatMessages');
+                    messagesDiv.lastChild.remove();
+                    addMessage('assistant', data.response || 'No response received', model.icon);
+                    
+                } else {
+                    // API models would go here (requires API keys)
+                    // For demo, show a message about API keys
+                    setTimeout(() => {
+                        const messagesDiv = document.getElementById('chatMessages');
+                        messagesDiv.lastChild.remove();
+                        addMessage('assistant', `I'm ${model.name}! To chat with me, you'll need to add your API key in settings. For now, try one of the local models (Llama, Mistral, Qwen, Gemma, Phi) which don't require any API keys!`, model.icon);
+                    }, 1000);
+                }
+                
+            } catch (error) {
+                // Remove typing indicator and show error
+                const messagesDiv = document.getElementById('chatMessages');
+                messagesDiv.lastChild.remove();
+                
+                if (model.type === 'local') {
+                    addMessage('assistant', `⚠️ Could not connect to Ollama. Make sure Ollama is running locally on port 11434. You can download models from the <a href="ai-models-download.html" style="color: #FFD700;">Downloads page</a>.`, '⚠️');
+                } else {
+                    addMessage('assistant', `Error: ${error.message}`, '❌');
+                }
+            }
+        }
+        
+        // Handle Enter key
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        // Check Ollama status on load
+        async function checkOllamaStatus() {
+            try {
+                const response = await fetch('http://localhost:11434/api/tags');
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Ollama connected! Models available:', data.models?.length || 0);
+                }
+            } catch (error) {
+                console.log('Ollama not running - local models unavailable');
+            }
+        }
+        
+        // Initialize
+        checkOllamaStatus();
+    </script>
+</body>
+</html>

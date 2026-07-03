@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Penny Integration Panel | GOAT Force HQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --goat-gold: #FFD700;
+            --goat-purple: #8B5CF6;
+            --goat-dark: #0a0a0a;
+            --penny-cyan: #00CED1;
+            --penny-blue: #00BFFF;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #0a1520 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        
+        .glow-gold { 
+            text-shadow: 0 0 10px var(--goat-gold), 0 0 20px var(--goat-gold), 0 0 40px var(--goat-gold); 
+        }
+        
+        .glow-cyan {
+            text-shadow: 0 0 10px var(--penny-cyan), 0 0 20px var(--penny-cyan), 0 0 40px var(--penny-cyan);
+        }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(0, 30, 40, 0.9), rgba(0, 15, 25, 0.95));
+            border: 1px solid rgba(0, 206, 209, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(0, 206, 209, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 206, 209, 0.1);
+        }
+        
+        .stat-card {
+            background: linear-gradient(145deg, rgba(0, 206, 209, 0.1), rgba(0, 191, 255, 0.1));
+            border: 1px solid rgba(0, 206, 209, 0.3);
+        }
+        
+        .avatar-ring {
+            background: conic-gradient(var(--penny-cyan), var(--penny-blue), var(--goat-gold), var(--penny-cyan));
+            animation: rotate 4s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, var(--penny-cyan), var(--penny-blue));
+            border-radius: 10px;
+            height: 8px;
+            transition: width 1s ease;
+        }
+        
+        .btn-penny {
+            background: linear-gradient(135deg, var(--penny-cyan), var(--penny-blue));
+            color: black;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-penny:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 206, 209, 0.4);
+        }
+        
+        .status-online {
+            background: #00FF88;
+            box-shadow: 0 0 10px #00FF88;
+        }
+        
+        .status-processing {
+            background: var(--penny-cyan);
+            box-shadow: 0 0 10px var(--penny-cyan);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .task-item {
+            border-left: 3px solid var(--penny-cyan);
+            padding-left: 15px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .task-item:hover {
+            border-left-color: var(--goat-gold);
+            background: rgba(255, 215, 0, 0.05);
+            margin-left: 5px;
+        }
+        
+        .integration-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .integration-status:hover {
+            background: rgba(0, 206, 209, 0.1);
+        }
+        
+        .floating-diamonds {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .diamond {
+            position: absolute;
+            font-size: 16px;
+            opacity: 0.15;
+            animation: float-diamond 18s infinite;
+        }
+        
+        @keyframes float-diamond {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.15; }
+            90% { opacity: 0.15; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        .chat-bubble {
+            background: rgba(0, 206, 209, 0.1);
+            border: 1px solid rgba(0, 206, 209, 0.3);
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            max-width: 80%;
+        }
+        
+        .chat-bubble.user {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+            margin-left: auto;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Floating Diamonds -->
+    <div class="floating-diamonds" id="diamonds"></div>
+    
+    <!-- Header -->
+    <header class="relative z-10 mb-8">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-4">
+                <div class="avatar-ring p-1 rounded-full">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
+                        <span class="text-2xl">💎</span>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-orbitron font-bold glow-cyan">MONEY PENNY</h1>
+                    <p class="text-gray-400">Integration Panel | Executive Assistant AI</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="w-3 h-3 rounded-full status-online"></div>
+                <span class="text-cyan-400 font-semibold">ACTIVE</span>
+                <span class="text-gray-500">|</span>
+                <span class="text-gray-400">Protocol v7.0</span>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Grid -->
+    <main class="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Column -->
+        <div class="space-y-6">
+            <!-- Protocol Status -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📋 PROTOCOL STATUS</h2>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span>Activation Level</span>
+                        <span class="text-cyan-400 font-bold">FULL ACCESS</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span>Family Access</span>
+                        <span class="text-green-400">✅ Verified</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span>Memory Core</span>
+                        <span class="text-green-400">✅ Active</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span>Security Level</span>
+                        <span class="text-yellow-400">🔒 MAXIMUM</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">⚡ QUICK ACTIONS</h2>
+                <div class="space-y-3">
+                    <button class="btn-penny w-full" onclick="scheduleMeeting()">
+                        📅 Schedule Meeting
+                    </button>
+                    <button class="btn-penny w-full" onclick="prepareReport()">
+                        📊 Prepare Report
+                    </button>
+                    <button class="btn-penny w-full" onclick="checkEmails()">
+                        📧 Check Emails
+                    </button>
+                    <button class="btn-penny w-full" onclick="manageContacts()">
+                        👥 Manage Contacts
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Today's Agenda -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📅 TODAY'S AGENDA</h2>
+                <div class="space-y-2">
+                    <div class="task-item">
+                        <div class="text-sm font-semibold">9:00 AM - Team Standup</div>
+                        <div class="text-xs text-gray-500">GOAT Force Daily</div>
+                    </div>
+                    <div class="task-item">
+                        <div class="text-sm font-semibold">11:00 AM - Royalty Review</div>
+                        <div class="text-xs text-gray-500">ASCAP/MLC Check</div>
+                    </div>
+                    <div class="task-item">
+                        <div class="text-sm font-semibold">2:00 PM - Brand Call</div>
+                        <div class="text-xs text-gray-500">Potential Partnership</div>
+                    </div>
+                    <div class="task-item">
+                        <div class="text-sm font-semibold">4:00 PM - Studio Session</div>
+                        <div class="text-xs text-gray-500">New Track Review</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Center Column -->
+        <div class="space-y-6">
+            <!-- Integration Status -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🔗 INTEGRATIONS</h2>
+                <div class="space-y-2">
+                    <div class="integration-status">
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                        <span class="flex-1">Nexus AI Core</span>
+                        <span class="text-xs text-green-400">Connected</span>
+                    </div>
+                    <div class="integration-status">
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                        <span class="flex-1">Supabase Database</span>
+                        <span class="text-xs text-green-400">Active</span>
+                    </div>
+                    <div class="integration-status">
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                        <span class="flex-1">Stripe Payments</span>
+                        <span class="text-xs text-green-400">Ready</span>
+                    </div>
+                    <div class="integration-status">
+                        <div class="w-2 h-2 rounded-full status-processing"></div>
+                        <span class="flex-1">ASCAP API</span>
+                        <span class="text-xs text-cyan-400">Syncing</span>
+                    </div>
+                    <div class="integration-status">
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                        <span class="flex-1">MLC Database</span>
+                        <span class="text-xs text-green-400">Linked</span>
+                    </div>
+                    <div class="integration-status">
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                        <span class="flex-1">Web3 Wallet</span>
+                        <span class="text-xs text-green-400">Ready</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Interface -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">💬 MONEY PENNY CHAT</h2>
+                <div class="bg-gray-900/50 rounded-xl p-4 mb-4 h-48 overflow-y-auto" id="chat-messages">
+                    <div class="chat-bubble">
+                        <span class="text-cyan-400 font-bold">Money Penny:</span>
+                        <span class="text-gray-300"> Good morning! I've prepared your daily briefing. Your schedule is clear until 9 AM. Shall I sync with Nexus for the royalty recovery updates?</span>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Ask Money Penny..." 
+                           class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:border-cyan-400">
+                    <button class="btn-penny" onclick="sendChat()">Send</button>
+                </div>
+            </div>
+            
+            <!-- Memory Core -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🧠 MEMORY CORE</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-900/50 p-3 rounded-xl text-center">
+                        <div class="text-2xl font-orbitron font-bold text-cyan-400">247</div>
+                        <div class="text-xs text-gray-400">Memories Stored</div>
+                    </div>
+                    <div class="bg-gray-900/50 p-3 rounded-xl text-center">
+                        <div class="text-2xl font-orbitron font-bold text-purple-400">89</div>
+                        <div class="text-xs text-gray-400">Preferences</div>
+                    </div>
+                    <div class="bg-gray-900/50 p-3 rounded-xl text-center">
+                        <div class="text-2xl font-orbitron font-bold text-green-400">12</div>
+                        <div class="text-xs text-gray-400">Active Tasks</div>
+                    </div>
+                    <div class="bg-gray-900/50 p-3 rounded-xl text-center">
+                        <div class="text-2xl font-orbitron font-bold text-yellow-400">3</div>
+                        <div class="text-xs text-gray-400">Family Members</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column -->
+        <div class="space-y-6">
+            <!-- Family Access -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">👨‍👩‍👧‍👦 FAMILY ACCESS</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                            🎧
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">DJ Speedy</div>
+                            <div class="text-xs text-gray-400">Full Access</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center">
+                            👑
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Waka Flocka</div>
+                            <div class="text-xs text-gray-400">Full Access</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                            💜
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Nexus</div>
+                            <div class="text-xs text-gray-400">AI Partner</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Tasks -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">✅ RECENT TASKS</h2>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3 p-2">
+                        <input type="checkbox" class="w-4 h-4 accent-cyan-400" checked>
+                        <span class="text-sm line-through text-gray-500">Protocol v7 Activated</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2">
+                        <input type="checkbox" class="w-4 h-4 accent-cyan-400" checked>
+                        <span class="text-sm line-through text-gray-500">Nexus Integration Complete</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2">
+                        <input type="checkbox" class="w-4 h-4 accent-cyan-400" checked>
+                        <span class="text-sm line-through text-gray-500">GitHub Push Complete</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2">
+                        <input type="checkbox" class="w-4 h-4 accent-cyan-400">
+                        <span class="text-sm">8TB Drive Setup</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2">
+                        <input type="checkbox" class="w-4 h-4 accent-cyan-400">
+                        <span class="text-sm">Jetson Thor Config</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Data Sync -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🔄 DATA SYNC</h2>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Cloud Backup</span>
+                            <span class="text-cyan-400">100%</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Catalog Sync</span>
+                            <span class="text-cyan-400">78%</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 78%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Royalties Data</span>
+                            <span class="text-cyan-400">92%</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 92%"></div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-4 text-center">Last sync: 5 minutes ago</p>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="relative z-10 mt-8 text-center text-gray-500 text-sm">
+        <p>🐐 GOAT Royalty App | Money Penny Integration Panel</p>
+        <p class="text-xs mt-1">For The Kingdom. For The Code. For The Crown. 👑</p>
+    </footer>
+    
+    <script>
+        // Create floating diamonds
+        function createDiamonds() {
+            const container = document.getElementById('diamonds');
+            for (let i = 0; i < 20; i++) {
+                const diamond = document.createElement('div');
+                diamond.className = 'diamond';
+                diamond.textContent = '💎';
+                diamond.style.left = Math.random() * 100 + '%';
+                diamond.style.animationDelay = Math.random() * 18 + 's';
+                diamond.style.animationDuration = (12 + Math.random() * 12) + 's';
+                container.appendChild(diamond);
+            }
+        }
+        createDiamonds();
+        
+        // Chat functionality
+        function sendChat() {
+            const input = document.getElementById('chat-input');
+            const messages = document.getElementById('chat-messages');
+            const text = input.value.trim();
+            
+            if (text) {
+                messages.innerHTML += `<div class="chat-bubble user"><span class="text-purple-400 font-bold">You:</span> <span class="text-gray-300">${text}</span></div>`;
+                input.value = '';
+                
+                setTimeout(() => {
+                    const responses = [
+                        "I'll handle that right away. Consider it done.",
+                        "I've already started processing that request. One moment.",
+                        "Your wish is my command. I'm on it.",
+                        "Let me check the records... Everything is in order.",
+                        "I've coordinated with Nexus. We're aligned on this.",
+                        "Protocol initialized. Proceeding with your request."
+                    ];
+                    const response = responses[Math.floor(Math.random() * responses.length)];
+                    messages.innerHTML += `<div class="chat-bubble"><span class="text-cyan-400 font-bold">Money Penny:</span> <span class="text-gray-300"> ${response}</span></div>`;
+                    messages.scrollTop = messages.scrollHeight;
+                }, 1000);
+            }
+        }
+        
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendChat();
+        });
+        
+        // Action functions
+        function scheduleMeeting() {
+            alert('📅 SCHEDULE MEETING\n\nAvailable slots today:\n✅ 10:00 AM\n✅ 2:30 PM\n✅ 4:00 PM\n\nWho would you like to meet with?');
+        }
+        
+        function prepareReport() {
+            alert('📊 REPORT OPTIONS\n\n📋 Daily Summary\n💰 Royalty Report\n📈 Analytics Report\n📝 Custom Report\n\nWhat would you like me to prepare?');
+        }
+        
+        function checkEmails() {
+            alert('📧 EMAIL STATUS\n\n📥 Inbox: 12 unread\n📤 Sent: 5 today\n⏳ Drafts: 2 pending\n\n📋 Priority: Brand partnership inquiry');
+        }
+        
+        function manageContacts() {
+            alert('👥 CONTACTS\n\n📌 Family: 3\n🤝 Partners: 12\n🎵 Artists: 45\n📧 Total: 247\n\nAll contacts synced and organized.');
+        }
+    </script>
+</body>
+</html>

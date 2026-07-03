@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GOAT Intel Dashboard — Live Music Data</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<style>
+:root { --intel-blue: #00d4ff; --intel-purple: #8b5cf6; }
+body.bg-hero { background-image: radial-gradient(ellipse at 50% 30%, rgba(193,18,31,0.18) 0%, rgba(0,0,0,0.96) 70%), url('img/goat-hero.png'); }
+
+.intel-tabs { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 28px; padding:0 24px; }
+.intel-tab { padding:10px 22px; border-radius:30px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#aaa; cursor:pointer; font-size:13px; font-weight:600; letter-spacing:.5px; transition:all .2s; }
+.intel-tab:hover, .intel-tab.active { background:var(--goat-red); border-color:var(--goat-red); color:#fff; }
+
+.intel-panel { display:none; padding:0 24px 60px; }
+.intel-panel.active { display:block; }
+
+.search-bar { display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; }
+.search-bar input, .search-bar select { flex:1; min-width:200px; padding:12px 18px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.07); color:#fff; font-size:15px; }
+.search-bar input::placeholder { color:#666; }
+.search-bar input:focus, .search-bar select:focus { outline:none; border-color:var(--goat-red); }
+
+.chart-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+.chart-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:16px; display:flex; gap:14px; align-items:center; transition:all .2s; }
+.chart-card:hover { border-color:var(--goat-red); transform:translateY(-2px); }
+.chart-rank { font-size:28px; font-weight:900; color:var(--goat-gold); min-width:42px; text-align:center; font-family:'Arial Black',sans-serif; }
+.chart-art { width:60px; height:60px; border-radius:8px; object-fit:cover; background:#222; flex-shrink:0; }
+.chart-info h4 { font-size:14px; font-weight:700; color:#fff; margin:0 0 4px; line-height:1.3; }
+.chart-info p { font-size:12px; color:#aaa; margin:0; }
+.chart-info .genre-tag { display:inline-block; padding:2px 8px; border-radius:10px; background:rgba(193,18,31,0.3); color:var(--goat-red); font-size:10px; font-weight:700; margin-top:4px; }
+
+.result-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
+.result-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; overflow:hidden; transition:all .2s; cursor:pointer; }
+.result-card:hover { border-color:var(--goat-red); transform:translateY(-3px); }
+.result-thumb { width:100%; aspect-ratio:16/9; object-fit:cover; background:#111; }
+.result-body { padding:12px; }
+.result-body h4 { font-size:13px; font-weight:700; color:#fff; margin:0 0 6px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.result-body p { font-size:11px; color:#888; margin:0; }
+.result-body .views { color:var(--intel-blue); font-weight:600; font-size:11px; }
+
+.artist-result { display:flex; gap:20px; flex-wrap:wrap; }
+.artist-platform { flex:1; min-width:220px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:20px; }
+.artist-platform h3 { font-size:14px; color:var(--goat-gold); margin:0 0 12px; text-transform:uppercase; letter-spacing:1px; }
+.platform-stat { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.07); font-size:13px; }
+.platform-stat span:first-child { color:#aaa; }
+.platform-stat span:last-child { color:#fff; font-weight:600; }
+
+.status-bar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; align-items:center; }
+.status-dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:5px; }
+.status-dot.green { background:#22c55e; box-shadow:0 0 8px #22c55e; }
+.status-dot.red { background:#ef4444; box-shadow:0 0 8px #ef4444; }
+.status-dot.yellow { background:#f59e0b; box-shadow:0 0 8px #f59e0b; }
+.status-item { display:flex; align-items:center; font-size:12px; color:#aaa; background:rgba(255,255,255,0.05); padding:6px 14px; border-radius:20px; border:1px solid rgba(255,255,255,0.1); }
+
+.tiktok-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:16px; margin-bottom:12px; }
+.preview-btn { background:rgba(193,18,31,0.3); border:1px solid var(--goat-red); color:#fff; padding:5px 14px; border-radius:20px; font-size:12px; cursor:pointer; transition:all .2s; }
+.preview-btn:hover { background:var(--goat-red); }
+
+audio { width:100%; margin-top:10px; filter:invert(1) hue-rotate(180deg); height:32px; }
+.loading { text-align:center; padding:40px; color:#666; }
+.loading::after { content: '...'; animation: dots 1.5s infinite; }
+@keyframes dots { 0%{content:'.'} 50%{content:'..'} 100%{content:'...'} }
+
+.no-results { text-align:center; padding:40px; color:#555; font-style:italic; }
+.section-title { font-size:22px; font-weight:900; color:var(--goat-gold); margin:0 0 20px; text-transform:uppercase; letter-spacing:1px; }
+.mini-label { font-size:11px; color:#666; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+
+.server-warning { background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:14px 18px; margin-bottom:20px; font-size:13px; color:#f59e0b; display:none; }
+.server-warning.visible { display:block; }
+</style>
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-hero">
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Ms. Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms. Money Penny">
+    <span>Ms. Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+
+<nav class="goat-nav">
+  <div class="nav-brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT" style="height:36px;border-radius:8px;">
+    <span>🐐 GOAT INTEL</span>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="powerhouse.html">Powerhouse</a>
+    <a href="moneypenny.html">Moneypenny AI</a>
+    <a href="network.html">🔗 Network</a>
+    <a href="distribution.html">Distribution</a>
+    <a href="sync-catalog.html">Sync</a>
+  </div>
+</nav>
+
+<section class="goat-hero" style="padding:60px 24px 40px; text-align:center;">
+  <h1 style="font-size:clamp(28px,5vw,52px); margin:0 0 10px;">
+    🌍 <span class="gradient-text">LIVE MUSIC INTEL</span>
+  </h1>
+  <p style="color:#aaa; max-width:600px; margin:0 auto 24px;">
+    Real-time charts, YouTube, TikTok & artist data — <strong style="color:var(--goat-gold);">no API keys · no logins · 100% local</strong>
+  </p>
+
+  <!-- Server status bar -->
+  <div class="status-bar" style="justify-content:center;" id="statusBar">
+    <div class="status-item"><span class="status-dot yellow" id="dotServer"></span><span id="txtServer">Connecting to Intel Server...</span></div>
+    <div class="status-item"><span class="status-dot yellow" id="dotYtdlp"></span><span id="txtYtdlp">yt-dlp</span></div>
+    <div class="status-item"><span class="status-dot yellow" id="dotGemini"></span><span id="txtGemini">Gemini AI</span></div>
+    <div class="status-item"><span class="status-dot yellow" id="dotOpenai"></span><span id="txtOpenai">OpenAI</span></div>
+  </div>
+</section>
+
+<div class="server-warning" id="serverWarning">
+  ⚠️ Intel Server offline. Start it: <code>cd goat-intel-server && python goat_intel.py</code>
+  — then refresh. Charts/search will use cached data only.
+</div>
+
+<!-- TABS -->
+<div class="intel-tabs">
+  <button class="intel-tab active" onclick="showPanel('charts')">📊 Charts</button>
+  <button class="intel-tab" onclick="showPanel('youtube')">▶️ YouTube</button>
+  <button class="intel-tab" onclick="showPanel('tiktok')">🎵 TikTok</button>
+  <button class="intel-tab" onclick="showPanel('search')">🔍 Track Search</button>
+  <button class="intel-tab" onclick="showPanel('artist')">🎤 Artist Lookup</button>
+</div>
+
+<!-- ═══════════════ CHARTS ═══════════════ -->
+<div class="intel-panel active" id="panel-charts">
+  <p class="mini-label">Fetching live from Apple iTunes — no API key needed</p>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:24px;">
+    <div>
+      <div class="section-title">🎤 Hip-Hop / Rap Top 10</div>
+      <div id="chartHiphop" class="loading">Loading</div>
+    </div>
+    <div>
+      <div class="section-title">🔥 Overall Top Songs</div>
+      <div id="chartOverall" class="loading">Loading</div>
+    </div>
+    <div>
+      <div class="section-title">💿 Top Albums</div>
+      <div id="chartAlbums" class="loading">Loading</div>
+    </div>
+    <div>
+      <div class="section-title">🏆 Hip-Hop Albums</div>
+      <div id="chartHiphopAlbums" class="loading">Loading</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ YOUTUBE ═══════════════ -->
+<div class="intel-panel" id="panel-youtube">
+  <div class="search-bar">
+    <input type="text" id="ytQuery" placeholder="Search YouTube (e.g. Waka Flocka Flame)" value="Waka Flocka Flame">
+    <select id="ytLimit">
+      <option value="6">6 results</option>
+      <option value="10" selected>10 results</option>
+      <option value="20">20 results</option>
+    </select>
+    <button class="goat-btn" onclick="searchYouTube()">🔍 Search</button>
+    <button class="goat-btn gold" onclick="loadTrending()">🔥 Trending</button>
+  </div>
+  <div id="ytResults" class="result-grid"></div>
+</div>
+
+<!-- ═══════════════ TIKTOK ═══════════════ -->
+<div class="intel-panel" id="panel-tiktok">
+  <div class="search-bar">
+    <input type="text" id="ttUsername" placeholder="TikTok username (e.g. wakaflockaflame)" value="wakaflockaflame">
+    <button class="goat-btn" onclick="lookupTikTok()">🔍 Lookup User</button>
+  </div>
+  <div id="ttResults"></div>
+
+  <div style="margin-top:32px;">
+    <div class="section-title">🎬 TikTok Video Lookup</div>
+    <div class="search-bar">
+      <input type="text" id="ttVideoUrl" placeholder="Paste TikTok video URL">
+      <button class="goat-btn" onclick="lookupTikTokVideo()">📊 Get Stats</button>
+    </div>
+    <div id="ttVideoResult"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ TRACK SEARCH ═══════════════ -->
+<div class="intel-panel" id="panel-search">
+  <p class="mini-label">Searches Apple iTunes catalog — 100% free, no API key</p>
+  <div class="search-bar">
+    <input type="text" id="trackQuery" placeholder="Search tracks (artist, title, album...)" value="Waka Flocka">
+    <select id="trackEntity">
+      <option value="song" selected>Songs</option>
+      <option value="album">Albums</option>
+      <option value="musicVideo">Music Videos</option>
+      <option value="musicArtist">Artists</option>
+    </select>
+    <select id="trackLimit">
+      <option value="10">10 results</option>
+      <option value="20" selected>20 results</option>
+      <option value="50">50 results</option>
+    </select>
+    <button class="goat-btn" onclick="searchTracks()">🔍 Search</button>
+  </div>
+  <div id="trackResults" class="result-grid"></div>
+</div>
+
+<!-- ═══════════════ ARTIST LOOKUP ═══════════════ -->
+<div class="intel-panel" id="panel-artist">
+  <div class="search-bar">
+    <input type="text" id="artistQuery" placeholder="Artist name (e.g. Waka Flocka Flame, DJ Speedy)" value="Waka Flocka Flame">
+    <button class="goat-btn" onclick="lookupArtist()">🔍 Cross-Platform Lookup</button>
+  </div>
+  <div id="artistResults"></div>
+</div>
+
+<script>
+const INTEL = 'http://localhost:5500';
+
+// ── panel switcher ─────────────────────────────
+function showPanel(id) {
+  document.querySelectorAll('.intel-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.intel-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── server health check ────────────────────────
+async function checkServer() {
+  try {
+    const r = await fetch(INTEL + '/health', { signal: AbortSignal.timeout(4000) });
+    const d = await r.json();
+    setDot('Server', 'green', 'Intel Server ✅');
+    setDot('Ytdlp', d.yt_dlp ? 'green' : 'red', d.yt_dlp ? 'yt-dlp ✅' : 'yt-dlp ❌');
+    setDot('Gemini', d.gemini?.includes('✅') ? 'green' : 'yellow', d.gemini?.includes('✅') ? 'Gemini ✅' : 'Gemini (add key)');
+    setDot('Openai', d.openai?.includes('✅') ? 'green' : 'yellow', d.openai?.includes('✅') ? 'OpenAI ✅' : 'OpenAI (add key)');
+    document.getElementById('serverWarning').classList.remove('visible');
+    return true;
+  } catch(e) {
+    setDot('Server', 'red', 'Intel Server OFFLINE');
+    setDot('Ytdlp', 'red', 'yt-dlp');
+    setDot('Gemini', 'red', 'Gemini');
+    setDot('Openai', 'red', 'OpenAI');
+    document.getElementById('serverWarning').classList.add('visible');
+    return false;
+  }
+}
+
+function setDot(id, color, text) {
+  const dot = document.getElementById('dot'+id);
+  const txt = document.getElementById('txt'+id);
+  if(dot) { dot.className = 'status-dot ' + color; }
+  if(txt) txt.textContent = text;
+}
+
+// ── format numbers ─────────────────────────────
+function fmt(n) {
+  if(!n) return '—';
+  if(n >= 1000000000) return (n/1000000000).toFixed(1)+'B';
+  if(n >= 1000000) return (n/1000000).toFixed(1)+'M';
+  if(n >= 1000) return (n/1000).toFixed(1)+'K';
+  return n.toString();
+}
+
+// ── CHARTS ────────────────────────────────────
+async function loadCharts() {
+  try {
+    const r = await fetch(INTEL + '/charts/all');
+    const d = await r.json();
+    renderChart('chartHiphop', d.hiphop_top10 || []);
+    renderChart('chartOverall', d.overall_top10 || []);
+    renderChart('chartAlbums', d.top_albums || []);
+    renderChart('chartHiphopAlbums', d.hiphop_albums || []);
+  } catch(e) {
+    // Fallback: load directly from iTunes
+    loadChartsDirect();
+  }
+}
+
+async function loadChartsDirect() {
+  try {
+    const [r1, r2, r3, r4] = await Promise.all([
+      fetch('https://itunes.apple.com/us/rss/topsongs/limit=10/genre=18/json'),
+      fetch('https://itunes.apple.com/us/rss/topsongs/limit=10/json'),
+      fetch('https://itunes.apple.com/us/rss/topalbums/limit=10/json'),
+      fetch('https://itunes.apple.com/us/rss/topalbums/limit=10/genre=18/json')
+    ]);
+    const [d1,d2,d3,d4] = await Promise.all([r1.json(),r2.json(),r3.json(),r4.json()]);
+    const parse = d => {
+      let e = d.feed?.entry || [];
+      if(!Array.isArray(e)) e = [e];
+      return e.map((x,i) => ({
+        rank: i+1,
+        title: x['im:name']?.label || '',
+        artist: x['im:artist']?.label || '',
+        artwork: (x['im:image'] || []).slice(-1)[0]?.label || ''
+      }));
+    };
+    renderChart('chartHiphop', parse(d1));
+    renderChart('chartOverall', parse(d2));
+    renderChart('chartAlbums', parse(d3));
+    renderChart('chartHiphopAlbums', parse(d4));
+  } catch(e) {
+    ['chartHiphop','chartOverall','chartAlbums','chartHiphopAlbums'].forEach(id => {
+      document.getElementById(id).innerHTML = '<p class="no-results">Charts unavailable — check connection</p>';
+    });
+  }
+}
+
+function renderChart(containerId, items) {
+  const el = document.getElementById(containerId);
+  if(!items.length) { el.innerHTML = '<p class="no-results">No data</p>'; return; }
+  el.innerHTML = items.map(t => `
+    <div class="chart-card">
+      <div class="chart-rank">${t.rank}</div>
+      ${t.artwork ? `<img class="chart-art" src="${t.artwork}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+      <div class="chart-info">
+        <h4>${t.title}</h4>
+        <p>${t.artist}</p>
+        ${t.genre ? `<span class="genre-tag">${t.genre}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── YOUTUBE ───────────────────────────────────
+async function searchYouTube() {
+  const q = document.getElementById('ytQuery').value.trim();
+  const limit = document.getElementById('ytLimit').value;
+  if(!q) return;
+  const el = document.getElementById('ytResults');
+  el.innerHTML = '<div class="loading">Searching YouTube</div>';
+  try {
+    const r = await fetch(`${INTEL}/youtube/search?q=${encodeURIComponent(q)}&limit=${limit}`);
+    const d = await r.json();
+    const results = d.results || [];
+    if(!results.length) { el.innerHTML = '<p class="no-results">No results</p>'; return; }
+    el.innerHTML = results.map(v => `
+      <div class="result-card" onclick="window.open('${v.url}','_blank')">
+        <img class="result-thumb" src="${v.thumbnail}" alt="" loading="lazy" onerror="this.src='https://img.youtube.com/vi/${v.id}/hqdefault.jpg'">
+        <div class="result-body">
+          <h4>${v.title}</h4>
+          <p>${v.uploader || ''}</p>
+          <p class="views">▶ ${fmt(v.view_count)} views${v.upload_date ? ' · ' + v.upload_date.substring(0,4) : ''}</p>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    el.innerHTML = `<p class="no-results">YouTube search requires the Intel server running locally.<br><code>python goat_intel.py</code></p>`;
+  }
+}
+
+async function loadTrending() {
+  const el = document.getElementById('ytResults');
+  el.innerHTML = '<div class="loading">Loading trending</div>';
+  try {
+    const r = await fetch(`${INTEL}/youtube/trending`);
+    const d = await r.json();
+    const videos = d.videos || [];
+    el.innerHTML = videos.map(v => `
+      <div class="result-card" onclick="window.open('${v.url}','_blank')">
+        <img class="result-thumb" src="${v.thumbnail}" alt="" loading="lazy">
+        <div class="result-body">
+          <h4>${v.title}</h4>
+          <p>${v.uploader || ''}</p>
+          <p class="views">▶ ${fmt(v.view_count)} views</p>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    el.innerHTML = '<p class="no-results">Trending requires Intel server running</p>';
+  }
+}
+
+// ── TIKTOK ───────────────────────────────────
+async function lookupTikTok() {
+  const username = document.getElementById('ttUsername').value.trim().replace('@','');
+  if(!username) return;
+  const el = document.getElementById('ttResults');
+  el.innerHTML = '<div class="loading">Looking up @'+username+'</div>';
+  try {
+    const r = await fetch(`${INTEL}/tiktok/user?username=${encodeURIComponent(username)}`);
+    const d = await r.json();
+    const u = d.data || {};
+    el.innerHTML = `
+      <div class="tiktok-card">
+        <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;">
+          ${u.avatar ? `<img src="${u.avatar}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--goat-red);">` : '<div style="width:72px;height:72px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;font-size:32px;">🎵</div>'}
+          <div>
+            <h3 style="margin:0;color:#fff;">@${u.username || username} ${u.verified ? '✅' : ''}</h3>
+            <p style="margin:4px 0 0;color:#aaa;font-size:13px;">${u.nickname || ''}</p>
+            ${u.bio ? `<p style="margin:4px 0 0;color:#888;font-size:12px;">${u.bio}</p>` : ''}
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center;">
+          ${[['Followers', fmt(u.follower_count)], ['Following', fmt(u.following_count)], ['Hearts', fmt(u.heart_count)], ['Videos', fmt(u.video_count)]].map(([l,v]) => `
+            <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;">
+              <div style="font-size:22px;font-weight:900;color:var(--goat-gold);">${v}</div>
+              <div style="font-size:11px;color:#aaa;margin-top:4px;">${l}</div>
+            </div>
+          `).join('')}
+        </div>
+        ${d.videos?.length ? `
+          <div style="margin-top:20px;">
+            <div class="section-title" style="font-size:16px;">Recent Videos</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">
+              ${(d.videos||[]).slice(0,6).map(v=>`
+                <div class="result-card" onclick="window.open('${v.url||'#'}','_blank')">
+                  ${v.thumbnail?`<img class="result-thumb" src="${v.thumbnail}" alt="" loading="lazy">`:''}
+                  <div class="result-body">
+                    <h4 style="font-size:11px;">${v.title||'Video'}</h4>
+                    <p class="views">▶ ${fmt(v.view_count)}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  } catch(e) {
+    el.innerHTML = '<p class="no-results">TikTok lookup requires Intel server running locally</p>';
+  }
+}
+
+async function lookupTikTokVideo() {
+  const url = document.getElementById('ttVideoUrl').value.trim();
+  if(!url) return;
+  const el = document.getElementById('ttVideoResult');
+  el.innerHTML = '<div class="loading">Getting video stats</div>';
+  try {
+    const r = await fetch(`${INTEL}/tiktok/video?url=${encodeURIComponent(url)}`);
+    const d = await r.json();
+    el.innerHTML = `
+      <div class="tiktok-card">
+        <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+          ${d.thumbnail?`<img src="${d.thumbnail}" style="width:120px;height:160px;object-fit:cover;border-radius:10px;">`:'' }
+          <div style="flex:1;">
+            <h3 style="margin:0 0 8px;color:#fff;">${d.title||'Video'}</h3>
+            <p style="color:#aaa;font-size:13px;margin:0 0 12px;">@${d.uploader||''}</p>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;">
+              ${[['Views',d.view_count],['Likes',d.like_count],['Comments',d.comment_count],['Duration',d.duration+'s']].map(([l,v])=>`
+                <div style="text-align:center;">
+                  <div style="font-size:20px;font-weight:900;color:var(--goat-gold);">${fmt(v)}</div>
+                  <div style="font-size:11px;color:#aaa;">${l}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } catch(e) {
+    el.innerHTML = '<p class="no-results">Error fetching video</p>';
+  }
+}
+
+// ── TRACK SEARCH ─────────────────────────────
+async function searchTracks() {
+  const q = document.getElementById('trackQuery').value.trim();
+  const entity = document.getElementById('trackEntity').value;
+  const limit = document.getElementById('trackLimit').value;
+  if(!q) return;
+  const el = document.getElementById('trackResults');
+  el.innerHTML = '<div class="loading">Searching iTunes</div>';
+  try {
+    const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=${entity}&limit=${limit}&media=music`);
+    const d = await r.json();
+    const items = d.results || [];
+    if(!items.length) { el.innerHTML='<p class="no-results">No results found</p>'; return; }
+    el.innerHTML = items.map(t => `
+      <div class="result-card">
+        <img class="result-thumb" src="${t.artworkUrl100||''}" alt="" loading="lazy" style="aspect-ratio:1;height:120px;width:100%;object-fit:cover;">
+        <div class="result-body">
+          <h4>${t.trackName||t.collectionName||t.artistName}</h4>
+          <p>${t.artistName||''}</p>
+          <p style="color:#666;font-size:11px;">${t.collectionName||''}</p>
+          <p style="color:var(--intel-blue);font-size:11px;">${t.primaryGenreName||''}</p>
+          ${t.previewUrl ? `<audio controls src="${t.previewUrl}"></audio>` : ''}
+          ${t.trackViewUrl ? `<br><a href="${t.trackViewUrl}" target="_blank" class="preview-btn" style="text-decoration:none;display:inline-block;margin-top:8px;">🎵 Apple Music</a>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    el.innerHTML = '<p class="no-results">Search failed</p>';
+  }
+}
+
+// ── ARTIST LOOKUP ────────────────────────────
+async function lookupArtist() {
+  const name = document.getElementById('artistQuery').value.trim();
+  if(!name) return;
+  const el = document.getElementById('artistResults');
+  el.innerHTML = '<div class="loading">Searching across platforms</div>';
+  
+  const results = {};
+
+  // iTunes
+  try {
+    const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(name)}&entity=musicArtist&limit=1`);
+    const d = await r.json();
+    if(d.results?.[0]) results.itunes = d.results[0];
+  } catch(e) {}
+
+  // iTunes top songs
+  try {
+    const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(name)}&entity=song&limit=5&media=music`);
+    const d = await r.json();
+    results.tracks = d.results || [];
+  } catch(e) {}
+
+  // YouTube (via Intel server)
+  try {
+    const r = await fetch(`${INTEL}/youtube/search?q=${encodeURIComponent(name + ' official')}&limit=4`, {signal: AbortSignal.timeout(8000)});
+    const d = await r.json();
+    results.youtube = d.results || [];
+  } catch(e) {}
+
+  // Render
+  const artist = results.itunes || {};
+  el.innerHTML = `
+    <div style="margin-bottom:24px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+      ${artist.artworkUrl100 ? `<img src="${artist.artworkUrl100.replace('100x100','300x300')}" style="width:100px;height:100px;border-radius:14px;object-fit:cover;border:2px solid var(--goat-red);">` : ''}
+      <div>
+        <h2 style="margin:0 0 4px;font-size:28px;color:#fff;">${artist.artistName||name}</h2>
+        <p style="margin:0;color:#aaa;">${artist.primaryGenreName||''}</p>
+        ${artist.artistLinkUrl?`<a href="${artist.artistLinkUrl}" target="_blank" class="preview-btn" style="text-decoration:none;display:inline-block;margin-top:8px;">🎵 Apple Music Profile</a>`:''}
+      </div>
+    </div>
+
+    <div class="artist-result">
+      <div class="artist-platform">
+        <h3>🎵 iTunes Data</h3>
+        ${artist.artistId ? `
+          <div class="platform-stat"><span>Artist ID</span><span>${artist.artistId}</span></div>
+          <div class="platform-stat"><span>Genre</span><span>${artist.primaryGenreName||'—'}</span></div>
+        ` : '<p style="color:#555;font-size:13px;">Not found on iTunes</p>'}
+        ${results.tracks?.length ? `
+          <div style="margin-top:12px;">
+            <div class="mini-label">Top Tracks</div>
+            ${results.tracks.map(t=>`
+              <div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;align-items:center;">
+                <img src="${t.artworkUrl100||''}" style="width:40px;height:40px;border-radius:6px;" onerror="this.style.display='none'">
+                <div>
+                  <div style="font-size:13px;color:#fff;font-weight:600;">${t.trackName}</div>
+                  <div style="font-size:11px;color:#888;">${t.collectionName}</div>
+                  ${t.previewUrl?`<audio controls src="${t.previewUrl}" style="width:200px;height:24px;margin-top:4px;"></audio>`:''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+
+      ${results.youtube?.length ? `
+        <div class="artist-platform">
+          <h3>▶️ YouTube Videos</h3>
+          ${results.youtube.map(v=>`
+            <div onclick="window.open('${v.url}','_blank')" style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.07);cursor:pointer;">
+              <img src="${v.thumbnail}" style="width:80px;height:50px;object-fit:cover;border-radius:6px;" onerror="this.style.display='none'">
+              <div>
+                <div style="font-size:12px;color:#fff;font-weight:600;line-height:1.3;">${v.title}</div>
+                <div style="font-size:11px;color:var(--intel-blue);">▶ ${fmt(v.view_count)} views</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+// ── INIT ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  await checkServer();
+  loadCharts();
+  // Auto-search YouTube on load
+  searchYouTube();
+});
+</script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>

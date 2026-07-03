@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent GOAT — The Enforcer | GOAT Royalty</title>
+  <meta name="description" content="Agent GOAT — the badass enforcer of the GOAT Royalty App. Right hand of Ms. Money Penny. Weapon: the App. Base: the Crown.">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/launchpad.css">
+  <link rel="stylesheet" href="css/goat-theme.css">
+  <style>
+    :root {
+      --goat-red: #c1121f;
+      --goat-red-glow: rgba(193, 18, 31, 0.25);
+      --goat-gold: #d4a03c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #030609;
+      color: #f0ece4;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .agent-bg {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(193, 18, 31, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 80% 80%, rgba(212, 160, 60, 0.08) 0%, transparent 45%),
+        #030609;
+      z-index: -2;
+    }
+    .agent-grid {
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(rgba(212, 160, 60, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(212, 160, 60, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      z-index: -1;
+      mask-image: radial-gradient(circle at center, black 0%, transparent 70%);
+    }
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(212, 160, 60, 0.14);
+      background: rgba(3, 6, 9, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    nav a { color: #c8c0b0; text-decoration: none; font-weight: 600; transition: color 0.2s; }
+    nav a:hover { color: var(--goat-gold); }
+    .hero {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      padding: 64px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      min-height: calc(100vh - 200px);
+    }
+    .hero-visual {
+      position: relative;
+      flex: 1 1 320px;
+      max-width: 420px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .hero-visual::before {
+      content: '';
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(193, 18, 31, 0.25) 0%, transparent 65%);
+      animation: pulse 4s ease-in-out infinite;
+      z-index: -1;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+    .hero-logo {
+      width: 280px;
+      height: 280px;
+      object-fit: contain;
+      filter: drop-shadow(0 16px 48px rgba(0,0,0,0.7)) drop-shadow(0 0 50px rgba(193, 18, 31, 0.35));
+      animation: float 6s ease-in-out infinite;
+      border-radius: 32px;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+    .hero-text {
+      flex: 1 1 400px;
+      max-width: 560px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 30px;
+      background: rgba(193, 18, 31, 0.12);
+      border: 1px solid rgba(193, 18, 31, 0.4);
+      color: #ff6b6b;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+    .badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ff6b6b;
+      box-shadow: 0 0 10px #ff6b6b;
+    }
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      margin: 0 0 12px;
+      background: linear-gradient(135deg, #ff6b6b, #d4a03c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+    .subtitle {
+      font-size: 1.25rem;
+      color: #c8c0b0;
+      margin-bottom: 24px;
+    }
+    .desc {
+      color: #8a8070;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    .stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    .stat {
+      background: rgba(13, 20, 32, 0.85);
+      border: 1px solid rgba(212, 160, 60, 0.14);
+      border-radius: 12px;
+      padding: 14px 20px;
+      min-width: 120px;
+    }
+    .stat-value { font-size: 1.4rem; font-weight: 800; color: var(--goat-gold); }
+    .stat-label { font-size: 0.7rem; color: #8a8070; text-transform: uppercase; margin-top: 4px; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn {
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #c1121f, #8b0000);
+      color: #fff;
+      border: 1px solid rgba(255, 107, 107, 0.4);
+      box-shadow: 0 4px 24px rgba(193, 18, 31, 0.25);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(193, 18, 31, 0.35);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--goat-gold);
+      border: 1px solid rgba(212, 160, 60, 0.4);
+    }
+    .btn-secondary:hover {
+      background: rgba(212, 160, 60, 0.08);
+    }
+    .section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .arsenal {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .arsenal-card {
+      background: rgba(13, 20, 32, 0.85);
+      border: 1px solid rgba(212, 160, 60, 0.14);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.25s ease;
+    }
+    .arsenal-card:hover {
+      border-color: rgba(193, 18, 31, 0.5);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(193, 18, 31, 0.15);
+    }
+    .arsenal-card h3 { margin: 0 0 8px; color: #fff; }
+    .arsenal-card p { margin: 0; color: #8a8070; font-size: 0.9rem; line-height: 1.5; }
+    .arsenal-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: rgba(193, 18, 31, 0.1);
+      border: 1px solid rgba(193, 18, 31, 0.25);
+      margin-bottom: 14px;
+    }
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      color: #8a8070;
+      font-size: 0.8rem;
+      border-top: 1px solid rgba(212, 160, 60, 0.14);
+    }
+    @media (max-width: 768px) {
+      .hero { padding: 40px 24px; }
+      .hero-logo { width: 220px; height: 220px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="agent-bg"></div>
+  <div class="agent-grid"></div>
+
+  <nav>
+    <a href="goat-launchpad.html">← Mission Control</a>
+    <a href="index.html">Ms. Money Penny</a>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-visual">
+      <img src="img/goat-royalty-logo.png" alt="Agent GOAT" class="hero-logo" onerror="this.src='goat-logo.png'">
+    </div>
+    <div class="hero-text">
+      <div class="badge">Active Operative</div>
+      <h1>Agent GOAT</h1>
+      <p class="subtitle">The Enforcer. Ms. Money Penny’s right hand. The baddest asset in the GOAT Royalty App.</p>
+      <p class="desc">
+        Born in the streets of London, trained across the Commonwealth, and sworn to the Crown. Agent GOAT doesn’t ask questions — he executes. His weapon is the GOAT Royalty App. His base is the catalog. His mission: protect the bag, enforce the brand, and make sure every royalty lands where it belongs.
+      </p>
+      <div class="stats">
+        <div class="stat"><div class="stat-value">99</div><div class="stat-label">Threat Level</div></div>
+        <div class="stat"><div class="stat-value">007</div><div class="stat-label">Agent Class</div></div>
+        <div class="stat"><div class="stat-value">5.9K</div><div class="stat-label">Catalogs Secured</div></div>
+      </div>
+      <div class="actions">
+        <a href="index.html" class="btn btn-primary">Enter the Base</a>
+        <a href="royalty-vip-622501560fe0e185/" class="btn btn-secondary">Secure the Casino</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title"><span>⚔️</span> Arsenal</h2>
+    <div class="arsenal">
+      <div class="arsenal-card">
+        <div class="arsenal-icon">👑</div>
+        <h3>Crown Command</h3>
+        <p>Direct line to Ms. Money Penny. Strategic strikes, royalty recoveries, and executive protection.</p>
+      </div>
+      <div class="arsenal-card">
+        <div class="arsenal-icon">🎰</div>
+        <h3>Casino Enforcement</h3>
+        <p>Keeps the Ultimate Bourré tables honest, the VIP rooms locked, and the house edge royal.</p>
+      </div>
+      <div class="arsenal-card">
+        <div class="arsenal-icon">🎵</div>
+        <h3>Catalog Defense</h3>
+        <p>Guards 5,954+ catalog entries, ISRC codes, ASCAP works, and Waka Flocka tracks.</p>
+      </div>
+      <div class="arsenal-card">
+        <div class="arsenal-icon">🌙</div>
+        <h3>Anigo Alley Watch</h3>
+        <p>Overnight surveillance on the after-hours network. What happens in the Alley stays in the Alley.</p>
+      </div>
+      <div class="arsenal-card">
+        <div class="arsenal-icon">🚗</div>
+        <h3>GOAT City RP Escort</h3>
+        <p>FiveM support for BrickSquaD-RP. Links the gaming server to the real empire.</p>
+      </div>
+      <div class="arsenal-card">
+        <div class="arsenal-icon">🧠</div>
+        <h3>AI War Room</h3>
+        <p>Coordinates Agent 007, Ms. Money Penny, and the 11-agent crew from a single command deck.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>👑 GOAT Royalty — Life Imitates Art Inc. — The Greatest Of All Time</p>
+  </footer>
+
+</body>
+</html>

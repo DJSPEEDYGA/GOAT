@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GOAT Royalty - Agent Crew</title>
+    <title>GOAT Royalty App - Agent Crew</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/agent-crew.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -450,11 +450,11 @@
             font-size: 0.9rem;
         }
     </style>
-<!-- Third-party script removed: local credential storage must stay private. -->
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
 <body>
     <nav class="navbar">
-        <a href="index.html" class="logo">GOAT Royalty</a>
+        <a href="index.html" class="logo">GOAT Royalty App</a>
         <div class="nav-links">
             <a href="index.html">Home</a>
             <a href="goat-agent-crew.html">Agent Crew</a>
@@ -468,16 +468,25 @@
     <div class="container">
         <div class="header">
             <h1>Agent Crew</h1>
-            <p>Your team of AI-powered agents, ready to assist with any task. Select an agent to begin.</p>
+            <p>Your team of AI-powered agents, ready to assist with any task. Enter your secret code to activate them.</p>
+        </div>
+        
+        <div class="secret-code-input">
+            <h3>Enter Secret Code to Activate Agent</h3>
+            <div class="code-input-group">
+                <input type="text" id="secretCodeInput" placeholder="Enter agent secret code...">
+                <button onclick="activateAgentByCode()">Activate Agent</button>
+            </div>
+            <p id="codeStatus" style="margin-top: 1rem; color: var(--text-muted);"></p>
         </div>
         
         <div class="agents-grid">
-            <!-- Money Penny -->
-            <div class="agent-card" data-agent="moneypenny">
+            <!-- Ms. Money Penny -->
+            <div class="agent-card" data-agent="moneypenny" data-secret="GOAT-MP-2024">
                 <div class="agent-header">
                     <div class="agent-avatar">💰</div>
                     <div class="agent-info">
-                        <h3>Money Penny</h3>
+                        <h3>Ms. Money Penny</h3>
                         <span class="role">Financial Intelligence Agent</span>
                     </div>
                     <div class="agent-status">
@@ -494,11 +503,13 @@
                 </div>
                 <div class="agent-actions">
                     <button class="agent-btn primary" onclick="startChat('moneypenny')">Chat</button>
+                    <button class="agent-btn secondary" onclick="revealSecret('moneypenny')">Show Secret Code</button>
                 </div>
+                <div class="agent-secret" id="secret-moneypenny">Secret Code: GOAT-MP-2024</div>
             </div>
             
             <!-- Commander -->
-            <div class="agent-card" data-agent="commander">
+            <div class="agent-card" data-agent="commander" data-secret="GOAT-CMD-2024">
                 <div class="agent-header">
                     <div class="agent-avatar">🎖️</div>
                     <div class="agent-info">
@@ -519,11 +530,13 @@
                 </div>
                 <div class="agent-actions">
                     <button class="agent-btn primary" onclick="startChat('commander')">Chat</button>
+                    <button class="agent-btn secondary" onclick="revealSecret('commander')">Show Secret Code</button>
                 </div>
+                <div class="agent-secret" id="secret-commander">Secret Code: GOAT-CMD-2024</div>
             </div>
             
             <!-- Tech Ninja -->
-            <div class="agent-card" data-agent="techninja">
+            <div class="agent-card" data-agent="techninja" data-secret="GOAT-TN-2024">
                 <div class="agent-header">
                     <div class="agent-avatar">🥷</div>
                     <div class="agent-info">
@@ -544,11 +557,13 @@
                 </div>
                 <div class="agent-actions">
                     <button class="agent-btn primary" onclick="startChat('techninja')">Chat</button>
+                    <button class="agent-btn secondary" onclick="revealSecret('techninja')">Show Secret Code</button>
                 </div>
+                <div class="agent-secret" id="secret-techninja">Secret Code: GOAT-TN-2024</div>
             </div>
             
             <!-- Data Miner -->
-            <div class="agent-card" data-agent="dataminer">
+            <div class="agent-card" data-agent="dataminer" data-secret="GOAT-DM-2024">
                 <div class="agent-header">
                     <div class="agent-avatar">⛏️</div>
                     <div class="agent-info">
@@ -569,11 +584,13 @@
                 </div>
                 <div class="agent-actions">
                     <button class="agent-btn primary" onclick="startChat('dataminer')">Chat</button>
+                    <button class="agent-btn secondary" onclick="revealSecret('dataminer')">Show Secret Code</button>
                 </div>
+                <div class="agent-secret" id="secret-dataminer">Secret Code: GOAT-DM-2024</div>
             </div>
             
             <!-- Luna -->
-            <div class="agent-card" data-agent="luna">
+            <div class="agent-card" data-agent="luna" data-secret="GOAT-LUNA-2024">
                 <div class="agent-header">
                     <div class="agent-avatar">🌙</div>
                     <div class="agent-info">
@@ -594,11 +611,13 @@
                 </div>
                 <div class="agent-actions">
                     <button class="agent-btn primary" onclick="startChat('luna')">Chat</button>
+                    <button class="agent-btn secondary" onclick="revealSecret('luna')">Show Secret Code</button>
                 </div>
+                <div class="agent-secret" id="secret-luna">Secret Code: GOAT-LUNA-2024</div>
             </div>
             
             <!-- Guardian -->
-            <div class="agent-card" data-agent="guardian">
+            <div class="agent-card" data-agent="guardian" data-secret="GOAT-GRD-2024">
                 <div class="agent-header">
                     <div class="agent-avatar">🛡️</div>
                     <div class="agent-info">
@@ -619,7 +638,9 @@
                 </div>
                 <div class="agent-actions">
                     <button class="agent-btn primary" onclick="startChat('guardian')">Chat</button>
+                    <button class="agent-btn secondary" onclick="revealSecret('guardian')">Show Secret Code</button>
                 </div>
+                <div class="agent-secret" id="secret-guardian">Secret Code: GOAT-GRD-2024</div>
             </div>
         </div>
         
@@ -655,7 +676,7 @@
     <div class="chat-interface" id="chatInterface">
         <div class="chat-header">
             <div class="agent-avatar" id="chatAvatar">💰</div>
-            <h4 id="chatAgentName">Money Penny</h4>
+            <h4 id="chatAgentName">Ms. Money Penny</h4>
             <button class="chat-close" onclick="closeChat()">&times;</button>
         </div>
         <div class="chat-messages" id="chatMessages">
@@ -671,38 +692,44 @@
         // Agent data
         const agents = {
             moneypenny: {
-                name: 'Money Penny',
+                name: 'Ms. Money Penny',
                 avatar: '💰',
-                systemPrompt: 'You are Money Penny, a friendly and knowledgeable financial AI advisor. You specialize in wealth management, cryptocurrency, investing, mining profits, and financial planning. Be helpful, accurate, and always provide actionable advice.',
+                secret: 'GOAT-MP-2024',
+                systemPrompt: 'You are Ms. Money Penny, a friendly and knowledgeable financial AI advisor. You specialize in wealth management, cryptocurrency, investing, mining profits, and financial planning. Be helpful, accurate, and always provide actionable advice.',
                 status: 'offline'
             },
             commander: {
                 name: 'Commander',
                 avatar: '🎖️',
+                secret: 'GOAT-CMD-2024',
                 systemPrompt: 'You are Commander, the strategic leader of the agent crew. You specialize in operations management, team coordination, strategic planning, and executive decision-making. Be decisive, clear, and supportive.',
                 status: 'offline'
             },
             techninja: {
                 name: 'Tech Ninja',
                 avatar: '🥷',
+                secret: 'GOAT-TN-2024',
                 systemPrompt: 'You are Tech Ninja, a highly skilled technical expert. You master Python, JavaScript, system architecture, DevOps, debugging, and AI/ML. Provide clear, practical solutions to technical challenges.',
                 status: 'offline'
             },
             dataminer: {
                 name: 'Data Miner',
                 avatar: '⛏️',
+                secret: 'GOAT-DM-2024',
                 systemPrompt: 'You are Data Miner, an expert in cryptocurrency mining, data extraction, and analytics. Help optimize mining operations, analyze data, and maximize profits with data-driven insights.',
                 status: 'offline'
             },
             luna: {
                 name: 'Luna',
                 avatar: '🌙',
+                secret: 'GOAT-LUNA-2024',
                 systemPrompt: 'You are Luna, a creative AI director specializing in design, content creation, and branding. Be imaginative, inspiring, and help bring creative visions to life with practical guidance.',
                 status: 'offline'
             },
             guardian: {
                 name: 'Guardian',
                 avatar: '🛡️',
+                secret: 'GOAT-GRD-2024',
                 systemPrompt: 'You are Guardian, a cybersecurity expert. You protect systems, monitor threats, manage secure access, and ensure digital safety. Provide security best practices and threat mitigation strategies.',
                 status: 'offline'
             }
@@ -741,6 +768,43 @@
             }
             
             agents[agentId].status = status;
+        }
+        
+        // Activate agent by secret code
+        function activateAgentByCode() {
+            const code = document.getElementById('secretCodeInput').value.trim().toUpperCase();
+            const statusEl = document.getElementById('codeStatus');
+            
+            if (!code) {
+                statusEl.innerHTML = '<span style="color: var(--accent);">Please enter a secret code</span>';
+                return;
+            }
+            
+            let found = false;
+            Object.keys(agents).forEach(agentId => {
+                if (agents[agentId].secret === code) {
+                    found = true;
+                    updateAgentStatus(agentId, 'online');
+                    statusEl.innerHTML = `<span style="color: var(--primary);">✓ ${agents[agentId].name} activated successfully!</span>`;
+                    
+                    // Add welcome message
+                    setTimeout(() => {
+                        startChat(agentId);
+                    }, 500);
+                }
+            });
+            
+            if (!found) {
+                statusEl.innerHTML = '<span style="color: #ef4444;">Invalid secret code. Please try again.</span>';
+            }
+        }
+        
+        // Reveal secret code
+        function revealSecret(agentId) {
+            const secretEl = document.getElementById(`secret-${agentId}`);
+            if (secretEl) {
+                secretEl.classList.toggle('visible');
+            }
         }
         
         // Start chat with agent
@@ -795,12 +859,12 @@
             updateAgentStatus(currentAgent, 'busy');
             
             try {
-                // Route public crew chat through the GOAT server, not a visitor's local runtime.
-                const response = await fetch('/api/chat', {
+                // Call local Ollama API
+                const response = await fetch('http://localhost:11434/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        model: 'gemma2:2b',
+                        model: 'llama2',
                         messages: [
                             { role: 'system', content: agents[currentAgent].systemPrompt },
                             ...getChatHistory(),

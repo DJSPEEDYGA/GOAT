@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOAT Royalty App - NLP Module</title>
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-bottom: 2px solid #00ff88;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .logo span {
+            color: #ff6b6b;
+        }
+
+        .main-content {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #00ff88;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(0, 255, 136, 0.2);
+            transform: translateX(-5px);
+        }
+
+        .section-title {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #00ff88;
+        }
+
+        .search-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .search-input::placeholder {
+            color: #aaa;
+        }
+
+        .search-button {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #0f0f23;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tag {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-tag:hover, .filter-tag.active {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            border-color: #00ff88;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .result-type {
+            padding: 5px 10px;
+            background: rgba(0, 255, 136, 0.2);
+            border-radius: 15px;
+            font-size: 0.75em;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .result-confidence {
+            font-size: 0.8em;
+            color: #aaa;
+        }
+
+        .result-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .result-excerpt {
+            color: #aaa;
+            font-size: 0.9em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .result-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-source {
+            font-size: 0.8em;
+            color: #aaa;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 5px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 6px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8em;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .tools-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .tool-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .tool-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #00ff88;
+        }
+
+        .tool-description {
+            color: #aaa;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .search-box {
+                flex-direction: column;
+            }
+
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">GOAT <span>Royalty</span> - NLP Module</div>
+        <div style="color: #aaa;">Natural Language Processing</div>
+    </div>
+
+    <div class="main-content">
+        <a href="goat-royalty-enhanced.html" class="back-button">← Back to Enhanced Dashboard</a>
+
+        <h1 class="section-title">🧠 Semantic Contract Intelligence</h1>
+
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-value">2,847</div>
+                <div class="stat-label">Queries Processed</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">15,234</div>
+                <div class="stat-label">Clauses Extracted</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">0.3s</div>
+                <div class="stat-label">Avg Response Time</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">94.7%</div>
+                <div class="stat-label">Search Relevance</div>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <h3 style="margin-bottom: 20px; color: #00ff88;">🔍 Semantic Search</h3>
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    placeholder="Ask about contracts, clauses, risks, or terms in natural language..."
+                    id="searchInput"
+                >
+                <button class="search-button" onclick="performSearch()">Search</button>
+            </div>
+            <div class="search-filters">
+                <span class="filter-tag active">All Documents</span>
+                <span class="filter-tag">Contracts</span>
+                <span class="filter-tag">Clauses</span>
+                <span class="filter-tag">Risks</span>
+                <span class="filter-tag">Obligations</span>
+                <span class="filter-tag">Payments</span>
+            </div>
+        </div>
+
+        <div class="tools-section">
+            <h3 style="margin-bottom: 20px; color: #00ff88;">🛠️ NLP Tools & Features</h3>
+            <div class="tools-grid">
+                <div class="tool-card" onclick="showToolInfo('Semantic Search')">
+                    <div class="tool-icon">🔍</div>
+                    <div class="tool-title">Semantic Search</div>
+                    <div class="tool-description">Find relevant clauses using natural language queries, not just keywords</div>
+                </div>
+                <div class="tool-card" onclick="showToolInfo('Clause Extraction')">
+                    <div class="tool-icon">📋</div>
+                    <div class="tool-title">Clause Extraction</div>
+                    <div class="tool-description">Automatically extract and categorize contract clauses</div>
+                </div>
+                <div class="tool-card" onclick="showToolInfo('Risk Assessment')">
+                    <div class="tool-icon">⚠️</div>
+                    <div class="tool-title">Risk Assessment</div>
+                    <div class="tool-description">Identify potential risks and unfavorable terms</div>
+                </div>
+                <div class="tool-card" onclick="showToolInfo('Contract Comparison')">
+                    <div class="tool-icon">⚖️</div>
+                    <div class="tool-title">Contract Comparison</div>
+                    <div class="tool-description">Compare multiple contracts and highlight differences</div>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 20px; color: #00ff88;">📊 Search Results</h3>
+        <div class="results-container" id="resultsContainer">
+            <div class="result-card">
+                <div class="result-header">
+                    <span class="result-type">Payment Clause</span>
+                    <span class="result-confidence">98% match</span>
+                </div>
+                <div class="result-title">Royalty Payment Terms</div>
+                <div class="result-excerpt">
+                    "Licensee shall pay to Licensor a royalty of fifteen percent (15%) of Net Receipts derived from the exploitation of the Masters..."
+                </div>
+                <div class="result-meta">
+                    <span class="result-source">Source: Warner Chappell Agreement</span>
+                    <div class="result-actions">
+                        <button class="action-btn">View Context</button>
+                        <button class="action-btn">Extract</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-header">
+                    <span class="result-type">Obligation</span>
+                    <span class="result-confidence">95% match</span>
+                </div>
+                <div class="result-title">Delivery Obligations</div>
+                <div class="result-excerpt">
+                    "Artist shall deliver to Label a minimum of twelve (12) masters during the initial Term, with a minimum quality standard..."
+                </div>
+                <div class="result-meta">
+                    <span class="result-source">Source: Sony Recording Contract</span>
+                    <div class="result-actions">
+                        <button class="action-btn">View Context</button>
+                        <button class="action-btn">Extract</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-header">
+                    <span class="result-type">Risk Flag</span>
+                    <span class="result-confidence">92% match</span>
+                </div>
+                <div class="result-title">Exclusivity Clause</div>
+                <div class="result-excerpt">
+                    "Artist grants Label exclusive worldwide rights to the Masters for the duration of the Term and any renewal periods..."
+                </div>
+                <div class="result-meta">
+                    <span class="result-source">Source: Universal Distribution</span>
+                    <div class="result-actions">
+                        <button class="action-btn">View Context</button>
+                        <button class="action-btn">Analyze</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function performSearch() {
+            const query = document.getElementById('searchInput').value;
+            if (query.trim()) {
+                alert(`Searching for: "${query}"\n\nIn production, this would:\n1. Parse the natural language query\n2. Search through all contracts semantically\n3. Return relevant clauses with confidence scores\n4. Provide context and source attribution`);
+                
+                // Simulate loading new results
+                const container = document.getElementById('resultsContainer');
+                container.style.opacity = '0.5';
+                setTimeout(() => {
+                    container.style.opacity = '1';
+                }, 1000);
+            }
+        }
+
+        function showToolInfo(toolName) {
+            const descriptions = {
+                'Semantic Search': 'Find relevant clauses using natural language queries powered by local AI. Understands context and intent beyond simple keyword matching.',
+                'Clause Extraction': 'Automatically identify and categorize contract clauses including payment terms, obligations, restrictions, and termination conditions.',
+                'Risk Assessment': 'AI-powered analysis identifies potential risks, unfavorable terms, and compliance issues with 95%+ accuracy.',
+                'Contract Comparison': 'Compare multiple contracts side-by-side. Highlight similarities, differences, and provide recommendations for negotiation.'
+            };
+            
+            alert(`${toolName}\n\n${descriptions[toolName]}\n\nThis tool uses local Ollama models for:\n- Advanced NLP capabilities\n- Contextual understanding\n- Real-time processing\n- Zero cloud dependencies`);
+        }
+
+        // Add click handlers for filter tags
+        document.querySelectorAll('.filter-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Add enter key support for search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    </script>
+</body>
+</html>

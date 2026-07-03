@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ms. Money Penny — Oscar Drive AI Models</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/goat-theme.css">
+  <link rel="stylesheet" href="css/models-manager.css">
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #0d1b2a;
+      --bg-card: #1b2838;
+      --bg-hover: #1f3044;
+      --accent: #d4a03c;
+      --accent-light: #f0c040;
+      --text-primary: #f5f0e8;
+      --text-secondary: #b8b0a0;
+      --text-muted: #6a6050;
+      --border: #2a3a4a;
+      --success: #2ecc71;
+      --warning: #f39c12;
+      --info: #5dade2;
+      --gradient-start: #d4a03c;
+      --gradient-end: #0d1b2a;
+      --navy: #0f2440;
+      --gold: #d4a03c;
+      --gold-light: #f0c040;
+      --tier-fast: #22c55e;
+      --tier-general: #3b82f6;
+      --tier-code: #a855f7;
+      --tier-reasoning: #ec4899;
+      --tier-vision: #06b6d4;
+      --tier-heavy: #f97316;
+      --tier-uncensored: #ef4444;
+      --tier-oscar: #d4a03c;
+      --tier-embed: #6b7280;
+      --tier-cloud: #94a3b8;
+    }
+
+    .models-page { color: var(--text-primary); }
+    .models-page .hero { padding: 60px 20px 30px; text-align: center; }
+    .models-page .hero h1 { font-size: 2.5rem; margin: 0 0 12px; }
+    .models-page .hero .subtitle { color: var(--text-secondary); font-size: 1.1rem; max-width: 800px; margin: 0 auto 24px; }
+    .models-page .stats { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+    .models-page .stat { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; min-width: 120px; }
+    .models-page .stat .number { font-size: 1.6rem; font-weight: 800; color: var(--gold-light); }
+    .models-page .stat .label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .status-bar { max-width: 1200px; margin: 0 auto 20px; padding: 12px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; font-size: 0.95rem; }
+    .status-bar .live { color: var(--success); font-weight: 700; }
+    .status-bar .offline { color: var(--warning); font-weight: 700; }
+    .status-bar .error { color: var(--warning); font-weight: 700; }
+
+    .filter-bar { max-width: 1200px; margin: 0 auto 24px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .filter-bar button { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+    .filter-bar button:hover { border-color: var(--gold); color: var(--gold-light); }
+    .filter-bar button.active { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 700; }
+
+    .models-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 0 20px 40px; }
+    .model-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; transition: transform 0.2s, border-color 0.2s; }
+    .model-card:hover { transform: translateY(-2px); border-color: var(--gold); }
+    .model-card .card-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .model-card .model-name { font-weight: 700; font-size: 1rem; color: var(--text-primary); word-break: break-word; }
+    .model-card .tier-badge { font-size: 0.65rem; padding: 3px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+    .model-card .model-meta { display: flex; gap: 12px; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px; }
+    .model-card .model-status { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-bottom: 14px; }
+    .model-card .model-status .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .model-card .model-status.live { color: var(--success); }
+    .model-card .model-status.live .dot { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .model-card .model-status.offline { color: var(--text-muted); }
+    .model-card .model-status.offline .dot { background: var(--text-muted); }
+    .model-card .card-actions { display: flex; gap: 8px; }
+    .model-card .card-actions button { flex: 1; padding: 8px 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: all 0.2s; }
+    .model-card .card-actions .btn-warm { background: rgba(212, 160, 60, 0.15); color: var(--gold-light); border: 1px solid var(--gold); }
+    .model-card .card-actions .btn-warm:hover { background: var(--gold); color: #000; }
+    .model-card .card-actions .btn-warm:disabled { opacity: 0.6; cursor: not-allowed; }
+    .model-card .card-actions .btn-chat { background: rgba(93, 173, 226, 0.15); color: var(--info); border: 1px solid var(--info); }
+    .model-card .card-actions .btn-chat:hover { background: var(--info); color: #000; }
+
+    .cloud-section { max-width: 1200px; margin: 0 auto 60px; padding: 0 20px; }
+    .cloud-section .section-header { background: linear-gradient(135deg, rgba(148, 163, 184, 0.15), rgba(0, 0, 0, 0.3)); border-left: 4px solid var(--tier-cloud); padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    .cloud-section .section-header h2 { color: var(--tier-cloud); margin: 0 0 8px; }
+    .cloud-section .section-header p { color: var(--text-secondary); margin: 0; }
+    .cloud-section .configure-link { display: inline-block; margin-top: 12px; color: var(--gold-light); text-decoration: none; font-weight: 600; }
+    .cloud-section .configure-link:hover { text-decoration: underline; }
+
+    .tier-counts { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+    .tier-counts span { font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; background: var(--bg-hover); color: var(--text-secondary); border: 1px solid var(--border); }
+
+    .no-results { text-align: center; color: var(--text-muted); padding: 40px; font-size: 1rem; }
+
+    @media (max-width: 700px) {
+      .models-page .hero h1 { font-size: 1.8rem; }
+      .models-grid { grid-template-columns: 1fr; }
+      .filter-bar button { font-size: 0.8rem; padding: 6px 12px; }
+    }
+  </style>
+<!-- Third-party script removed: local credential storage must stay private. -->
+</head>
+<body class="models-page">
+
+  <div class="goat-bg"></div>
+  <div class="goat-bg-overlay"></div>
+
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <a href="index.html" class="logo">
+      <img src="money-penny-logo.png" alt="Ms. Money Penny" class="nav-logo-mp">
+      <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+      <img src="logo.png" alt="Ms. Money Penny">
+      <span>Ms. Money Penny</span>
+      <span class="crown-badge">👑 GOAT</span>
+    </a>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html" class="active">🤖 AI Models</a>
+      <a href="halito-chat.html">💬 Halito Chat</a>
+      <a href="casino.html">🎰 Casino</a>
+      <a href="anigo-alley.html">🎮 Anigo Alley</a>
+      <a href="tv-streaming.html">📺 TV</a>
+      <a href="art-lab.html">🎨 Art Lab</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="about.html">👑 About</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="index.html#store">🛒 Store</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>🐐 Oscar Drive — 54 Verified Live Models</h1>
+    <p class="subtitle">54 verified local models ready for Ms. Money Penny, Codex, and the GOAT Force crew. Live status from the Oscar/Ollama bridge.</p>
+    <div class="stats">
+      <div class="stat"><div class="number" id="totalModelCount">54</div><div class="label">Verified Models</div></div>
+      <div class="stat"><div class="number" id="liveModelCount">—</div><div class="label">Live Now</div></div>
+      <div class="stat"><div class="number">0</div><div class="label">API Keys Needed</div></div>
+    </div>
+    <div class="tier-counts" id="tierCounts"></div>
+  </div>
+
+  <div class="status-bar" id="statusBar">
+    <span class="offline">⏳ Checking Oscar/Ollama bridge...</span>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+    <button class="active" data-tier="all">All</button>
+    <button data-tier="fast">⚡ Fast</button>
+    <button data-tier="general">🌟 General</button>
+    <button data-tier="code">💻 Code</button>
+    <button data-tier="reasoning">🧠 Reasoning</button>
+    <button data-tier="vision">👁 Vision</button>
+    <button data-tier="heavy">🏋 Heavy</button>
+    <button data-tier="uncensored">🔓 Uncensored</button>
+    <button data-tier="oscar">🎯 OscarFT</button>
+  </div>
+
+  <div class="models-grid" id="modelsGrid"></div>
+  <div class="no-results" id="noResults" style="display:none">No models match this filter.</div>
+
+  <div class="cloud-section">
+    <div class="section-header">
+      <h2>☁️ Cloud Models (API Key Required)</h2>
+      <p>Optional cloud models for when you need a hosted backup. Configure your API keys in settings to use these.</p>
+      <a href="settings.html" class="configure-link">⚙️ Configure API Key →</a>
+    </div>
+    <div class="models-grid" id="cloudGrid"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🤖 AI Models</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="about.html">👑 About</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="screenwriting.html">📝 Screenwriting</a>
+      <a href="unreal-copilot.html">🎮 UE5 CoPilot</a>
+      <a href="https://github.com/DJSPEEDYGA/nextjs-commerce" target="_blank">⭐ GitHub</a>
+      <a href="https://github.com/DJSPEEDYGA/nextjs-commerce/releases" target="_blank">📦 Releases</a>
+    </div>
+    <p>🐐 Ms. Money Penny Store v1.3.0 — Built with ❤️ by <a href="https://lifeimitatesart.org" target="_blank">Life Imitates Art Inc.</a></p>
+    <p style="margin-top:8px;font-size:0.8rem;color:var(--text-muted);">Powered by Oscar Drive • Ollama • GOAT Force</p>
+  </footer>
+
+  <script>
+    const OSCAR_PROXY = 'http://127.0.0.1:3333';
+    const OLLAMA_MODEL_MAP = OSCAR_PROXY + '/api/ollama/model-map';
+    const OLLAMA_WARMUP = OSCAR_PROXY + '/api/ollama/warmup';
+
+    const TIER_STYLES = {
+      fast:        { label: '⚡ Fast', color: '#22c55e' },
+      general:     { label: '🌟 General', color: '#3b82f6' },
+      code:        { label: '💻 Code', color: '#a855f7' },
+      reasoning:   { label: '🧠 Reasoning', color: '#ec4899' },
+      vision:      { label: '👁 Vision', color: '#06b6d4' },
+      'vision-heavy': { label: '👁 Vision Heavy', color: '#0891b2' },
+      heavy:       { label: '🏋 Heavy', color: '#f97316' },
+      uncensored:  { label: '🔓 Uncensored', color: '#ef4444' },
+      oscar:       { label: '🎯 OscarFT', color: '#d4a03c' },
+      embed:       { label: '🔢 Embed', color: '#6b7280' },
+      cloud:       { label: '☁️ Cloud', color: '#94a3b8' }
+    };
+
+    const REFERENCE_MODELS = [
+      { name: 'gemma2-2b-local:latest', tier: 'fast', size: '1.6 GB' },
+      { name: 'llama3.2:3b', tier: 'fast', size: '1.9 GB' },
+      { name: 'llama3.2:latest', tier: 'fast', size: '1.9 GB' },
+      { name: 'nemotron-mini:4b', tier: 'fast', size: '2.7 GB' },
+      { name: 'nemotron-mini:latest', tier: 'fast', size: '2.7 GB' },
+      { name: 'phi3:mini', tier: 'fast', size: '2.0 GB' },
+      { name: 'moondream:1.8b', tier: 'vision', size: '1.7 GB' },
+      { name: 'gemma3:4b', tier: 'general', size: '2.5 GB' },
+      { name: 'gemma3:12b', tier: 'general', size: '7.7 GB' },
+      { name: 'llama3.1:8b', tier: 'general', size: '4.7 GB' },
+      { name: 'mistral:7b', tier: 'general', size: '3.8 GB' },
+      { name: 'mistral-nemo:12b', tier: 'general', size: '7.1 GB' },
+      { name: 'qwen2.5:7b', tier: 'general', size: '4.4 GB' },
+      { name: 'qwen2.5:14b', tier: 'general', size: '8.1 GB' },
+      { name: 'phi4:14b', tier: 'general', size: '8.3 GB' },
+      { name: 'qwen3:8b', tier: 'reasoning', size: '5.0 GB' },
+      { name: 'qwen2.5-coder:7b', tier: 'code', size: '4.4 GB' },
+      { name: 'qwen2.5-coder:14b', tier: 'code', size: '8.1 GB' },
+      { name: 'starcoder2:7b', tier: 'code', size: '3.6 GB' },
+      { name: 'starcoder2:15b', tier: 'code', size: '9.0 GB' },
+      { name: 'codegemma:7b', tier: 'code', size: '4.7 GB' },
+      { name: 'codestral:22b', tier: 'code', size: '12.7 GB' },
+      { name: 'qwen2.5-coder:32b', tier: 'code', size: '19.8 GB' },
+      { name: 'codellama:34b', tier: 'code', size: '19.0 GB' },
+      { name: 'deepseek-r1:8b', tier: 'reasoning', size: '4.9 GB' },
+      { name: 'deepseek-r1:14b', tier: 'reasoning', size: '8.9 GB' },
+      { name: 'deepseek-r1:32b', tier: 'heavy', size: '19.8 GB' },
+      { name: 'qwen3:14b', tier: 'reasoning', size: '9.3 GB' },
+      { name: 'qwen3:30b', tier: 'heavy', size: '19.5 GB' },
+      { name: 'qwen3:32b', tier: 'heavy', size: '20.1 GB' },
+      { name: 'gpt-oss:20b', tier: 'reasoning', size: '12.0 GB' },
+      { name: 'llava:7b', tier: 'vision', size: '4.7 GB' },
+      { name: 'llava-llama3:8b', tier: 'vision', size: '5.5 GB' },
+      { name: 'llama3.2-vision:11b', tier: 'vision', size: '7.9 GB' },
+      { name: 'qwen2.5vl:7b', tier: 'vision', size: '6.2 GB' },
+      { name: 'qwen2.5vl:32b', tier: 'vision-heavy', size: '22.0 GB' },
+      { name: 'qwen3-vl:30b', tier: 'vision-heavy', size: '21.0 GB' },
+      { name: 'qwen3-vl:32b', tier: 'vision-heavy', size: '22.5 GB' },
+      { name: 'llama3.1:70b', tier: 'heavy', size: '42.5 GB' },
+      { name: 'llama3.3:70b', tier: 'heavy', size: '43.0 GB' },
+      { name: 'nemotron-nano:30b', tier: 'heavy', size: '18.0 GB' },
+      { name: 'nemotron3:33b', tier: 'heavy', size: '20.5 GB' },
+      { name: 'nemotron:70b', tier: 'heavy', size: '43.5 GB' },
+      { name: 'qwen3-heretic-local:latest', tier: 'uncensored', size: 'varies' },
+      { name: 'deepseek-r1-uncensored-local:latest', tier: 'uncensored', size: 'varies' },
+      { name: 'qwen25-uncensored-local:latest', tier: 'uncensored', size: 'varies' },
+      { name: 'qwen-9b-uncensored-local:latest', tier: 'uncensored', size: 'varies' },
+      { name: 'nemomix-local:latest', tier: 'uncensored', size: 'varies' },
+      { name: 'dolphin-local:latest', tier: 'uncensored', size: 'varies' },
+      { name: 'gemma-heretic-local:latest', tier: 'uncensored', size: 'varies' },
+      { name: 'oscar-ft-test-v1:latest', tier: 'oscar', size: '1.6 GB' },
+      { name: 'nomic-embed-text:latest', tier: 'embed', size: '0.3 GB' },
+      { name: 'mxbai-embed-large:latest', tier: 'embed', size: '0.7 GB' },
+      { name: 'bge-m3:latest', tier: 'embed', size: '1.2 GB' }
+    ];
+
+    const CLOUD_MODELS = [
+      { name: 'gpt-4o', tier: 'cloud', size: 'Cloud API' },
+      { name: 'gpt-4o-mini', tier: 'cloud', size: 'Cloud API' },
+      { name: 'gpt-4-turbo', tier: 'cloud', size: 'Cloud API' },
+      { name: 'gemini-2.0-flash', tier: 'cloud', size: 'Cloud API' },
+      { name: 'gemini-1.5-pro', tier: 'cloud', size: 'Cloud API' },
+      { name: 'claude-3.5-sonnet', tier: 'cloud', size: 'Cloud API' },
+      { name: 'claude-3-opus', tier: 'cloud', size: 'Cloud API' },
+      { name: 'llama-3.3-70b-versatile', tier: 'cloud', size: 'Cloud API' },
+      { name: 'mixtral-8x7b-32768', tier: 'cloud', size: 'Cloud API' }
+    ];
+
+    let installedModels = new Set();
+    let currentFilter = 'all';
+
+    function normalizedModelNames(name) {
+      const names = [name];
+      const base = name.split(':')[0];
+      if (name.includes(':')) {
+        names.push(base + ':latest');
+      } else {
+        names.push(name + ':latest');
+      }
+      return names;
+    }
+
+    function isLive(name) {
+      return normalizedModelNames(name).some(n => installedModels.has(n));
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+      })[ch]);
+    }
+
+    function createModelCard(model) {
+      const tier = TIER_STYLES[model.tier] || TIER_STYLES.general;
+      const live = isLive(model.name);
+      const statusClass = live ? 'live' : 'offline';
+      const statusText = live ? 'Live ✅' : 'Offline ⭕';
+      const chatUrl = 'moneypenny.html?model=' + encodeURIComponent(model.name);
+
+      return `
+        <div class="model-card" data-tier="${model.tier}" data-name="${escapeHtml(model.name)}">
+          <div class="card-header">
+            <div class="model-name">${escapeHtml(model.name)}</div>
+            <span class="tier-badge" style="background:${tier.color}22;color:${tier.color};border:1px solid ${tier.color}66">${tier.label}</span>
+          </div>
+          <div class="model-meta">
+            <span>💾 ${escapeHtml(model.size)}</span>
+          </div>
+          <div class="model-status ${statusClass}">
+            <span class="dot"></span>
+            <span>${statusText}</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn-warm" onclick="warmupModel('${escapeHtml(model.name)}', this)">🔥 Warm Up</button>
+            <button class="btn-chat" onclick="window.location.href='${chatUrl}'">💬 Chat</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function createCloudCard(model) {
+      const tier = TIER_STYLES[model.tier] || TIER_STYLES.cloud;
+      return `
+        <div class="model-card" data-tier="${model.tier}">
+          <div class="card-header">
+            <div class="model-name">${escapeHtml(model.name)}</div>
+            <span class="tier-badge" style="background:${tier.color}22;color:${tier.color};border:1px solid ${tier.color}66">${tier.label}</span>
+          </div>
+          <div class="model-meta">
+            <span>☁️ ${escapeHtml(model.size)}</span>
+          </div>
+          <div class="model-status offline">
+            <span class="dot"></span>
+            <span>Requires API key</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn-chat" onclick="window.location.href='settings.html'">⚙️ Configure</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderModels() {
+      const grid = document.getElementById('modelsGrid');
+      let filtered = REFERENCE_MODELS;
+      if (currentFilter !== 'all') {
+        filtered = REFERENCE_MODELS.filter(m => m.tier === currentFilter || (currentFilter === 'vision' && m.tier.startsWith('vision')));
+      }
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        document.getElementById('noResults').style.display = 'block';
+      } else {
+        document.getElementById('noResults').style.display = 'none';
+        grid.innerHTML = filtered.map(createModelCard).join('');
+      }
+
+      const cloudGrid = document.getElementById('cloudGrid');
+      cloudGrid.innerHTML = CLOUD_MODELS.map(createCloudCard).join('');
+
+      updateCounts();
+    }
+
+    function updateCounts() {
+      const liveCount = REFERENCE_MODELS.filter(m => isLive(m.name)).length;
+      document.getElementById('liveModelCount').textContent = liveCount;
+
+      const counts = {};
+      REFERENCE_MODELS.forEach(m => {
+        const key = m.tier.startsWith('vision') ? 'vision' : m.tier;
+        counts[key] = (counts[key] || 0) + 1;
+      });
+
+      const tierCounts = document.getElementById('tierCounts');
+      tierCounts.innerHTML = Object.entries(counts).map(([tier, count]) => {
+        const style = TIER_STYLES[tier] || TIER_STYLES.general;
+        return `<span style="color:${style.color};border-color:${style.color}66">${style.label} ${count}</span>`;
+      }).join('');
+    }
+
+    async function loadModelStatus() {
+      const bar = document.getElementById('statusBar');
+      try {
+        const r = await fetch(OLLAMA_MODEL_MAP, { signal: AbortSignal.timeout(5000) });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const data = await r.json();
+        const map = data.models || data.modelMap || data;
+        const names = Array.isArray(map)
+          ? map.map(m => m.name || m.id || m.model).filter(Boolean)
+          : Object.keys(map);
+        installedModels = new Set(names);
+        const liveCount = REFERENCE_MODELS.filter(m => isLive(m.name)).length;
+        bar.innerHTML = `<span class="live">✅ Oscar Bridge online — ${installedModels.size} models reported, ${liveCount} matched on this page.</span>`;
+        renderModels();
+      } catch (err) {
+        installedModels = new Set();
+        bar.innerHTML = `<span class="error">⚠️ Oscar Bridge not reachable at ${OLLAMA_MODEL_MAP}. Showing reference data offline.</span>`;
+        renderModels();
+      }
+    }
+
+    async function warmupModel(name, btn) {
+      const original = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '🔥 Warming...';
+      try {
+        const r = await fetch(OLLAMA_WARMUP, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: name }),
+          signal: AbortSignal.timeout(30000)
+        });
+        if (r.ok) {
+          btn.textContent = '✅ Warmed';
+          setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 2000);
+          loadModelStatus();
+        } else {
+          const text = await r.text();
+          throw new Error(text);
+        }
+      } catch (err) {
+        btn.textContent = '❌ Failed';
+        setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 2000);
+        console.error('Warmup failed for', name, err);
+      }
+    }
+
+    // Filter button handling
+    document.querySelectorAll('#filterBar button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#filterBar button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentFilter = this.dataset.tier;
+        renderModels();
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderModels();
+      loadModelStatus();
+    });
+  </script>
+
+</body>
+</html>

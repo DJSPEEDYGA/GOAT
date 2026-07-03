@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎤 GOAT Vocal Studio — Pro Vocal Chain</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<link rel="icon" type="image/png" href="img/goat-hero-icon.png">
+<style>
+  .voc-wrap { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  .chain-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .stage {
+    background: rgba(20,20,20,0.9);
+    border: 1px solid rgba(193,18,31,0.3);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .stage h3 {
+    margin: 0 0 10px;
+    color: var(--goat-gold);
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .on-toggle {
+    width: 36px; height: 18px;
+    background: var(--goat-gray);
+    border-radius: 9px;
+    position: relative;
+    cursor: pointer;
+  }
+  .on-toggle::after {
+    content:''; position:absolute; top:2px; left:2px;
+    width:14px; height:14px; background:white; border-radius:50%;
+    transition: left 0.2s;
+  }
+  .on-toggle.on { background: var(--gradient-power); }
+  .on-toggle.on::after { left: 20px; }
+  .knob-row {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+  }
+  .kn {
+    text-align: center;
+    min-width: 70px;
+  }
+  .kn .goat-knob { margin: 0 auto; width: 54px; height: 54px; }
+  .kn .lbl { font-size: 10px; color: var(--goat-silver); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+  .kn .vv { font-size: 11px; color: var(--goat-gold); font-family: monospace; font-weight: 700; }
+  .recbar {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    padding: 16px;
+    background: rgba(20,20,20,0.9);
+    border-radius: 12px;
+    border: 1px solid rgba(193,18,31,0.3);
+    margin-bottom: 20px;
+  }
+  .rec-btn {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--goat-red-bright); color: white;
+    border: none; font-size: 22px; cursor: pointer;
+    box-shadow: 0 0 20px rgba(255,45,61,0.5);
+  }
+  .rec-btn.recording { animation: pulse-red 1s infinite; }
+  .pitch-canvas {
+    width: 100%; height: 200px;
+    background: var(--goat-black);
+    border-radius: 10px;
+    border: 1px solid rgba(193,18,31,0.3);
+    display: block;
+  }
+  .scale-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 4px;
+    margin-top: 10px;
+  }
+  .scale-key {
+    padding: 8px 0;
+    text-align: center;
+    background: var(--goat-gray);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+  .scale-key.active { background: var(--gradient-power); color: white; }
+  .scale-key:hover { background: rgba(193,18,31,0.3); }
+  select.voc {
+    width: 100%; padding: 8px;
+    background: var(--goat-gray); color: var(--goat-cream);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
+    font-size: 13px;
+  }
+</style>
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-icon">
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Ms. Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms. Money Penny">
+    <span>Ms. Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+
+<nav class="goat-nav">
+  <a href="index.html" class="goat-nav-brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT">
+    <span>VOCAL STUDIO</span>
+  </a>
+  <div class="goat-nav-links">
+    <a href="powerhouse.html">🐐 Hub</a>
+    <a href="studio.html">🎛️ Studio</a>
+    <a href="ssl-mixer.html">🎚️ Mixer</a>
+    <a href="mastering.html">💎 Master</a>
+    <a href="vocal-studio.html" class="active">🎤 Vocals</a>
+    <a href="ai-producer.html">🤖 AI</a>
+    <a href="plugins.html">🔌 Plugins</a>
+  </div>
+</nav>
+
+<div class="voc-wrap">
+  <section class="goat-hero" style="padding: 30px 0;">
+    <h1 style="font-size: 44px; margin: 0 0 8px;">🎤 GOAT VOCAL STUDIO</h1>
+    <p class="subtitle">Auto-Tune · Harmony · De-Esser · Formant · Doubler · Graph Mode</p>
+  </section>
+
+  <!-- REC BAR -->
+  <div class="recbar">
+    <button class="rec-btn" id="recBtn" title="Record">●</button>
+    <button class="t-btn goat-btn ghost" id="playRecBtn" title="Play recording">▶ Play</button>
+    <button class="t-btn goat-btn ghost" id="stopRecBtn">■ Stop</button>
+    <div style="flex:1; min-width: 200px;">
+      <div class="goat-meter" style="height: 16px;"><div class="goat-meter-fill" id="inputMeter"></div></div>
+      <div class="muted" style="font-size:11px; margin-top:4px;">Input level</div>
+    </div>
+    <span id="recTime" style="font-family: monospace; color: var(--goat-gold); font-weight: 700; min-width: 80px;">00:00</span>
+    <button class="goat-btn" id="downloadBtn">💾 Download Vocal</button>
+  </div>
+
+  <!-- PITCH DISPLAY -->
+  <div class="stage mb-2">
+    <h3>🎵 Pitch Graph (Graph Mode)</h3>
+    <canvas class="pitch-canvas" id="pitchCanvas"></canvas>
+    <p class="muted" style="font-size:12px; margin:8px 0 0;">Real-time pitch tracking · Red = detected pitch · Gold = scale target</p>
+  </div>
+
+  <!-- KEY + SCALE -->
+  <div class="stage mb-2">
+    <h3>🎹 Key & Scale</h3>
+    <div class="flex flex-wrap" style="gap: 10px; align-items: center;">
+      <div style="flex: 1; min-width: 200px;">
+        <label class="muted" style="font-size:11px; letter-spacing:1px;">KEY</label>
+        <div class="scale-grid" id="keyGrid">
+          <div class="scale-key active" data-key="0">C</div>
+          <div class="scale-key" data-key="1">C#</div>
+          <div class="scale-key" data-key="2">D</div>
+          <div class="scale-key" data-key="3">D#</div>
+          <div class="scale-key" data-key="4">E</div>
+          <div class="scale-key" data-key="5">F</div>
+          <div class="scale-key" data-key="6">F#</div>
+          <div class="scale-key" data-key="7">G</div>
+          <div class="scale-key" data-key="8">G#</div>
+          <div class="scale-key" data-key="9">A</div>
+          <div class="scale-key" data-key="10">A#</div>
+          <div class="scale-key" data-key="11">B</div>
+        </div>
+      </div>
+      <div style="min-width: 180px;">
+        <label class="muted" style="font-size:11px; letter-spacing:1px;">SCALE</label>
+        <select class="voc" id="scaleSel">
+          <option value="major">Major</option>
+          <option value="minor">Minor</option>
+          <option value="harm_minor">Harmonic Minor</option>
+          <option value="blues">Blues</option>
+          <option value="penta">Pentatonic</option>
+          <option value="trap">Trap (m/Harm)</option>
+          <option value="chromatic">Chromatic</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="chain-grid">
+
+    <!-- 1. INPUT / GATE -->
+    <div class="stage">
+      <h3>1. Input / Gate <span class="on-toggle on" data-st="gate"></span></h3>
+      <div class="knob-row">
+        <div class="kn"><div class="goat-knob" style="--rot:-90deg;"></div><div class="lbl">Input</div><div class="vv">0.0 dB</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:-120deg;"></div><div class="lbl">Threshold</div><div class="vv">-40 dB</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:0deg;"></div><div class="lbl">Hold</div><div class="vv">10 ms</div></div>
+      </div>
+    </div>
+
+    <!-- 2. HPF / EQ -->
+    <div class="stage">
+      <h3>2. HPF / EQ <span class="on-toggle on" data-st="eq"></span></h3>
+      <div class="knob-row">
+        <div class="kn"><div class="goat-knob" style="--rot:-80deg;"></div><div class="lbl">HPF</div><div class="vv">80 Hz</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:0deg;"></div><div class="lbl">Low</div><div class="vv">0 dB</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:30deg;"></div><div class="lbl">Mid</div><div class="vv">+2 dB</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:60deg;"></div><div class="lbl">Air</div><div class="vv">+3 dB</div></div>
+      </div>
+    </div>
+
+    <!-- 3. DE-ESSER -->
+    <div class="stage">
+      <h3>3. De-Esser <span class="on-toggle on" data-st="deess"></span></h3>
+      <div class="knob-row">
+        <div class="kn"><div class="goat-knob" style="--rot:30deg;"></div><div class="lbl">Freq</div><div class="vv">6.5 kHz</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:-30deg;"></div><div class="lbl">Thresh</div><div class="vv">-18 dB</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:60deg;"></div><div class="lbl">Reduction</div><div class="vv">6 dB</div></div>
+      </div>
+    </div>
+
+    <!-- 4. COMPRESSOR -->
+    <div class="stage">
+      <h3>4. Compressor <span class="on-toggle on" data-st="comp"></span></h3>
+      <div class="knob-row">
+        <div class="kn"><div class="goat-knob" style="--rot:-60deg;"></div><div class="lbl">Thresh</div><div class="vv">-18 dB</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:20deg;"></div><div class="lbl">Ratio</div><div class="vv">4:1</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:-90deg;"></div><div class="lbl">Attack</div><div class="vv">5 ms</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:30deg;"></div><div class="lbl">Release</div><div class="vv">80 ms</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:45deg;"></div><div class="lbl">Makeup</div><div class="vv">+4 dB</div></div>
+      </div>
+    </div>
+
+    <!-- 5. AUTO-TUNE -->
+    <div class="stage" style="border-color: var(--goat-red-bright); box-shadow: 0 0 30px rgba(193,18,31,0.2);">
+      <h3 style="color: var(--goat-red-bright);">5. GOAT AUTO-TUNE <span class="on-toggle on" data-st="tune"></span></h3>
+      <div class="knob-row">
+        <div class="kn"><div class="goat-knob" style="--rot:-120deg;"></div><div class="lbl">Speed</div><div class="vv">Hard</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:60deg;"></div><div class="lbl">Amount</div><div class="vv">100%</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:-30deg;"></div><div class="lbl">Humanize</div><div class="vv">15%</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:0deg;"></div><div class="lbl">Formant</div><div class="vv">0</div></div>
+      </div>
+      <div class="mt-2">
+        <div class="muted" style="font-size:11px;">Preset:</div>
+        <div class="flex flex-wrap" style="gap:6px; margin-top:6px;">
+          <div class="chip active" data-tune="trap">Trap (Hard)</div>
+          <div class="chip" data-tune="pop">Pop (Natural)</div>
+          <div class="chip" data-tune="rnb">R&B (Smooth)</div>
+          <div class="chip" data-tune="robot">Robot (T-Pain)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. FORMANT -->
+    <div class="stage">
+      <h3>6. Formant / Pitch <span class="on-toggle" data-st="formant"></span></h3>
+      <div class="knob-row">
+        <div class="kn"><div class="goat-knob" style="--rot:0deg;"></div><div class="lbl">Formant</div><div class="vv">0 st</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:0deg;"></div><div class="lbl">Pitch</div><div class="vv">0 st</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:20deg;"></div><div class="lbl">Gender</div><div class="vv">0</div></div>
+      </div>
+    </div>
+
+    <!-- 7. HARMONY -->
+    <div class="stage">
+      <h3>7. Harmony Generator <span class="on-toggle" data-st="harm"></span></h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+        <div>
+          <div class="muted" style="font-size:10px;">Voice 1</div>
+          <select class="voc"><option>-3 st (3rd below)</option><option>+3 st (3rd above)</option><option>+5 st (5th)</option><option>-5 st</option></select>
+        </div>
+        <div>
+          <div class="muted" style="font-size:10px;">Voice 2</div>
+          <select class="voc"><option>+4 st (3rd above)</option><option>-12 st (oct below)</option><option>+7 st (5th above)</option></select>
+        </div>
+        <div>
+          <div class="muted" style="font-size:10px;">Voice 3</div>
+          <select class="voc"><option>Off</option><option>+7 st</option><option>+12 st (oct)</option></select>
+        </div>
+        <div>
+          <div class="muted" style="font-size:10px;">Voice 4</div>
+          <select class="voc"><option>Off</option><option>-12 st</option><option>+19 st</option></select>
+        </div>
+      </div>
+      <div class="knob-row">
+        <div class="kn"><div class="goat-knob" style="--rot:30deg;"></div><div class="lbl">Blend</div><div class="vv">60%</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:0deg;"></div><div class="lbl">Width</div><div class="vv">100%</div></div>
+      </div>
+    </div>
+
+    <!-- 8. DOUBLER -->
+    <div class="stage">
+      <h3>8. Vocal Doubler <span class="on-toggle" data-st="dbl"></span></h3>
+      <div class="knob-row">
+        <div class="kn"><div class="goat-knob" style="--rot:0deg;"></div><div class="lbl">Voices</div><div class="vv">2</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:30deg;"></div><div class="lbl">Detune</div><div class="vv">10 ¢</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:0deg;"></div><div class="lbl">Width</div><div class="vv">100%</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:-30deg;"></div><div class="lbl">Mix</div><div class="vv">30%</div></div>
+      </div>
+    </div>
+
+    <!-- 9. REVERB -->
+    <div class="stage">
+      <h3>9. Reverb Send <span class="on-toggle on" data-st="verb"></span></h3>
+      <div class="knob-row">
+        <div class="kn"><div class="goat-knob" style="--rot:30deg;"></div><div class="lbl">Size</div><div class="vv">60%</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:20deg;"></div><div class="lbl">Decay</div><div class="vv">2.5s</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:-60deg;"></div><div class="lbl">Pre</div><div class="vv">20 ms</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:-60deg;"></div><div class="lbl">Mix</div><div class="vv">20%</div></div>
+      </div>
+      <select class="voc mt-2">
+        <option>Plate</option><option>Hall</option><option>Room</option><option>Chamber</option><option>Vocal Hall</option>
+      </select>
+    </div>
+
+    <!-- 10. DELAY -->
+    <div class="stage">
+      <h3>10. Delay Send <span class="on-toggle" data-st="del"></span></h3>
+      <div class="knob-row">
+        <div class="kn"><div class="goat-knob" style="--rot:0deg;"></div><div class="lbl">Time</div><div class="vv">1/4</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:-30deg;"></div><div class="lbl">Feedback</div><div class="vv">35%</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:30deg;"></div><div class="lbl">Ping-Pong</div><div class="vv">On</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:-60deg;"></div><div class="lbl">Mix</div><div class="vv">15%</div></div>
+      </div>
+    </div>
+
+    <!-- 11. OUTPUT -->
+    <div class="stage" style="grid-column: 1 / -1;">
+      <h3>11. Output / Limit</h3>
+      <div class="knob-row">
+        <div class="kn"><div class="goat-knob" style="--rot:30deg;"></div><div class="lbl">Output</div><div class="vv">+2 dB</div></div>
+        <div class="kn"><div class="goat-knob" style="--rot:-60deg;"></div><div class="lbl">Limit</div><div class="vv">-0.5 dB</div></div>
+      </div>
+      <div class="mt-2">
+        <div class="goat-meter" style="height:14px;"><div class="goat-meter-fill" id="outMeter" style="--level:0%;"></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PRESETS -->
+  <div class="stage mt-2">
+    <h3>🎨 Vocal Chain Presets</h3>
+    <div class="flex flex-wrap" style="gap:8px;">
+      <div class="chip active">Waka Flocka (Trap King)</div>
+      <div class="chip">BrickSquad Ad-Lib</div>
+      <div class="chip">Drake R&B</div>
+      <div class="chip">Travis Auto-Tune</div>
+      <div class="chip">Weeknd Polish</div>
+      <div class="chip">Lil Baby Melodic</div>
+      <div class="chip">Future Ghostly</div>
+      <div class="chip">Clean Podcast</div>
+    </div>
+  </div>
+</div>
+
+<footer class="goat-footer">
+  <p>🎤 <strong>GOAT VOCAL STUDIO</strong> — Pro vocal chain, free forever.</p>
+</footer>
+
+<script>
+// ==================== VOCAL STUDIO ENGINE ====================
+const AC = window.AudioContext || window.webkitAudioContext;
+let ctx = null, stream = null, recorder = null, recChunks = [];
+let recBuffer = null, analyser = null, source = null;
+let isRecording = false, recStart = 0;
+
+const recBtn = document.getElementById('recBtn');
+const playRecBtn = document.getElementById('playRecBtn');
+const stopRecBtn = document.getElementById('stopRecBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const inputMeter = document.getElementById('inputMeter');
+const outMeter = document.getElementById('outMeter');
+const recTime = document.getElementById('recTime');
+const pitchCanvas = document.getElementById('pitchCanvas');
+
+recBtn.addEventListener('click', async () => {
+  if (isRecording) {
+    stopRecording();
+  } else {
+    await startRecording();
+  }
+});
+
+async function startRecording() {
+  if (!ctx) ctx = new AC();
+  if (ctx.state === 'suspended') ctx.resume();
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: {
+      echoCancellation: false,
+      noiseSuppression: false,
+      autoGainControl: false
+    }});
+    const src = ctx.createMediaStreamSource(stream);
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 4096;
+    src.connect(analyser);
+    recorder = new MediaRecorder(stream);
+    recChunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) recChunks.push(e.data); };
+    recorder.onstop = async () => {
+      const blob = new Blob(recChunks, { type: 'audio/webm' });
+      const buf = await blob.arrayBuffer();
+      recBuffer = await ctx.decodeAudioData(buf);
+      window._recBlob = blob;
+    };
+    recorder.start();
+    isRecording = true;
+    recStart = Date.now();
+    recBtn.classList.add('recording');
+    recBtn.textContent = '■';
+    tickRecTimer();
+    tickMeter();
+    tickPitch();
+  } catch (e) {
+    alert('Microphone access denied: ' + e.message);
+  }
+}
+
+function stopRecording() {
+  if (recorder && recorder.state !== 'inactive') recorder.stop();
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  isRecording = false;
+  recBtn.classList.remove('recording');
+  recBtn.textContent = '●';
+}
+
+function tickRecTimer() {
+  if (!isRecording) return;
+  const el = (Date.now() - recStart) / 1000;
+  const m = Math.floor(el/60), s = Math.floor(el%60);
+  recTime.textContent = (m<10?'0':'')+m + ':' + (s<10?'0':'')+s;
+  setTimeout(tickRecTimer, 250);
+}
+
+function tickMeter() {
+  if (!isRecording || !analyser) return;
+  const buf = new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(buf);
+  let peak = 0;
+  for (let i = 0; i < buf.length; i++) {
+    const a = Math.abs(buf[i]);
+    if (a > peak) peak = a;
+  }
+  const db = 20 * Math.log10(peak + 1e-9);
+  const pct = Math.max(0, Math.min(100, (db + 60) * 1.67));
+  inputMeter.style.setProperty('--level', pct + '%');
+  requestAnimationFrame(tickMeter);
+}
+
+// ==================== PITCH DETECTION (YIN) ====================
+function detectPitch(buf, sampleRate) {
+  const tauMax = Math.floor(sampleRate / 80);
+  const tauMin = Math.floor(sampleRate / 1000);
+  let bestTau = 0, bestVal = 1;
+  for (let tau = tauMin; tau < tauMax; tau++) {
+    let sum = 0;
+    for (let i = 0; i < buf.length - tau; i++) {
+      const d = buf[i] - buf[i + tau];
+      sum += d * d;
+    }
+    if (sum < bestVal) { bestVal = sum; bestTau = tau; }
+  }
+  return bestTau > 0 ? sampleRate / bestTau : 0;
+}
+
+const pitchHistory = [];
+const MAX_PITCH_HIST = 200;
+
+function tickPitch() {
+  if (!isRecording || !analyser) return;
+  const buf = new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(buf);
+  const freq = detectPitch(buf, ctx.sampleRate);
+  if (freq > 0) {
+    pitchHistory.push(freq);
+    if (pitchHistory.length > MAX_PITCH_HIST) pitchHistory.shift();
+  }
+  drawPitchGraph();
+  setTimeout(tickPitch, 50);
+}
+
+function drawPitchGraph() {
+  const c = pitchCanvas;
+  const w = c.width = c.offsetWidth;
+  const h = c.height = c.offsetHeight;
+  const g = c.getContext('2d');
+  g.fillStyle = 'rgba(10,10,10,1)';
+  g.fillRect(0, 0, w, h);
+
+  // Grid (note lines)
+  g.strokeStyle = 'rgba(255,255,255,0.08)';
+  for (let i = 0; i < 12; i++) {
+    const y = (i / 12) * h;
+    g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke();
+  }
+
+  // Key labels
+  const keys = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  g.fillStyle = 'rgba(240,192,112,0.5)';
+  g.font = '10px monospace';
+  for (let i = 0; i < 12; i++) {
+    const y = (i / 12) * h + 12;
+    g.fillText(keys[11-i], 4, y);
+  }
+
+  // Pitch line (red)
+  if (pitchHistory.length > 1) {
+    g.strokeStyle = '#ff2d3d';
+    g.lineWidth = 2;
+    g.shadowColor = '#ff2d3d';
+    g.shadowBlur = 8;
+    g.beginPath();
+    for (let i = 0; i < pitchHistory.length; i++) {
+      const freq = pitchHistory[i];
+      const midi = 69 + 12 * Math.log2(freq / 440);
+      const note = ((midi % 12) + 12) % 12;
+      const x = (i / MAX_PITCH_HIST) * w;
+      const y = (1 - note/12) * h;
+      if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+    }
+    g.stroke();
+    g.shadowBlur = 0;
+
+    // Tuned overlay (gold - snapped to scale)
+    g.strokeStyle = '#f0c070';
+    g.lineWidth = 2;
+    g.setLineDash([4, 4]);
+    g.beginPath();
+    for (let i = 0; i < pitchHistory.length; i++) {
+      const freq = pitchHistory[i];
+      const midi = Math.round(69 + 12 * Math.log2(freq / 440));
+      const note = ((midi % 12) + 12) % 12;
+      const x = (i / MAX_PITCH_HIST) * w;
+      const y = (1 - note/12) * h;
+      if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+    }
+    g.stroke();
+    g.setLineDash([]);
+  }
+}
+
+// Init empty graph
+drawPitchGraph();
+
+// ==================== PLAYBACK ====================
+playRecBtn.addEventListener('click', () => {
+  if (!recBuffer) { alert('Record something first'); return; }
+  if (source) try { source.stop(); } catch(e){}
+  source = ctx.createBufferSource();
+  source.buffer = recBuffer;
+  source.connect(ctx.destination);
+  source.start(0);
+});
+stopRecBtn.addEventListener('click', () => {
+  if (source) try { source.stop(); } catch(e){}
+});
+downloadBtn.addEventListener('click', () => {
+  if (!window._recBlob) { alert('Record something first'); return; }
+  const url = URL.createObjectURL(window._recBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'GOAT_VOCAL_' + Date.now() + '.webm';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// ==================== KEY / SCALE ====================
+document.querySelectorAll('#keyGrid .scale-key').forEach(k => {
+  k.addEventListener('click', () => {
+    document.querySelectorAll('#keyGrid .scale-key').forEach(x => x.classList.remove('active'));
+    k.classList.add('active');
+  });
+});
+
+// Toggle stages
+document.querySelectorAll('.on-toggle').forEach(t => {
+  t.addEventListener('click', () => t.classList.toggle('on'));
+});
+
+// Chip selection
+document.querySelectorAll('[data-tune]').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('[data-tune]').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+  });
+});
+</script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>

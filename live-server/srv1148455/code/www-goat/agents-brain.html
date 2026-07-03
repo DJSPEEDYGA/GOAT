@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧠 GOAT AI Brain — 11 Agents Command Center</title>
+<meta name="description" content="Your own AI assistant + 11 specialist agents. Routes through local Ollama → NVIDIA → Gemini. No OpenAI dependency.">
+<style>
+:root { --bg:#0a0e17; --card:#121826; --border:#1e2535; --text:#e4e4e7; --muted:#8b92a7; --gold:#FFD700; --hot:#FF3D00; --cyan:#00E5FF; --green:#10b981; --red:#ef4444; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+.container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+.topbar { display:flex; align-items:center; gap:16px; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.brand { font-size:22px; font-weight:900; background:linear-gradient(90deg,var(--gold),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.navlinks { display:flex; gap:8px; flex-wrap:wrap; }
+.navlinks a { padding:6px 12px; background:#1a2035; border:1px solid var(--border); border-radius:6px; color:var(--text); text-decoration:none; font-size:13px; }
+.navlinks a:hover { border-color: var(--gold); color: var(--gold); }
+
+.hero { background:linear-gradient(135deg,#1a0f3a 0%,#0a1a3e 100%); border:1px solid var(--cyan); border-radius:16px; padding:32px; margin-bottom:24px; }
+.hero h1 { font-size:clamp(28px,4vw,42px); margin-bottom:8px; background:linear-gradient(90deg,var(--gold),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:900; }
+.hero p { color:#d4d4d8; font-size:15px; max-width:760px; }
+
+.engines { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:20px; }
+.engine { background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:14px; }
+.engine .row { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.engine .dot { width:10px; height:10px; border-radius:50%; }
+.engine.ok .dot { background:var(--green); box-shadow:0 0 10px var(--green); }
+.engine.off .dot { background:var(--red); }
+.engine h4 { font-size:14px; flex:1; }
+.engine .tag { font-size:10px; padding:2px 6px; border-radius:4px; background:#1a2035; color:var(--cyan); }
+.engine small { color:var(--muted); font-size:11px; display:block; margin-top:4px; }
+
+.layout { display:grid; grid-template-columns:320px 1fr; gap:24px; }
+@media (max-width:900px) { .layout { grid-template-columns:1fr; } }
+
+.agents-list { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; max-height:720px; overflow-y:auto; }
+.agents-list h3 { font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+.agent-card { padding:12px; border-radius:10px; cursor:pointer; display:flex; gap:10px; align-items:center; margin-bottom:6px; border:1px solid transparent; transition:all 0.2s; }
+.agent-card:hover { background:#1a2035; }
+.agent-card.active { background:linear-gradient(135deg,rgba(255,215,0,0.12),rgba(0,229,255,0.05)); border-color:var(--gold); }
+.agent-card .icon { font-size:28px; width:42px; text-align:center; }
+.agent-card .info h4 { font-size:14px; color:var(--gold); }
+.agent-card .info small { color:var(--muted); font-size:11px; }
+
+.chat-wrap { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; display:flex; flex-direction:column; min-height:640px; }
+.chat-header { display:flex; align-items:center; gap:14px; padding-bottom:16px; border-bottom:1px solid var(--border); margin-bottom:14px; }
+.chat-header .icon { font-size:44px; }
+.chat-header h2 { font-size:22px; color:var(--gold); }
+.chat-header small { color:var(--muted); font-size:12px; }
+.chat-header .status { margin-left:auto; font-size:12px; color:var(--cyan); }
+.engine-badge { display:inline-block; font-size:10px; padding:2px 6px; border-radius:4px; background:#1a2035; color:var(--cyan); margin-left:6px; }
+
+.messages { flex:1; overflow-y:auto; padding:12px; background:#0a0e17; border:1px solid var(--border); border-radius:10px; min-height:320px; max-height:440px; margin-bottom:14px; }
+.msg { margin-bottom:12px; padding:12px 14px; border-radius:10px; max-width:90%; font-size:14px; }
+.msg.user { background:#1a2035; margin-left:auto; border:1px solid var(--border); }
+.msg.bot { background:rgba(255,215,0,0.06); border-left:3px solid var(--gold); white-space:pre-wrap; }
+.msg.bot .engine { font-size:10px; color:var(--muted); display:block; margin-top:6px; }
+.msg.sys { background:rgba(0,229,255,0.08); border-left:3px solid var(--cyan); font-size:12px; color:#a5b4c6; }
+
+.input-row { display:flex; gap:10px; }
+.input-row input { flex:1; padding:14px; background:#1a2035; border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; }
+.input-row input:focus { outline:none; border-color:var(--gold); }
+.input-row button { padding:14px 22px; background:linear-gradient(90deg,var(--gold),#FFA500); color:#000; border:none; border-radius:10px; font-weight:800; cursor:pointer; font-size:14px; }
+.input-row button:hover { filter:brightness(1.1); }
+.input-row button:disabled { opacity:0.5; cursor:not-allowed; }
+
+.suggestions { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+.sugg { padding:6px 12px; background:#1a2035; border:1px solid var(--border); border-radius:14px; font-size:12px; cursor:pointer; color:var(--cyan); }
+.sugg:hover { background:var(--cyan); color:#000; border-color:var(--cyan); }
+
+.how-it-works { margin-top:28px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:24px; }
+.how-it-works h3 { color:var(--gold); font-size:20px; margin-bottom:12px; }
+.how-it-works p { color:#c4c4c8; margin-bottom:12px; font-size:14px; }
+.flow { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:16px; }
+.flow-step { background:#0a0e17; border:1px solid var(--border); border-radius:10px; padding:14px; }
+.flow-step .n { display:inline-block; width:26px; height:26px; border-radius:50%; background:var(--gold); color:#000; text-align:center; line-height:26px; font-weight:900; font-size:13px; margin-bottom:8px; }
+.flow-step h4 { font-size:14px; color:var(--cyan); margin-bottom:4px; }
+.flow-step p { font-size:12px; color:var(--muted); margin:0; }
+
+code { background:#0a0e17; padding:2px 6px; border-radius:4px; color:var(--cyan); font-size:12px; }
+</style>
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Ms. Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms. Money Penny">
+    <span>Ms. Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="topbar">
+    <div class="brand">🧠 GOAT AI Brain</div>
+    <div class="navlinks">
+      <a href="index.html">Home</a>
+      <a href="powerhouse.html">Powerhouse</a>
+      <a href="network.html">Network</a>
+      <a href="moneypenny.html">Moneypenny</a>
+      <a href="intel.html">Intel</a>
+      <a href="fan-db.html">Fan DB</a>
+      <a href="spotify-dashboard.html">Spotify</a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>Your AI Assistant + 11 Specialist Agents</h1>
+    <p>
+      This is <strong>your own OpenAI</strong> — no subscription, no lock-in, no one stealing your prompts.
+      Every message routes through a priority chain of AI engines. If one is down, the next picks up automatically.
+    </p>
+
+    <div class="engines" id="engines">
+      <div class="engine"><div class="row"><div class="dot"></div><h4>Checking engines...</h4></div></div>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <div class="agents-list">
+      <h3>🤖 11 Specialist Agents</h3>
+      <div id="agents"></div>
+    </div>
+
+    <div class="chat-wrap">
+      <div class="chat-header">
+        <div class="icon" id="agentIcon">🧠</div>
+        <div>
+          <h2 id="agentName">Pick an agent</h2>
+          <small id="agentRole">Each agent is tuned for a specific job</small>
+        </div>
+        <div class="status">
+          <span id="engineBadge">—</span>
+        </div>
+      </div>
+
+      <div class="messages" id="messages">
+        <div class="msg sys">👋 Welcome, Speedy. Pick an agent from the left. Each one has its own specialty, personality, and preferred AI engine. Everything stays under your control.</div>
+      </div>
+
+      <div class="input-row">
+        <input id="msgInput" placeholder="Pick an agent first..." disabled onkeydown="if(event.key==='Enter')send()">
+        <button id="sendBtn" onclick="send()" disabled>Send</button>
+      </div>
+
+      <div class="suggestions" id="suggestions"></div>
+    </div>
+  </div>
+
+  <div class="how-it-works">
+    <h3>⚡ How It Works</h3>
+    <p>
+      Every agent sends your message to the <code>/brain/agent/<id></code> endpoint on your Intel server.
+      The brain tries engines in this order — whichever answers fastest wins:
+    </p>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="n">1</div>
+        <h4>🔒 Ollama (Local)</h4>
+        <p>Runs on YOUR machine. Free, private, works offline. Install from <code>ollama.com</code>, then <code>ollama pull gemma3:4b</code>.</p>
+      </div>
+      <div class="flow-step">
+        <div class="n">2</div>
+        <h4>⚡ NVIDIA Build</h4>
+        <p>Free cloud tier. Llama 3.3 70B on NVIDIA GPUs. Key already set in <code>goat-app/.env</code>.</p>
+      </div>
+      <div class="flow-step">
+        <div class="n">3</div>
+        <h4>🌟 Gemini 2.5 Flash</h4>
+        <p>Google's free tier. Fastest response. Your key is set. Auto-upgrades to Gemini 2.5 Pro for "reason" tasks.</p>
+      </div>
+      <div class="flow-step">
+        <div class="n">4</div>
+        <h4>🚫 OpenAI: REMOVED</h4>
+        <p>Deleted from the stack. You don't pay them a dime. Your local Gemma IS your GPT.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:20px;">
+      <strong>🤖 How to add your own agent:</strong> Open <code>goat-intel-server/goat_intel.py</code>, find
+      <code>AGENT_PERSONAS</code>, and add a new entry:
+    </p>
+    <pre style="background:#0a0e17;padding:14px;border-radius:8px;border:1px solid var(--border);overflow-x:auto;font-size:12px;color:#a5b4c6;margin-top:10px;">"my_agent": {
+  "name": "My Custom Agent",
+  "icon": "🔥",
+  "task_type": "creative",  // chat | creative | reason | code | private
+  "system": "You are ... (your system prompt here)"
+}</pre>
+    <p style="margin-top:10px;">Save the file, restart the server (<code>python3 goat_intel.py</code>), and your agent appears on this page automatically. That's it.</p>
+  </div>
+
+</div>
+
+<script>
+// Auto-pick Intel server URL: localhost when running locally, public tunnel when deployed
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname.startsWith('192.168.'))
+  ? 'http://localhost:5500'
+  : 'https://010dy.app.super.myninja.ai';
+let currentAgent = null;
+let history = [];
+
+const SUGGESTIONS = {
+  moneypenny: ['Write an email for Waka tour announcement','Draft an Instagram caption','3 hook ideas for new single'],
+  codex: ['Review my Supabase schema','Write a Python webhook','Optimize my Intel server'],
+  legal: ['What does 17 USC §115 cover?','Draft a sync license term sheet','Explain work-for-hire vs assignment'],
+  producer: ['BPM for a drill beat','Chord progression like No Hands','Arrange an 808 hook'],
+  'a&r': ['Analyze Waka TikTok momentum','5 rising Atlanta artists','Which track should we push first?'],
+  business: ['Calculate 50/50 publishing split on $100K','SoundExchange vs PRO royalties','Tax strategy for artist LLC'],
+  fashion: ['Waka music video outfit','Merch drop for Brick Squad','Red carpet looks'],
+  researcher: ['Report on TikTok royalty rates 2024','Who owns Brick Squad trademark?','Compare distributor splits'],
+  writer: ['Hook about riding through the A','Verse in Waka voice','Bridge for a love song'],
+  autonomous: ['Plan a Waka single release','Grow Spotify followers this week','Launch a sync pitch campaign'],
+  private: ['Analyze this contract (paste text)','Rewrite these lyrics','Summarize evidence for case #']
+};
+
+async function loadEngines(){
+  try {
+    const r = await fetch(API + '/brain/status');
+    const s = await r.json();
+    const div = document.getElementById('engines');
+    div.innerHTML = '';
+    ['ollama','nvidia','gemini'].forEach(name => {
+      const e = s[name] || {};
+      const el = document.createElement('div');
+      el.className = 'engine ' + (e.online ? 'ok':'off');
+      const labels = {
+        ollama: {title:'🔒 Ollama (Local)', tag:'FREE + PRIVATE'},
+        nvidia: {title:'⚡ NVIDIA Build', tag:'FREE CLOUD'},
+        gemini: {title:'🌟 Gemini', tag: e.model || 'CLOUD'}
+      };
+      const L = labels[name];
+      el.innerHTML = `
+        <div class="row"><div class="dot"></div><h4>${L.title}</h4><span class="tag">${L.tag}</span></div>
+        <small>${e.online ? '✅ Online' : '⏸ '+(e.hint||'Offline')}</small>`;
+      div.appendChild(el);
+    });
+  } catch (e) {
+    document.getElementById('engines').innerHTML =
+      `<div class="engine off"><div class="row"><div class="dot"></div><h4>⚠️ Intel server not running</h4></div><small>Start with: <code>cd goat-intel-server && python3 goat_intel.py</code></small></div>`;
+  }
+}
+
+async function loadAgents(){
+  try {
+    const r = await fetch(API + '/brain/agents');
+    const d = await r.json();
+    const div = document.getElementById('agents');
+    div.innerHTML = '';
+    d.agents.forEach(a => {
+      const card = document.createElement('div');
+      card.className = 'agent-card';
+      card.onclick = () => selectAgent(a);
+      card.id = 'agent-'+a.id.replace('&','');
+      card.innerHTML = `
+        <div class="icon">${a.icon}</div>
+        <div class="info">
+          <h4>${a.name}</h4>
+          <small>${a.task_type}</small>
+        </div>`;
+      div.appendChild(card);
+    });
+  } catch (e) {
+    document.getElementById('agents').innerHTML =
+      '<div style="padding:14px;color:var(--muted);">⚠️ Cannot reach /brain/agents.<br>Start Intel server on port 5500.</div>';
+  }
+}
+
+function selectAgent(a){
+  currentAgent = a;
+  history = [];
+  document.querySelectorAll('.agent-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('agent-'+a.id.replace('&','')).classList.add('active');
+
+  document.getElementById('agentIcon').textContent = a.icon;
+  document.getElementById('agentName').textContent = a.name;
+  document.getElementById('agentRole').textContent = 'Task type: '+a.task_type+' · Endpoint: /brain/agent/'+a.id;
+
+  document.getElementById('messages').innerHTML =
+    `<div class="msg sys">🟢 Connected to <strong>${a.name}</strong>. Routing through the GOAT AI Brain (will use the fastest available engine).</div>`;
+
+  const input = document.getElementById('msgInput');
+  input.disabled = false;
+  input.placeholder = `Ask ${a.name}...`;
+  input.focus();
+  document.getElementById('sendBtn').disabled = false;
+
+  const sug = document.getElementById('suggestions');
+  sug.innerHTML = '';
+  (SUGGESTIONS[a.id] || []).forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'sugg';
+    b.textContent = s;
+    b.onclick = () => { input.value = s; send(); };
+    sug.appendChild(b);
+  });
+}
+
+async function send(){
+  if (!currentAgent) return;
+  const input = document.getElementById('msgInput');
+  const message = input.value.trim();
+  if (!message) return;
+  input.value = '';
+  const msgs = document.getElementById('messages');
+
+  const userEl = document.createElement('div');
+  userEl.className = 'msg user';
+  userEl.textContent = message;
+  msgs.appendChild(userEl);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const botEl = document.createElement('div');
+  botEl.className = 'msg bot';
+  botEl.textContent = '⏳ Thinking...';
+  msgs.appendChild(botEl);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  try {
+    const r = await fetch(API + '/brain/agent/' + encodeURIComponent(currentAgent.id), {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ message, history })
+    });
+    const d = await r.json();
+    if (d.ok){
+      botEl.textContent = d.reply;
+      const eng = document.createElement('span');
+      eng.className = 'engine';
+      eng.textContent = '⚡ Answered by: ' + (d.engine || 'unknown');
+      botEl.appendChild(eng);
+      document.getElementById('engineBadge').innerHTML = `<span class="engine-badge">${d.engine||''}</span>`;
+      history.push({role:'user', content: message});
+      history.push({role:'assistant', content: d.reply});
+      if (history.length > 16) history = history.slice(-16);
+    } else {
+      botEl.textContent = '❌ ' + (d.error || 'error');
+    }
+  } catch (e) {
+    botEl.textContent = '❌ Network error: ' + e.message;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+loadEngines();
+loadAgents();
+setInterval(loadEngines, 15000);  // refresh engine status every 15s
+</script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>

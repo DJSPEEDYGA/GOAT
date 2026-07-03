@@ -1,0 +1,2086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSL 148-Channel Digital Mixing Board — GOAT Royalty App</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ssl-amber: #ffa500;
+    --ssl-amber-bright: #ffcc33;
+    --ssl-red: #ff3030;
+    --ssl-green: #00ff66;
+    --ssl-yellow: #ffe500;
+    --ssl-blue: #3399ff;
+    --ssl-bg: #0a0a0a;
+    --ssl-panel: #1a1a1a;
+    --ssl-strip: #141414;
+    --ssl-strip-alt: #181818;
+    --ssl-border: #2a2a2a;
+    --ssl-metal: linear-gradient(180deg, #2c2c2c 0%, #1a1a1a 50%, #0f0f0f 100%);
+    --ssl-knob: radial-gradient(circle at 30% 30%, #3a3a3a, #1a1a1a 70%, #0a0a0a);
+  }
+  html, body {
+    background: var(--ssl-bg);
+    color: #e0e0e0;
+    font-family: 'Helvetica Neue', 'Arial Narrow', Arial, sans-serif;
+    font-size: 11px;
+    overflow: hidden;
+    height: 100vh;
+    user-select: none;
+  }
+  /* ============ TOP BAR ============ */
+  .top-bar {
+    height: 48px;
+    background: var(--ssl-metal);
+    border-bottom: 2px solid #000;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+    position: relative;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Arial Black', sans-serif;
+    font-size: 18px;
+    letter-spacing: 3px;
+    color: var(--ssl-amber);
+    text-shadow: 0 0 10px rgba(255,165,0,0.5);
+  }
+  .logo-sub {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #888;
+    margin-left: -16px;
+  }
+  .top-btn {
+    padding: 6px 14px;
+    background: linear-gradient(180deg, #2a2a2a, #111);
+    border: 1px solid #333;
+    color: #ccc;
+    font-size: 10px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: inherit;
+    transition: all 0.1s;
+  }
+  .top-btn:hover { border-color: var(--ssl-amber); color: var(--ssl-amber); }
+  .top-btn.active {
+    background: linear-gradient(180deg, var(--ssl-amber), #cc7700);
+    color: #000;
+    border-color: var(--ssl-amber-bright);
+    box-shadow: 0 0 8px rgba(255,165,0,0.6);
+  }
+  .transport {
+    margin-left: auto;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .transport-btn {
+    width: 32px;
+    height: 26px;
+    background: linear-gradient(180deg, #222, #0a0a0a);
+    border: 1px solid #333;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .transport-btn.rec.active {
+    background: var(--ssl-red);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(255,48,48,0.8);
+    animation: blink 1s infinite;
+  }
+  .transport-btn.play.active {
+    background: var(--ssl-green);
+    color: #000;
+  }
+  @keyframes blink { 50% { opacity: 0.6; } }
+  .timecode {
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    color: var(--ssl-amber);
+    background: #000;
+    padding: 4px 12px;
+    border: 1px solid #333;
+    border-radius: 2px;
+    letter-spacing: 2px;
+    margin-left: 12px;
+    text-shadow: 0 0 6px rgba(255,165,0,0.6);
+  }
+  /* ============ METER BRIDGE ============ */
+  .meter-bridge {
+    height: 80px;
+    background: linear-gradient(180deg, #1a1a1a, #0a0a0a);
+    border-bottom: 2px solid #000;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #333 #0a0a0a;
+  }
+  .meter-bridge::-webkit-scrollbar { height: 6px; }
+  .meter-bridge::-webkit-scrollbar-thumb { background: #333; }
+  .meter-mini {
+    min-width: 42px;
+    width: 42px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 2px;
+    border-right: 1px solid #1a1a1a;
+  }
+  .meter-led-strip {
+    width: 8px;
+    height: 52px;
+    background: #050505;
+    border: 1px solid #222;
+    border-radius: 1px;
+    position: relative;
+    display: flex;
+    flex-direction: column-reverse;
+    overflow: hidden;
+  }
+  .meter-led {
+    flex: 1;
+    margin: 0.5px 0;
+    background: #0a2a0a;
+    transition: background 0.05s;
+  }
+  .meter-led.on.green { background: var(--ssl-green); box-shadow: 0 0 4px var(--ssl-green); }
+  .meter-led.on.yellow { background: var(--ssl-yellow); box-shadow: 0 0 4px var(--ssl-yellow); }
+  .meter-led.on.red { background: var(--ssl-red); box-shadow: 0 0 4px var(--ssl-red); }
+  .meter-label {
+    font-size: 8px;
+    color: #666;
+    margin-top: 3px;
+    letter-spacing: 0.5px;
+  }
+  /* ============ BANK SELECTOR ============ */
+  .bank-bar {
+    height: 32px;
+    background: #0a0a0a;
+    border-bottom: 1px solid #222;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 6px;
+  }
+  .bank-label {
+    font-size: 10px;
+    color: #666;
+    letter-spacing: 1.5px;
+    margin-right: 8px;
+  }
+  .bank-btn {
+    min-width: 40px;
+    height: 22px;
+    background: linear-gradient(180deg, #1a1a1a, #0a0a0a);
+    border: 1px solid #2a2a2a;
+    color: #888;
+    font-size: 9px;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: inherit;
+    letter-spacing: 0.5px;
+  }
+  .bank-btn.active {
+    background: linear-gradient(180deg, var(--ssl-amber), #cc7700);
+    color: #000;
+    border-color: var(--ssl-amber-bright);
+    font-weight: bold;
+  }
+  .bank-info {
+    margin-left: auto;
+    font-size: 10px;
+    color: #666;
+    letter-spacing: 1px;
+  }
+  /* ============ MAIN CONSOLE ============ */
+  .console {
+    height: calc(100vh - 48px - 80px - 32px);
+    display: flex;
+    overflow: hidden;
+    background: #050505;
+  }
+  .channel-rack {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex: 1;
+    background: linear-gradient(180deg, #0a0a0a, #050505);
+    scrollbar-width: thin;
+    scrollbar-color: #333 #0a0a0a;
+  }
+  .channel-rack::-webkit-scrollbar { height: 8px; }
+  .channel-rack::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+  /* ============ CHANNEL STRIP ============ */
+  .channel-strip {
+    min-width: 64px;
+    width: 64px;
+    background: var(--ssl-strip);
+    border-right: 1px solid #050505;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 2px;
+    position: relative;
+  }
+  .channel-strip:nth-child(even) { background: var(--ssl-strip-alt); }
+  .channel-strip.selected {
+    box-shadow: inset 0 0 0 2px var(--ssl-amber);
+  }
+  .ch-num {
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    font-weight: bold;
+    color: var(--ssl-amber);
+    padding: 2px 0;
+    background: #000;
+    border-radius: 2px;
+    margin-bottom: 3px;
+    letter-spacing: 1px;
+  }
+  .ch-name {
+    text-align: center;
+    font-size: 8px;
+    color: #ccc;
+    background: #0a0a0a;
+    border: 1px solid #222;
+    padding: 2px 0;
+    margin-bottom: 4px;
+    border-radius: 1px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: text;
+    min-height: 14px;
+  }
+  .ch-name[contenteditable="true"]:focus {
+    outline: 1px solid var(--ssl-amber);
+    background: #1a1a1a;
+  }
+  /* Input section */
+  .section {
+    margin-bottom: 4px;
+    padding: 3px 0;
+    border-bottom: 1px solid #0a0a0a;
+  }
+  .section-label {
+    font-size: 7px;
+    color: #555;
+    text-align: center;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .btn-row {
+    display: flex;
+    gap: 2px;
+    justify-content: center;
+    margin-bottom: 2px;
+  }
+  .mini-btn {
+    flex: 1;
+    height: 14px;
+    background: linear-gradient(180deg, #222, #0f0f0f);
+    border: 1px solid #2a2a2a;
+    color: #777;
+    font-size: 7px;
+    cursor: pointer;
+    border-radius: 1px;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+  }
+  .mini-btn.active {
+    background: linear-gradient(180deg, var(--ssl-amber), #aa6600);
+    color: #000;
+    border-color: var(--ssl-amber-bright);
+    box-shadow: 0 0 4px rgba(255,165,0,0.5);
+  }
+  .mini-btn.red.active {
+    background: var(--ssl-red);
+    color: #fff;
+    box-shadow: 0 0 4px rgba(255,48,48,0.6);
+  }
+  .mini-btn.green.active {
+    background: var(--ssl-green);
+    color: #000;
+    box-shadow: 0 0 4px rgba(0,255,102,0.6);
+  }
+  .mini-btn.green {
+    color: var(--ssl-green);
+  }
+  .mini-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .channel-strip.loaded {
+    border-left: 2px solid var(--ssl-green);
+  }
+  .channel-strip.mic-on {
+    border-left: 2px solid var(--ssl-red);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: inset 3px 0 0 var(--ssl-red); }
+    50%      { box-shadow: inset 3px 0 0 rgba(255,48,48,0.4); }
+  }
+  /* Knob */
+  .knob-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 3px;
+  }
+  .knob {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--ssl-knob);
+    border: 1px solid #000;
+    position: relative;
+    cursor: ns-resize;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.05);
+  }
+  .knob::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 50%;
+    width: 2px;
+    height: 10px;
+    background: var(--ssl-amber);
+    transform-origin: 50% 11px;
+    transform: translateX(-50%) rotate(var(--rot, 0deg));
+    border-radius: 1px;
+    box-shadow: 0 0 3px rgba(255,165,0,0.6);
+  }
+  .knob-label {
+    font-size: 7px;
+    color: #888;
+    margin-top: 1px;
+    letter-spacing: 0.3px;
+  }
+  .knob-val {
+    font-size: 7px;
+    color: var(--ssl-amber);
+    font-family: 'Courier New', monospace;
+  }
+  /* EQ section - compact */
+  .eq-band {
+    display: flex;
+    justify-content: space-around;
+    gap: 1px;
+    margin-bottom: 2px;
+  }
+  .eq-band .knob-wrap { margin-bottom: 1px; }
+  .eq-band .knob {
+    width: 20px;
+    height: 20px;
+  }
+  .eq-band .knob::after {
+    top: 2px;
+    height: 7px;
+    transform-origin: 50% 8px;
+  }
+  /* Fader section */
+  .fader-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 6px;
+    border-top: 1px solid #0a0a0a;
+  }
+  .solo-mute {
+    display: flex;
+    gap: 2px;
+    width: 100%;
+    margin-bottom: 4px;
+  }
+  .solo-mute .mini-btn {
+    height: 16px;
+    font-size: 8px;
+    font-weight: bold;
+  }
+  .fader-track {
+    width: 18px;
+    height: 140px;
+    background: linear-gradient(180deg, #050505, #111);
+    border: 1px solid #000;
+    border-radius: 2px;
+    position: relative;
+    margin: 4px 0;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.8);
+  }
+  .fader-track::before {
+    /* 0dB mark */
+    content: '';
+    position: absolute;
+    left: -3px;
+    right: -3px;
+    top: 28%;
+    height: 1px;
+    background: var(--ssl-amber);
+    opacity: 0.6;
+  }
+  .fader-cap {
+    position: absolute;
+    left: -4px;
+    width: 26px;
+    height: 18px;
+    background: linear-gradient(180deg, #ddd 0%, #888 40%, #333 60%, #111 100%);
+    border: 1px solid #000;
+    border-radius: 2px;
+    cursor: ns-resize;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    transform: translateY(var(--fader-pos, 39px));
+  }
+  .fader-cap::before {
+    content: '';
+    position: absolute;
+    left: 2px; right: 2px;
+    top: 50%;
+    height: 2px;
+    background: var(--ssl-amber);
+    border-radius: 1px;
+    box-shadow: 0 0 2px rgba(255,165,0,0.6);
+  }
+  .fader-mini-meter {
+    position: absolute;
+    right: -6px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #050505;
+    border: 1px solid #222;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .fader-mini-meter .bar {
+    width: 100%;
+    background: linear-gradient(0deg, var(--ssl-green) 0%, var(--ssl-green) 60%, var(--ssl-yellow) 60%, var(--ssl-yellow) 85%, var(--ssl-red) 85%, var(--ssl-red) 100%);
+    height: 0%;
+    transition: height 0.05s;
+  }
+  .fader-db {
+    font-size: 8px;
+    color: var(--ssl-amber);
+    font-family: 'Courier New', monospace;
+    margin-top: 4px;
+    min-height: 12px;
+  }
+  .pan-knob { margin: 4px 0; }
+  .vca-assign {
+    font-size: 7px;
+    color: #666;
+    text-align: center;
+    margin-top: 4px;
+    padding: 2px;
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 2px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .vca-assign.active { color: var(--ssl-amber); border-color: var(--ssl-amber); }
+  /* ============ MASTER SECTION ============ */
+  .master-section {
+    min-width: 280px;
+    width: 280px;
+    background: linear-gradient(180deg, #1a1a1a, #0a0a0a);
+    border-left: 3px solid var(--ssl-amber);
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #333 #0a0a0a;
+  }
+  .master-section::-webkit-scrollbar { width: 6px; }
+  .master-section::-webkit-scrollbar-thumb { background: #333; }
+  .master-title {
+    text-align: center;
+    font-family: 'Arial Black', sans-serif;
+    font-size: 14px;
+    color: var(--ssl-amber);
+    letter-spacing: 3px;
+    padding: 4px 0 8px;
+    border-bottom: 1px solid var(--ssl-amber);
+    margin-bottom: 10px;
+    text-shadow: 0 0 8px rgba(255,165,0,0.4);
+  }
+  .master-block {
+    margin-bottom: 12px;
+    padding: 8px;
+    background: var(--ssl-strip);
+    border: 1px solid #2a2a2a;
+    border-radius: 3px;
+  }
+  .master-block-title {
+    font-size: 9px;
+    color: var(--ssl-amber);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #2a2a2a;
+  }
+  .vca-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 3px;
+  }
+  .vca-btn {
+    padding: 4px 2px;
+    background: linear-gradient(180deg, #222, #0f0f0f);
+    border: 1px solid #2a2a2a;
+    color: #888;
+    font-size: 8px;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: inherit;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+  .vca-btn.active {
+    background: linear-gradient(180deg, var(--ssl-amber), #aa6600);
+    color: #000;
+    border-color: var(--ssl-amber-bright);
+  }
+  .mute-group-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3px;
+  }
+  .master-fader-wrap {
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    align-items: flex-end;
+  }
+  .master-fader-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .master-fader-col .fader-track {
+    width: 24px;
+    height: 180px;
+  }
+  .master-fader-col .fader-cap {
+    width: 32px;
+    left: -5px;
+  }
+  .master-fader-col .fader-label {
+    font-size: 9px;
+    color: var(--ssl-amber);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    font-weight: bold;
+  }
+  .master-meters {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    padding: 8px 0;
+  }
+  .master-meter-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .master-meter-led-strip {
+    width: 14px;
+    height: 120px;
+    background: #050505;
+    border: 1px solid #222;
+    display: flex;
+    flex-direction: column-reverse;
+    padding: 1px;
+  }
+  .master-meter-led-strip .meter-led { margin: 0.5px 0; }
+  .master-meter-col-label {
+    font-size: 9px;
+    color: var(--ssl-amber);
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+  .snapshot-row {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .snap-btn {
+    flex: 1;
+    min-width: 45px;
+    padding: 5px 3px;
+    background: linear-gradient(180deg, #222, #0f0f0f);
+    border: 1px solid #2a2a2a;
+    color: #ccc;
+    font-size: 8px;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: inherit;
+    letter-spacing: 0.5px;
+  }
+  .snap-btn:hover { border-color: var(--ssl-amber); color: var(--ssl-amber); }
+  .snap-btn.recall { background: linear-gradient(180deg, #1a3a1a, #0a1a0a); color: var(--ssl-green); border-color: #2a4a2a; }
+  .snap-btn.store { background: linear-gradient(180deg, #3a2a1a, #1a0a05); color: var(--ssl-amber); border-color: #4a3a1a; }
+  /* ============ INFO BAR ============ */
+  .info-bar {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.85);
+    border: 1px solid var(--ssl-amber);
+    padding: 6px 12px;
+    font-size: 9px;
+    color: var(--ssl-amber);
+    letter-spacing: 1px;
+    display: none;
+    z-index: 50;
+    border-radius: 2px;
+  }
+  .info-bar.show { display: block; }
+  /* ============ BACK LINK ============ */
+  .back-link {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.8);
+    color: var(--ssl-amber);
+    padding: 6px 14px;
+    text-decoration: none;
+    font-size: 10px;
+    letter-spacing: 1px;
+    border: 1px solid var(--ssl-amber);
+    border-radius: 2px;
+    z-index: 200;
+  }
+  .back-link:hover { background: var(--ssl-amber); color: #000; }
+</style>
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Ms. Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms. Money Penny">
+    <span>Ms. Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+
+<!-- ============ TOP BAR ============ -->
+<div class="top-bar">
+  <div>
+    <div class="logo">SSL ∴ 148</div>
+    <div class="logo-sub">DIGITAL MIXING BOARD</div>
+  </div>
+  <button class="top-btn" id="automationMode">AUTO: READ</button>
+  <button class="top-btn" id="soloMode">SIP</button>
+  <button class="top-btn" id="talkback">TALKBACK</button>
+  <button class="top-btn" id="monitorBtn">MONITOR</button>
+  <button class="top-btn" id="engineBtn">● ENGINE</button>
+
+  <div class="transport">
+    <button class="transport-btn" id="btnRew">⏮</button>
+    <button class="transport-btn" id="btnStop">⏹</button>
+    <button class="transport-btn play" id="btnPlay">▶</button>
+    <button class="transport-btn rec" id="btnRec">⏺</button>
+    <button class="transport-btn" id="btnFwd">⏭</button>
+    <div class="timecode" id="timecode">00:00:00.000</div>
+  </div>
+</div>
+
+<!-- ============ METER BRIDGE ============ -->
+<div class="meter-bridge" id="meterBridge"></div>
+
+<!-- ============ BANK BAR ============ -->
+<div class="bank-bar">
+  <div class="bank-label">BANK</div>
+  <div id="bankButtons" style="display:flex;gap:4px;"></div>
+  <div class="bank-info" id="bankInfo">CHANNELS 1-12 / 148</div>
+</div>
+
+<!-- ============ MAIN CONSOLE ============ -->
+<div class="console">
+  <div class="channel-rack" id="channelRack"></div>
+  <div class="master-section" id="masterSection">
+    <div class="master-title">MASTER</div>
+
+    <div class="master-block">
+      <div class="master-block-title">VCA GROUPS (24)</div>
+      <div class="vca-grid" id="vcaGrid"></div>
+    </div>
+
+    <div class="master-block">
+      <div class="master-block-title">MUTE GROUPS (8)</div>
+      <div class="mute-group-grid" id="muteGroupGrid"></div>
+    </div>
+
+    <div class="master-block">
+      <div class="master-block-title">STEREO BUS / MONITOR</div>
+      <div class="master-fader-wrap">
+        <div class="master-fader-col">
+          <div class="fader-label">L-R</div>
+          <div class="fader-track">
+            <div class="fader-cap" id="masterFader" style="--fader-pos: 50px"></div>
+            <div class="fader-mini-meter"><div class="bar" id="masterMeterL"></div></div>
+          </div>
+          <div class="fader-db" id="masterDb">0.0 dB</div>
+        </div>
+        <div class="master-meter-col">
+          <div class="master-meter-led-strip" id="masterMeterStripL"></div>
+          <div class="master-meter-col-label">L</div>
+        </div>
+        <div class="master-meter-col">
+          <div class="master-meter-led-strip" id="masterMeterStripR"></div>
+          <div class="master-meter-col-label">R</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="master-block">
+      <div class="master-block-title">SNAPSHOTS</div>
+      <div class="snapshot-row" style="margin-bottom:6px">
+        <button class="snap-btn store" onclick="SSL.snapshotStore()">STORE</button>
+        <button class="snap-btn" onclick="SSL.snapshotExport()">EXPORT</button>
+        <button class="snap-btn" onclick="SSL.snapshotImport()">IMPORT</button>
+      </div>
+      <div class="snapshot-row" id="snapshotRow"></div>
+    </div>
+
+    <div class="master-block">
+      <div class="master-block-title">🤖 SPEEDY AUTOMIX AI</div>
+      <div class="snapshot-row" style="margin-bottom:6px">
+        <button class="snap-btn store" onclick="SSL.autoMixAll()" style="background:linear-gradient(135deg,#00ccff,#0066aa);color:#000;font-weight:700">AUTO-MIX ALL</button>
+      </div>
+      <div class="snapshot-row" style="margin-bottom:6px">
+        <button class="snap-btn" onclick="SSL.autoMixPreset('trap')">TRAP</button>
+        <button class="snap-btn" onclick="SSL.autoMixPreset('hiphop')">HIPHOP</button>
+        <button class="snap-btn" onclick="SSL.autoMixPreset('pop')">POP</button>
+      </div>
+      <div class="snapshot-row">
+        <button class="snap-btn" onclick="SSL.autoMixPreset('rock')">ROCK</button>
+        <button class="snap-btn" onclick="SSL.autoMixPreset('rnb')">R&B</button>
+        <button class="snap-btn" onclick="SSL.autoMixPreset('edm')">EDM</button>
+      </div>
+      <div style="font-size:8px;color:#888;text-align:center;padding:4px;letter-spacing:0.5px;">
+        Analyzes channel names & auto-sets EQ/Comp/Level
+      </div>
+    </div>
+
+    <div class="master-block">
+      <div class="master-block-title">SYSTEM</div>
+      <div class="snapshot-row">
+        <button class="snap-btn" onclick="SSL.resetAll()">RESET ALL</button>
+        <button class="snap-btn" onclick="SSL.panic()">PANIC</button>
+        <button class="snap-btn" onclick="SSL.loadDemo()">DEMO</button>
+      </div>
+    </div>
+
+    <div style="font-size:8px;color:#444;text-align:center;padding:8px;letter-spacing:1px;">
+      GOAT ROYALTY APP<br>
+      DJ SPEEDY / BRICKSQUAD<br>
+      WEB AUDIO ENGINE v1.0
+    </div>
+  </div>
+</div>
+
+<div class="info-bar" id="infoBar"></div>
+<a href="/" class="back-link">← BACK TO GOAT ROYALTY</a>
+
+<!-- Hidden file input used by channel drop/load -->
+<input type="file" id="chFileInput" accept="audio/*" style="display:none">
+
+<!-- Master recorder button (floating) -->
+<div id="masterRecWrap" style="position:fixed;top:12px;right:170px;z-index:250;display:flex;gap:6px;align-items:center">
+  <button id="btnMasterArm" style="padding:6px 12px;background:linear-gradient(180deg,#2a2a2a,#111);border:1px solid #333;color:#ccc;font-size:10px;letter-spacing:1px;border-radius:2px;cursor:pointer;font-family:inherit">🎙 ARM MIX REC</button>
+  <span id="masterRecTime" style="color:#ffa500;font-family:'Courier New',monospace;font-size:11px;min-width:40px"></span>
+  <button id="btnDownloadMix" style="padding:6px 12px;background:linear-gradient(180deg,#2a2a2a,#111);border:1px solid #333;color:#ccc;font-size:10px;letter-spacing:1px;border-radius:2px;cursor:pointer;font-family:inherit">💾 DOWNLOAD</button>
+</div>
+
+<script src="js/goat-audio-engine.js"></script>
+<script>
+/* =========================================================
+   SSL 148-CHANNEL DIGITAL MIXING BOARD
+   Web Audio API Engine + UI
+   ========================================================= */
+const SSL = (function() {
+  const TOTAL_CHANNELS = 148;
+  const CHANNELS_PER_BANK = 12;
+  const TOTAL_BANKS = Math.ceil(TOTAL_CHANNELS / CHANNELS_PER_BANK); // 13 banks (last one has 4)
+
+  // ---- State per channel ----
+  const channels = [];
+  for (let i = 0; i < TOTAL_CHANNELS; i++) {
+    channels.push({
+      id: i + 1,
+      name: `CH ${i + 1}`,
+      gain: 0,           // -inf to +12 dB
+      fader: 0,          // dB, 0 = unity
+      pan: 0,            // -1 L to +1 R
+      mute: false,
+      solo: false,
+      phantom: false,
+      phase: false,
+      hpfOn: false,
+      hpfFreq: 80,
+      eqOn: false,
+      eq: {
+        hi:  { freq: 12000, gain: 0, q: 0.7 },
+        hm:  { freq: 3000,  gain: 0, q: 0.7 },
+        lm:  { freq: 500,   gain: 0, q: 0.7 },
+        lo:  { freq: 100,   gain: 0, q: 0.7 }
+      },
+      compOn: false,
+      comp: { threshold: -12, ratio: 4, attack: 0.003, release: 0.25, knee: 6 },
+      gateOn: false,
+      gate: { threshold: -40, ratio: 10 },
+      vca: 0,            // 0 = no VCA, 1-24
+      muteGroup: 0,      // 0 = none, 1-8
+      record: false,
+      peak: 0            // meter value
+    });
+  }
+
+  // ---- Master state ----
+  const master = {
+    fader: 0,
+    peakL: 0,
+    peakR: 0
+  };
+
+  const vcaGroups = new Array(24).fill(0).map((_, i) => ({ id: i + 1, fader: 0, active: false }));
+  const muteGroups = new Array(8).fill(false);
+  let currentBank = 0;
+  let selectedChannel = -1;
+  let snapshots = [];
+  const MAX_SNAPSHOTS = 8;
+
+  /* ------------- Web Audio Engine ------------- */
+  let ac = null;
+  let masterGain = null;
+  let masterAnalyser = null;
+  let masterSplitter = null;
+  let masterAnalyserL = null;
+  let masterAnalyserR = null;
+  const chNodes = []; // Web Audio nodes for each channel
+
+  let masterRecorder = null;
+  const chSources = []; // GoatAudio.ChannelSource per channel
+
+  function initAudio() {
+    if (ac) return;
+    try {
+      // Use the shared GoatAudio context if available, else create
+      ac = (window.GoatAudio && window.GoatAudio.ac()) || new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = ac.createGain();
+      masterGain.gain.value = dbToGain(0);
+      masterSplitter = ac.createChannelSplitter(2);
+      masterAnalyserL = ac.createAnalyser();
+      masterAnalyserR = ac.createAnalyser();
+      masterAnalyserL.fftSize = 1024;
+      masterAnalyserR.fftSize = 1024;
+      masterGain.connect(masterSplitter);
+      masterSplitter.connect(masterAnalyserL, 0);
+      masterSplitter.connect(masterAnalyserR, 1);
+      masterGain.connect(ac.destination);
+
+      for (let i = 0; i < TOTAL_CHANNELS; i++) chNodes.push(buildChannelNodes(i));
+
+      // Create a ChannelSource for each channel that connects to the channel's input node
+      if (window.GoatAudio) {
+        for (let i = 0; i < TOTAL_CHANNELS; i++) {
+          chSources.push(new window.GoatAudio.ChannelSource(ac, chNodes[i].input));
+        }
+        // Master recorder taps the master bus
+        masterRecorder = new window.GoatAudio.MasterRecorder();
+        masterRecorder.connect(masterGain);
+        // Expose globally for cross-page access (beat maker → mixer)
+        window.__goatMixerCtx = ac;
+        window.__goatMixerMasterInput = null; // can be set if we want external feed
+      }
+
+      showInfo(`ENGINE ONLINE · ${ac.sampleRate} Hz · ${TOTAL_CHANNELS} CHANNELS READY`);
+      document.getElementById('engineBtn').classList.add('active');
+    } catch (e) {
+      console.error('Audio init failed:', e);
+      showInfo('AUDIO ENGINE FAILED — CHECK BROWSER');
+    }
+  }
+
+  // ---- Per-channel: load mic or file ----
+  async function channelLoadMic(idx) {
+    initAudio();
+    if (!chSources[idx]) return;
+    try {
+      await chSources[idx].connectMic();
+      channels[idx].name = 'MIC IN';
+      channels[idx].record = true;
+      buildChannelRack();
+      showInfo(`CH ${idx+1} · MIC INPUT ACTIVE — speak or play`);
+    } catch (e) {
+      showInfo(`CH ${idx+1} · MIC DENIED — check browser permissions`);
+    }
+  }
+  async function channelLoadFile(idx, file) {
+    initAudio();
+    if (!chSources[idx] || !window.GoatAudio) return;
+    try {
+      const buf = await window.GoatAudio.loadAudioFile(file);
+      chSources[idx].setFile(buf, file.name);
+      channels[idx].name = file.name.replace(/\.[^.]+$/, '').slice(0, 10).toUpperCase();
+      buildChannelRack();
+      showInfo(`CH ${idx+1} · LOADED: ${file.name} (${buf.duration.toFixed(1)}s)`);
+    } catch (e) {
+      showInfo(`CH ${idx+1} · FILE LOAD FAILED: ${e.message}`);
+    }
+  }
+  function channelPlayFile(idx) {
+    if (!chSources[idx]) return;
+    chSources[idx].play();
+    showInfo(`CH ${idx+1} · PLAY`);
+  }
+  function channelStopFile(idx) {
+    if (!chSources[idx]) return;
+    chSources[idx].stop();
+    showInfo(`CH ${idx+1} · STOP`);
+  }
+  function channelToggleLoop(idx) {
+    if (!chSources[idx]) return;
+    const isLoop = !chSources[idx].loop;
+    chSources[idx].setLoop(isLoop);
+    showInfo(`CH ${idx+1} · LOOP ${isLoop ? 'ON' : 'OFF'}`);
+  }
+
+  // ---- Route beat maker output into this channel ----
+  function channelRouteBeatMaker(idx) {
+    initAudio();
+    if (!window.GoatAudio || !window.GoatAudio.bridge) {
+      showInfo('AUDIO BRIDGE NOT LOADED');
+      return;
+    }
+    // Toggle off if already routed
+    if (channels[idx].extRoute === 'beat-maker' && channels[idx]._extNode) {
+      try { channels[idx]._extNode.disconnect(chNodes[idx].input); } catch (e) {}
+      channels[idx].extRoute = null;
+      channels[idx]._extNode = null;
+      buildChannelRack();
+      showInfo(`CH ${idx+1} · BEAT ROUTE OFF`);
+      return;
+    }
+    // Find the beat maker source in same tab
+    const sub = window.GoatAudio.bridge.subscribe('beat-maker');
+    if (sub.type === 'direct' && sub.node) {
+      try {
+        sub.node.connect(chNodes[idx].input);
+        channels[idx].extRoute = 'beat-maker';
+        channels[idx]._extNode = sub.node;
+        channels[idx].name = 'BEAT BUS';
+        buildChannelRack();
+        showInfo(`CH ${idx+1} · LIVE FROM BEAT MAKER`);
+      } catch (e) {
+        showInfo('ROUTE FAILED: ' + e.message);
+      }
+    } else {
+      showInfo('OPEN BEAT MAKER IN A TAB FIRST, THEN CLICK ▶ PLAY THERE');
+      // Offer to open it
+      if (confirm('Open Beat Maker in a new tab to enable routing?')) {
+        window.open('beat-maker.html', 'goat-beat-maker');
+      }
+    }
+  }
+
+  function buildChannelNodes(idx) {
+    const nodes = {};
+    nodes.input = ac.createGain();
+    nodes.phaseInvert = ac.createGain(); // gain * 1 or -1
+    nodes.phaseInvert.gain.value = 1;
+    nodes.trim = ac.createGain();
+    nodes.trim.gain.value = dbToGain(channels[idx].gain);
+
+    // HPF
+    nodes.hpf = ac.createBiquadFilter();
+    nodes.hpf.type = 'highpass';
+    nodes.hpf.frequency.value = channels[idx].hpfFreq;
+    nodes.hpf.Q.value = 0.7;
+
+    // 4-band EQ (biquads in series)
+    nodes.eqLo = ac.createBiquadFilter();
+    nodes.eqLo.type = 'lowshelf';
+    nodes.eqLo.frequency.value = channels[idx].eq.lo.freq;
+    nodes.eqLo.gain.value = 0;
+
+    nodes.eqLM = ac.createBiquadFilter();
+    nodes.eqLM.type = 'peaking';
+    nodes.eqLM.frequency.value = channels[idx].eq.lm.freq;
+    nodes.eqLM.Q.value = channels[idx].eq.lm.q;
+    nodes.eqLM.gain.value = 0;
+
+    nodes.eqHM = ac.createBiquadFilter();
+    nodes.eqHM.type = 'peaking';
+    nodes.eqHM.frequency.value = channels[idx].eq.hm.freq;
+    nodes.eqHM.Q.value = channels[idx].eq.hm.q;
+    nodes.eqHM.gain.value = 0;
+
+    nodes.eqHi = ac.createBiquadFilter();
+    nodes.eqHi.type = 'highshelf';
+    nodes.eqHi.frequency.value = channels[idx].eq.hi.freq;
+    nodes.eqHi.gain.value = 0;
+
+    // Dynamics (compressor)
+    nodes.comp = ac.createDynamicsCompressor();
+    nodes.comp.threshold.value = channels[idx].comp.threshold;
+    nodes.comp.ratio.value = 1; // start bypassed via ratio=1
+    nodes.comp.attack.value = channels[idx].comp.attack;
+    nodes.comp.release.value = channels[idx].comp.release;
+    nodes.comp.knee.value = channels[idx].comp.knee;
+
+    // Fader
+    nodes.fader = ac.createGain();
+    nodes.fader.gain.value = 0; // muted until user pushes up
+
+    // Pan
+    nodes.pan = ac.createStereoPanner ? ac.createStereoPanner() : null;
+    if (!nodes.pan) {
+      nodes.pan = ac.createGain(); // fallback
+    } else {
+      nodes.pan.pan.value = 0;
+    }
+
+    // Mute
+    nodes.mute = ac.createGain();
+    nodes.mute.gain.value = 1;
+
+    // Analyser for meter
+    nodes.analyser = ac.createAnalyser();
+    nodes.analyser.fftSize = 512;
+
+    // Connect chain: input → phaseInvert → trim → HPF → EQ(lo→lm→hm→hi) → comp → fader → pan → mute → analyser → masterGain
+    nodes.input.connect(nodes.phaseInvert);
+    nodes.phaseInvert.connect(nodes.trim);
+    nodes.trim.connect(nodes.hpf);
+    nodes.hpf.connect(nodes.eqLo);
+    nodes.eqLo.connect(nodes.eqLM);
+    nodes.eqLM.connect(nodes.eqHM);
+    nodes.eqHM.connect(nodes.eqHi);
+    nodes.eqHi.connect(nodes.comp);
+    nodes.comp.connect(nodes.fader);
+    nodes.fader.connect(nodes.pan);
+    nodes.pan.connect(nodes.mute);
+    nodes.mute.connect(nodes.analyser);
+    nodes.analyser.connect(masterGain);
+
+    return nodes;
+  }
+
+  function dbToGain(db) { return Math.pow(10, db / 20); }
+  function gainToDb(g) { return 20 * Math.log10(Math.max(g, 1e-10)); }
+
+  /* ------------- Apply settings to audio nodes ------------- */
+  function applyChannel(idx) {
+    if (!ac) return;
+    const c = channels[idx];
+    const n = chNodes[idx];
+    if (!n) return;
+    n.trim.gain.setTargetAtTime(dbToGain(c.gain), ac.currentTime, 0.01);
+    n.phaseInvert.gain.setTargetAtTime(c.phase ? -1 : 1, ac.currentTime, 0.01);
+    n.hpf.frequency.setTargetAtTime(c.hpfOn ? c.hpfFreq : 10, ac.currentTime, 0.01);
+    n.eqLo.gain.setTargetAtTime(c.eqOn ? c.eq.lo.gain : 0, ac.currentTime, 0.01);
+    n.eqLM.gain.setTargetAtTime(c.eqOn ? c.eq.lm.gain : 0, ac.currentTime, 0.01);
+    n.eqHM.gain.setTargetAtTime(c.eqOn ? c.eq.hm.gain : 0, ac.currentTime, 0.01);
+    n.eqHi.gain.setTargetAtTime(c.eqOn ? c.eq.hi.gain : 0, ac.currentTime, 0.01);
+    n.comp.ratio.setTargetAtTime(c.compOn ? c.comp.ratio : 1, ac.currentTime, 0.01);
+    n.comp.threshold.setTargetAtTime(c.comp.threshold, ac.currentTime, 0.01);
+
+    const isMuted = c.mute || muteGroups[c.muteGroup - 1];
+    // Any-solo logic
+    const anySolo = channels.some(x => x.solo);
+    const soloed = anySolo ? c.solo : true;
+    const vcaGain = c.vca > 0 ? dbToGain(vcaGroups[c.vca - 1].fader) : 1;
+
+    n.mute.gain.setTargetAtTime(isMuted || !soloed ? 0 : vcaGain, ac.currentTime, 0.02);
+    n.fader.gain.setTargetAtTime(dbToGain(c.fader), ac.currentTime, 0.02);
+    if (n.pan.pan) n.pan.pan.setTargetAtTime(c.pan, ac.currentTime, 0.02);
+  }
+
+  function applyMaster() {
+    if (!ac || !masterGain) return;
+    masterGain.gain.setTargetAtTime(dbToGain(master.fader), ac.currentTime, 0.02);
+  }
+
+  function applyAll() {
+    for (let i = 0; i < TOTAL_CHANNELS; i++) applyChannel(i);
+    applyMaster();
+  }
+
+  /* ------------- UI BUILDERS ------------- */
+  function buildBankButtons() {
+    const el = document.getElementById('bankButtons');
+    el.innerHTML = '';
+    for (let b = 0; b < TOTAL_BANKS; b++) {
+      const btn = document.createElement('button');
+      btn.className = 'bank-btn' + (b === currentBank ? ' active' : '');
+      const start = b * CHANNELS_PER_BANK + 1;
+      const end = Math.min((b + 1) * CHANNELS_PER_BANK, TOTAL_CHANNELS);
+      btn.textContent = `${start}-${end}`;
+      btn.onclick = () => switchBank(b);
+      el.appendChild(btn);
+    }
+  }
+
+  function switchBank(b) {
+    currentBank = b;
+    buildBankButtons();
+    buildChannelRack();
+    const start = b * CHANNELS_PER_BANK + 1;
+    const end = Math.min((b + 1) * CHANNELS_PER_BANK, TOTAL_CHANNELS);
+    document.getElementById('bankInfo').textContent = `CHANNELS ${start}-${end} / ${TOTAL_CHANNELS}`;
+  }
+
+  function buildChannelRack() {
+    const rack = document.getElementById('channelRack');
+    rack.innerHTML = '';
+    const start = currentBank * CHANNELS_PER_BANK;
+    const end = Math.min(start + CHANNELS_PER_BANK, TOTAL_CHANNELS);
+    for (let i = start; i < end; i++) {
+      rack.appendChild(buildChannelStrip(i));
+    }
+  }
+
+  function buildChannelStrip(idx) {
+    const c = channels[idx];
+    const strip = document.createElement('div');
+    const _srcType = (chSources[idx] && chSources[idx].getType && chSources[idx].getType()) || 'none';
+    strip.className = 'channel-strip'
+      + (idx === selectedChannel ? ' selected' : '')
+      + (_srcType === 'file' ? ' loaded' : '')
+      + (_srcType === 'mic'  ? ' mic-on' : '');
+    strip.dataset.ch = idx;
+    strip.onclick = (e) => {
+      if (e.target.tagName === 'BUTTON' || e.target.classList.contains('knob') ||
+          e.target.classList.contains('fader-cap') || e.target.classList.contains('ch-name') ||
+          e.target.classList.contains('vca-assign')) return;
+      selectedChannel = idx;
+      buildChannelRack();
+    };
+
+    // Determine source state for this channel
+    const srcType = (chSources[idx] && chSources[idx].getType && chSources[idx].getType()) || 'none';
+    const hasFile = srcType === 'file';
+    const micOn   = srcType === 'mic';
+
+    strip.innerHTML = `
+      <div class="ch-num">${String(c.id).padStart(3, '0')}</div>
+      <div class="ch-name" contenteditable="true" spellcheck="false">${c.name}</div>
+
+      <div class="section">
+        <div class="section-label">SOURCE</div>
+        <div class="btn-row">
+          <button class="mini-btn ${micOn?'red active':''}" data-act="mic" title="Mic input">🎤</button>
+          <button class="mini-btn ${hasFile?'active':''}" data-act="load" title="Load audio file">📁</button>
+        </div>
+        <div class="btn-row">
+          <button class="mini-btn ${(channels[idx].extRoute==='beat-maker')?'active':''}" data-act="routebeat" title="Route Beat Maker here">🥁</button>
+          <button class="mini-btn ${(chSources[idx]&&chSources[idx].loop)?'active':''}" data-act="loop" ${!hasFile?'disabled':''} title="Loop">🔁</button>
+        </div>
+        <div class="btn-row">
+          <button class="mini-btn ${hasFile?'green':''}" data-act="play" ${!hasFile?'disabled':''} title="Play">▶</button>
+          <button class="mini-btn" data-act="stopclip" ${!hasFile?'disabled':''} title="Stop">⏹</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">INPUT</div>
+        <div class="btn-row">
+          <button class="mini-btn ${c.phantom?'red active':''}" data-act="phantom">48V</button>
+          <button class="mini-btn ${c.phase?'active':''}" data-act="phase">Ø</button>
+        </div>
+        <div class="knob-wrap">
+          <div class="knob" data-param="gain" style="--rot:${paramToDeg(c.gain,-20,20)}deg"></div>
+          <div class="knob-val" data-val="gain">${c.gain.toFixed(0)} dB</div>
+          <div class="knob-label">GAIN</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">FILTER / EQ</div>
+        <div class="btn-row">
+          <button class="mini-btn ${c.hpfOn?'active':''}" data-act="hpf">HPF</button>
+          <button class="mini-btn ${c.eqOn?'active':''}" data-act="eq">EQ</button>
+        </div>
+        <div class="eq-band">
+          <div class="knob-wrap">
+            <div class="knob" data-param="eq.hi.gain" style="--rot:${paramToDeg(c.eq.hi.gain,-15,15)}deg"></div>
+            <div class="knob-label">HI</div>
+          </div>
+          <div class="knob-wrap">
+            <div class="knob" data-param="eq.hm.gain" style="--rot:${paramToDeg(c.eq.hm.gain,-15,15)}deg"></div>
+            <div class="knob-label">H-M</div>
+          </div>
+        </div>
+        <div class="eq-band">
+          <div class="knob-wrap">
+            <div class="knob" data-param="eq.lm.gain" style="--rot:${paramToDeg(c.eq.lm.gain,-15,15)}deg"></div>
+            <div class="knob-label">L-M</div>
+          </div>
+          <div class="knob-wrap">
+            <div class="knob" data-param="eq.lo.gain" style="--rot:${paramToDeg(c.eq.lo.gain,-15,15)}deg"></div>
+            <div class="knob-label">LO</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">DYN</div>
+        <div class="btn-row">
+          <button class="mini-btn ${c.gateOn?'active':''}" data-act="gate">GT</button>
+          <button class="mini-btn ${c.compOn?'active':''}" data-act="comp">CM</button>
+        </div>
+        <div class="knob-wrap">
+          <div class="knob" data-param="comp.threshold" style="--rot:${paramToDeg(c.comp.threshold,-60,0)}deg"></div>
+          <div class="knob-label">THR</div>
+        </div>
+      </div>
+
+      <div class="fader-section">
+        <div class="solo-mute">
+          <button class="mini-btn ${c.solo?'green active':''}" data-act="solo">S</button>
+          <button class="mini-btn ${c.mute?'red active':''}" data-act="mute">M</button>
+        </div>
+        <button class="mini-btn ${c.record?'red active':''}" data-act="record" style="width:100%">REC</button>
+        <div class="knob-wrap pan-knob">
+          <div class="knob" data-param="pan" style="--rot:${paramToDeg(c.pan,-1,1)}deg;width:22px;height:22px"></div>
+          <div class="knob-label">PAN</div>
+        </div>
+        <div class="fader-track">
+          <div class="fader-cap" style="--fader-pos: ${faderDbToPos(c.fader)}px"></div>
+          <div class="fader-mini-meter"><div class="bar" data-meter="${idx}"></div></div>
+        </div>
+        <div class="fader-db">${c.fader > 0 ? '+' : ''}${c.fader.toFixed(1)}</div>
+        <div class="vca-assign ${c.vca>0?'active':''}" data-act="vca">VCA ${c.vca>0?c.vca:'—'}</div>
+      </div>
+    `;
+
+    // Wire buttons
+    strip.querySelectorAll('.mini-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const act = btn.dataset.act;
+        if (!act) return;
+        handleButtonAction(idx, act, btn);
+      });
+    });
+
+    // Wire name edit
+    const nameEl = strip.querySelector('.ch-name');
+    nameEl.addEventListener('blur', () => {
+      channels[idx].name = nameEl.textContent.trim().slice(0, 10) || `CH ${idx+1}`;
+      nameEl.textContent = channels[idx].name;
+    });
+    nameEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); }
+    });
+
+    // Wire knobs
+    strip.querySelectorAll('.knob').forEach(k => wireKnob(k, idx));
+
+    // Wire fader
+    const faderCap = strip.querySelector('.fader-cap');
+    wireFader(faderCap, idx);
+
+    // Wire VCA assign
+    const vcaEl = strip.querySelector('.vca-assign');
+    vcaEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      channels[idx].vca = (channels[idx].vca + 1) % 25; // 0-24
+      buildChannelRack();
+      applyChannel(idx);
+    });
+
+    return strip;
+  }
+
+  function handleButtonAction(idx, act, btn) {
+    const c = channels[idx];
+    switch (act) {
+      case 'phantom': c.phantom = !c.phantom; break;
+      case 'phase': c.phase = !c.phase; break;
+      case 'hpf': c.hpfOn = !c.hpfOn; break;
+      case 'eq': c.eqOn = !c.eqOn; break;
+      case 'comp': c.compOn = !c.compOn; break;
+      case 'gate': c.gateOn = !c.gateOn; break;
+      case 'mute': c.mute = !c.mute; applyAll(); break;
+      case 'solo': c.solo = !c.solo; applyAll(); break;
+      case 'record': c.record = !c.record; break;
+      case 'mic':
+        if (chSources[idx] && chSources[idx].getType() === 'mic') {
+          chSources[idx].stop();
+          buildChannelRack();
+          showInfo(`CH ${c.id} · MIC OFF`);
+        } else {
+          channelLoadMic(idx);
+        }
+        return;
+      case 'load':
+        initAudio();
+        const fi = document.getElementById('chFileInput');
+        fi.onchange = (e) => {
+          const f = e.target.files[0];
+          if (f) channelLoadFile(idx, f);
+          fi.value = '';
+        };
+        fi.click();
+        return;
+      case 'play':  channelPlayFile(idx); return;
+      case 'stopclip': channelStopFile(idx); return;
+      case 'loop':  channelToggleLoop(idx); buildChannelRack(); return;
+      case 'routebeat': channelRouteBeatMaker(idx); return;
+    }
+    btn.classList.toggle('active');
+    applyChannel(idx);
+    showInfo(`CH ${c.id} ${c.name.toUpperCase()} · ${act.toUpperCase()} ${btn.classList.contains('active')?'ON':'OFF'}`);
+  }
+
+  /* ------------- Knob drag handling ------------- */
+  function paramToDeg(val, min, max) {
+    const pct = (val - min) / (max - min);
+    return -135 + (270 * Math.max(0, Math.min(1, pct)));
+  }
+
+  function wireKnob(knobEl, chIdx) {
+    let startY = 0, startVal = 0;
+    let pathParts = knobEl.dataset.param.split('.');
+
+    function getVal() {
+      let obj = channels[chIdx];
+      for (let i = 0; i < pathParts.length - 1; i++) obj = obj[pathParts[i]];
+      return obj[pathParts[pathParts.length - 1]];
+    }
+    function setVal(v) {
+      let obj = channels[chIdx];
+      for (let i = 0; i < pathParts.length - 1; i++) obj = obj[pathParts[i]];
+      obj[pathParts[pathParts.length - 1]] = v;
+    }
+    function getRange() {
+      const p = knobEl.dataset.param;
+      if (p === 'gain') return [-20, 20];
+      if (p === 'pan') return [-1, 1];
+      if (p.endsWith('gain')) return [-15, 15]; // EQ
+      if (p === 'comp.threshold') return [-60, 0];
+      return [-1, 1];
+    }
+
+    function onDown(e) {
+      e.preventDefault();
+      initAudio();
+      startY = e.clientY || (e.touches && e.touches[0].clientY);
+      startVal = getVal();
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+      document.addEventListener('touchmove', onMove);
+      document.addEventListener('touchend', onUp);
+    }
+    function onMove(e) {
+      const y = e.clientY || (e.touches && e.touches[0].clientY);
+      const dy = startY - y;
+      const [min, max] = getRange();
+      const range = max - min;
+      let v = startVal + (dy / 120) * range;
+      if (e.shiftKey) v = startVal + (dy / 400) * range; // fine control
+      v = Math.max(min, Math.min(max, v));
+      if (knobEl.dataset.param === 'gain' || knobEl.dataset.param === 'comp.threshold') v = Math.round(v);
+      else v = Math.round(v * 10) / 10;
+      setVal(v);
+      knobEl.style.setProperty('--rot', paramToDeg(v, min, max) + 'deg');
+      const valEl = knobEl.parentElement.querySelector('[data-val]');
+      if (valEl) valEl.textContent = (v>0?'+':'') + v.toFixed(knobEl.dataset.param==='gain'?0:1) + (knobEl.dataset.param==='gain'?' dB':'');
+      applyChannel(chIdx);
+      showInfo(`CH ${channels[chIdx].id} · ${knobEl.dataset.param.toUpperCase()} = ${(v>0?'+':'')+v.toFixed(1)}`);
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
+    }
+    knobEl.addEventListener('mousedown', onDown);
+    knobEl.addEventListener('touchstart', onDown);
+    knobEl.addEventListener('dblclick', () => {
+      setVal(0);
+      const [min, max] = getRange();
+      knobEl.style.setProperty('--rot', paramToDeg(0, min, max) + 'deg');
+      applyChannel(chIdx);
+      buildChannelRack();
+    });
+  }
+
+  /* ------------- Fader drag ------------- */
+  // Fader visual range: 0 (top, +10dB) to 156 (bottom, -inf)
+  // Unity (0 dB) is at ~28% = 44px
+  function faderDbToPos(db) {
+    // +10dB -> 0px, 0dB -> 44px, -60dB -> 150px
+    if (db >= 10) return 0;
+    if (db >= 0) return 44 - (db / 10) * 44;        // 10->0, 0->44
+    if (db >= -20) return 44 + (Math.abs(db) / 20) * 40; // 0->44, -20->84
+    if (db >= -60) return 84 + ((Math.abs(db) - 20) / 40) * 56; // -20->84, -60->140
+    return 150;
+  }
+  function faderPosToDb(pos) {
+    pos = Math.max(0, Math.min(150, pos));
+    if (pos <= 44) return 10 - (pos / 44) * 10;
+    if (pos <= 84) return -((pos - 44) / 40) * 20;
+    if (pos <= 140) return -20 - ((pos - 84) / 56) * 40;
+    return -Infinity;
+  }
+
+  function wireFader(cap, chIdx) {
+    let startY = 0, startPos = 0;
+    function onDown(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      initAudio();
+      startY = e.clientY || (e.touches && e.touches[0].clientY);
+      const curDb = chIdx === -1 ? master.fader : channels[chIdx].fader;
+      startPos = faderDbToPos(curDb);
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+      document.addEventListener('touchmove', onMove);
+      document.addEventListener('touchend', onUp);
+    }
+    function onMove(e) {
+      const y = e.clientY || (e.touches && e.touches[0].clientY);
+      let pos = startPos + (y - startY);
+      pos = Math.max(0, Math.min(150, pos));
+      const db = faderPosToDb(pos);
+      if (chIdx === -1) {
+        master.fader = Math.round(db * 10) / 10;
+        cap.style.setProperty('--fader-pos', pos + 'px');
+        document.getElementById('masterDb').textContent =
+          isFinite(master.fader) ? ((master.fader>0?'+':'')+master.fader.toFixed(1)+' dB') : '-∞';
+        applyMaster();
+      } else {
+        channels[chIdx].fader = Math.round(db * 10) / 10;
+        cap.style.setProperty('--fader-pos', pos + 'px');
+        const dbEl = cap.closest('.channel-strip').querySelector('.fader-db');
+        dbEl.textContent = isFinite(db) ? ((db>0?'+':'')+db.toFixed(1)) : '-∞';
+        applyChannel(chIdx);
+        showInfo(`CH ${channels[chIdx].id} FADER · ${(db>0?'+':'')+db.toFixed(1)} dB`);
+      }
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
+    }
+    cap.addEventListener('mousedown', onDown);
+    cap.addEventListener('touchstart', onDown);
+    cap.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      if (chIdx === -1) {
+        master.fader = 0;
+        applyMaster();
+      } else {
+        channels[chIdx].fader = 0;
+        applyChannel(chIdx);
+      }
+      buildChannelRack();
+    });
+  }
+
+  /* ------------- Master section builders ------------- */
+  function buildMasterSection() {
+    const vcaGrid = document.getElementById('vcaGrid');
+    vcaGrid.innerHTML = '';
+    for (let i = 0; i < 24; i++) {
+      const b = document.createElement('button');
+      b.className = 'vca-btn' + (vcaGroups[i].active ? ' active' : '');
+      b.textContent = 'V' + (i + 1);
+      b.onclick = () => {
+        vcaGroups[i].active = !vcaGroups[i].active;
+        b.classList.toggle('active');
+        applyAll();
+        showInfo(`VCA ${i+1} ${vcaGroups[i].active?'ENGAGED':'RELEASED'}`);
+      };
+      vcaGrid.appendChild(b);
+    }
+
+    const mgGrid = document.getElementById('muteGroupGrid');
+    mgGrid.innerHTML = '';
+    for (let i = 0; i < 8; i++) {
+      const b = document.createElement('button');
+      b.className = 'vca-btn' + (muteGroups[i] ? ' active' : '');
+      b.textContent = 'MG' + (i + 1);
+      b.onclick = () => {
+        muteGroups[i] = !muteGroups[i];
+        b.classList.toggle('active');
+        applyAll();
+        showInfo(`MUTE GROUP ${i+1} ${muteGroups[i]?'ACTIVE':'OFF'}`);
+      };
+      mgGrid.appendChild(b);
+    }
+
+    // Master fader
+    wireFader(document.getElementById('masterFader'), -1);
+
+    // Master meter LEDs
+    const LED_COUNT = 20;
+    for (const id of ['masterMeterStripL', 'masterMeterStripR']) {
+      const strip = document.getElementById(id);
+      strip.innerHTML = '';
+      for (let i = 0; i < LED_COUNT; i++) {
+        const led = document.createElement('div');
+        led.className = 'meter-led';
+        strip.appendChild(led);
+      }
+    }
+
+    // Snapshot buttons
+    buildSnapshotRow();
+  }
+
+  function buildSnapshotRow() {
+    const row = document.getElementById('snapshotRow');
+    row.innerHTML = '';
+    for (let i = 0; i < MAX_SNAPSHOTS; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'snap-btn' + (snapshots[i] ? ' recall' : '');
+      btn.textContent = snapshots[i] ? `R${i+1}` : `—${i+1}`;
+      btn.onclick = () => snapshots[i] ? snapshotRecall(i) : showInfo(`SLOT ${i+1} EMPTY — USE STORE`);
+      row.appendChild(btn);
+    }
+  }
+
+  /* ------------- Meter bridge ------------- */
+  function buildMeterBridge() {
+    const mb = document.getElementById('meterBridge');
+    mb.innerHTML = '';
+    for (let i = 0; i < TOTAL_CHANNELS; i++) {
+      const m = document.createElement('div');
+      m.className = 'meter-mini';
+      m.dataset.ch = i;
+      let leds = '';
+      for (let j = 0; j < 12; j++) leds += '<div class="meter-led"></div>';
+      m.innerHTML = `
+        <div class="meter-led-strip">${leds}</div>
+        <div class="meter-label">${i+1}</div>
+      `;
+      m.onclick = () => {
+        const targetBank = Math.floor(i / CHANNELS_PER_BANK);
+        switchBank(targetBank);
+        selectedChannel = i;
+        buildChannelRack();
+      };
+      mb.appendChild(m);
+    }
+  }
+
+  /* ------------- Meter update loop ------------- */
+  function updateMeters() {
+    if (ac) {
+      // Master meters
+      const bufL = new Uint8Array(masterAnalyserL.fftSize);
+      const bufR = new Uint8Array(masterAnalyserR.fftSize);
+      masterAnalyserL.getByteTimeDomainData(bufL);
+      masterAnalyserR.getByteTimeDomainData(bufR);
+      let peakL = 0, peakR = 0;
+      for (let i = 0; i < bufL.length; i++) {
+        peakL = Math.max(peakL, Math.abs(bufL[i] - 128));
+        peakR = Math.max(peakR, Math.abs(bufR[i] - 128));
+      }
+      master.peakL = peakL / 128;
+      master.peakR = peakR / 128;
+      updateLedStrip('masterMeterStripL', master.peakL);
+      updateLedStrip('masterMeterStripR', master.peakR);
+      document.getElementById('masterMeterL').style.height = (master.peakL * 100) + '%';
+
+      // Per-channel meters
+      for (let i = 0; i < TOTAL_CHANNELS; i++) {
+        const n = chNodes[i];
+        if (!n) continue;
+        const buf = new Uint8Array(n.analyser.fftSize);
+        n.analyser.getByteTimeDomainData(buf);
+        let p = 0;
+        for (let j = 0; j < buf.length; j++) p = Math.max(p, Math.abs(buf[j] - 128));
+        channels[i].peak = channels[i].peak * 0.7 + (p / 128) * 0.3;
+
+        // Bridge LED
+        const bridgeStrip = document.querySelector(`.meter-mini[data-ch="${i}"] .meter-led-strip`);
+        if (bridgeStrip) updateMiniLeds(bridgeStrip, channels[i].peak);
+
+        // Strip fader meter
+        const barEl = document.querySelector(`[data-meter="${i}"]`);
+        if (barEl) barEl.style.height = (channels[i].peak * 100) + '%';
+      }
+    }
+    requestAnimationFrame(updateMeters);
+  }
+
+  function updateLedStrip(id, level) {
+    const strip = document.getElementById(id);
+    if (!strip) return;
+    const leds = strip.children;
+    const total = leds.length;
+    const active = Math.floor(level * total * 1.2);
+    for (let i = 0; i < total; i++) {
+      const led = leds[i];
+      led.className = 'meter-led';
+      if (i < active) {
+        led.classList.add('on');
+        if (i >= total * 0.85) led.classList.add('red');
+        else if (i >= total * 0.6) led.classList.add('yellow');
+        else led.classList.add('green');
+      }
+    }
+  }
+  function updateMiniLeds(strip, level) {
+    const leds = strip.children;
+    const total = leds.length;
+    const active = Math.floor(level * total * 1.2);
+    for (let i = 0; i < total; i++) {
+      const led = leds[i];
+      led.className = 'meter-led';
+      if (i < active) {
+        led.classList.add('on');
+        if (i >= total * 0.85) led.classList.add('red');
+        else if (i >= total * 0.6) led.classList.add('yellow');
+        else led.classList.add('green');
+      }
+    }
+  }
+
+  /* ------------- Timecode / transport ------------- */
+  let tcRunning = false;
+  let tcStart = 0;
+  let tcElapsed = 0;
+  function tickTimecode() {
+    if (tcRunning) {
+      const now = performance.now();
+      tcElapsed = now - tcStart;
+    }
+    const ms = Math.floor(tcElapsed);
+    const totalSec = Math.floor(ms / 1000);
+    const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+    const m = String(Math.floor(totalSec / 60) % 60).padStart(2, '0');
+    const s = String(totalSec % 60).padStart(2, '0');
+    const msDisp = String(ms % 1000).padStart(3, '0');
+    document.getElementById('timecode').textContent = `${h}:${m}:${s}.${msDisp}`;
+    requestAnimationFrame(tickTimecode);
+  }
+  function wireTransport() {
+    document.getElementById('btnPlay').onclick = () => {
+      initAudio();
+      tcRunning = !tcRunning;
+      if (tcRunning) tcStart = performance.now() - tcElapsed;
+      document.getElementById('btnPlay').classList.toggle('active', tcRunning);
+      showInfo(tcRunning ? 'TRANSPORT PLAY' : 'TRANSPORT PAUSE');
+    };
+    document.getElementById('btnStop').onclick = () => {
+      tcRunning = false; tcElapsed = 0;
+      document.getElementById('btnPlay').classList.remove('active');
+      showInfo('TRANSPORT STOP');
+    };
+    document.getElementById('btnRec').onclick = () => {
+      const btn = document.getElementById('btnRec');
+      btn.classList.toggle('active');
+      showInfo(btn.classList.contains('active') ? '● RECORDING ARMED' : 'RECORD DISARMED');
+    };
+    document.getElementById('btnRew').onclick = () => { tcElapsed = Math.max(0, tcElapsed - 5000); };
+    document.getElementById('btnFwd').onclick = () => { tcElapsed += 5000; };
+
+    document.getElementById('automationMode').onclick = () => {
+      const modes = ['READ', 'WRITE', 'TOUCH', 'LATCH', 'TRIM'];
+      const cur = document.getElementById('automationMode').textContent;
+      const curMode = cur.split(':')[1].trim();
+      const next = modes[(modes.indexOf(curMode) + 1) % modes.length];
+      document.getElementById('automationMode').textContent = 'AUTO: ' + next;
+      showInfo(`AUTOMATION MODE · ${next}`);
+    };
+    document.getElementById('soloMode').onclick = () => {
+      document.getElementById('soloMode').classList.toggle('active');
+    };
+    document.getElementById('talkback').onclick = () => {
+      document.getElementById('talkback').classList.toggle('active');
+    };
+    document.getElementById('monitorBtn').onclick = () => {
+      document.getElementById('monitorBtn').classList.toggle('active');
+    };
+    document.getElementById('engineBtn').onclick = initAudio;
+  }
+
+  /* ------------- Info bar ------------- */
+  let infoTimeout;
+  function showInfo(msg) {
+    const bar = document.getElementById('infoBar');
+    bar.textContent = '▸ ' + msg;
+    bar.classList.add('show');
+    clearTimeout(infoTimeout);
+    infoTimeout = setTimeout(() => bar.classList.remove('show'), 2200);
+  }
+
+  /* ------------- Snapshots ------------- */
+  function snapshotStore() {
+    // Find empty slot or overwrite oldest
+    let slot = snapshots.findIndex(s => !s);
+    if (slot === -1) slot = 0;
+    snapshots[slot] = JSON.parse(JSON.stringify({
+      channels, master, vcaGroups, muteGroups, timestamp: Date.now()
+    }));
+    buildSnapshotRow();
+    showInfo(`SNAPSHOT STORED · SLOT ${slot+1}`);
+  }
+  function snapshotRecall(i) {
+    const s = snapshots[i];
+    if (!s) return;
+    for (let j = 0; j < TOTAL_CHANNELS; j++) {
+      Object.assign(channels[j], s.channels[j]);
+    }
+    Object.assign(master, s.master);
+    for (let j = 0; j < vcaGroups.length; j++) Object.assign(vcaGroups[j], s.vcaGroups[j]);
+    for (let j = 0; j < muteGroups.length; j++) muteGroups[j] = s.muteGroups[j];
+    buildChannelRack();
+    buildMasterSection();
+    applyAll();
+    showInfo(`SNAPSHOT RECALLED · SLOT ${i+1}`);
+  }
+  function snapshotExport() {
+    const blob = new Blob([JSON.stringify({ channels, master, vcaGroups, muteGroups, snapshots }, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ssl-148-session-' + Date.now() + '.json';
+    a.click();
+    showInfo('SESSION EXPORTED');
+  }
+  function snapshotImport() {
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = '.json';
+    inp.onchange = () => {
+      const f = inp.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = () => {
+        try {
+          const d = JSON.parse(r.result);
+          if (d.channels) for (let j = 0; j < TOTAL_CHANNELS; j++) Object.assign(channels[j], d.channels[j]);
+          if (d.master) Object.assign(master, d.master);
+          if (d.vcaGroups) for (let j = 0; j < vcaGroups.length; j++) Object.assign(vcaGroups[j], d.vcaGroups[j]);
+          if (d.muteGroups) for (let j = 0; j < muteGroups.length; j++) muteGroups[j] = d.muteGroups[j];
+          if (d.snapshots) snapshots = d.snapshots;
+          buildChannelRack();
+          buildMasterSection();
+          applyAll();
+          showInfo('SESSION IMPORTED');
+        } catch (e) { showInfo('IMPORT FAILED: ' + e.message); }
+      };
+      r.readAsText(f);
+    };
+    inp.click();
+  }
+
+  function resetAll() {
+    if (!confirm('Reset ALL channels to default? This cannot be undone.')) return;
+    for (let i = 0; i < TOTAL_CHANNELS; i++) {
+      channels[i].fader = 0; channels[i].pan = 0; channels[i].gain = 0;
+      channels[i].mute = false; channels[i].solo = false;
+      channels[i].eqOn = false; channels[i].hpfOn = false;
+      channels[i].compOn = false; channels[i].gateOn = false;
+      channels[i].vca = 0; channels[i].muteGroup = 0;
+      channels[i].eq.hi.gain = 0; channels[i].eq.hm.gain = 0;
+      channels[i].eq.lm.gain = 0; channels[i].eq.lo.gain = 0;
+    }
+    master.fader = 0;
+    buildChannelRack();
+    buildMasterSection();
+    applyAll();
+    showInfo('CONSOLE RESET');
+  }
+  function panic() {
+    for (let i = 0; i < TOTAL_CHANNELS; i++) {
+      channels[i].mute = true;
+      channels[i].solo = false;
+    }
+    master.fader = -60;
+    buildChannelRack();
+    buildMasterSection();
+    applyAll();
+    showInfo('⚠ PANIC — ALL MUTED');
+  }
+  function loadDemo() {
+    // Preload with named channels for a BrickSquad / GOAT Force mix session
+    const names = [
+      'KICK','KICK SUB','SNARE TOP','SNARE BOT','HIHAT','CLAP','RIM','TOM 1','TOM 2','TOM FLR','OH L','OH R',
+      '808','808 SUB','BASS DI','BASS AMP','SYNTH LEAD','SYNTH PAD','KEYS L','KEYS R','PIANO L','PIANO R','RHODES','WURLI',
+      'WAKA LEAD','WAKA DBL','WAKA AD','WAKA HYPE','SPEEDY V1','SPEEDY V2','SPEEDY ADL','SPEEDY HRM','FEATURE 1','FEATURE 2','FEATURE 3','FEATURE 4',
+      'BGV 1','BGV 2','BGV 3','BGV 4','BGV 5','BGV 6','BGV STACK','CHANT','SHOUT','FX VOX','REVERB VOX','DELAY VOX',
+      'GTR 1','GTR 2','GTR CLN','GTR DIST','GTR SLIDE','BANJO','MANDO','STRINGS','BRASS','HORNS','TRUMPET','SAX'
+    ];
+    for (let i = 0; i < Math.min(names.length, TOTAL_CHANNELS); i++) {
+      channels[i].name = names[i];
+    }
+    // Leave rest default
+    buildChannelRack();
+    showInfo('DEMO SESSION LOADED · BRICKSQUAD MIX TEMPLATE');
+  }
+
+  /* ------------- SPEEDY AUTOMIX AI ------------- */
+  function classifyChannel(name) {
+    const n = (name || '').toUpperCase();
+    if (/KICK|BD\b|BASS\s*DRUM/.test(n)) return 'kick';
+    if (/SNARE|SN\b|RIM|CLAP/.test(n)) return 'snare';
+    if (/HIHAT|HAT|HH\b|CYM|CRASH|RIDE|OH\b|OVERHEAD/.test(n)) return 'hat';
+    if (/TOM/.test(n)) return 'tom';
+    if (/808|SUB(?!\s*SNARE)/.test(n)) return '808';
+    if (/BASS|BS\b/.test(n)) return 'bass';
+    if (/LEAD(?!\s*VOX)|MAIN\s*VOX|WAKA\s*LEAD|SPEEDY\s*V/.test(n)) return 'leadvox';
+    if (/AD[- ]?LIB|ADL|HYPE|HRM|HARM|DBL|DOUBLE|BGV|BG\b|BACK|CHANT|SHOUT|FX\s*VOX/.test(n)) return 'bgvox';
+    if (/VOX|VOC|VOCAL/.test(n)) return 'leadvox';
+    if (/GTR|GUITAR/.test(n)) return 'guitar';
+    if (/PIANO|KEYS|RHODES|WURLI|EP\b/.test(n)) return 'keys';
+    if (/SYNTH|PAD/.test(n)) return 'synth';
+    if (/STRING|BRASS|HORN|SAX|TRUMPET|BANJO|MANDO/.test(n)) return 'instr';
+    if (/REVERB|DELAY|FX/.test(n)) return 'fx';
+    return 'other';
+  }
+
+  const AUTOMIX_PRESETS = {
+    trap:{kick:{fader:-3,hpf:[true,30],eq:{lo:+2,lm:-2,hm:+1,hi:+1},comp:[true,-14,4]},snare:{fader:-4,hpf:[true,100],eq:{lo:-1,lm:-3,hm:+2,hi:+4},comp:[true,-16,3]},hat:{fader:-10,hpf:[true,300],eq:{lo:-6,lm:0,hm:+1,hi:+3},comp:[false]},tom:{fader:-7,hpf:[true,60],eq:{lo:+1,lm:-2,hm:+1,hi:+2},comp:[true,-18,3]},'808':{fader:-2,hpf:[false],eq:{lo:+3,lm:-2,hm:0,hi:0},comp:[true,-10,2.5]},bass:{fader:-5,hpf:[true,40],eq:{lo:+2,lm:-1,hm:+1,hi:0},comp:[true,-14,3]},leadvox:{fader:0,hpf:[true,120],eq:{lo:-2,lm:-1,hm:+2,hi:+3},comp:[true,-16,4]},bgvox:{fader:-8,hpf:[true,150],eq:{lo:-3,lm:-2,hm:+1,hi:+2},comp:[true,-18,3]},keys:{fader:-6,hpf:[true,120],eq:{lo:-1,lm:0,hm:+1,hi:+2},comp:[true,-20,2.5]},synth:{fader:-6,hpf:[true,80],eq:{lo:0,lm:-1,hm:+1,hi:+2},comp:[false]},guitar:{fader:-6,hpf:[true,100],eq:{lo:-2,lm:+1,hm:+2,hi:+1},comp:[true,-18,3]},instr:{fader:-7,hpf:[true,100],eq:{lo:-1,lm:0,hm:+1,hi:+1},comp:[false]},fx:{fader:-12,hpf:[true,200],eq:{lo:-3,lm:0,hm:0,hi:+2},comp:[false]},other:{fader:-6,hpf:[true,80],eq:{lo:0,lm:0,hm:0,hi:0},comp:[false]}},
+    hiphop:{kick:{fader:-4,hpf:[true,35],eq:{lo:+2,lm:-1,hm:+1,hi:+1},comp:[true,-14,3.5]},snare:{fader:-5,hpf:[true,90],eq:{lo:-1,lm:-2,hm:+2,hi:+3},comp:[true,-16,3]},hat:{fader:-9,hpf:[true,250],eq:{lo:-5,lm:0,hm:0,hi:+2},comp:[false]},tom:{fader:-7,hpf:[true,60],eq:{lo:+1,lm:-2,hm:+1,hi:+1},comp:[true,-18,3]},'808':{fader:-3,hpf:[false],eq:{lo:+2,lm:-1,hm:0,hi:0},comp:[true,-12,2.5]},bass:{fader:-5,hpf:[true,40],eq:{lo:+2,lm:0,hm:+1,hi:0},comp:[true,-14,3]},leadvox:{fader:+1,hpf:[true,110],eq:{lo:-1,lm:-1,hm:+2,hi:+3},comp:[true,-16,3.5]},bgvox:{fader:-9,hpf:[true,140],eq:{lo:-3,lm:-1,hm:+1,hi:+2},comp:[true,-18,3]},keys:{fader:-6,hpf:[true,100],eq:{lo:-1,lm:0,hm:+1,hi:+1},comp:[true,-20,2.5]},synth:{fader:-6,hpf:[true,80],eq:{lo:0,lm:0,hm:+1,hi:+2},comp:[false]},guitar:{fader:-7,hpf:[true,110],eq:{lo:-2,lm:+1,hm:+2,hi:+1},comp:[true,-18,3]},instr:{fader:-7,hpf:[true,100],eq:{lo:-1,lm:0,hm:+1,hi:+1},comp:[false]},fx:{fader:-12,hpf:[true,200],eq:{lo:-3,lm:0,hm:0,hi:+2},comp:[false]},other:{fader:-6,hpf:[true,80],eq:{lo:0,lm:0,hm:0,hi:0},comp:[false]}},
+    pop:{kick:{fader:-4,hpf:[true,40],eq:{lo:+1,lm:-1,hm:+2,hi:+1},comp:[true,-15,3]},snare:{fader:-5,hpf:[true,100],eq:{lo:0,lm:-2,hm:+3,hi:+2},comp:[true,-17,3]},hat:{fader:-10,hpf:[true,300],eq:{lo:-5,lm:0,hm:0,hi:+2},comp:[false]},tom:{fader:-8,hpf:[true,70],eq:{lo:+1,lm:-2,hm:+1,hi:+1},comp:[true,-19,3]},'808':{fader:-6,hpf:[true,30],eq:{lo:+1,lm:-1,hm:0,hi:0},comp:[true,-14,2.5]},bass:{fader:-6,hpf:[true,45],eq:{lo:+1,lm:0,hm:+2,hi:+1},comp:[true,-16,3]},leadvox:{fader:+1,hpf:[true,130],eq:{lo:-2,lm:-1,hm:+3,hi:+4},comp:[true,-18,4]},bgvox:{fader:-9,hpf:[true,180],eq:{lo:-4,lm:-2,hm:+1,hi:+3},comp:[true,-19,3]},keys:{fader:-5,hpf:[true,100],eq:{lo:-1,lm:0,hm:+2,hi:+2},comp:[true,-20,2.5]},synth:{fader:-6,hpf:[true,90],eq:{lo:-1,lm:0,hm:+1,hi:+2},comp:[false]},guitar:{fader:-6,hpf:[true,120],eq:{lo:-2,lm:0,hm:+2,hi:+2},comp:[true,-18,3]},instr:{fader:-7,hpf:[true,100],eq:{lo:-1,lm:0,hm:+1,hi:+1},comp:[false]},fx:{fader:-11,hpf:[true,200],eq:{lo:-3,lm:0,hm:0,hi:+2},comp:[false]},other:{fader:-6,hpf:[true,80],eq:{lo:0,lm:0,hm:0,hi:0},comp:[false]}},
+    rock:{kick:{fader:-3,hpf:[true,40],eq:{lo:+3,lm:-3,hm:+2,hi:+1},comp:[true,-13,4]},snare:{fader:-3,hpf:[true,110],eq:{lo:+1,lm:-2,hm:+2,hi:+3},comp:[true,-15,3.5]},hat:{fader:-10,hpf:[true,350],eq:{lo:-6,lm:0,hm:0,hi:+2},comp:[false]},tom:{fader:-5,hpf:[true,55],eq:{lo:+2,lm:-3,hm:+2,hi:+2},comp:[true,-17,3]},bass:{fader:-5,hpf:[true,45],eq:{lo:+1,lm:-1,hm:+2,hi:+1},comp:[true,-14,3.5]},leadvox:{fader:0,hpf:[true,100],eq:{lo:-1,lm:0,hm:+2,hi:+3},comp:[true,-16,4]},bgvox:{fader:-8,hpf:[true,150],eq:{lo:-3,lm:-1,hm:+1,hi:+2},comp:[true,-18,3]},keys:{fader:-7,hpf:[true,110],eq:{lo:-1,lm:0,hm:+1,hi:+2},comp:[true,-20,2.5]},synth:{fader:-8,hpf:[true,90],eq:{lo:-1,lm:0,hm:+1,hi:+1},comp:[false]},guitar:{fader:-4,hpf:[true,80],eq:{lo:-1,lm:+1,hm:+3,hi:+2},comp:[true,-16,4]},instr:{fader:-7,hpf:[true,100],eq:{lo:-1,lm:0,hm:+1,hi:+1},comp:[false]},'808':{fader:-8,hpf:[true,40],eq:{lo:0,lm:0,hm:0,hi:0},comp:[false]},fx:{fader:-11,hpf:[true,200],eq:{lo:-3,lm:0,hm:0,hi:+2},comp:[false]},other:{fader:-6,hpf:[true,80],eq:{lo:0,lm:0,hm:0,hi:0},comp:[false]}},
+    rnb:{kick:{fader:-5,hpf:[true,35],eq:{lo:+2,lm:-2,hm:0,hi:+1},comp:[true,-15,3]},snare:{fader:-6,hpf:[true,100],eq:{lo:-1,lm:-2,hm:+1,hi:+2},comp:[true,-17,3]},hat:{fader:-11,hpf:[true,300],eq:{lo:-5,lm:0,hm:0,hi:+1},comp:[false]},tom:{fader:-8,hpf:[true,70],eq:{lo:+1,lm:-2,hm:+1,hi:+1},comp:[true,-19,3]},'808':{fader:-4,hpf:[true,30],eq:{lo:+2,lm:-1,hm:0,hi:0},comp:[true,-13,2.5]},bass:{fader:-5,hpf:[true,40],eq:{lo:+2,lm:0,hm:+1,hi:0},comp:[true,-15,3]},leadvox:{fader:+1,hpf:[true,120],eq:{lo:-2,lm:-1,hm:+2,hi:+4},comp:[true,-17,3.5]},bgvox:{fader:-7,hpf:[true,150],eq:{lo:-3,lm:-1,hm:+1,hi:+3},comp:[true,-18,3]},keys:{fader:-4,hpf:[true,90],eq:{lo:-1,lm:0,hm:+2,hi:+3},comp:[true,-19,2.5]},synth:{fader:-6,hpf:[true,80],eq:{lo:-1,lm:0,hm:+1,hi:+2},comp:[false]},guitar:{fader:-7,hpf:[true,120],eq:{lo:-2,lm:+1,hm:+1,hi:+2},comp:[true,-18,3]},instr:{fader:-6,hpf:[true,100],eq:{lo:-1,lm:0,hm:+1,hi:+2},comp:[false]},fx:{fader:-11,hpf:[true,200],eq:{lo:-3,lm:0,hm:0,hi:+2},comp:[false]},other:{fader:-6,hpf:[true,80],eq:{lo:0,lm:0,hm:0,hi:0},comp:[false]}},
+    edm:{kick:{fader:-2,hpf:[true,30],eq:{lo:+3,lm:-3,hm:+2,hi:+2},comp:[true,-12,4]},snare:{fader:-5,hpf:[true,120],eq:{lo:-1,lm:-2,hm:+3,hi:+4},comp:[true,-15,3.5]},hat:{fader:-8,hpf:[true,400],eq:{lo:-6,lm:0,hm:+1,hi:+3},comp:[false]},tom:{fader:-8,hpf:[true,70],eq:{lo:+1,lm:-2,hm:+1,hi:+1},comp:[true,-18,3]},'808':{fader:-3,hpf:[false],eq:{lo:+3,lm:-2,hm:0,hi:0},comp:[true,-11,2.5]},bass:{fader:-4,hpf:[true,40],eq:{lo:+2,lm:0,hm:+1,hi:+1},comp:[true,-13,3.5]},leadvox:{fader:0,hpf:[true,130],eq:{lo:-3,lm:-1,hm:+2,hi:+4},comp:[true,-16,4]},bgvox:{fader:-8,hpf:[true,180],eq:{lo:-4,lm:-2,hm:+1,hi:+3},comp:[true,-18,3]},keys:{fader:-6,hpf:[true,100],eq:{lo:-2,lm:0,hm:+1,hi:+2},comp:[true,-20,2.5]},synth:{fader:-4,hpf:[true,60],eq:{lo:0,lm:0,hm:+2,hi:+3},comp:[true,-17,3]},guitar:{fader:-8,hpf:[true,120],eq:{lo:-2,lm:+1,hm:+2,hi:+2},comp:[true,-18,3]},instr:{fader:-8,hpf:[true,120],eq:{lo:-2,lm:0,hm:+1,hi:+2},comp:[false]},fx:{fader:-10,hpf:[true,200],eq:{lo:-3,lm:0,hm:+1,hi:+3},comp:[false]},other:{fader:-6,hpf:[true,80],eq:{lo:0,lm:0,hm:0,hi:0},comp:[false]}}
+  };
+
+  function applyAutoMixToChannel(ch, preset) {
+    const cat = classifyChannel(ch.name);
+    const p = preset[cat] || preset.other;
+    if (!p) return cat;
+    if (typeof p.fader === 'number') ch.fader = p.fader;
+    if (p.hpf) { ch.hpfOn = !!p.hpf[0]; if (p.hpf[1]) ch.hpfFreq = p.hpf[1]; }
+    if (p.eq) {
+      ch.eqOn = true;
+      if ('lo' in p.eq) ch.eq.lo.gain = p.eq.lo;
+      if ('lm' in p.eq) ch.eq.lm.gain = p.eq.lm;
+      if ('hm' in p.eq) ch.eq.hm.gain = p.eq.hm;
+      if ('hi' in p.eq) ch.eq.hi.gain = p.eq.hi;
+    }
+    if (p.comp) {
+      ch.compOn = !!p.comp[0];
+      if (p.comp[0]) {
+        if (typeof p.comp[1] === 'number') ch.comp.threshold = p.comp[1];
+        if (typeof p.comp[2] === 'number') ch.comp.ratio = p.comp[2];
+      }
+    }
+    return cat;
+  }
+
+  function autoMixPreset(genre) {
+    const preset = AUTOMIX_PRESETS[genre];
+    if (!preset) { showInfo('UNKNOWN GENRE: ' + genre); return; }
+    try { initAudio(); } catch(e){}
+    let counts = {};
+    for (const ch of channels) {
+      const cat = applyAutoMixToChannel(ch, preset);
+      counts[cat] = (counts[cat] || 0) + 1;
+      try { applyChannelAudio(ch); } catch(e) {}
+    }
+    buildChannelRack();
+    const summary = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>v+' '+k.toUpperCase()).join(' / ');
+    showInfo('AUTOMIX ' + genre.toUpperCase() + ' - ' + summary);
+  }
+
+  function autoMixAll() {
+    let score = { trap:0, hiphop:0, pop:0, rock:0, rnb:0, edm:0 };
+    for (const ch of channels) {
+      const n = (ch.name||'').toUpperCase();
+      if (/808|SUB|BRICK|WAKA|SPEEDY|TRAP/.test(n)) score.trap += 3;
+      if (/RAP|HIP|MC\b/.test(n)) score.hiphop += 2;
+      if (/POP/.test(n)) score.pop += 3;
+      if (/GTR|GUITAR|ROCK|AMP/.test(n)) score.rock += 2;
+      if (/RNB|R&B|RHODES|WURLI/.test(n)) score.rnb += 2;
+      if (/EDM|DROP|SIDECHAIN|PLUCK/.test(n)) score.edm += 2;
+    }
+    let best = 'trap', bestS = -1;
+    for (const [k,v] of Object.entries(score)) if (v > bestS) { best = k; bestS = v; }
+    showInfo('SMART AUTOMIX - DETECTED ' + best.toUpperCase());
+    autoMixPreset(best);
+  }
+
+  function applyChannelAudio(ch) {
+    if (typeof chNodes === 'undefined') return;
+    const n = chNodes[ch.id - 1];
+    if (!n || !ac) return;
+    try {
+      if (n.fader) n.fader.gain.setTargetAtTime(Math.pow(10, ch.fader/20), ac.currentTime, 0.02);
+      if (n.pan && n.pan.pan) n.pan.pan.setTargetAtTime(ch.pan, ac.currentTime, 0.02);
+      if (n.hpf) n.hpf.frequency.setTargetAtTime(ch.hpfOn ? ch.hpfFreq : 20, ac.currentTime, 0.02);
+      if (n.eqHi) n.eqHi.gain.setTargetAtTime(ch.eqOn ? ch.eq.hi.gain : 0, ac.currentTime, 0.02);
+      if (n.eqHm) n.eqHm.gain.setTargetAtTime(ch.eqOn ? ch.eq.hm.gain : 0, ac.currentTime, 0.02);
+      if (n.eqLm) n.eqLm.gain.setTargetAtTime(ch.eqOn ? ch.eq.lm.gain : 0, ac.currentTime, 0.02);
+      if (n.eqLo) n.eqLo.gain.setTargetAtTime(ch.eqOn ? ch.eq.lo.gain : 0, ac.currentTime, 0.02);
+      if (n.comp) {
+        n.comp.threshold.setTargetAtTime(ch.compOn ? ch.comp.threshold : 0, ac.currentTime, 0.02);
+        n.comp.ratio.setTargetAtTime(ch.compOn ? ch.comp.ratio : 1, ac.currentTime, 0.02);
+      }
+    } catch(e) {}
+  }
+
+  /* ------------- Public API ------------- */
+  // ---- Drag-and-drop file to channel ----
+  function wireDragDrop() {
+    const rack = document.getElementById('channelRack');
+    if (!rack) return;
+    rack.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      rack.style.outline = '2px dashed #ffa500';
+    });
+    rack.addEventListener('dragleave', () => { rack.style.outline = ''; });
+    rack.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      rack.style.outline = '';
+      const strip = e.target.closest('.channel-strip');
+      if (!strip) { showInfo('DROP ONTO A CHANNEL STRIP'); return; }
+      const chIdx = parseInt(strip.dataset.ch);
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('audio/') || /\.(wav|mp3|ogg|m4a|flac|aac|webm)$/i.test(f.name));
+      if (files.length === 0) { showInfo('NO AUDIO FILES IN DROP'); return; }
+      initAudio();
+      for (let i = 0; i < files.length; i++) {
+        const target = chIdx + i;
+        if (target >= TOTAL_CHANNELS) break;
+        await channelLoadFile(target, files[i]);
+      }
+      showInfo(`LOADED ${files.length} FILE(S) STARTING AT CH ${chIdx+1}`);
+    });
+  }
+
+  // ---- Master recorder wiring ----
+  let masterRecTimer = null;
+  let lastMixBlob = null;
+  function wireMasterRecorder() {
+    const btnArm = document.getElementById('btnMasterArm');
+    const btnDL  = document.getElementById('btnDownloadMix');
+    const tEl    = document.getElementById('masterRecTime');
+    if (!btnArm || !btnDL) return;
+    btnArm.onclick = async () => {
+      initAudio();
+      if (!masterRecorder) { showInfo('RECORDER NOT READY'); return; }
+      if (masterRecorder.recording) {
+        const blob = await masterRecorder.stop();
+        lastMixBlob = blob;
+        btnArm.style.background = '';
+        btnArm.style.color = '#ccc';
+        btnArm.textContent = '🎙 ARM MIX REC';
+        clearInterval(masterRecTimer);
+        tEl.textContent = '';
+        showInfo(`MIX RECORDED · ${(blob.size/1024).toFixed(0)} KB - CLICK DOWNLOAD`);
+      } else {
+        if (masterRecorder.start()) {
+          btnArm.style.background = '#ff3030';
+          btnArm.style.color = '#fff';
+          btnArm.textContent = '⏺ STOP MIX REC';
+          masterRecTimer = setInterval(() => {
+            const t = masterRecorder.getElapsedSec();
+            const m = Math.floor(t / 60), s = Math.floor(t % 60);
+            tEl.textContent = m + ':' + String(s).padStart(2,'0');
+          }, 200);
+          showInfo('RECORDING MASTER BUS');
+        } else {
+          showInfo('RECORDER FAILED TO START');
+        }
+      }
+    };
+    btnDL.onclick = () => {
+      if (!lastMixBlob) { showInfo('NO RECORDING YET - ARM AND RECORD FIRST'); return; }
+      const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+      const ext = (lastMixBlob.type.includes('webm')) ? 'webm' : 'wav';
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(lastMixBlob);
+      a.download = 'goat-mix-' + ts + '.' + ext;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      showInfo('MIX DOWNLOADED');
+    };
+  }
+
+  function init() {
+    buildBankButtons();
+    buildChannelRack();
+    buildMasterSection();
+    buildMeterBridge();
+    wireTransport();
+    wireDragDrop();
+    wireMasterRecorder();
+    tickTimecode();
+    updateMeters();
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.target.isContentEditable) return;
+      if (e.code === 'Space') { e.preventDefault(); document.getElementById('btnPlay').click(); }
+      if (e.key === '[') { switchBank(Math.max(0, currentBank - 1)); }
+      if (e.key === ']') { switchBank(Math.min(TOTAL_BANKS - 1, currentBank + 1)); }
+      if (e.key.toLowerCase() === 's' && e.shiftKey) { snapshotStore(); }
+    });
+    showInfo('SSL 148 READY · CLICK ENGINE OR ANY FADER TO START AUDIO');
+  }
+
+  return {
+    init,
+    snapshotStore, snapshotRecall, snapshotExport, snapshotImport,
+    resetAll, panic, loadDemo,
+    autoMixAll, autoMixPreset
+  };
+})();
+
+window.addEventListener('DOMContentLoaded', SSL.init);
+</script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>

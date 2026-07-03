@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codex Field Operations | GOAT Force HQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --goat-gold: #FFD700;
+            --goat-purple: #8B5CF6;
+            --goat-dark: #0a0a0a;
+            --codex-green: #00FF88;
+            --codex-teal: #00CED1;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #001a0a 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        
+        .glow-gold { 
+            text-shadow: 0 0 10px var(--goat-gold), 0 0 20px var(--goat-gold), 0 0 40px var(--goat-gold); 
+        }
+        
+        .glow-green {
+            text-shadow: 0 0 10px var(--codex-green), 0 0 20px var(--codex-green), 0 0 40px var(--codex-green);
+        }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(0, 40, 20, 0.9), rgba(0, 20, 10, 0.95));
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(0, 255, 136, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.1);
+        }
+        
+        .stat-card {
+            background: linear-gradient(145deg, rgba(0, 255, 136, 0.1), rgba(0, 206, 209, 0.1));
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+        
+        .avatar-ring {
+            background: conic-gradient(var(--codex-green), var(--codex-teal), var(--goat-gold), var(--codex-green));
+            animation: rotate 4s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, var(--codex-green), var(--codex-teal));
+            border-radius: 10px;
+            height: 8px;
+            transition: width 1s ease;
+        }
+        
+        .btn-codex {
+            background: linear-gradient(135deg, var(--codex-green), var(--codex-teal));
+            color: black;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-codex:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+        }
+        
+        .status-online {
+            background: #00FF88;
+            box-shadow: 0 0 10px #00FF88;
+        }
+        
+        .status-active {
+            background: var(--codex-teal);
+            box-shadow: 0 0 10px var(--codex-teal);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .mission-card {
+            border-left: 3px solid var(--codex-green);
+            padding-left: 15px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .mission-card:hover {
+            border-left-color: var(--goat-gold);
+            background: rgba(255, 215, 0, 0.05);
+            margin-left: 5px;
+        }
+        
+        .floating-scrolls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .scroll {
+            position: absolute;
+            font-size: 18px;
+            opacity: 0.12;
+            animation: float-scroll 22s infinite;
+        }
+        
+        @keyframes float-scroll {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.12; }
+            90% { opacity: 0.12; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--codex-green), transparent);
+            animation: scan 3s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { top: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        
+        .world-map {
+            background: linear-gradient(145deg, rgba(0, 30, 15, 0.8), rgba(0, 15, 8, 0.9));
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--codex-green);
+            border-radius: 50%;
+            animation: ping 2s infinite;
+        }
+        
+        @keyframes ping {
+            0% { transform: scale(1); opacity: 1; }
+            75%, 100% { transform: scale(2); opacity: 0; }
+        }
+
+        .hq-nav {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; position: relative; z-index: 10;
+        }
+        .hq-nav a {
+            padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(0,255,136,0.25);
+            color: #9ca3af; text-decoration: none; font-size: 13px; font-weight: 600;
+            transition: all 0.2s;
+        }
+        .hq-nav a:hover { color: #00FF88; border-color: #00FF88; background: rgba(0,255,136,0.08); }
+
+        .codex-console { display: flex; flex-direction: column; min-height: 320px; }
+        .console-messages {
+            flex: 1; overflow-y: auto; max-height: 280px; padding: 12px;
+            background: rgba(0,0,0,0.35); border-radius: 12px; margin-bottom: 12px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .console-msg { font-size: 13px; line-height: 1.5; padding: 10px 12px; border-radius: 10px; }
+        .console-msg.user { align-self: flex-end; background: rgba(0,255,136,0.2); border: 1px solid rgba(0,255,136,0.35); max-width: 92%; }
+        .console-msg.bot { align-self: flex-start; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); max-width: 96%; }
+        .console-msg.sys { color: #6b7280; font-size: 12px; text-align: center; }
+        .console-input-row { display: flex; gap: 8px; }
+        .console-input {
+            flex: 1; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(0,255,136,0.3);
+            background: rgba(0,0,0,0.4); color: #fff; font-family: inherit; font-size: 14px;
+        }
+        .console-input:focus { outline: none; border-color: #00FF88; }
+        .status-pill { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); }
+        .status-pill.ok { border-color: #00FF88; color: #00FF88; }
+        .status-pill.warn { border-color: #f59e0b; color: #f59e0b; }
+        .status-pill.off { border-color: #6b7280; color: #6b7280; }
+        .agent-row { cursor: pointer; }
+    </style>
+<script src="/js/goat-bridge.js"></script>
+</head>
+<body class="p-4 md:p-8">
+    <nav class="hq-nav">
+        <a href="../../index.html">GOAT Store</a>
+        <a href="../nexus/home.html">Nexus</a>
+        <a href="../../sir-codex-launcher.html">Sir Codex Launcher</a>
+        <a href="../../ai-assistants/sir-codex.html">Sir Codex Home</a>
+        <a href="../../money-penny-codex.html">Money Penny + Codex Hub</a>
+        <a href="../../moneypenny.html?mode=codex">Intel Codex Chat</a>
+        <a href="../../intel.html">Intel</a>
+        <a href="http://127.0.0.1:3333" target="_blank" rel="noopener">Lexi Studio (creative + evidence)</a>
+    </nav>
+    <!-- Floating Scrolls -->
+    <div class="floating-scrolls" id="scrolls"></div>
+    
+    <!-- Header -->
+    <header class="relative z-10 mb-8">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-4">
+                <div class="avatar-ring p-1 rounded-full">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center">
+                        <span class="text-2xl">📜</span>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-orbitron font-bold glow-green">CODEX</h1>
+                    <p class="text-gray-400">Field Operations | Intelligence & Archives</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+                <span id="pillIntel" class="status-pill off">Intel …</span>
+                <span id="pillLexi" class="status-pill off">Lexi …</span>
+                <span id="pillCodex" class="status-pill off">Codex …</span>
+                <button type="button" class="btn-codex" style="padding:8px 14px;font-size:11px" onclick="enableLexiCodexParity()">⚡ Lexi Codex Power (Waka baby creative)</button>
+                <button type="button" class="btn-codex" style="padding:8px 14px;font-size:11px;background:linear-gradient(135deg,#eab308,#00CED1)" onclick="loadSirCodexProfile()">📜 Load Sir Codex</button>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2 relative z-10">GOAT lanes only — not Waves CODEX Stereo plugin or OpenAI CODEX.app</p>
+    </header>
+    
+    <!-- Main Grid -->
+    <main class="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Column -->
+        <div class="space-y-6">
+            <!-- Global Intel Stats -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🌍 GLOBAL INTEL</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-green-400">150+</div>
+                        <div class="text-gray-400 text-sm">Countries</div>
+                    </div>
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-teal-400">45+</div>
+                        <div class="text-gray-400 text-sm">Platforms</div>
+                    </div>
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-yellow-400">500M+</div>
+                        <div class="text-gray-400 text-sm">Data Points</div>
+                    </div>
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-purple-400">24/7</div>
+                        <div class="text-gray-400 text-sm">Monitoring</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Codex Lanes -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📚 CODEX LANES</h2>
+                <div class="space-y-2 text-sm">
+                    <a class="block p-3 bg-gray-900/50 rounded-xl hover:border-green-400 border border-transparent" href="../../sir-codex-launcher.html">🛡️ Sir Codex Launcher — docs &amp; QA crew</a>
+                    <a class="block p-3 bg-gray-900/50 rounded-xl hover:border-green-400 border border-transparent" href="../../ai-assistants/sir-codex.html">📜 Sir Codex Home — knowledge keeper</a>
+                    <a class="block p-3 bg-gray-900/50 rounded-xl hover:border-green-400 border border-transparent" href="../../money-penny-codex.html">💎 Money Penny + Codex Hub</a>
+                    <a class="block p-3 bg-gray-900/50 rounded-xl hover:border-green-400 border border-transparent" href="http://127.0.0.1:3333" target="_blank" rel="noopener">🦊 Lexi Studio (Waka's baby) — run · draw · patch · evidence</a>
+                </div>
+            </div>
+
+            <!-- Active Missions -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🎯 ACTIVE MISSIONS</h2>
+                <div class="space-y-3">
+                    <button class="btn-codex w-full" onclick="viewRoyaltyHunt()">
+                        💰 Royalty Recovery Hunt
+                    </button>
+                    <button class="btn-codex w-full" onclick="viewCatalogScan()">
+                        📋 Catalog Deep Scan
+                    </button>
+                    <button class="btn-codex w-full" onclick="viewMarketIntel()">
+                        📊 Market Intelligence
+                    </button>
+                    <button class="btn-codex w-full" onclick="viewNewReleases()">
+                        🎵 New Release Tracker
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Intelligence Sources -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📡 INTEL SOURCES</h2>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <span>ASCAP Database</span>
+                        <span class="text-green-400 text-sm">✅ Active</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <span>MLC Registry</span>
+                        <span class="text-green-400 text-sm">✅ Active</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <span>SoundExchange</span>
+                        <span class="text-green-400 text-sm">✅ Active</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <span>Spotify for Artists</span>
+                        <span class="text-teal-400 text-sm">🔄 Syncing</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Center Column -->
+        <div class="space-y-6">
+            <!-- World Map -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🗺️ GLOBAL PRESENCE</h2>
+                <div class="world-map h-48 relative">
+                    <div class="scanner-line"></div>
+                    <!-- Simulated map dots -->
+                    <div class="map-dot" style="top: 35%; left: 20%;"></div>
+                    <div class="map-dot" style="top: 40%; left: 48%;"></div>
+                    <div class="map-dot" style="top: 30%; left: 75%;"></div>
+                    <div class="map-dot" style="top: 60%; left: 85%;"></div>
+                    <div class="map-dot" style="top: 55%; left: 25%;"></div>
+                    <div class="absolute bottom-2 right-2 text-xs text-gray-400">
+                        5 regions active
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Codex Command Console -->
+            <div class="card p-6 codex-console">
+                <h2 class="font-orbitron text-xl mb-2 glow-gold">💻 CODEX COMMAND</h2>
+                <p class="text-xs text-gray-500 mb-3">Live Intel AI · missions · code · royalties · GOAT stack</p>
+                <div id="consoleMessages" class="console-messages"></div>
+                <div class="console-input-row">
+                    <input id="consoleInput" class="console-input" type="text" placeholder="Ask Codex — architecture, royalty hunt, catalog scan…" autocomplete="off">
+                    <button type="button" class="btn-codex" style="padding:12px 18px" onclick="sendCodexMessage()">Send</button>
+                </div>
+            </div>
+
+            <!-- Mission Log -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📜 MISSION LOG</h2>
+                <div id="missionLog" class="space-y-2 max-h-48 overflow-y-auto">
+                    <div class="mission-card">
+                        <div class="text-sm font-semibold text-teal-400">Console ready</div>
+                        <div class="text-xs text-gray-500">Connect Intel + run a mission</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Data Processing -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">⚙️ DATA PROCESSING</h2>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Royalty Scanning</span>
+                            <span class="text-green-400">Active</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 67%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Catalog Analysis</span>
+                            <span class="text-green-400">Processing</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 89%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Market Intelligence</span>
+                            <span class="text-teal-400">Updating</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column -->
+        <div class="space-y-6">
+            <!-- GOAT Force Network -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🐐 FORCE NETWORK</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl agent-row" onclick="location.href='../dj-speedy/command-center.html'">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">🎧</div>
+                        <div class="flex-1">
+                            <div class="font-semibold">DJ Speedy</div>
+                            <div class="text-xs text-gray-400">Command Center</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl agent-row" onclick="location.href='../waka-flocka/operations-hub.html'">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center">👑</div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Waka Flocka</div>
+                            <div class="text-xs text-gray-400">Operations Hub</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl agent-row" onclick="location.href='../money-penny/integration-panel.html'">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">💎</div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Money Penny</div>
+                            <div class="text-xs text-gray-400">Integration Panel</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl agent-row" onclick="location.href='../nexus/home.html'">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">💜</div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Nexus</div>
+                            <div class="text-xs text-gray-400">AI Core</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Archives Access -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📁 ARCHIVES</h2>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3 p-2 bg-gray-900/50 rounded-xl cursor-pointer hover:bg-gray-800/50 transition-all">
+                        <span class="text-lg">📄</span>
+                        <span class="text-sm flex-1">Contracts Vault</span>
+                        <span class="text-xs text-gray-400">24 files</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2 bg-gray-900/50 rounded-xl cursor-pointer hover:bg-gray-800/50 transition-all">
+                        <span class="text-lg">📊</span>
+                        <span class="text-sm flex-1">Royalty Reports</span>
+                        <span class="text-xs text-gray-400">156 files</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2 bg-gray-900/50 rounded-xl cursor-pointer hover:bg-gray-800/50 transition-all">
+                        <span class="text-lg">🎵</span>
+                        <span class="text-sm flex-1">Catalog Files</span>
+                        <span class="text-xs text-gray-400">438 works</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2 bg-gray-900/50 rounded-xl cursor-pointer hover:bg-gray-800/50 transition-all">
+                        <span class="text-lg">🔐</span>
+                        <span class="text-sm flex-1">Secure Documents</span>
+                        <span class="text-xs text-gray-400">12 files</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alert System -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🚨 ALERTS</h2>
+                <div class="space-y-2">
+                    <div class="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+                        <div class="text-sm font-semibold text-yellow-400">⚠️ Unclaimed Royalties</div>
+                        <div class="text-xs text-gray-400">$2.7B potential recovery</div>
+                    </div>
+                    <div class="p-3 bg-green-500/10 border border-green-500/30 rounded-xl">
+                        <div class="text-sm font-semibold text-green-400">✅ Catalog Sync Complete</div>
+                        <div class="text-xs text-gray-400">All 438 works verified</div>
+                    </div>
+                    <div class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                        <div class="text-sm font-semibold text-blue-400">📡 New Streaming Data</div>
+                        <div class="text-xs text-gray-400">Updated 5 min ago</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="relative z-10 mt-8 text-center text-gray-500 text-sm">
+        <p>🐐 GOAT Royalty App | Codex Field Operations</p>
+        <p class="text-xs mt-1">For The Kingdom. For The Code. For The Crown. 👑</p>
+    </footer>
+    
+    <script>
+        let bridge = { intel: 'http://127.0.0.1:5500', lexi: 'http://127.0.0.1:3333', agent007: 'http://127.0.0.1:3333' /* AGENT007 creative endpoint (Licence to Build or Destroy). Lexi is crew (Waka baby). No Oscar anywhere in the GOAT Royalty App / AGENT007 + MONEY PENNY toolkit. */ };
+        let chatHistory = [];
+        let codexBusy = false;
+
+        const MISSION_PROMPTS = {
+            royalty: 'Run a royalty recovery hunt briefing for GOAT Force: unclaimed sync, MLC, SoundExchange, ASCAP — top 5 actions this week.',
+            catalog: 'Catalog deep scan summary: works count, pending registrations, duplicate titles risk, next sync steps.',
+            market: 'Market intelligence snapshot: streaming trends, top territories, 3 partnership opportunities for hip-hop catalog.',
+            releases: 'New release tracker: recent drops, performance vs catalog average, distribution checklist.'
+        };
+
+        function createScrolls() {
+            const container = document.getElementById('scrolls');
+            for (let i = 0; i < 15; i++) {
+                const scroll = document.createElement('div');
+                scroll.className = 'scroll';
+                scroll.textContent = '📜';
+                scroll.style.left = Math.random() * 100 + '%';
+                scroll.style.animationDelay = Math.random() * 22 + 's';
+                scroll.style.animationDuration = (18 + Math.random() * 8) + 's';
+                container.appendChild(scroll);
+            }
+        }
+        createScrolls();
+
+        function setPill(id, text, state) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = text;
+            el.className = 'status-pill ' + (state || 'off');
+        }
+
+        function appendConsole(role, text) {
+            const box = document.getElementById('consoleMessages');
+            const div = document.createElement('div');
+            div.className = 'console-msg ' + role;
+            div.textContent = text;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function appendMission(title, detail) {
+            const log = document.getElementById('missionLog');
+            const card = document.createElement('div');
+            card.className = 'mission-card';
+            card.innerHTML = '<div class="text-sm font-semibold text-green-400">' + title + '</div><div class="text-xs text-gray-500">' + detail + '</div>';
+            log.insertBefore(card, log.firstChild);
+            while (log.children.length > 8) log.removeChild(log.lastChild);
+        }
+
+        async function refreshBridge() {
+            if (typeof GoatBridge === 'undefined') {
+                setPill('pillIntel', 'Intel offline', 'off');
+                setPill('pillAgent007', 'AGENT007 offline', 'off');
+                setPill('pillCodex', 'Bridge JS missing', 'warn');
+                return;
+            }
+            bridge = await GoatBridge.resolve();
+            if (bridge.intelHealth) {
+                setPill('pillIntel', 'Intel online', 'ok');
+            } else {
+                setPill('pillIntel', 'Intel offline', 'off');
+            }
+            if (bridge.agent007Parity) {
+                const on = bridge.agent007Parity.codexParityReady;
+                setPill('pillAgent007', on ? 'AGENT007 Codex ON' : 'AGENT007 up', on ? 'ok' : 'warn');
+            } else if (bridge.agent007) {
+                setPill('pillAgent007', 'AGENT007 offline', 'off');
+            }
+            setPill('pillCodex', bridge.intelHealth ? 'Codex ready' : 'Need Intel', bridge.intelHealth ? 'ok' : 'off');
+        }
+
+        async function sendCodexMessage(forcedText) {
+            const input = document.getElementById('consoleInput');
+            const message = (forcedText || input.value || '').trim();
+            if (!message || codexBusy) return;
+            input.value = '';
+            appendConsole('user', message);
+            chatHistory.push({ role: 'user', content: message });
+            codexBusy = true;
+            appendConsole('sys', 'Codex thinking…');
+
+            try {
+                const r = await fetch(bridge.intel.replace(/\/$/, '') + '/ai/codex', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, history: chatHistory.slice(-10) }),
+                    signal: AbortSignal.timeout(60000)
+                });
+                const d = await r.json();
+                const msgs = document.getElementById('consoleMessages');
+                if (msgs.lastChild && msgs.lastChild.classList.contains('sys')) msgs.removeChild(msgs.lastChild);
+
+                if (d.ok && d.reply) {
+                    appendConsole('bot', d.reply);
+                    chatHistory.push({ role: 'assistant', content: d.reply });
+                    appendMission('Codex reply', new Date().toLocaleTimeString());
+                } else {
+                    appendConsole('bot', d.error || 'Intel returned no reply. Start goat_intel.py on port 5500 or use VPS store.');
+                }
+            } catch (e) {
+                const msgs = document.getElementById('consoleMessages');
+                if (msgs.lastChild && msgs.lastChild.classList.contains('sys')) msgs.removeChild(msgs.lastChild);
+                appendConsole('bot', 'Could not reach Intel at ' + bridge.intel + '. Studio: cd goat-intel-server && python goat_intel.py');
+            }
+            codexBusy = false;
+        }
+
+        function viewRoyaltyHunt() { runMission('royalty', 'Royalty Recovery Hunt'); }
+        function viewCatalogScan() { runMission('catalog', 'Catalog Deep Scan'); }
+        function viewMarketIntel() { runMission('market', 'Market Intelligence'); }
+        function viewNewReleases() { runMission('releases', 'New Release Tracker'); }
+
+        function runMission(key, label) {
+            appendMission(label, 'Mission dispatched');
+            sendCodexMessage(MISSION_PROMPTS[key]);
+        }
+
+        async function loadSirCodexProfile() {
+            try {
+                const r = await fetch(bridge.agent007.replace(/\/$/, '') + '/api/sir-codex/profile', {
+                    signal: AbortSignal.timeout(8000)
+                });
+                const d = await r.json();
+                if (d.ok && (d.profile || d.content || d.summary)) {
+                    const text = d.profile || d.content || d.summary || JSON.stringify(d).slice(0, 1200);
+                    appendConsole('bot', 'Sir Codex profile loaded into Field Ops:\n\n' + String(text).slice(0, 2000));
+                    appendMission('Sir Codex profile', 'USB BackupVault');
+                } else if (d.ok) {
+                    appendConsole('sys', 'Sir Codex profile OK — open Lexi client (http://127.0.0.1:3333) and click Load Sir Codex for full memory. (Lexi is crew for Waka baby; Raspy separate on daddy computer. No Oscar in the GOAT Royalty App.)');
+                    appendMission('Sir Codex', 'Profile endpoint OK');
+                } else {
+                    appendConsole('sys', d.error || 'Sir Codex profile unavailable');
+                }
+            } catch (e) {
+                appendConsole('sys', 'Sir Codex lives on Lexi :3333 (crew client) — start Lexi runtime (the USB client or Thor), then retry. Raspy separate on daddy computer. AGENT007 + MONEY PENNY toolkit only.');
+            }
+            refreshBridge();
+        }
+
+        async function enableAgent007CodexParity() {
+            try {
+                const r = await fetch(bridge.agent007.replace(/\/$/, '') + '/api/agent007/enable-codex-parity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: '{}',
+                    signal: AbortSignal.timeout(8000)
+                });
+                const d = await r.json();
+                if (d.ok) {
+                    appendConsole('sys', 'Lexi Codex Parity enabled — open Lexi Studio/client for tools & artwork (evidence guardian + creative).');
+                    appendMission('Codex Parity ON', 'AGENT007 tool mode (Licence to Build or Destroy)');
+                } else {
+                    appendConsole('sys', d.error || 'AGENT007 parity failed');
+                }
+            } catch (e) {
+                appendConsole('sys', 'AGENT007 not reachable at ' + bridge.agent007 + ' — use studio http://127.0.0.1:3333');
+            }
+            refreshBridge();
+        }
+
+        document.getElementById('consoleInput').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') sendCodexMessage();
+        });
+
+        appendConsole('bot', 'Codex Field Operations online. Intel powers chat; Lexi Studio (crew client for Waka baby) handles Codex parity + creative + evidence (run, draw, patch, protect drives). AGENT007 (Licence to Build or Destroy) + MONEY PENNY own the personal core. Their AI Tool Kit = THE GOAT ROYALTY APP. Raspy separate on daddy computer. No Oscar here. Pick a mission or type below.');
+        refreshBridge();
+        setInterval(refreshBridge, 45000);
+    </script>
+</body>
+</html>

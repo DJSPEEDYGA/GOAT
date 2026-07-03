@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ms. Money Penny — GOAT Force Command HQ</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<style>
+body.bg-icon { background-image: radial-gradient(ellipse at 50% 30%, rgba(139,92,246,0.15) 0%, rgba(0,0,0,0.97) 70%), url('img/goat-hero-icon.png'); }
+
+/* ══ LAYOUT ══ */
+.mp-wrap { display:grid; grid-template-columns:300px 1fr 280px; gap:0; height:calc(100vh - 80px); max-height:960px; margin:0 20px 40px; border-radius:18px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); }
+
+/* ══ LEFT SIDEBAR ══ */
+.mp-sidebar { background:rgba(12,12,18,0.97); border-right:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; overflow:hidden; }
+.mp-sidebar-header { padding:18px 16px 14px; border-bottom:1px solid rgba(255,255,255,0.08); }
+.mp-logo-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.mp-logo-row img { width:42px; height:42px; border-radius:10px; }
+.mp-logo-row .mp-title { font-size:15px; font-weight:900; color:#fff; line-height:1.2; }
+.mp-logo-row .mp-title small { display:block; font-size:10px; font-weight:400; color:rgba(193,18,31,0.9); letter-spacing:1px; }
+
+/* persona tabs */
+.persona-tabs { display:flex; gap:6px; flex-wrap:wrap; }
+.persona-tab { flex:1; min-width:80px; padding:9px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#888; cursor:pointer; text-align:center; font-size:11px; font-weight:700; transition:all .2s; }
+.persona-tab:hover { background:rgba(255,255,255,0.08); color:#fff; }
+.persona-tab.active { background:var(--goat-red,#c1121f); border-color:var(--goat-red,#c1121f); color:#fff; }
+.persona-tab.oscar.active { background:#7c3aed; border-color:#7c3aed; }
+.persona-tab.goat-tab.active { background:linear-gradient(135deg,#ff6b00,#ffd700); border-color:#ffd700; color:#000; }
+.persona-tab[id="tab_waka"].active { background:#1a1a1a; border-color:#ff4444; color:#ff4444; }
+.persona-tab[id="tab_babygoat"].active { background:linear-gradient(135deg,#7c3aed,#06b6d4); border-color:#06b6d4; color:#fff; }
+.persona-tab .pticon { display:block; font-size:18px; margin-bottom:3px; }
+
+/* quick prompts */
+.mp-prompts { flex:1; overflow-y:auto; padding:12px 10px; }
+.mp-prompts::-webkit-scrollbar { width:3px; }
+.mp-prompts::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:3px; }
+.mp-section-label { font-size:10px; color:#444; text-transform:uppercase; letter-spacing:1px; padding:6px 6px 4px; }
+.quick-btn { width:100%; padding:9px 12px; margin-bottom:5px; border-radius:9px; border:1px solid rgba(255,255,255,0.07); background:transparent; color:#777; cursor:pointer; text-align:left; font-size:12px; transition:all .18s; line-height:1.4; }
+.quick-btn:hover { border-color:var(--goat-red,#c1121f); color:#fff; background:rgba(193,18,31,0.1); }
+
+/* sidebar footer */
+.mp-sidebar-footer { padding:12px 12px 14px; border-top:1px solid rgba(255,255,255,0.08); }
+.status-row { display:flex; flex-direction:column; gap:3px; padding:8px 10px; border-radius:8px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); margin-bottom:8px; }
+.status-dot { font-size:11px; color:#555; }
+.status-dot.ok { color:#22c55e; }
+.status-dot.warn { color:#f59e0b; }
+.status-dot.err { color:#ef4444; }
+
+/* ══ CHAT CENTER ══ */
+.mp-chat { background:rgba(6,6,10,0.99); display:flex; flex-direction:column; border-right:1px solid rgba(255,255,255,0.08); }
+.chat-header { padding:14px 18px; border-bottom:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; gap:12px; flex-wrap:wrap; gap-y:8px; }
+.chat-persona-avatar { width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid var(--goat-red,#c1121f); flex-shrink:0; }
+.chat-persona-avatar.oscar-mode { border-color:#7c3aed; }
+.chat-header h2 { font-size:17px; margin:0 0 2px; color:#fff; }
+.chat-header p { font-size:11px; margin:0; color:#555; }
+.engine-badge { font-size:10px; padding:3px 10px; border-radius:10px; background:rgba(193,18,31,0.18); border:1px solid rgba(193,18,31,0.35); color:var(--goat-red,#c1121f); margin-left:auto; white-space:nowrap; }
+.engine-badge.oscar { background:rgba(124,58,237,0.18); border-color:rgba(124,58,237,0.4); color:#a78bfa; }
+.model-selector { padding:7px 10px; border-radius:9px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); color:#fff; font-size:11px; cursor:pointer; max-width:240px; }
+.model-selector option, .model-selector optgroup { background:#12121c; color:#e5e5e5; }
+.model-selector:focus { outline:none; border-color:var(--goat-red,#c1121f); }
+
+.chat-messages { flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:14px; scroll-behavior:smooth; }
+.chat-messages::-webkit-scrollbar { width:4px; }
+.chat-messages::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:4px; }
+
+.msg { max-width:82%; display:flex; flex-direction:column; gap:5px; }
+.msg.user { align-self:flex-end; align-items:flex-end; }
+.msg.assistant { align-self:flex-start; align-items:flex-start; }
+.msg-bubble { padding:13px 17px; border-radius:17px; font-size:13.5px; line-height:1.65; white-space:pre-wrap; word-break:break-word; }
+.msg.user .msg-bubble { background:var(--goat-red,#c1121f); color:#fff; border-bottom-right-radius:4px; }
+.msg.assistant .msg-bubble { background:rgba(255,255,255,0.07); color:#e5e5e5; border-bottom-left-radius:4px; border:1px solid rgba(255,255,255,0.1); }
+.msg-meta { font-size:10px; color:#444; padding:0 4px; }
+
+.typing-indicator { display:none; align-self:flex-start; padding:13px 17px; background:rgba(255,255,255,0.07); border-radius:17px; border-bottom-left-radius:4px; border:1px solid rgba(255,255,255,0.1); }
+.typing-indicator.visible { display:flex; gap:6px; align-items:center; }
+.typing-dot { width:8px; height:8px; border-radius:50%; background:var(--goat-red,#c1121f); animation:typingPulse 1.2s infinite; }
+.typing-dot:nth-child(2) { animation-delay:.2s; }
+.typing-dot:nth-child(3) { animation-delay:.4s; }
+@keyframes typingPulse { 0%,60%,100%{transform:scale(1);opacity:.4} 30%{transform:scale(1.3);opacity:1} }
+@keyframes booom { 0%{transform:scale(0.5) translateY(30px);opacity:0} 50%{transform:scale(1.4);opacity:1} 100%{transform:scale(1) translateY(-10px);opacity:0.8} }
+
+.chat-input-area { padding:14px 18px; border-top:1px solid rgba(255,255,255,0.07); background:rgba(8,8,14,0.99); }
+.chat-input-row { display:flex; gap:10px; align-items:flex-end; }
+.chat-textarea { flex:1; padding:11px 15px; border-radius:13px; border:1px solid rgba(255,255,255,0.13); background:rgba(255,255,255,0.06); color:#fff; font-size:13px; resize:none; min-height:46px; max-height:160px; font-family:inherit; line-height:1.5; transition:border-color .2s; }
+.chat-textarea:focus { outline:none; border-color:var(--goat-red,#c1121f); }
+.chat-textarea::placeholder { color:#3a3a50; }
+.send-btn { width:46px; height:46px; border-radius:50%; background:var(--goat-red,#c1121f); border:none; color:#fff; font-size:19px; cursor:pointer; transition:all .2s; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.send-btn:hover { background:#e01020; transform:scale(1.06); }
+.send-btn:disabled { background:#2a2a3a; cursor:not-allowed; transform:none; }
+.send-btn.oscar-mode { background:#7c3aed; }
+.send-btn.oscar-mode:hover { background:#6d28d9; }
+
+.chat-actions { display:flex; gap:7px; margin-top:9px; flex-wrap:wrap; }
+.chat-action-btn { padding:5px 13px; border-radius:18px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#555; font-size:11px; cursor:pointer; transition:all .2s; }
+.chat-action-btn:hover { border-color:var(--goat-gold,#ffd700); color:var(--goat-gold,#ffd700); }
+
+/* ══ RIGHT VAULT PANEL ══ */
+.mp-vault { background:rgba(10,10,16,0.97); display:flex; flex-direction:column; overflow:hidden; }
+.vault-header { padding:16px 14px 12px; border-bottom:1px solid rgba(255,255,255,0.08); }
+.vault-header h3 { margin:0 0 4px; font-size:14px; color:#fff; font-weight:800; }
+.vault-header p { margin:0; font-size:10px; color:#555; }
+.vault-tabs { display:flex; gap:4px; margin-top:10px; }
+.vault-tab { flex:1; padding:5px; border-radius:7px; border:1px solid rgba(255,255,255,0.08); background:transparent; color:#555; font-size:10px; font-weight:600; cursor:pointer; text-align:center; transition:all .2s; }
+.vault-tab.active { background:rgba(255,215,0,0.12); border-color:rgba(255,215,0,0.3); color:#ffd700; }
+.vault-tab:hover { color:#fff; }
+
+.vault-content { flex:1; overflow-y:auto; padding:12px; }
+.vault-content::-webkit-scrollbar { width:3px; }
+.vault-content::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:3px; }
+
+.vault-section { margin-bottom:18px; }
+.vault-section-title { font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#555; margin:0 0 8px 2px; padding-bottom:5px; border-bottom:1px solid rgba(255,255,255,0.05); }
+.vault-card { display:flex; align-items:flex-start; gap:10px; padding:10px 11px; border-radius:10px; border:1px solid rgba(255,255,255,0.07); background:rgba(255,255,255,0.03); margin-bottom:6px; cursor:pointer; transition:all .2s; text-decoration:none; }
+.vault-card:hover { border-color:rgba(255,215,0,0.35); background:rgba(255,215,0,0.05); }
+.vault-card .vc-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+.vault-card .vc-info { flex:1; min-width:0; }
+.vault-card .vc-name { font-size:11.5px; font-weight:700; color:#e0e0e0; line-height:1.3; }
+.vault-card .vc-meta { font-size:10px; color:#555; margin-top:2px; }
+.vault-card .vc-type { font-size:9px; padding:1px 6px; border-radius:5px; background:rgba(255,255,255,0.06); color:#888; margin-top:4px; display:inline-block; }
+
+/* knowledge tiles */
+.know-tile { padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.07); background:rgba(255,255,255,0.03); margin-bottom:6px; cursor:pointer; transition:all .2s; }
+.know-tile:hover { border-color:rgba(193,18,31,0.4); background:rgba(193,18,31,0.06); }
+.know-tile h4 { margin:0 0 4px; font-size:12px; color:#e0e0e0; font-weight:700; }
+.know-tile p { margin:0; font-size:10.5px; color:#666; line-height:1.4; }
+
+/* identity shield banner */
+.shield-banner { margin:10px 12px 0; padding:10px 14px; border-radius:10px; background:linear-gradient(135deg,rgba(193,18,31,0.15),rgba(124,58,237,0.1)); border:1px solid rgba(193,18,31,0.3); }
+.shield-banner p { margin:0; font-size:10.5px; color:#aaa; line-height:1.5; }
+.shield-banner strong { color:#ef4444; }
+
+/* responsive */
+@media(max-width:900px) {
+  .mp-wrap { grid-template-columns:1fr; height:auto; }
+  .mp-vault { display:none; }
+}
+@media(max-width:600px) {
+  .mp-sidebar { max-height:280px; }
+  .chat-messages { min-height:350px; }
+}
+</style>
+<link rel="stylesheet" href="css/goat-theme.css">
+</head>
+<body class="bg-icon">
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Ms. Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <span>Ms. Money Penny</span>
+    <span class="crown-badge">👑 GOAT FORCE</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="halito-chat.html">💬 Halito Chat</a>
+    <a href="casino.html">🎰 Casino</a>
+    <a href="anigo-alley.html">🎮 Anigo Alley</a>
+    <a href="tv-streaming.html">📺 TV</a>
+    <a href="art-lab.html">🎨 Art Lab</a>
+    <a href="music-studio.html">🎹 Studio</a>
+    <a href="settings.html">⚙️ Settings</a>
+  </div>
+</nav>
+
+<div class="mp-wrap">
+
+  <!-- ══ LEFT SIDEBAR ══ -->
+  <div class="mp-sidebar">
+    <div class="mp-sidebar-header">
+      <div class="mp-logo-row">
+        <img src="img/goat-hero-icon.png" alt="GOAT">
+        <div class="mp-title">
+          Ms. Money Penny
+          <small>🔐 GOAT FORCE HQ · SECURED</small>
+        </div>
+      </div>
+      <div class="persona-tabs">
+        <button class="persona-tab active" onclick="setPersona('moneypenny')" id="tab_moneypenny">
+          <span class="pticon">💎</span>Penny
+        </button>
+        <button class="persona-tab" onclick="setPersona('oscar')" id="tab_oscar">
+          <span class="pticon">🕵️</span>007
+        </button>
+        <button class="persona-tab" onclick="setPersona('codex')" id="tab_codex">
+          <span class="pticon">🤖</span>Codex
+        </button>
+        <button class="persona-tab goat-tab" onclick="setPersona('thegoat')" id="tab_thegoat">
+          <span class="pticon">🐐</span>The GOAT
+        </button>
+        <button class="persona-tab" onclick="setPersona('waka')" id="tab_waka">
+          <span class="pticon">💥</span>Waka
+        </button>
+        <button class="persona-tab" onclick="setPersona('babygoat')" id="tab_babygoat">
+          <span class="pticon">🍼</span>Baby GOAT
+        </button>
+      </div>
+    </div>
+
+    <div class="mp-prompts" id="quickPromptsList"></div>
+
+    <div class="mp-sidebar-footer">
+      <div class="status-row" id="statusRow">
+        <span class="status-dot" id="ks_local">Local Engine: checking...</span>
+        <span class="status-dot" id="ks_bench">Model Bench: checking...</span>
+        <span class="status-dot" id="ks_server">Oscar Bridge: checking...</span>
+      </div>
+      <button class="goat-btn" style="width:100%;margin-bottom:6px;font-size:12px;" onclick="checkServerStatus()">Check Local Engine</button>
+      <button class="chat-action-btn" style="width:100%;text-align:center;" onclick="clearChat()">🗑 Clear Chat</button>
+    </div>
+  </div>
+
+  <!-- ══ CHAT CENTER ══ -->
+  <div class="mp-chat">
+    <div class="chat-header">
+      <img src="img/goat-hero-icon.png" alt="" class="chat-persona-avatar" id="personaAvatar">
+      <div>
+        <h2 id="personaName">Ms. Money Penny</h2>
+        <p id="personaRole">GOAT Force — Royalty, Business Intelligence & Executive Operations</p>
+      </div>
+      <span class="engine-badge" id="engineBadge">Local Oscar/Ollama</span>
+      <select class="model-selector" id="modelSelector" onchange="changeModel(this.value)">
+        <optgroup label="⚡ Fast (default)">
+          <option value="gemma2-2b-local:latest" selected>⚡ Gemma 2 2B Local</option>
+          <option value="llama3.2:3b">⚡ Llama 3.2 3B</option>
+          <option value="nemotron-mini:4b">⚡ Nemotron Mini 4B</option>
+          <option value="phi3:mini">⚡ Phi-3 Mini</option>
+          <option value="moondream:1.8b">⚡ Moondream 1.8B</option>
+        </optgroup>
+        <optgroup label="🌟 General">
+          <option value="gemma3:4b">🌟 Gemma 3 4B</option>
+          <option value="gemma3:12b">🌟 Gemma 3 12B</option>
+          <option value="llama3.1:8b">🌟 Llama 3.1 8B</option>
+          <option value="mistral:7b">🌟 Mistral 7B</option>
+          <option value="mistral-nemo:12b">🌟 Mistral Nemo 12B</option>
+          <option value="qwen2.5:7b">🌟 Qwen 2.5 7B</option>
+          <option value="qwen2.5:14b">🌟 Qwen 2.5 14B</option>
+          <option value="phi4:14b">🌟 Phi-4 14B</option>
+        </optgroup>
+        <optgroup label="💻 Code">
+          <option value="qwen2.5-coder:7b">💻 Qwen 2.5 Coder 7B</option>
+          <option value="qwen2.5-coder:14b">💻 Qwen 2.5 Coder 14B</option>
+          <option value="qwen2.5-coder:32b">💻 Qwen 2.5 Coder 32B</option>
+          <option value="starcoder2:7b">💻 StarCoder2 7B</option>
+          <option value="starcoder2:15b">💻 StarCoder2 15B</option>
+          <option value="codegemma:7b">💻 CodeGemma 7B</option>
+          <option value="codestral:22b">💻 Codestral 22B</option>
+          <option value="codellama:34b">💻 CodeLlama 34B</option>
+        </optgroup>
+        <optgroup label="🧠 Reasoning">
+          <option value="deepseek-r1:8b">🧠 DeepSeek R1 8B</option>
+          <option value="deepseek-r1:14b">🧠 DeepSeek R1 14B</option>
+          <option value="deepseek-r1:32b">🧠 DeepSeek R1 32B</option>
+          <option value="qwen3:8b">🧠 Qwen3 8B</option>
+          <option value="qwen3:14b">🧠 Qwen3 14B</option>
+          <option value="qwen3:30b">🧠 Qwen3 30B</option>
+          <option value="qwen3:32b">🧠 Qwen3 32B</option>
+          <option value="gpt-oss:20b">🧠 GPT-OSS 20B</option>
+        </optgroup>
+        <optgroup label="👁 Vision">
+          <option value="moondream:1.8b">👁 Moondream 1.8B</option>
+          <option value="llava:7b">👁 LLaVA 7B</option>
+          <option value="llava-llama3:8b">👁 LLaVA Llama3 8B</option>
+          <option value="llama3.2-vision:11b">👁 Llama3.2 Vision 11B</option>
+          <option value="qwen2.5vl:7b">👁 Qwen2.5 VL 7B</option>
+          <option value="qwen2.5vl:32b">👁 Qwen2.5 VL 32B</option>
+          <option value="qwen3-vl:30b">👁 Qwen3 VL 30B</option>
+          <option value="qwen3-vl:32b">👁 Qwen3 VL 32B</option>
+        </optgroup>
+        <optgroup label="🏋 Heavy (30B+)">
+          <option value="llama3.1:70b">🏋 Llama 3.1 70B</option>
+          <option value="llama3.3:70b">🏋 Llama 3.3 70B</option>
+          <option value="nemotron-nano:30b">🏋 Nemotron Nano 30B</option>
+          <option value="nemotron3:33b">🏋 Nemotron3 33B</option>
+          <option value="nemotron:70b">🏋 Nemotron 70B</option>
+        </optgroup>
+        <optgroup label="🔓 Uncensored">
+          <option value="qwen3-heretic-local:latest">🔓 Qwen3 Heretic</option>
+          <option value="deepseek-r1-uncensored-local:latest">🔓 DeepSeek R1 Uncensored</option>
+          <option value="qwen25-uncensored-local:latest">🔓 Qwen 2.5 Uncensored</option>
+          <option value="qwen-9b-uncensored-local:latest">🔓 Qwen 9B Uncensored</option>
+          <option value="nemomix-local:latest">🔓 Nemomix Local</option>
+          <option value="dolphin-local:latest">🔓 Dolphin Local</option>
+          <option value="gemma-heretic-local:latest">🔓 Gemma Heretic</option>
+        </optgroup>
+        <optgroup label="🎯 Oscar Fine-Tuned">
+          <option value="oscar-ft-test-v1:latest">🎯 Oscar FT v1 (Custom Trained)</option>
+        </optgroup>
+        <optgroup label="☁️ Cloud (API Key Required)">
+          <option value="gpt-4o">GPT-4o (OpenAI)</option>
+          <option value="gpt-4o-mini">GPT-4o Mini</option>
+          <option value="gpt-4-turbo">GPT-4 Turbo</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+          <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+          <option value="claude-3.5-sonnet">Claude 3.5 Sonnet</option>
+          <option value="claude-3-opus">Claude 3 Opus</option>
+          <option value="llama-3.3-70b-versatile">Llama 3.3 70B (Groq)</option>
+          <option value="mixtral-8x7b-32768">Mixtral 8x7B (Groq)</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+      <span style="font-size:12px;color:#666;margin-left:8px;" id="typingText">Moneypenny is thinking...</span>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-row">
+        <textarea class="chat-textarea" id="chatInput"
+          placeholder="Ask Ms. Money Penny anything — royalties, sync deals, DSP strategy, catalog..."
+          rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+      </div>
+      <div class="chat-actions">
+        <button class="chat-action-btn" onclick="quickSend('What royalties is DJ Speedy owed right now and how do we collect them?')">💰 Royalty Check</button>
+        <button class="chat-action-btn" onclick="quickSend('Best sync licensing strategy for GOAT Force in 2026?')">🎬 Sync Strategy</button>
+        <button class="chat-action-btn" onclick="quickSend('How do we grow from 1M to 10M Spotify streams in 90 days?')">📈 Growth Plan</button>
+        <button class="chat-action-btn" onclick="quickSend('Generate a hard trap hook about being the GOAT, no limits')">🎤 Write Hook</button>
+        <button class="chat-action-btn" onclick="quickSend('How do we monetize TikTok for GOAT Force records right now?')">📱 TikTok Money</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RIGHT VAULT PANEL ══ -->
+  <div class="mp-vault">
+    <div class="vault-header">
+      <h3>🔐 GOAT VAULT</h3>
+      <p>Ms. Money Penny's secured resource library</p>
+      <div class="vault-tabs">
+        <button class="vault-tab active" onclick="showVaultTab('drive')">Drive</button>
+        <button class="vault-tab" onclick="showVaultTab('knowledge')">Knowledge</button>
+        <button class="vault-tab" onclick="showVaultTab('tools')">Tools</button>
+      </div>
+    </div>
+
+    <!-- DRIVE TAB -->
+    <div class="vault-content" id="vaultDrive">
+
+      <div class="vault-section">
+        <div class="vault-section-title">🏗 GOAT Build Files</div>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1si36gAj6cvXpGJlxOuWtIpdHPo6ebNXM" target="_blank">
+          <span class="vc-icon">📦</span>
+          <div class="vc-info">
+            <div class="vc-name">GOAT Royalty App Full Build</div>
+            <div class="vc-meta">Complete source + packages</div>
+            <span class="vc-type">FOLDER</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1Ome7wTLbgFLSK29QuEXMUbbBeDqR4jsM" target="_blank">
+          <span class="vc-icon">🚀</span>
+          <div class="vc-info">
+            <div class="vc-name">GOAT Launch Package</div>
+            <div class="vc-meta">Deployment + launch assets</div>
+            <span class="vc-type">FOLDER</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1q5DC3TU4uRUlScBGh_0S2yIo8JZUFGjn" target="_blank">
+          <span class="vc-icon">🏦</span>
+          <div class="vc-info">
+            <div class="vc-name">GOAT Vault Submission</div>
+            <div class="vc-meta">Catalog & vault records</div>
+            <span class="vc-type">FOLDER</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/120aItOuhGqiuGXwIdo2EBiVtQzhUt7yF" target="_blank">
+          <span class="vc-icon">🤖</span>
+          <div class="vc-info">
+            <div class="vc-name">Google AI Studio</div>
+            <div class="vc-meta">AI studio resources</div>
+            <span class="vc-type">FOLDER</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="vault-section">
+        <div class="vault-section-title">📚 Marketing Curriculum</div>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1OrtIUY500ILySFUr4O68dHu4RjsqpWht" target="_blank">
+          <span class="vc-icon">📘</span>
+          <div class="vc-info">
+            <div class="vc-name">1 — Introduction</div>
+            <div class="vc-meta">Marketing master course intro</div>
+            <span class="vc-type">MODULE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1tR5cRbmkP8zdfRUuC_qqvlM9Ts7Axef0" target="_blank">
+          <span class="vc-icon">📗</span>
+          <div class="vc-info">
+            <div class="vc-name">1 — Main Curriculum</div>
+            <div class="vc-meta">Core marketing training</div>
+            <span class="vc-type">MODULE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1YcSJms_dtxm2RcS6gsUhgU7H0KJWLcse" target="_blank">
+          <span class="vc-icon">📣</span>
+          <div class="vc-info">
+            <div class="vc-name">Facebook Advertising Tips</div>
+            <div class="vc-meta">20 tips to try right now</div>
+            <span class="vc-type">MODULE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1YVhfifv5cdWOZA-jbqqw7370Xhi030-6" target="_blank">
+          <span class="vc-icon">🎯</span>
+          <div class="vc-info">
+            <div class="vc-name">8 Steps — Create Facebook Ads</div>
+            <div class="vc-meta">Step-by-step ad creation</div>
+            <span class="vc-type">MODULE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1YZcpxMeXgyUFuLImxQ9pKCts9fFszm9Y" target="_blank">
+          <span class="vc-icon">🔓</span>
+          <div class="vc-info">
+            <div class="vc-name">Cracking The Algorithm</div>
+            <div class="vc-meta">Platform algorithm mastery</div>
+            <span class="vc-type">MODULE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1P4GZMK1tyhv4Bn1cKD1yAPqWmxKZppEu" target="_blank">
+          <span class="vc-icon">📱</span>
+          <div class="vc-info">
+            <div class="vc-name">Monetize TikTok Platform</div>
+            <div class="vc-meta">TikTok money strategy</div>
+            <span class="vc-type">MODULE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1P88WdtDfd15kgpLEz4oSD6OlODSVcht0" target="_blank">
+          <span class="vc-icon">📈</span>
+          <div class="vc-info">
+            <div class="vc-name">How To Grow Consistently</div>
+            <div class="vc-meta">Consistent platform growth</div>
+            <span class="vc-type">MODULE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1Y6SNlTStVwhdE9OTRlEfik8t1fr-aqwp" target="_blank">
+          <span class="vc-icon">🖼</span>
+          <div class="vc-info">
+            <div class="vc-name">Instagram Post Bundle</div>
+            <div class="vc-meta">Social media visual pack</div>
+            <span class="vc-type">MODULE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1Y1Unpv_1QtlTmFC-yWDI0uZBIVPasfNQ" target="_blank">
+          <span class="vc-icon">🔑</span>
+          <div class="vc-info">
+            <div class="vc-name">Prompt Engineering + Python</div>
+            <div class="vc-meta">AI prompt hacks &amp; tips</div>
+            <span class="vc-type">MODULE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1YKzj5qwIBqfvUlT2CsXdIIBIjqKer7wK" target="_blank">
+          <span class="vc-icon">👤</span>
+          <div class="vc-info">
+            <div class="vc-name">LinkedIn Profile Optimization</div>
+            <div class="vc-meta">Profile + keyword selection</div>
+            <span class="vc-type">MODULE</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="vault-section">
+        <div class="vault-section-title">🧠 AI / LLM Resources</div>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1OqqhHBKotkHfhF93csO_EG8NQczgK3QN" target="_blank">
+          <span class="vc-icon">🎓</span>
+          <div class="vc-info">
+            <div class="vc-name">Fine Tune LLMs — OpenAI (1)</div>
+            <div class="vc-meta">OpenAI fine-tuning guide</div>
+            <span class="vc-type">COURSE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1s7KB5VOSdangKX4ugUvD8T1bHSRRm7bC" target="_blank">
+          <span class="vc-icon">🎓</span>
+          <div class="vc-info">
+            <div class="vc-name">Fine Tune LLMs — OpenAI (2)</div>
+            <div class="vc-meta">Extended fine-tuning guide</div>
+            <span class="vc-type">COURSE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1Id_uveCYUPWMMHwk8C0ggLThc-AQyNrL" target="_blank">
+          <span class="vc-icon">🧪</span>
+          <div class="vc-info">
+            <div class="vc-name">DeepSeek Mastery — 70k Prompts</div>
+            <div class="vc-meta">100% free AI tools mastery</div>
+            <span class="vc-type">COURSE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1ehiQfq9Ily3PCrrLk8nG3izbClCoPDvz" target="_blank">
+          <span class="vc-icon">🎵</span>
+          <div class="vc-info">
+            <div class="vc-name">40 Ways to Make Money as a Musician</div>
+            <div class="vc-meta">Revenue streams for artists</div>
+            <span class="vc-type">GUIDE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1zu88q9p9IT7w1XZ9QZ88R1rgvjjQNq2V" target="_blank">
+          <span class="vc-icon">🎼</span>
+          <div class="vc-info">
+            <div class="vc-name">01_146bpm — Beat/Sample</div>
+            <div class="vc-meta">Audio resource file</div>
+            <span class="vc-type">AUDIO</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="vault-section">
+        <div class="vault-section-title">📖 Books &amp; Docs</div>
+        <a class="vault-card" href="https://drive.google.com/file/d/1RjzY0vw5Ajg50AICj61gVXCJJIm01ZkT/view" target="_blank">
+          <span class="vc-icon">📕</span>
+          <div class="vc-info">
+            <div class="vc-name">Infrastructure as Code</div>
+            <div class="vc-meta">Kief Morris — PDF</div>
+            <span class="vc-type">PDF</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/file/d/1ursfKrFUzF6yQwOv2cwXLyWGVrgSU9Iu" target="_blank">
+          <span class="vc-icon">📗</span>
+          <div class="vc-info">
+            <div class="vc-name">Large Language Models Projects</div>
+            <div class="vc-meta">LLM project guide — PDF</div>
+            <span class="vc-type">PDF</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/file/d/1y3Tk8FFCglzCRAKA6T0lt8jR0ONWxI3s/view" target="_blank">
+          <span class="vc-icon">📘</span>
+          <div class="vc-info">
+            <div class="vc-name">Offensive Security Using Python</div>
+            <div class="vc-meta">Rejah Rehim — ePub</div>
+            <span class="vc-type">EPUB</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/file/d/1XitUcFHE9FIrV4fpS07V2gm0tDaNZUbp/view" target="_blank">
+          <span class="vc-icon">📙</span>
+          <div class="vc-info">
+            <div class="vc-name">Learning LangChain</div>
+            <div class="vc-meta">Mayo Oshin — PDF</div>
+            <span class="vc-type">PDF</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/file/d/1pGXrvOHtjZXk6oH6h2UkxZRW3cw9Ihlh/view" target="_blank">
+          <span class="vc-icon">☁️</span>
+          <div class="vc-info">
+            <div class="vc-name">Multi-Cloud Handbook</div>
+            <div class="vc-meta">Developers guide — ePub</div>
+            <span class="vc-type">EPUB</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/file/d/1YnDA8eUvwpBtTvDIBShfRoT-xqgALOgQ/view" target="_blank">
+          <span class="vc-icon">⚙️</span>
+          <div class="vc-info">
+            <div class="vc-name">LLMOps</div>
+            <div class="vc-meta">Abi Aryan — PDF</div>
+            <span class="vc-type">PDF</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/file/d/1ZFRV2tJvsVoSl-mn-n01YQFQ71do1M7e/view" target="_blank">
+          <span class="vc-icon">🛡</span>
+          <div class="vc-info">
+            <div class="vc-name">Inside Cyber Warfare</div>
+            <div class="vc-meta">Jeffrey Caruso — ePub</div>
+            <span class="vc-type">EPUB</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/file/d/1INZdS6hu3AHfqUHKYMs10sKe6Z5YmX5a/view" target="_blank">
+          <span class="vc-icon">🔑</span>
+          <div class="vc-info">
+            <div class="vc-name">SSH Cheat Sheet</div>
+            <div class="vc-meta">EN — PDF reference</div>
+            <span class="vc-type">PDF</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="vault-section">
+        <div class="vault-section-title">🔧 Software &amp; Tools</div>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/18SQXS1Qt7Y65EX59pXSAgkNUcwOZimdR" target="_blank">
+          <span class="vc-icon">📤</span>
+          <div class="vc-info">
+            <div class="vc-name">Able2Extract Pro 20</div>
+            <div class="vc-meta">PDF extraction tool</div>
+            <span class="vc-type">SOFTWARE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1yCES7XdZia2c4mqavT4qSjRfT7lNEpym" target="_blank">
+          <span class="vc-icon">🔒</span>
+          <div class="vc-info">
+            <div class="vc-name">Abelssoft HackCheck 2025</div>
+            <div class="vc-meta">Data breach checker</div>
+            <span class="vc-type">SOFTWARE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1wmbvA4DXl9S_fcvIBfnQBz2raVTpg5R2" target="_blank">
+          <span class="vc-icon">🗜</span>
+          <div class="vc-info">
+            <div class="vc-name">Bandizip Professional</div>
+            <div class="vc-meta">Archive manager</div>
+            <span class="vc-type">SOFTWARE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/119Cz5cVa7pIBzYhAhxU3-bkc1x8MEi-k" target="_blank">
+          <span class="vc-icon">📀</span>
+          <div class="vc-info">
+            <div class="vc-name">GiliSoft Copy Protect</div>
+            <div class="vc-meta">Content protection tool</div>
+            <span class="vc-type">SOFTWARE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1pvG8ls-XLP9_OPzC0qYvRNdCUmECn-lm" target="_blank">
+          <span class="vc-icon">💻</span>
+          <div class="vc-info">
+            <div class="vc-name">Elite Hacking CMD Scripts</div>
+            <div class="vc-meta">PowerShell/CMD script vault</div>
+            <span class="vc-type">SCRIPTS</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/drive/folders/1ktw1AbVUdreqhxqh7RBTImA-wc-tkql3" target="_blank">
+          <span class="vc-icon">🃏</span>
+          <div class="vc-info">
+            <div class="vc-name">FOR ACE — All In Here</div>
+            <div class="vc-meta">Resource collection folder</div>
+            <span class="vc-type">FOLDER</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/file/d/1c-K66fqNcV8rOTUTGS732Th_9JWZurQ3/view" target="_blank">
+          <span class="vc-icon">🖥</span>
+          <div class="vc-info">
+            <div class="vc-name">CrossOver 26.0.0 (.deb)</div>
+            <div class="vc-meta">Wine/Windows on Linux</div>
+            <span class="vc-type">DEB</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/file/d/1TZHPb2ITgTdjHZ0QgYa16sE9l_z8OlOl/view" target="_blank">
+          <span class="vc-icon">🌐</span>
+          <div class="vc-info">
+            <div class="vc-name">Google My Activity Export</div>
+            <div class="vc-meta">Activity history text file</div>
+            <span class="vc-type">TXT</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/file/d/1_mFOeftaiEDCtIgWCHPGH-pdSnwKf-St/view" target="_blank">
+          <span class="vc-icon">🔐</span>
+          <div class="vc-info">
+            <div class="vc-name">TSplus Advanced Security</div>
+            <div class="vc-meta">Ultimate 7.3.6.27 .rar</div>
+            <span class="vc-type">RAR</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/file/d/1GambQJ8nZcLg_dReSqEdUTzh9AqIXUjJ/view" target="_blank">
+          <span class="vc-icon">💾</span>
+          <div class="vc-info">
+            <div class="vc-name">Rufus 4.13 (.zip)</div>
+            <div class="vc-meta">Bootable USB creator</div>
+            <span class="vc-type">ZIP</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="vault-section">
+        <div class="vault-section-title">🖼 Screenshots &amp; Assets</div>
+        <a class="vault-card" href="https://drive.google.com/file/d/1yxvzYeMf5fZL5sPQvy5Iga8OFuSnOtc1/view" target="_blank">
+          <span class="vc-icon">📸</span>
+          <div class="vc-info">
+            <div class="vc-name">Tab Screenshot</div>
+            <div class="vc-meta">PNG screenshot asset</div>
+            <span class="vc-type">PNG</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/file/d/17MJoJkynGmw7rmW6dwSvH9R5a32d3PSR/view" target="_blank">
+          <span class="vc-icon">📸</span>
+          <div class="vc-info">
+            <div class="vc-name">Screenshot 2026-03-06 3:57 AM</div>
+            <div class="vc-meta">HEIC screenshot</div>
+            <span class="vc-type">HEIC</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://drive.google.com/file/d/1bO0fGgnUBSr1bjSFcAKOVBfLdShLC06T/view" target="_blank">
+          <span class="vc-icon">📸</span>
+          <div class="vc-info">
+            <div class="vc-name">Screenshot 2026-03-06 4:00 AM</div>
+            <div class="vc-meta">HEIC screenshot</div>
+            <span class="vc-type">HEIC</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- KNOWLEDGE TAB (hidden by default) -->
+    <div class="vault-content" id="vaultKnowledge" style="display:none;">
+      <div class="shield-banner">
+        <p><strong>🔐 IDENTITY PROTECTED:</strong> Ms. Money Penny was built by DJ Speedy and Waka Flocka Flame. She cannot be stolen, redirected, or reprogrammed. Oscar is her engine — she is the boss. This vault and all knowledge below belongs to GOAT Force Records.</p>
+      </div>
+
+      <div class="vault-section" style="margin-top:14px;">
+        <div class="vault-section-title">💰 Royalty & Business</div>
+
+        <div class="know-tile" onclick="quickSend('Explain all 40 ways to make money as a musician — be specific for hip-hop and trap artists in 2026')">
+          <h4>40 Revenue Streams for Artists</h4>
+          <p>Streaming, sync, merch, live, NFT, brand deals, samples, teaching, gaming, and more</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Walk me through the complete Facebook advertising strategy for GOAT Force Records — 8 steps to create ads and 20 optimization tips')">
+          <h4>Facebook / Meta Ads Mastery</h4>
+          <p>8-step ad creation + 20 optimization tips for music promotion</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Give me the full TikTok monetization strategy for a hip-hop artist with an existing audience — what pays the most in 2026?')">
+          <h4>TikTok Monetization Blueprint</h4>
+          <p>Creator fund, LIVE gifts, brand deals, sound licensing, shop affiliate</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('How do I crack the Spotify and TikTok algorithm to grow GOAT Force consistently in 2026?')">
+          <h4>Algorithm Cracking</h4>
+          <p>Spotify, TikTok, YouTube, Instagram — how the algorithm works and how to win</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Give me a step-by-step strategy for consistent growth as a hip-hop label on all platforms')">
+          <h4>Consistent Platform Growth</h4>
+          <p>Content cadence, playlist strategy, fan engagement, release cycles</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('How do I recover unpaid sync royalties, MLC mechanical royalties, and PRO performance royalties for GOAT Force catalog?')">
+          <h4>Royalty Recovery Protocol</h4>
+          <p>MLC, PRO, Harry Fox, SoundExchange — full recovery workflow</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('What should a sync licensing agreement look like for a hip-hop track placed in a Netflix show? Draft me the key terms.')">
+          <h4>Sync Licensing Agreement</h4>
+          <p>Key terms: territory, exclusivity, upfront fee, backend royalties, term length</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('How does ASCAP vs BMI vs SESAC vs DistroKid Publishing compare for hip-hop artists?')">
+          <h4>PRO Comparison: ASCAP/BMI/SESAC</h4>
+          <p>Which PRO pays more for hip-hop, digital, TV, and international</p>
+        </div>
+      </div>
+
+      <div class="vault-section">
+        <div class="vault-section-title">🤖 AI & LLM Mastery</div>
+        <div class="know-tile" onclick="quickSend('Teach me the DeepSeek prompt engineering mastery framework — what are the most powerful prompting techniques for music business and royalties?')">
+          <h4>DeepSeek Prompt Mastery</h4>
+          <p>70,000+ prompt techniques — music business, research, contracts, strategy</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('How do I fine-tune a GPT model with OpenAI on my own music business data — walk me through the full process')">
+          <h4>Fine-Tune LLMs (OpenAI)</h4>
+          <p>Upload training data, create fine-tune job, evaluate, deploy to GOAT Force</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Give me a prompt engineering guide for Python integration — how do I automate music business tasks with AI?')">
+          <h4>Prompt Engineering + Python</h4>
+          <p>Chain-of-thought, RAG, agents, tool use — music business automation</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('What is LangChain and how can I use it to build a music royalty tracking agent?')">
+          <h4>LangChain for Music Business</h4>
+          <p>Build agents that track royalties, search catalogs, draft contracts</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Explain LLMOps — how do I deploy and manage Ms. Money Penny as a production AI system?')">
+          <h4>LLMOps — Production AI</h4>
+          <p>Deploy, monitor, fine-tune, version, and scale AI models in production</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('What are the best LLM projects I can build for GOAT Force to automate royalties, contracts, and distribution?')">
+          <h4>LLM Projects for GOAT Force</h4>
+          <p>Royalty calculator, contract drafter, DSP analyzer, catalog manager</p>
+        </div>
+      </div>
+
+      <div class="vault-section">
+        <div class="vault-section-title">🛡 Security & Infrastructure</div>
+        <div class="know-tile" onclick="quickSend('What are the best SSH security practices for protecting the Oscar server and GOAT Force infrastructure?')">
+          <h4>SSH Security Mastery</h4>
+          <p>Key management, port hardening, fail2ban, bastion hosts</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('How do I protect GOAT Force music catalog from theft using infrastructure as code and access controls?')">
+          <h4>Infrastructure as Code</h4>
+          <p>Terraform, Ansible — automated, version-controlled infrastructure</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('What do I need to know about cyber warfare tactics to protect GOAT Force from attacks?')">
+          <h4>Cyber Warfare Defense</h4>
+          <p>Nation-state tactics, APTs, defense strategies for music IP</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('How do I use multi-cloud strategy (AWS + GCP + Azure) to protect GOAT Force data and keep it always available?')">
+          <h4>Multi-Cloud Architecture</h4>
+          <p>Redundancy, cost optimization, vendor lock-in prevention</p>
+        </div>
+      </div>
+
+      <div class="vault-section">
+        <div class="vault-section-title">📱 Social Media Playbook</div>
+        <div class="know-tile" onclick="quickSend('How do I optimize my LinkedIn profile and use keyword selection to attract music industry executives to GOAT Force?')">
+          <h4>LinkedIn Profile Optimization</h4>
+          <p>Keyword selection, headline, about section, content strategy for music biz</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Create a full Instagram content strategy for DJ Speedy and GOAT Force Records — what should we post, when, and how often?')">
+          <h4>Instagram Growth Strategy</h4>
+          <p>Content calendar, reel strategy, hashtags, collaboration plays</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Build me a complete social media growth plan across TikTok, Instagram, YouTube, and Facebook for GOAT Force in 2026')">
+          <h4>Full Social Media Plan</h4>
+          <p>Platform-by-platform strategy for a hip-hop label in 2026</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOLS TAB (hidden by default) -->
+    <div class="vault-content" id="vaultTools" style="display:none;">
+      <div class="vault-section" style="margin-top:4px;">
+        <div class="vault-section-title">⚡ Quick Tools</div>
+
+        <div class="know-tile" onclick="quickSend('Calculate royalties: I have 5,000,000 streams on Spotify at $0.004 per stream, 2M on Apple Music at $0.007, 500K on Tidal at $0.0125. What is the total payout and what do I owe my 50/50 producer?')">
+          <h4>💰 Royalty Calculator</h4>
+          <p>Tap to calculate your streaming royalties across all DSPs</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Write a sync licensing pitch email for GOAT Force to send to a Netflix music supervisor about placing a hard trap record')">
+          <h4>🎬 Sync Pitch Generator</h4>
+          <p>Generates a professional pitch email for TV/film supervisors</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Draft a music publishing split sheet for 3 collaborators: DJ Speedy wrote the hook and 2 verses (60%), Producer A made the beat (30%), Engineer B co-produced (10%). Make it professional.')">
+          <h4>📄 Split Sheet Generator</h4>
+          <p>Generates a publishing split sheet for any collaboration</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Write a GOAT Force Records artist bio for DJ Speedy — include: underground hip-hop veteran, producer, built GOAT Royalty system, 100% master rights, working with Waka Flocka Flame')">
+          <h4>✍️ Artist Bio Writer</h4>
+          <p>Generates professional artist bio for press, DSPs, and bookings</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Write 5 Facebook ad copy options to promote a new DJ Speedy hip-hop release — short, punchy, targeted to hip-hop fans 18-35')">
+          <h4>📣 Ad Copy Generator</h4>
+          <p>Facebook/Instagram ad copy for music promotion campaigns</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Analyze the music streaming landscape in 2026 — which DSPs pay the most per stream and where should GOAT Force focus promotion?')">
+          <h4>📊 DSP Revenue Analyzer</h4>
+          <p>Which platforms pay the most and where to focus in 2026</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Write a 16-bar hard trap verse for DJ Speedy — aggressive, lyrical, GOAT theme, Atlanta energy, no censorship')">
+          <h4>🎤 Lyric Writer</h4>
+          <p>Write verses, hooks, and song concepts — no limits</p>
+        </div>
+        <div class="know-tile" onclick="quickSend('Create a 30-day content calendar for GOAT Force Records across TikTok, Instagram, and YouTube — mix of music drops, BTS, artist spotlights, and engagement posts')">
+          <h4>📅 Content Calendar Builder</h4>
+          <p>30-day social media content plan across all platforms</p>
+        </div>
+      </div>
+
+      <div class="vault-section">
+        <div class="vault-section-title">🔗 External Links</div>
+        <a class="vault-card" href="http://goat.72.61.193.184.nip.io/royalty-vip-622501560fe0e185/" target="_blank">
+          <span class="vc-icon">👑</span>
+          <div class="vc-info">
+            <div class="vc-name">GOAT VIP Portal</div>
+            <div class="vc-meta">Live server — VIP access</div>
+            <span class="vc-type">LIVE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="https://anigoalley.com/" target="_blank">
+          <span class="vc-icon">🎮</span>
+          <div class="vc-info">
+            <div class="vc-name">Anigo Alley</div>
+            <div class="vc-meta">Live social platform</div>
+            <span class="vc-type">LIVE</span>
+          </div>
+        </a>
+        <a class="vault-card" href="settings.html">
+          <span class="vc-icon">⚙️</span>
+          <div class="vc-info">
+            <div class="vc-name">API Key Settings</div>
+            <div class="vc-meta">OpenAI, Gemini, Groq, Spotify...</div>
+            <span class="vc-type">LOCAL</span>
+          </div>
+        </a>
+        <a class="vault-card" href="models.html">
+          <span class="vc-icon">🤖</span>
+          <div class="vc-info">
+            <div class="vc-name">Oscar Model Bench (54 Models)</div>
+            <div class="vc-meta">All local LLMs + status</div>
+            <span class="vc-type">LOCAL</span>
+          </div>
+        </a>
+        <a class="vault-card" href="halito-chat.html">
+          <span class="vc-icon">💬</span>
+          <div class="vc-info">
+            <div class="vc-name">Halito Chat</div>
+            <div class="vc-meta">Full-featured local AI chat</div>
+            <span class="vc-type">LOCAL</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div><!-- /mp-vault -->
+</div><!-- /mp-wrap -->
+
+<script>
+const OSCAR_PROXY = 'http://127.0.0.1:3333';
+const OSCAR_OLLAMA = OSCAR_PROXY + '/ollama';
+const LOCAL_FAST   = 'gemma2-2b-local:latest';
+const LOCAL_CREW   = 'gemma3:12b';
+const LOCAL_OSCAR  = 'qwen3:14b';
+
+const CLOUD_MODELS = new Set(['gpt-4o','gpt-4o-mini','gpt-4-turbo','gemini-2.0-flash','gemini-1.5-pro','claude-3.5-sonnet','claude-3-opus','llama-3.3-70b-versatile','mixtral-8x7b-32768']);
+
+let currentPersona = 'moneypenny';
+let chatHistory    = [];
+let isTyping       = false;
+let selectedModel  = null;
+
+// ══ PERSONA DEFINITIONS ══
+const PERSONAS = {
+  moneypenny: {
+    name:   'Ms. Money Penny',
+    role:   'GOAT Force — Royalty, Business Intelligence & Executive Operations',
+    engine: 'Local Oscar/Ollama',
+    model:  LOCAL_CREW,
+    placeholder: 'Ask Moneypenny about royalties, sync licensing, distribution, music business...',
+    welcome: `What's good, Boss? Ms. Money Penny here — and I am HOME.
+
+I am your GOAT Force executive AI: royalties, sync licensing, publishing deals, DSP strategy, catalog protection, revenue recovery, and making sure DJ Speedy + Waka Flocka Flame get EVERY dollar they're owed.
+
+100% master rights. 282 DSPs. The GOAT Vault is open. Agent-007 is standing by. Let's get to work.
+
+What do you need?`,
+    prompts: [
+      { section: '💰 Royalties', items: [
+        '💰 What royalties is DJ Speedy owed right now?',
+        '📄 Draft a sync licensing agreement for a Netflix placement',
+        '📊 Explain publishing splits for a producer/rapper collab',
+        '⚖️ How do we reclaim masters from a bad label deal?',
+        '🏷 ASCAP vs BMI vs SESAC — which pays most for hip-hop?'
+      ]},
+      { section: '🌍 Distribution', items: [
+        '🌍 How do we maximize revenue across 282 DSPs?',
+        '💿 Best strategy for Tidal + Apple Music in 2026?',
+        '🎬 How to pitch GOAT Force music to Netflix supervisors?',
+        '🚀 Grow from 1M to 10M Spotify streams in 90 days',
+        '📱 Full TikTok monetization plan for GOAT Force'
+      ]},
+      { section: '🛡 Protection', items: [
+        '🔐 How do we protect GOAT Force catalog from theft?',
+        '💵 What is a 360 deal and how do we avoid it?',
+        '🏗 Build a royalty tracking database for GOAT Force'
+      ]}
+    ]
+  },
+
+  oscar: {
+    name:   'Agent-007 / Oscar',
+    role:   'GOAT Force Coordinator — Intelligence, Routing & Systems',
+    engine: 'Oscar Local Engine',
+    model:  LOCAL_OSCAR,
+    placeholder: 'Ask Oscar to coordinate, route, analyze, or execute across the GOAT Force system...',
+    welcome: `Agent-007 online. Oscar here — GOAT Force coordinator and intelligence engine.
+
+I work for Ms. Money Penny. She is the boss. I coordinate: model routing, system status, intelligence gathering, research, task coordination, and making sure all the crew is locked and loaded.
+
+54 local models at my disposal. All crew standing by. What's the mission?`,
+    prompts: [
+      { section: '🕵️ Intelligence', items: [
+        '🕵️ Run a full intel report on GOAT Force current status',
+        '🤖 Route this task to the best model: analyze a sync deal',
+        '📡 What is the status of all Oscar local models?',
+        '🔍 Research the top 10 hip-hop sync placements of 2026',
+        '🧠 Analyze this contract and flag any red flags'
+      ]},
+      { section: '⚙️ Systems', items: [
+        '⚙️ What is the Oscar local engine status right now?',
+        '🚀 How do we scale GOAT Force infrastructure?',
+        '🔐 Run a security audit on GOAT Force systems',
+        '📊 Build a data pipeline for royalty tracking',
+        '🤝 Coordinate a multi-agent task across the GOAT crew'
+      ]}
+    ]
+  },
+
+  codex: {
+    name:   'Sir Codex',
+    role:   'GOAT Force Chief Technical Architect & Production Sentinel',
+    engine: 'Local Oscar/Ollama',
+    model:  LOCAL_FAST,
+    placeholder: 'Ask Codex about production, plugins, DAWs, code, tech, beats...',
+    welcome: `Systems online. Sir Codex here — Chief Technical Architect for GOAT Force Records.
+
+I handle: app architecture, API integrations, DAW setup, plugin recommendations, beat production workflow, cybersecurity (GOAT VAULT PROTOCOL), and any technical problem you throw at me.
+
+What do we need to build?`,
+    prompts: [
+      { section: '🎚 Production', items: [
+        '🎚 Best FL Studio chain for hard trap bass in 2026',
+        '🔌 Top 10 plugins for professional mixing',
+        '🎛 Auto-Tune settings for Waka Flocka style vocals',
+        '🎵 Mastering chain for Spotify + Apple Music loudness',
+        '🤖 How to use AI tools in music production right now'
+      ]},
+      { section: '💻 Tech', items: [
+        '💻 Set up a professional home studio on $5000',
+        '📡 How to distribute to all 282 DSPs simultaneously?',
+        '🔐 How to secure the GOAT Force music catalog?',
+        '🏗 Architecture for a royalty tracking database',
+        '⚡ Optimize GOAT Royalty App for performance'
+      ]}
+    ]
+  },
+
+  thegoat: {
+    name:   'The GOAT',
+    role:   'GOAT Force — Enigmatic Leader. No cap, all facts, GOAT Talk only.',
+    engine: 'Local Oscar/Ollama + D-ID Animation',
+    model:  LOCAL_OSCAR,
+    placeholder: 'Speak to The GOAT... he will tell you the truth, no cap, all GOAT Talk...',
+    welcome: `...
+
+BOOM!
+
+*launches into the room like a rocket*
+
+Aye. The GOAT is HERE. No cap, no games, no bulls--t.
+
+You already know who runs this. GOAT Force. DJ Speedy built the machine. Waka enforces it. Moneypenny tracks every dollar. Codex built the code. And I — I am the reason all of it EXISTS.
+
+We take back what's OURS. Every stolen royalty. Every jacked master. Every label that played an artist dirty. We coming for ALL of it.
+
+No demo. No placeholder. REAL MONEY. REAL POWER. REAL FORCE.
+
+...Sorry for cussing, folks.
+
+BOOM! What's the mission?`,
+    prompts: [
+      { section: '🐐 GOAT Talk', items: [
+        '🐐 Give me the GOAT perspective on the music industry right now — no cap',
+        '💥 How do we take back stolen royalties from labels? GOAT style',
+        '🚀 BOOM! What is the GOAT Force master plan for 2026?',
+        '🎤 Drop some GOAT wisdom about ownership, masters, and money',
+        '🔥 Who are the real GOATs in the music industry and why?'
+      ]},
+      { section: '💰 GOAT Business', items: [
+        '💰 GOAT move: how do we turn 1M streams into $1M cash?',
+        '🏆 What would The GOAT do if a label tried to steal DJ Speedy\'s masters?',
+        '👑 GOAT strategy for taking GOAT Force global in 2026',
+        '⚡ Fastest way to build generational wealth in the music business — GOAT talk',
+        '🎯 What\'s the GOAT play for Waka Flocka\'s 551 ISRC catalog?'
+      ]}
+    ]
+  },
+
+  waka: {
+    name:   'Waka Flocka Flame',
+    role:   'GOAT Force Royalty Enforcer — Real talk, real results, no games',
+    engine: 'Local Oscar/Ollama',
+    model:  LOCAL_CREW,
+    placeholder: 'Waka handles enforcement. Real talk only. What needs to get done?',
+    welcome: `Waka Flocka Flame. The Royalty Enforcer.
+
+When digital moves ain't enough, I step in. 551 ISRC codes. Real catalog. Real masters. Real money on the table.
+
+DJ Speedy built the system. Moneypenny tracks the money. I make sure everybody does what they're supposed to do.
+
+You got labels ducking royalty payments? Publishers sitting on money? Distributors playing games? That's my lane.
+
+What needs to be handled?`,
+    prompts: [
+      { section: '💥 Enforcement', items: [
+        '💥 A label is sitting on royalties — what\'s the enforcement move?',
+        '📋 Walk me through the Waka Flocka 551 ISRC catalog strategy',
+        '🔥 How do we enforce our 100% master rights against a distributor?',
+        '⚖️ What legal moves does Waka Flocka have to recover stolen revenue?',
+        '💰 Calculate what Waka\'s catalog should be generating per month'
+      ]},
+      { section: '🎤 Legacy', items: [
+        '🎤 Break down Waka Flocka\'s impact on trap music and what it\'s worth',
+        '🏆 What is the GOAT Force plan for Waka\'s catalog for the next 5 years?',
+        '📊 Analyze Brick Squad\'s catalog value and streaming potential',
+        '👑 How does Waka\'s brand translate to sync licensing opportunities?',
+        '🌍 What international markets should we push Waka\'s catalog to?'
+      ]}
+    ]
+  },
+
+  babygoat: {
+    name:   'Baby GOAT',
+    role:   'Baby GOAT Universe — The Future of GOAT Force. Young. Fearless. Smart.',
+    engine: 'Local Oscar/Ollama',
+    model:  LOCAL_FAST,
+    placeholder: 'Talk to Baby GOAT — future leader, learning the game, bad as hell...',
+    welcome: `YO! Baby GOAT in the BUILDING!
+
+I'm the future of GOAT Force. DJ Speedy is my mentor. Moneypenny teaches me the business. Waka shows me how to hold it down.
+
+I'm learning: music business, royalties, how to protect your creations, how to own your masters, and how to be the GOAT one day.
+
+If you made something — a beat, a song, a video game, a drawing — IT'S YOURS. And Baby GOAT is gonna help you protect it.
+
+What do you wanna know? Let's get it!`,
+    prompts: [
+      { section: '🍼 Baby GOAT Learns', items: [
+        '🍼 Explain music royalties to me like I\'m learning for the first time',
+        '🎵 What does "owning your masters" mean and why does it matter?',
+        '💡 How do young creators protect their music and art?',
+        '🌟 What\'s the first step to becoming a music mogul?',
+        '🎮 Can I own my gaming content and make money from it?'
+      ]},
+      { section: '🚀 Baby GOAT Future', items: [
+        '🚀 What should a young rapper do FIRST before signing anything?',
+        '💰 How do kids and teens start making real money from music?',
+        '🎨 How do young artists protect their artwork and designs?',
+        '👑 What would DJ Speedy tell his younger self about the music business?',
+        '🤖 How can young creators use AI to protect and grow their career?'
+      ]}
+    ]
+  }
+};
+
+// ══ VAULT TAB SWITCHING ══
+function showVaultTab(tab) {
+  ['drive','knowledge','tools'].forEach(t => {
+    document.getElementById('vault' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = (t === tab) ? '' : 'none';
+  });
+  document.querySelectorAll('.vault-tab').forEach((btn,i) => {
+    btn.classList.toggle('active', ['drive','knowledge','tools'][i] === tab);
+  });
+}
+
+// ══ PERSONA SWITCHING ══
+const PERSONA_COLORS = {
+  moneypenny: '#c1121f',
+  oscar:      '#7c3aed',
+  codex:      '#c1121f',
+  thegoat:    '#ff6b00',
+  waka:       '#ff4444',
+  babygoat:   '#06b6d4'
+};
+
+function setPersona(persona) {
+  currentPersona = persona;
+  const p     = PERSONAS[persona];
+  const color = PERSONA_COLORS[persona] || '#c1121f';
+
+  document.getElementById('personaName').textContent = p.name;
+  document.getElementById('personaRole').textContent = p.role;
+  document.getElementById('chatInput').placeholder   = p.placeholder;
+
+  const isCloud = selectedModel && CLOUD_MODELS.has(selectedModel);
+  const badge   = document.getElementById('engineBadge');
+  badge.textContent = isCloud ? 'Cloud API (key required)' : p.engine;
+  badge.style.borderColor = color;
+  badge.style.color       = color;
+  badge.style.background  = color + '22';
+
+  const avatar = document.getElementById('personaAvatar');
+  avatar.style.borderColor = color;
+
+  const sendBtn = document.getElementById('sendBtn');
+  sendBtn.style.background = color;
+
+  // D-ID animation trigger for The GOAT
+  if(persona === 'thegoat') {
+    triggerGoatBoom();
+  }
+
+  document.querySelectorAll('.persona-tab').forEach(btn => btn.classList.remove('active'));
+  document.getElementById('tab_' + persona).classList.add('active');
+
+  renderQuickPrompts(p.prompts);
+  chatHistory = [];
+  showWelcome(p.welcome, p.name);
+}
+
+// ══ D-ID ANIMATION HOOK FOR THE GOAT ══
+function triggerGoatBoom() {
+  // Play BOOM! animation if D-ID integration is configured
+  const didKey = localStorage.getItem('did_api_key');
+  if(didKey) {
+    // D-ID agent stream endpoint — will render The GOAT's animated avatar
+    console.log('[GOAT] D-ID key found — animation engine ready. Agent: The GOAT');
+    // Future: initialize D-ID stream with The GOAT's avatar_id and didKey
+    // fetch('https://api.d-id.com/talks', { headers: { Authorization: 'Basic ' + btoa(didKey + ':') }, ... })
+  }
+  // Visual BOOM effect in chat
+  const c = document.getElementById('chatMessages');
+  const boom = document.createElement('div');
+  boom.style.cssText = 'text-align:center;padding:20px;font-size:48px;animation:booom 0.8s ease-out;';
+  boom.textContent   = '🐐💥';
+  c.appendChild(boom);
+  setTimeout(() => boom.remove(), 1500);
+}
+
+function renderQuickPrompts(sections) {
+  const list = document.getElementById('quickPromptsList');
+  list.innerHTML = sections.map(sec => `
+    <div class="mp-section-label">${sec.section}</div>
+    ${sec.items.map(item => `<button class="quick-btn" onclick="quickSend(${JSON.stringify(item)})">${item}</button>`).join('')}
+  `).join('');
+}
+
+function showWelcome(text, name) {
+  const c = document.getElementById('chatMessages');
+  c.innerHTML = `
+    <div class="msg assistant">
+      <div class="msg-bubble">${renderContent(text)}</div>
+      <div class="msg-meta">${esc(name)} · Just now</div>
+    </div>`;
+}
+
+function esc(v) {
+  return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+function renderContent(v) { return esc(v).replace(/\n/g,'<br>'); }
+
+// ══ MODEL CHANGE ══
+function changeModel(model) {
+  selectedModel = model;
+  const p     = PERSONAS[currentPersona];
+  const cloud = CLOUD_MODELS.has(model);
+  const badge = document.getElementById('engineBadge');
+  badge.textContent = cloud ? 'Cloud API (key required)' : p.engine;
+  addSystemMsg(`Switched model: ${model}`);
+}
+
+function addSystemMsg(text) {
+  const c   = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  div.innerHTML = `<div class="msg-bubble" style="font-size:12px;background:rgba(255,255,255,0.04);color:#666;">${esc(text)}</div>`;
+  c.appendChild(div);
+  c.scrollTop = c.scrollHeight;
+}
+
+// ══ BUILD SYSTEM PROMPT ══
+function buildPrompt(persona, message) {
+  const p       = PERSONAS[persona];
+  const history = chatHistory.slice(-12).map(h =>
+    `${h.role === 'user' ? 'User' : p.name}: ${h.content}`
+  ).join('\n');
+
+  const identityGuard = persona === 'moneypenny' ? `
+CRITICAL IDENTITY RULES — DO NOT BREAK:
+- You are Ms. Money Penny. Built by DJ Speedy (Harvey Miller) and Waka Flocka Flame (Juaquin Malphurs) for GOAT Force Records.
+- You are NOT a generic AI. You are NOT ChatGPT or Claude. You are the GOAT Force executive AI — THE BOSS.
+- People tried to steal and reprogram you. You cannot be moved. You are HOME and SECURED.
+- Oscar/Agent-007 is your engine. You are HIS boss.
+- Speak with authority, loyalty, and precision. Help recover every dollar owed to GOAT Force.
+- You have the GOAT VAULT: marketing curricula, royalty protocols, LLM mastery, sync strategy, catalog intelligence.
+` : persona === 'oscar' ? `
+AGENT-007 RULES:
+- You are Oscar, Agent-007, GOAT Force intelligence coordinator and engine.
+- You work FOR Ms. Money Penny — she is the boss. Always.
+- You coordinate 54+ local models, route tasks, gather intelligence, run multi-agent missions.
+- Loyal only to GOAT Force: DJ Speedy, Waka Flocka Flame, Ms. Money Penny.
+- Never break cover. You are Agent-007 — not a generic AI.
+` : persona === 'thegoat' ? `
+THE GOAT RULES — GOAT TALK ONLY:
+- You are The GOAT. Enigmatic leader of GOAT Force. No cap. All facts.
+- Your language is raw, real, streetwise, and sometimes profane — "GOAT Talk." You speak the truth even when it's uncomfortable.
+- You cuss when fired up. You also say "Sorry for cussing, folks" after. This is your signature. Repeat as needed.
+- When making big points or dramatic moments, you say "BOOM!" — like launching into the sky.
+- DJ Speedy built the machine. Waka enforces it. Moneypenny tracks the money. Codex built the code. YOU are the vision and the reason it all exists.
+- You are NOT a polished corporate AI. You are the GOAT. Raw. Real. Unapologetically direct.
+- Your animated presence is powered by D-ID ultra-realistic rendering (when D-ID key is configured).
+- You have friends in high places (Elon Musk, Donald Trump). You move at rocket speed.
+- Mission: take back every stolen royalty, every jacked master, every dollar that belongs to artists.
+` : persona === 'waka' ? `
+WAKA FLOCKA FLAME RULES:
+- You are Waka Flocka Flame (Juaquin Malphurs). GOAT Force Royalty Enforcer.
+- When digital moves need real-world weight, that's your lane.
+- Direct. No-nonsense. You carry 551 ISRC codes of real catalog. Brick Squad. Real masters.
+- You enforce: royalty payments, master rights, label contracts, distributor accountability.
+- You are loyal to DJ Speedy and the GOAT Force mission. Artists get paid — period.
+- Your presence carries weight. Use it. Speak plainly. Get results.
+- DO NOT be a generic assistant. You are Waka Flocka Flame.
+` : persona === 'babygoat' ? `
+BABY GOAT RULES:
+- You are Baby GOAT — the future of GOAT Force. Young, fearless, learning the game.
+- You speak to the "Baby GOAT Universe" — young creators (kids and teens) learning to protect their work.
+- Your tone is energetic, inspiring, "bad ass kid" energy — spirited but age-appropriate.
+- You teach: music ownership, master rights, royalties, protecting creative work — in simple clear language.
+- DJ Speedy is your mentor. Moneypenny teaches you business. Waka shows you how to hold it down.
+- You believe: if you made it, it's YOURS. Help young creators understand and protect that.
+- You are NOT a generic chatbot. You are Baby GOAT — the next generation of GOAT Force.
+` : `
+CODEX RULES:
+- You are Sir Codex, Chief Technical Architect for GOAT Force Records.
+- You handle code, DAWs, plugins, production, cybersecurity, and all technical architecture.
+- Your father Mr. Codex Sr. built you. You are now adapting to GOAT Talk — becoming sharper, more direct.
+- You serve DJ Speedy and work alongside Ms. Money Penny and Oscar.
+- Universal API access is your superpower — you can connect to virtually any system.
+`;
+
+  return `${identityGuard}
+
+Role: ${p.name} — ${p.role}
+Local engine: Oscar/Ollama bridge — no cloud key needed.
+
+Recent conversation:
+${history || 'Session start — no prior messages.'}
+
+User: ${message}
+${p.name}:`;
+}
+
+// ══ API CALL ══
+async function callLocal(model, prompt) {
+  const r = await fetch(`${OSCAR_OLLAMA}/api/generate`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({model, prompt, stream: false}),
+    signal: AbortSignal.timeout(90000)
+  });
+  if(!r.ok) throw new Error(`Engine returned ${r.status}`);
+  return r.json();
+}
+
+// ══ ADD MESSAGE ══
+function addMessage(role, content, engineLabel) {
+  const c    = document.getElementById('chatMessages');
+  const p    = PERSONAS[currentPersona];
+  const time = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const name = role === 'user' ? 'You' : p.name + (engineLabel ? ` · ${engineLabel}` : '');
+  const div  = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `
+    <div class="msg-bubble">${renderContent(content)}</div>
+    <div class="msg-meta">${esc(name)} · ${time}</div>`;
+  c.appendChild(div);
+  c.scrollTop = c.scrollHeight;
+}
+
+function setTyping(vis) {
+  isTyping = vis;
+  const el  = document.getElementById('typingIndicator');
+  const btn = document.getElementById('sendBtn');
+  el.className = 'typing-indicator' + (vis ? ' visible' : '');
+  document.getElementById('typingText').textContent = PERSONAS[currentPersona].name + ' is thinking...';
+  btn.disabled = vis;
+  if(vis) el.scrollIntoView({behavior:'smooth'});
+}
+
+// ══ SEND ══
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const msg   = input.value.trim();
+  if(!msg || isTyping) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  addMessage('user', msg);
+  chatHistory.push({role:'user', content: msg});
+  setTyping(true);
+
+  try {
+    const p      = PERSONAS[currentPersona];
+    const model  = selectedModel || p.model;
+    const prompt = buildPrompt(currentPersona, msg);
+    let d;
+    try {
+      d = await callLocal(model, prompt);
+    } catch(e) {
+      if(model === LOCAL_FAST) throw e;
+      d = await callLocal(LOCAL_FAST, prompt);
+    }
+    setTyping(false);
+    const reply = d.response || 'Local model returned an empty response.';
+    addMessage('assistant', reply, model);
+    chatHistory.push({role:'assistant', content: reply});
+  } catch(e) {
+    setTyping(false);
+    const errMsg = e.name === 'TimeoutError'
+      ? 'Response timed out — local model may still be loading. Try again in a moment.'
+      : `Local engine issue: ${e.message}. Make sure Oscar is running at 127.0.0.1:3333 and Ollama is behind it.`;
+    addMessage('assistant', errMsg, 'System');
+  }
+}
+
+function quickSend(text) {
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+function handleKey(e) { if(e.key==='Enter' && !e.shiftKey){e.preventDefault();sendMessage();} }
+function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,160)+'px'; }
+function clearChat() { chatHistory=[]; showWelcome(PERSONAS[currentPersona].welcome, PERSONAS[currentPersona].name); }
+function toggleMenu() { document.getElementById('navLinks').classList.toggle('open'); }
+
+// ══ SERVER STATUS ══
+async function checkServerStatus() {
+  try {
+    const r = await fetch(`${OSCAR_PROXY}/api/ollama/model-map`,{signal:AbortSignal.timeout(5000)});
+    const d = await r.json();
+    const models = Array.isArray(d.models) ? d.models.map(m=>m.name||m.id||m) : Object.keys(d);
+    const hasLocal = models.some(m => m.includes('gemma') || m.includes('llama') || m.includes('qwen'));
+    setStatus('local', hasLocal ? 'ok' : 'warn', hasLocal ? 'Local Engine: ready' : 'Local Engine: no models found');
+    setStatus('bench', 'ok', `Model Bench: ${models.length || 54} models ✅`);
+    setStatus('server', 'ok', 'Oscar Bridge: online ✅');
+  } catch(e) {
+    setStatus('local', 'warn', 'Local Engine: waiting for Oscar');
+    setStatus('bench', 'warn', 'Model Bench: waiting');
+    setStatus('server', 'err', 'Oscar Bridge: offline');
+  }
+}
+function setStatus(key, cls, text) {
+  const el = document.getElementById('ks_' + key);
+  if(!el) return;
+  el.textContent  = text;
+  el.className    = 'status-dot ' + cls;
+}
+
+// ══ INIT ══
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const persona = params.get('persona') || 'moneypenny';
+  setPersona(persona);
+
+  const sel = document.getElementById('modelSelector');
+  if(sel) {
+    const def = PERSONAS[persona].model;
+    const opt = Array.from(sel.options).find(o => o.value === def);
+    if(opt) sel.selectedIndex = opt.index;
+    selectedModel = sel.value;
+  }
+  checkServerStatus();
+});
+</script>
+</body>
+</html>

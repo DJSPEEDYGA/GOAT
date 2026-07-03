@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🎰 GOAT Casino — Play, Earn & Win | Super GOAT Royalty</title>
+<meta name="description" content="GOAT Casino — Free-to-play games with Oscar AI Dealer. Track your chips, play slots, blackjack, poker, roulette and more.">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/goat-theme.css">
+<style>
+:root {
+  --bg: #0a0e17;
+  --gold: #FFD700;
+  --cyan: #00E5FF;
+  --purple: #8B5CF6;
+  --red: #C1121F;
+  --card-bg: rgba(15,20,35,0.85);
+  --border-glow: rgba(255,215,0,0.25);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: #f0f0f0;
+  font-family: 'Inter', -apple-system, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* ── NAVLINKS ── */
+.navlinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 20px;
+  background: rgba(0,0,0,0.6);
+  border-bottom: 1px solid rgba(255,215,0,0.15);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.navlinks a {
+  color: #aaa;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+.navlinks a:hover { color: var(--gold); border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.05); }
+.navlinks a.active { color: var(--gold); border-color: rgba(255,215,0,0.5); background: rgba(255,215,0,0.08); }
+
+/* ── HERO ── */
+.casino-hero {
+  background: linear-gradient(135deg, rgba(193,18,31,0.3) 0%, rgba(10,14,23,0.95) 40%, rgba(255,215,0,0.1) 100%);
+  padding: 48px 24px 36px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,215,0,0.15);
+  position: relative;
+  overflow: hidden;
+}
+.casino-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,215,0,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.casino-hero h1 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--gold), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 10px;
+}
+.casino-hero p {
+  color: #aaa;
+  font-size: 1rem;
+  margin: 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── MAIN LAYOUT ── */
+.casino-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+@media (max-width: 900px) {
+  .casino-layout { grid-template-columns: 1fr; }
+}
+
+/* ── STATS BAR ── */
+.stats-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.stat-chip {
+  background: var(--card-bg);
+  border: 1px solid var(--border-glow);
+  border-radius: 12px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 140px;
+}
+.stat-chip .icon { font-size: 1.4rem; }
+.stat-chip .value { font-size: 1.2rem; font-weight: 800; color: var(--gold); }
+.stat-chip .label { font-size: 11px; color: #777; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+/* ── GAME GRID ── */
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--gold);
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(255,215,0,0.3), transparent);
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.game-card {
+  background: var(--card-bg);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 24px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+}
+.game-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 60%, rgba(255,215,0,0.04));
+  transition: opacity 0.3s;
+  opacity: 0;
+}
+.game-card:hover {
+  border-color: var(--gold);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(255,215,0,0.12);
+}
+.game-card:hover::before { opacity: 1; }
+
+.game-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 12px rgba(255,215,0,0.3));
+}
+.game-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f0f0f0;
+  margin-bottom: 6px;
+}
+.game-desc {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+.play-btn {
+  display: inline-block;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, var(--gold), #cc9900);
+  color: #000;
+  font-weight: 800;
+  font-size: 12px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+.play-btn:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(255,215,0,0.4); }
+
+/* ── OSCAR CHAT SIDEBAR ── */
+.oscar-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.chat-box {
+  background: var(--card-bg);
+  border: 1px solid rgba(255,215,0,0.2);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  height: 580px;
+  overflow: hidden;
+}
+.chat-box-header {
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,215,0,0.05);
+}
+.chat-box-header .avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #cc6600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.chat-box-header h3 { font-size: 14px; font-weight: 800; color: var(--gold); margin: 0; }
+.chat-box-header p { font-size: 11px; color: #666; margin: 0; }
+.online-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+  margin-left: auto; flex-shrink: 0;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar { width: 3px; }
+.chat-messages::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.2); border-radius: 3px; }
+
+.msg { max-width: 85%; display: flex; flex-direction: column; gap: 4px; }
+.msg.user { align-self: flex-end; align-items: flex-end; }
+.msg.assistant { align-self: flex-start; align-items: flex-start; }
+.msg-bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.msg.user .msg-bubble { background: linear-gradient(135deg, var(--gold), #cc9900); color: #000; border-bottom-right-radius: 4px; }
+.msg.assistant .msg-bubble { background: rgba(255,255,255,0.07); color: #ddd; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
+.msg-time { font-size: 10px; color: #555; padding: 0 4px; }
+
+.typing-dots { display: none; align-self: flex-start; padding: 10px 14px; background: rgba(255,255,255,0.07); border-radius: 14px; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
+.typing-dots.show { display: flex; gap: 5px; align-items: center; }
+.typing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); animation: tp 1.2s infinite; }
+.typing-dot:nth-child(2) { animation-delay: .2s; }
+.typing-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes tp { 0%,60%,100%{transform:scale(1);opacity:.4} 30%{transform:scale(1.3);opacity:1} }
+
+.chat-input-area {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  background: rgba(0,0,0,0.3);
+}
+.chat-input-row { display: flex; gap: 8px; align-items: flex-end; }
+.chat-textarea {
+  flex: 1; padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  color: #fff; font-size: 13px;
+  resize: none; min-height: 40px; max-height: 120px;
+  font-family: inherit; line-height: 1.4;
+  transition: border-color .2s;
+}
+.chat-textarea:focus { outline: none; border-color: var(--gold); }
+.chat-textarea::placeholder { color: #444; }
+.send-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #cc9900);
+  border: none; color: #000; font-size: 16px;
+  cursor: pointer; transition: all .2s; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-weight: 900;
+}
+.send-btn:hover { transform: scale(1.08); }
+.send-btn:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; }
+
+/* Quick action buttons below chat */
+.quick-bets {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.quick-bet-btn {
+  padding: 5px 11px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,215,0,0.25);
+  background: transparent;
+  color: #888;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.quick-bet-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(255,215,0,0.06); }
+
+/* iframe modal */
+.game-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+.game-modal.open { display: flex; }
+.game-modal-inner {
+  width: 92vw; max-width: 1100px;
+  height: 85vh;
+  background: #0a0e17;
+  border: 1px solid rgba(255,215,0,0.3);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.game-modal-header {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.game-modal-header h3 { font-size: 16px; font-weight: 800; color: var(--gold); margin: 0; }
+.modal-close {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #fff; font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.modal-close:hover { background: rgba(193,18,31,0.3); border-color: rgba(193,18,31,0.5); }
+.game-modal-inner iframe {
+  flex: 1; border: none; width: 100%; background: #fff;
+}
+.modal-actions { display: flex; gap: 8px; align-items: center; }
+.modal-open-tab {
+  padding: 7px 16px;
+  border-radius: 10px;
+  background: rgba(255,215,0,0.1);
+  border: 1px solid rgba(255,215,0,0.3);
+  color: var(--gold); font-size: 12px; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  transition: all .2s;
+}
+.modal-open-tab:hover { background: rgba(255,215,0,0.2); }
+
+/* session log */
+.session-log {
+  background: var(--card-bg);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 20px;
+}
+.session-log h4 { font-size: 12px; color: var(--gold); margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.log-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 12px;
+}
+.log-entry:last-child { border-bottom: none; }
+.log-entry .game-name-log { color: #bbb; }
+.log-entry .chips-log { color: var(--gold); font-weight: 700; }
+.log-entry .time-log { color: #555; }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<div class="navlinks">
+  <a href="index.html">🏠 Home</a>
+  <a href="moneypenny.html">💼 Moneypenny</a>
+  <a href="music-studio.html">🎵 Studio</a>
+  <a href="casino.html" class="active">🎰 Casino</a>
+  <a href="anigo-alley.html">🎮 Anigo Alley</a>
+  <a href="halito-chat.html">💬 Halito Chat</a>
+  <a href="settings.html">⚙️ Settings</a>
+</div>
+
+<!-- ── HERO ── -->
+<div class="casino-hero">
+  <h1>🎰 GOAT Casino — Play, Earn &amp; Win</h1>
+  <p>Free-to-play games powered by Oscar AI Dealer. Track your chips, beat the house, and sharpen your strategy.</p>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="casino-layout">
+
+  <!-- LEFT COLUMN -->
+  <div class="casino-main">
+
+    <!-- Stats Bar -->
+    <div class="stats-bar" id="statsBar">
+      <div class="stat-chip">
+        <span class="icon">🎰</span>
+        <div>
+          <div class="value" id="statSessions">0</div>
+          <div class="label">Sessions Played</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <span class="icon">🔥</span>
+        <div>
+          <div class="value" id="statStreak">0</div>
+          <div class="label">Current Streak</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <span class="icon">💰</span>
+        <div>
+          <div class="value" id="statChips">1,000</div>
+          <div class="label">Harvey's Chips</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <span class="icon">🏆</span>
+        <div>
+          <div class="value" id="statBest">🎰 Slots</div>
+          <div class="label">Favorite Game</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Grid -->
+    <div class="section-title">🎮 Choose Your Game</div>
+    <div class="games-grid">
+
+      <div class="game-card" onclick="openGame('🎰 Slots', 'https://freeslots.com', 'slots')">
+        <span class="game-icon">🎰</span>
+        <div class="game-name">Slots</div>
+        <div class="game-desc">Spin to win on hundreds of free slot machines</div>
+        <span class="play-btn">Play Now</span>
+      </div>
+
+      <div class="game-card" onclick="openGame('🃏 Blackjack', 'https://www.247blackjack.com', 'blackjack')">
+        <span class="game-icon">🃏</span>
+        <div class="game-name">Blackjack</div>
+        <div class="game-desc">Hit or stand — beat the dealer to 21</div>
+        <span class="play-btn">Play Now</span>
+      </div>
+
+      <div class="game-card" onclick="openGame('🎲 Craps', 'https://www.247craps.com', 'craps')">
+        <span class="game-icon">🎲</span>
+        <div class="game-name">Dice / Craps</div>
+        <div class="game-desc">Roll the bones and feel the rush of craps</div>
+        <span class="play-btn">Play Now</span>
+      </div>
+
+      <div class="game-card" onclick="openGame('♠️ Poker', 'https://www.247freepoker.com', 'poker')">
+        <span class="game-icon">♠️</span>
+        <div class="game-name">Poker</div>
+        <div class="game-desc">Texas Hold'em, 5-Card Draw & more</div>
+        <span class="play-btn">Play Now</span>
+      </div>
+
+      <div class="game-card" onclick="openGame('🎡 Roulette', 'https://www.247roulette.com', 'roulette')">
+        <span class="game-icon">🎡</span>
+        <div class="game-name">Roulette</div>
+        <div class="game-desc">Place your bets on red, black, or your lucky number</div>
+        <span class="play-btn">Play Now</span>
+      </div>
+
+      <div class="game-card" onclick="openGame('🎯 Bingo', 'https://www.247bingo.com', 'bingo')">
+        <span class="game-icon">🎯</span>
+        <div class="game-name">Bingo</div>
+        <div class="game-desc">Dab your way to BINGO and claim your glory</div>
+        <span class="play-btn">Play Now</span>
+      </div>
+
+    </div>
+
+    <!-- Session Log -->
+    <div class="section-title">📋 Session Log</div>
+    <div class="session-log">
+      <h4>Recent Sessions</h4>
+      <div id="sessionLog">
+        <div class="log-entry">
+          <span class="game-name-log">No sessions yet — pick a game above!</span>
+          <span class="chips-log">—</span>
+          <span class="time-log">—</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN — OSCAR DEALER CHAT -->
+  <div class="oscar-sidebar">
+    <div class="section-title">🤖 Oscar AI Dealer</div>
+    <div class="chat-box">
+      <div class="chat-box-header">
+        <div class="avatar">🎴</div>
+        <div>
+          <h3>Oscar — AI Dealer</h3>
+          <p>GOAT Casino Intelligence</p>
+        </div>
+        <div class="online-dot" id="oscarDot" title="Offline — connect Oscar at 127.0.0.1:3333"></div>
+      </div>
+      <div class="chat-messages" id="casinoChat"></div>
+      <div class="typing-dots" id="typingDots">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+      <div class="quick-bets">
+        <button class="quick-bet-btn" onclick="quickAsk('What are the best odds in a casino?')">Best odds?</button>
+        <button class="quick-bet-btn" onclick="quickAsk('Give me basic blackjack strategy')">Blackjack tips</button>
+        <button class="quick-bet-btn" onclick="quickAsk('How does craps work?')">Craps rules</button>
+        <button class="quick-bet-btn" onclick="quickAsk('Poker hand rankings?')">Poker hands</button>
+      </div>
+      <div class="chat-input-area">
+        <div class="chat-input-row">
+          <textarea class="chat-textarea" id="casinoInput" placeholder="Ask Oscar anything about the games..." rows="1" onkeydown="handleCasinoKey(event)" oninput="autoResizeCasino(this)"></textarea>
+          <button class="send-btn" id="casinoSendBtn" onclick="sendCasinoMsg()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── GAME IFRAME MODAL ── -->
+<div class="game-modal" id="gameModal">
+  <div class="game-modal-inner">
+    <div class="game-modal-header">
+      <h3 id="modalTitle">Game</h3>
+      <div class="modal-actions">
+        <a id="modalTabLink" href="#" target="_blank" class="modal-open-tab">↗ Open Full Tab</a>
+        <button class="modal-close" onclick="closeGame()">✕</button>
+      </div>
+    </div>
+    <iframe id="gameFrame" src="" allowfullscreen title="Casino Game"></iframe>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const OSCAR_URL = 'http://127.0.0.1:3333/ollama/api/chat';
+const DEALER_MODEL = 'gemma2-2b-local:latest';
+const DEALER_SYSTEM = 'You are Oscar, the GOAT Casino AI Dealer. Help players with game rules, strategy tips, odds, and casino operations. Keep it real and fun. Be concise — 2-4 sentences max.';
+
+let casinoHistory = [];
+let dealerBusy = false;
+let sessionLog = [];
+
+// ── LOCALSTORAGE STATS ──
+function loadStats() {
+  const sessions = parseInt(localStorage.getItem('casino_sessions') || '0');
+  const streak   = parseInt(localStorage.getItem('casino_streak')   || '0');
+  const chips    = parseInt(localStorage.getItem('casino_chips')    || '1000');
+  const best     = localStorage.getItem('casino_best') || '🎰 Slots';
+  document.getElementById('statSessions').textContent = sessions.toLocaleString();
+  document.getElementById('statStreak').textContent   = streak.toLocaleString();
+  document.getElementById('statChips').textContent    = chips.toLocaleString();
+  document.getElementById('statBest').textContent     = best;
+  sessionLog = JSON.parse(localStorage.getItem('casino_log') || '[]');
+  renderLog();
+}
+
+function saveStats(gameName) {
+  let sessions = parseInt(localStorage.getItem('casino_sessions') || '0') + 1;
+  let streak   = parseInt(localStorage.getItem('casino_streak')   || '0') + 1;
+  let chips    = parseInt(localStorage.getItem('casino_chips')    || '1000') + 100;
+  localStorage.setItem('casino_sessions', sessions);
+  localStorage.setItem('casino_streak',   streak);
+  localStorage.setItem('casino_chips',    chips);
+  localStorage.setItem('casino_best',     gameName);
+
+  const entry = { game: gameName, chips: '+100', time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) };
+  sessionLog.unshift(entry);
+  if (sessionLog.length > 10) sessionLog = sessionLog.slice(0, 10);
+  localStorage.setItem('casino_log', JSON.stringify(sessionLog));
+
+  document.getElementById('statSessions').textContent = sessions.toLocaleString();
+  document.getElementById('statStreak').textContent   = streak.toLocaleString();
+  document.getElementById('statChips').textContent    = chips.toLocaleString();
+  document.getElementById('statBest').textContent     = gameName;
+  renderLog();
+}
+
+function renderLog() {
+  const el = document.getElementById('sessionLog');
+  if (!sessionLog.length) {
+    el.innerHTML = '<div class="log-entry"><span class="game-name-log">No sessions yet — pick a game above!</span><span class="chips-log">—</span><span class="time-log">—</span></div>';
+    return;
+  }
+  el.innerHTML = sessionLog.map(e =>
+    `<div class="log-entry">
+      <span class="game-name-log">${e.game}</span>
+      <span class="chips-log">${e.chips} chips</span>
+      <span class="time-log">${e.time}</span>
+    </div>`
+  ).join('');
+}
+
+// ── GAME MODAL ──
+function openGame(name, url, gameKey) {
+  document.getElementById('modalTitle').textContent = name;
+  document.getElementById('gameFrame').src = url;
+  document.getElementById('modalTabLink').href = url;
+  document.getElementById('gameModal').classList.add('open');
+  saveStats(name);
+  // Ask Oscar about this game
+  quickAsk(`I just opened ${name} — give me one quick strategy tip!`);
+}
+
+function closeGame() {
+  document.getElementById('gameModal').classList.remove('open');
+  document.getElementById('gameFrame').src = '';
+}
+
+// ── CHAT HELPERS ──
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+
+function addCasinoMsg(role, text) {
+  const wrap = document.getElementById('casinoChat');
+  const time = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const d = document.createElement('div');
+  d.className = `msg ${role}`;
+  d.innerHTML = `<div class="msg-bubble">${escHtml(text).replace(/\n/g,'<br>')}</div><div class="msg-time">${role === 'user' ? 'You' : 'Oscar'} · ${time}</div>`;
+  wrap.appendChild(d);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function setDealerTyping(v) {
+  dealerBusy = v;
+  document.getElementById('typingDots').className = 'typing-dots' + (v ? ' show' : '');
+  document.getElementById('casinoSendBtn').disabled = v;
+}
+
+async function sendCasinoMsg() {
+  const inp = document.getElementById('casinoInput');
+  const msg = inp.value.trim();
+  if (!msg || dealerBusy) return;
+  inp.value = '';
+  inp.style.height = 'auto';
+
+  addCasinoMsg('user', msg);
+  casinoHistory.push({ role: 'user', content: msg });
+  setDealerTyping(true);
+
+  try {
+    const messages = [
+      { role: 'system', content: DEALER_SYSTEM },
+      ...casinoHistory.slice(-8)
+    ];
+    const r = await fetch(OSCAR_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: DEALER_MODEL, messages, stream: false }),
+      signal: AbortSignal.timeout(30000)
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    const reply = d.message?.content || d.response || 'No response from Oscar.';
+    setDealerTyping(false);
+    addCasinoMsg('assistant', reply);
+    casinoHistory.push({ role: 'assistant', content: reply });
+    document.getElementById('oscarDot').style.background = '#22c55e';
+    document.getElementById('oscarDot').style.boxShadow = '0 0 6px #22c55e';
+  } catch (e) {
+    setDealerTyping(false);
+    addCasinoMsg('assistant', `Oscar is offline right now (${e.message}). Make sure the Oscar server is running at 127.0.0.1:3333.`);
+    document.getElementById('oscarDot').style.background = '#f59e0b';
+    document.getElementById('oscarDot').style.boxShadow = '0 0 6px #f59e0b';
+  }
+}
+
+function quickAsk(text) {
+  document.getElementById('casinoInput').value = text;
+  sendCasinoMsg();
+}
+
+function handleCasinoKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendCasinoMsg(); }
+}
+
+function autoResizeCasino(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  loadStats();
+  // Welcome message from Oscar
+  setTimeout(() => {
+    addCasinoMsg('assistant', "Welcome to GOAT Casino! I'm Oscar, your AI dealer. What game are you feeling today? 🎰🃏🎲♠️🎡🎯");
+  }, 400);
+  // Check if Oscar is live
+  fetch('http://127.0.0.1:3333/ollama/api/tags', { signal: AbortSignal.timeout(3000) })
+    .then(r => r.json())
+    .then(d => {
+      const dot = document.getElementById('oscarDot');
+      dot.style.background = '#22c55e';
+      dot.style.boxShadow  = '0 0 6px #22c55e';
+      dot.title = `Oscar online — ${(d.models||[]).length} models`;
+    })
+    .catch(() => {
+      const dot = document.getElementById('oscarDot');
+      dot.style.background = '#f59e0b';
+      dot.style.boxShadow  = '0 0 6px #f59e0b';
+      dot.title = 'Oscar offline — start server at 127.0.0.1:3333';
+    });
+});
+</script>
+</body>
+</html>

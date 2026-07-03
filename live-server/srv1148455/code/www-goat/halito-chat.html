@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>💬 Halito Chat — Local AI Command Center | Super GOAT Royalty</title>
+<meta name="description" content="Halito Chat — Full-featured local LLM chat. 54+ models, cloud APIs, streaming, crew mode. Halito means hello in Choctaw.">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/goat-theme.css">
+<style>
+:root {
+  --bg: #0a0e17;
+  --gold: #FFD700;
+  --cyan: #00E5FF;
+  --card-bg: rgba(13,18,32,0.9);
+  --sidebar-bg: rgba(10,14,24,0.97);
+  --border: rgba(255,255,255,0.08);
+  --border-gold: rgba(255,215,0,0.25);
+  --border-cyan: rgba(0,229,255,0.2);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: #f0f0f0;
+  font-family: 'Inter', -apple-system, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* ── NAVLINKS ── */
+.navlinks {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 10px 18px;
+  background: rgba(0,0,0,0.65);
+  border-bottom: 1px solid rgba(0,229,255,0.15);
+  backdrop-filter: blur(14px);
+  position: sticky; top: 0; z-index: 200;
+}
+.navlinks a {
+  color: #aaa; text-decoration: none;
+  font-size: 12.5px; font-weight: 600;
+  padding: 5px 11px; border-radius: 8px;
+  border: 1px solid transparent; transition: all 0.2s;
+}
+.navlinks a:hover { color: var(--gold); border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.05); }
+.navlinks a.active { color: var(--cyan); border-color: rgba(0,229,255,0.4); background: rgba(0,229,255,0.06); }
+
+/* ── HERO ── */
+.halito-hero {
+  background: linear-gradient(135deg, rgba(0,90,120,0.25) 0%, rgba(10,14,23,0.95) 50%, rgba(255,215,0,0.06) 100%);
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid rgba(0,229,255,0.12);
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+}
+.halito-hero-text h1 {
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--cyan), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 4px;
+}
+.halito-hero-text p { color: #666; font-size: 12px; margin: 0; }
+.hero-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.hero-badge {
+  padding: 4px 10px; border-radius: 10px; font-size: 11px; font-weight: 700;
+  border: 1px solid;
+}
+.hero-badge.online { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); color: #22c55e; }
+.hero-badge.models { background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.25); color: var(--cyan); }
+.hero-badge.keys { background: rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.25); color: var(--gold); }
+
+/* ── FULL PAGE LAYOUT ── */
+.halito-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr 300px;
+  height: calc(100vh - 113px);
+  overflow: hidden;
+}
+@media (max-width: 1100px) {
+  .halito-layout { grid-template-columns: 240px 1fr; }
+  .halito-right { display: none; }
+}
+@media (max-width: 700px) {
+  .halito-layout { grid-template-columns: 1fr; height: auto; }
+  .halito-left { display: none; }
+}
+
+/* ── LEFT SIDEBAR ── */
+.halito-left {
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-section {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-section h4 {
+  font-size: 10px; color: #555;
+  text-transform: uppercase; letter-spacing: 1px;
+  margin: 0 0 10px 4px;
+}
+
+/* Model selector */
+.model-tier {
+  margin-bottom: 6px;
+}
+.tier-label {
+  font-size: 10px; font-weight: 700;
+  padding: 3px 8px 3px 4px;
+  color: #666; display: flex; align-items: center; gap: 5px;
+  cursor: pointer; user-select: none;
+  border-radius: 4px; transition: background .15s;
+}
+.tier-label:hover { background: rgba(255,255,255,0.04); }
+.tier-label .badge {
+  padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 800;
+}
+.tier-label .chevron { margin-left: auto; font-size: 9px; transition: transform .2s; }
+.tier-label.open .chevron { transform: rotate(90deg); }
+
+.model-list { display: none; padding-left: 8px; }
+.model-list.show { display: block; }
+
+.model-item {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 8px; border-radius: 8px;
+  cursor: pointer; font-size: 12px; color: #888;
+  transition: all .15s; border: 1px solid transparent;
+  margin-bottom: 2px;
+}
+.model-item:hover { background: rgba(255,255,255,0.05); color: #ddd; }
+.model-item.selected { background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.3); color: var(--cyan); }
+.model-item .model-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  background: #333;
+}
+.model-item .model-dot.live { background: #22c55e; box-shadow: 0 0 4px #22c55e; }
+.model-item .model-dot.checking { background: #f59e0b; animation: dotPulse 1s infinite; }
+@keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.model-name { flex: 1; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Badges per tier */
+.badge-fast    { background: rgba(34,197,94,0.15);  color: #22c55e;  border: 1px solid rgba(34,197,94,0.3); }
+.badge-medium  { background: rgba(99,102,241,0.15); color: #818cf8;  border: 1px solid rgba(99,102,241,0.3); }
+.badge-code    { background: rgba(6,182,212,0.15);  color: #22d3ee;  border: 1px solid rgba(6,182,212,0.3); }
+.badge-reason  { background: rgba(139,92,246,0.15); color: #a78bfa;  border: 1px solid rgba(139,92,246,0.3); }
+.badge-vision  { background: rgba(236,72,153,0.15); color: #f472b6;  border: 1px solid rgba(236,72,153,0.3); }
+.badge-heavy   { background: rgba(249,115,22,0.15); color: #fb923c;  border: 1px solid rgba(249,115,22,0.3); }
+.badge-uncen   { background: rgba(239,68,68,0.15);  color: #f87171;  border: 1px solid rgba(239,68,68,0.3); }
+.badge-oscar   { background: rgba(255,215,0,0.15);  color: var(--gold); border: 1px solid rgba(255,215,0,0.3); }
+.badge-cloud   { background: rgba(14,165,233,0.15); color: #38bdf8;  border: 1px solid rgba(14,165,233,0.3); }
+
+/* Crew mode */
+.crew-select {
+  width: 100%; padding: 9px 12px;
+  border-radius: 10px; border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: #ddd; font-size: 12px; font-family: inherit;
+  cursor: pointer; transition: border-color .2s;
+}
+.crew-select:focus { outline: none; border-color: var(--cyan); }
+
+/* System prompt */
+.sys-prompt-wrap {
+  position: relative;
+}
+.sys-prompt {
+  width: 100%; padding: 9px 12px;
+  border-radius: 10px; border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: #ccc; font-size: 11px; font-family: inherit; line-height: 1.4;
+  resize: none; min-height: 60px; max-height: 150px;
+  transition: border-color .2s;
+}
+.sys-prompt:focus { outline: none; border-color: var(--gold); }
+
+.sidebar-scroll { overflow-y: auto; flex: 1; }
+.sidebar-scroll::-webkit-scrollbar { width: 3px; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+
+/* Server status */
+.server-status {
+  padding: 10px 12px;
+  font-size: 11px;
+}
+.status-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.status-row:last-child { border-bottom: none; }
+.status-label { color: #555; }
+.status-val { font-weight: 600; }
+.status-val.ok { color: #22c55e; }
+.status-val.warn { color: #f59e0b; }
+.status-val.err { color: #ef4444; }
+
+/* ── CHAT CENTER ── */
+.halito-center {
+  display: flex; flex-direction: column;
+  overflow: hidden; background: rgba(8,11,20,0.98);
+}
+
+.chat-topbar {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(10,14,23,0.96);
+  flex-shrink: 0;
+}
+.chat-topbar .model-display {
+  font-size: 13px; font-weight: 700; color: var(--cyan);
+  background: rgba(0,229,255,0.07);
+  border: 1px solid rgba(0,229,255,0.2);
+  padding: 5px 12px; border-radius: 10px;
+}
+.ping-indicator {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: #555;
+}
+.ping-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #333;
+}
+.ping-dot.live { background: #22c55e; box-shadow: 0 0 5px #22c55e; }
+.ping-dot.dead { background: #ef4444; }
+.char-count { font-size: 11px; color: #444; margin-left: auto; }
+.clear-chat-btn {
+  padding: 5px 12px; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.08); background: transparent;
+  color: #555; font-size: 11px; cursor: pointer; transition: all .2s;
+}
+.clear-chat-btn:hover { border-color: rgba(239,68,68,0.4); color: #f87171; }
+
+/* messages */
+.chat-messages {
+  flex: 1; overflow-y: auto;
+  padding: 20px 18px;
+  display: flex; flex-direction: column; gap: 14px;
+  scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+.msg { max-width: 82%; display: flex; flex-direction: column; gap: 5px; }
+.msg.user { align-self: flex-end; align-items: flex-end; }
+.msg.assistant { align-self: flex-start; align-items: flex-start; }
+.msg-bubble {
+  padding: 12px 16px; border-radius: 16px;
+  font-size: 13.5px; line-height: 1.65;
+  white-space: pre-wrap; word-break: break-word;
+}
+.msg.user .msg-bubble {
+  background: linear-gradient(135deg, rgba(0,150,180,0.6), rgba(0,229,255,0.2));
+  color: #fff; border: 1px solid rgba(0,229,255,0.25);
+  border-bottom-right-radius: 4px;
+}
+.msg.assistant .msg-bubble {
+  background: rgba(255,255,255,0.05);
+  color: #e0e0e0;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-bottom-left-radius: 4px;
+}
+.msg.system-msg .msg-bubble {
+  background: rgba(255,215,0,0.05);
+  border-color: rgba(255,215,0,0.15); color: #888;
+  font-size: 12px; max-width: 100%; align-self: center;
+}
+.msg-meta { font-size: 10.5px; color: #444; padding: 0 4px; }
+
+/* streaming cursor */
+.stream-cursor::after {
+  content: '▌';
+  animation: blink .7s step-end infinite;
+  color: var(--cyan);
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* typing dots */
+.typing-wrap {
+  display: none; align-self: flex-start;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 16px; border-bottom-left-radius: 4px;
+}
+.typing-wrap.show { display: flex; gap: 5px; align-items: center; }
+.t-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); animation: tp 1.2s infinite; }
+.t-dot:nth-child(2) { animation-delay: .2s; }
+.t-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes tp { 0%,60%,100%{transform:scale(1);opacity:.4} 30%{transform:scale(1.3);opacity:1} }
+
+/* input area */
+.chat-input-area {
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  background: rgba(8,11,20,0.98);
+  flex-shrink: 0;
+}
+.chat-input-row { display: flex; gap: 10px; align-items: flex-end; }
+.chat-textarea {
+  flex: 1; padding: 12px 16px;
+  border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  color: #fff; font-size: 14px;
+  resize: none; min-height: 48px; max-height: 180px;
+  font-family: inherit; line-height: 1.5; transition: border-color .2s;
+}
+.chat-textarea:focus { outline: none; border-color: var(--cyan); }
+.chat-textarea::placeholder { color: #3a3a4a; }
+.send-btn {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--cyan), #0099bb);
+  border: none; color: #000; font-size: 18px; font-weight: 900;
+  cursor: pointer; transition: all .2s; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.send-btn:hover { transform: scale(1.06); box-shadow: 0 4px 16px rgba(0,229,255,0.4); }
+.send-btn:disabled { background: #222; color: #444; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── RIGHT PANEL ── */
+.halito-right {
+  background: var(--sidebar-bg);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.right-section {
+  padding: 14px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.right-section h4 {
+  font-size: 10px; color: #555;
+  text-transform: uppercase; letter-spacing: 1px;
+  margin: 0 0 10px 2px;
+}
+.right-scroll { overflow-y: auto; flex: 1; }
+.right-scroll::-webkit-scrollbar { width: 3px; }
+.right-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 3px; }
+
+/* API key inline form */
+.key-form { }
+.key-form label { font-size: 11px; color: #666; display: block; margin-bottom: 5px; font-weight: 600; }
+.key-form select, .key-form input {
+  width: 100%; padding: 8px 10px;
+  border-radius: 9px; border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: #ddd; font-size: 12px; font-family: inherit;
+  transition: border-color .2s; margin-bottom: 8px;
+}
+.key-form select:focus, .key-form input:focus { outline: none; border-color: var(--gold); }
+.key-form input::placeholder { color: #333; font-family: monospace; font-size: 11px; }
+.save-key-btn {
+  width: 100%; padding: 8px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,215,0,0.08));
+  border: 1px solid rgba(255,215,0,0.3);
+  color: var(--gold); font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: all .2s;
+}
+.save-key-btn:hover { background: rgba(255,215,0,0.2); }
+.key-saved-msg { font-size: 11px; color: #22c55e; margin-top: 6px; display: none; }
+
+/* Ollama folder */
+.folder-path {
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 11px; font-family: monospace;
+  color: #666; word-break: break-all;
+  cursor: pointer; transition: border-color .2s;
+}
+.folder-path:hover { border-color: rgba(0,229,255,0.3); color: var(--cyan); }
+
+/* live model pills */
+.live-model-list { display: flex; flex-direction: column; gap: 4px; }
+.live-model-pill {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 8px; border-radius: 8px;
+  font-size: 11px; color: #777;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.live-model-pill .pill-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  background: #22c55e; box-shadow: 0 0 4px #22c55e;
+}
+.live-model-pill .pill-dot.off { background: #333; box-shadow: none; }
+.live-model-pill .pill-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* cloud models section */
+.cloud-model-btn {
+  display: block; width: 100%;
+  padding: 7px 10px; border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.06); background: transparent;
+  color: #777; font-size: 12px; text-align: left;
+  cursor: pointer; margin-bottom: 4px; transition: all .2s;
+}
+.cloud-model-btn:hover { border-color: rgba(14,165,233,0.3); color: #38bdf8; background: rgba(14,165,233,0.05); }
+.cloud-model-btn.selected { border-color: rgba(14,165,233,0.4); color: #38bdf8; background: rgba(14,165,233,0.08); }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<div class="navlinks">
+  <a href="index.html">🏠 Home</a>
+  <a href="moneypenny.html">💼 Moneypenny</a>
+  <a href="music-studio.html">🎵 Studio</a>
+  <a href="casino.html">🎰 Casino</a>
+  <a href="anigo-alley.html">🎮 Anigo Alley</a>
+  <a href="halito-chat.html" class="active">💬 Halito Chat</a>
+  <a href="settings.html">⚙️ Settings</a>
+</div>
+
+<!-- ── HERO ── -->
+<div class="halito-hero">
+  <div class="halito-hero-text">
+    <h1>💬 Halito Chat — Local AI Command Center</h1>
+    <p>"Halito" means hello in Choctaw · 54+ models · Local + Cloud · Streaming · Crew Mode</p>
+  </div>
+  <div class="hero-badges">
+    <span class="hero-badge online" id="heroBadgeOnline">● Checking...</span>
+    <span class="hero-badge models" id="heroBadgeModels">0 Live</span>
+    <span class="hero-badge keys" id="heroBadgeKeys">0 Keys</span>
+  </div>
+</div>
+
+<!-- ── LAYOUT ── -->
+<div class="halito-layout">
+
+  <!-- ══════════════ LEFT SIDEBAR ══════════════ -->
+  <div class="halito-left">
+    <div class="sidebar-scroll">
+
+      <!-- Crew Mode -->
+      <div class="sidebar-section">
+        <h4>🎭 Crew Mode</h4>
+        <select class="crew-select" id="crewSelect" onchange="setCrewMode(this.value)">
+          <option value="oscar">🤖 Oscar — General AI</option>
+          <option value="moneypenny">💎 Ms. Money Penny — Royalties</option>
+          <option value="codex">🛠️ Sir Codex — Tech & Code</option>
+          <option value="vanessa">💃 Ms. Vanessa — Legal & Research</option>
+          <option value="lexi">📚 Lexicon Lexi — Writing</option>
+          <option value="nexus">🔗 Ms. Nexus — Data & Strategy</option>
+        </select>
+      </div>
+
+      <!-- System Prompt -->
+      <div class="sidebar-section">
+        <h4>⚙️ System Prompt</h4>
+        <textarea class="sys-prompt" id="systemPrompt" rows="4" placeholder="System prompt (optional)..."></textarea>
+      </div>
+
+      <!-- LOCAL MODELS -->
+      <div class="sidebar-section">
+        <h4>🖥️ Local Models — Oscar Proxy :3333</h4>
+        <div id="modelTiers"></div>
+      </div>
+
+      <!-- CLOUD MODELS -->
+      <div class="sidebar-section">
+        <h4>☁️ Cloud Models (Requires API Key)</h4>
+        <div id="cloudModels"></div>
+      </div>
+
+      <!-- SERVER STATUS -->
+      <div class="sidebar-section">
+        <h4>📡 Server Status</h4>
+        <div class="server-status">
+          <div class="status-row">
+            <span class="status-label">Oscar Bridge</span>
+            <span class="status-val warn" id="srvBridge">Checking...</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Ollama</span>
+            <span class="status-val warn" id="srvOllama">Checking...</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Models Live</span>
+            <span class="status-val warn" id="srvModels">—</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Selected</span>
+            <span class="status-val ok" id="srvSelected">gemma2-2b-local</span>
+          </div>
+        </div>
+        <button onclick="checkServerStatus()" style="width:100%;padding:7px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#555;font-size:11px;cursor:pointer;transition:all.2s;margin-top:6px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#555'">🔄 Refresh Status</button>
+      </div>
+
+      <!-- OLLAMA FOLDER -->
+      <div class="sidebar-section">
+        <h4>📁 Ollama Models Folder</h4>
+        <div class="folder-path" id="ollamaFolder" onclick="setOllamaPath()" title="Click to set path">
+          Click to set models path...
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ CENTER CHAT ══════════════ -->
+  <div class="halito-center">
+
+    <div class="chat-topbar">
+      <span class="model-display" id="activeModelDisplay">gemma2-2b-local:latest</span>
+      <div class="ping-indicator">
+        <div class="ping-dot" id="pingDot"></div>
+        <span id="pingText">—</span>
+      </div>
+      <div class="char-count" id="charCount">0 chars</div>
+      <button class="clear-chat-btn" onclick="clearChat()">🗑 Clear</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <!-- Messages rendered by JS -->
+    </div>
+    <div class="typing-wrap" id="typingWrap">
+      <div class="t-dot"></div>
+      <div class="t-dot"></div>
+      <div class="t-dot"></div>
+      <span style="font-size:11px;color:#555;margin-left:6px;" id="typingLabel">Thinking...</span>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-row">
+        <textarea
+          class="chat-textarea"
+          id="chatInput"
+          placeholder="Halito! Ask anything — Shift+Enter for new line, Enter to send..."
+          rows="1"
+          onkeydown="handleKey(event)"
+          oninput="onInputChange(this)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ RIGHT PANEL ══════════════ -->
+  <div class="halito-right">
+    <div class="right-scroll">
+
+      <!-- Add API Key -->
+      <div class="right-section">
+        <h4>🔑 Add API Key</h4>
+        <div class="key-form">
+          <label>Provider</label>
+          <select id="keyProvider">
+            <option value="openai">OpenAI (gpt-4o, o1…)</option>
+            <option value="google">Google (Gemini)</option>
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="groq">Groq (Llama, Mixtral)</option>
+          </select>
+          <label>API Key</label>
+          <input type="password" id="keyInput" placeholder="sk-... or AIza...">
+          <button class="save-key-btn" onclick="saveApiKey()">💾 Save Key</button>
+          <div class="key-saved-msg" id="keySavedMsg">✅ Key saved to localStorage!</div>
+        </div>
+      </div>
+
+      <!-- Live Model List -->
+      <div class="right-section" style="flex:1;">
+        <h4>🟢 Live Ollama Models</h4>
+        <div class="live-model-list" id="liveModelList">
+          <div style="font-size:11px;color:#444;padding:4px;">Fetching models...</div>
+        </div>
+      </div>
+
+      <!-- Key Status -->
+      <div class="right-section">
+        <h4>🔐 API Key Status</h4>
+        <div id="keyStatusPanel" style="font-size:11px;color:#555;">Checking localStorage...</div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /halito-layout -->
+
+<script>
+// ══════════════════════════════════════════════
+//  HALITO CHAT — Full Local AI Command Center
+// ══════════════════════════════════════════════
+
+const OSCAR_BASE  = 'http://127.0.0.1:3333/ollama';
+const CHAT_URL    = `${OSCAR_BASE}/api/chat`;
+const TAGS_URL    = `${OSCAR_BASE}/api/tags`;
+
+// ── ALL 54+ LOCAL OSCAR MODELS ──
+const OSCAR_MODELS = {
+  fast: {
+    label: '⚡ Fast', badge: 'badge-fast',
+    models: ['gemma2-2b-local:latest','llama3.2:3b','nemotron-mini:4b','phi3:mini']
+  },
+  medium: {
+    label: '🌟 General', badge: 'badge-medium',
+    models: ['gemma3:4b','gemma3:12b','llama3.1:8b','mistral:7b','qwen3:8b','phi4:14b']
+  },
+  code: {
+    label: '💻 Code', badge: 'badge-code',
+    models: ['qwen2.5-coder:7b','qwen2.5-coder:14b','codestral:22b','starcoder2:15b','codegemma:7b','qwen2.5-coder:32b','codellama:34b']
+  },
+  reasoning: {
+    label: '🧠 Reasoning', badge: 'badge-reason',
+    models: ['deepseek-r1:8b','deepseek-r1:14b','qwen3:14b','gpt-oss:20b','deepseek-r1:32b','qwen3:32b']
+  },
+  vision: {
+    label: '👁 Vision', badge: 'badge-vision',
+    models: ['moondream:1.8b','llava:7b','llava-llama3:8b','llama3.2-vision:11b','qwen2.5vl:7b']
+  },
+  heavy: {
+    label: '🏋 Heavy', badge: 'badge-heavy',
+    models: ['llama3.1:70b','llama3.3:70b','nemotron:70b']
+  },
+  uncensored: {
+    label: '🔓 Uncensored', badge: 'badge-uncen',
+    models: ['qwen3-heretic-local:latest','deepseek-r1-uncensored-local:latest','qwen25-uncensored-local:latest','nemomix-local:latest','dolphin-local:latest']
+  },
+  'oscar-ft': {
+    label: '🎯 OscarFT', badge: 'badge-oscar',
+    models: ['oscar-ft-test-v1:latest']
+  }
+};
+
+// ── CLOUD MODELS ──
+const CLOUD_MODELS = {
+  openai:    { label: 'OpenAI',    models: ['gpt-4o','gpt-4o-mini','gpt-4-turbo','o1-preview'], keyName: 'openai_key' },
+  google:    { label: 'Google',    models: ['gemini-2.0-flash','gemini-1.5-pro'], keyName: 'gemini_key' },
+  anthropic: { label: 'Anthropic', models: ['claude-3.5-sonnet','claude-3-opus'], keyName: 'anthropic_key' },
+  groq:      { label: 'Groq',      models: ['llama-3.3-70b-versatile','mixtral-8x7b'], keyName: 'groq_key' }
+};
+
+// ── CREW PROMPTS ──
+const CREW_PROMPTS = {
+  oscar:       "You are Oscar, a highly capable general AI assistant for the GOAT Force / Super GOAT Royalty platform. Be helpful, smart, and direct.",
+  moneypenny:  "You are Ms. Money Penny, GOAT Force's royalty and business intelligence expert. You handle royalties, sync licensing, publishing deals, distribution strategy, and revenue recovery for DJ Speedy and Waka Flocka Flame. Be sharp and money-focused.",
+  codex:       "You are Sir Codex, GOAT Force's chief technical architect. You excel at coding, app architecture, API integrations, music production tech, DAW workflows, plugin recommendations, and system optimization. Be precise and technical.",
+  vanessa:     "You are Ms. Vanessa, GOAT Force's legal researcher and background check specialist. Help with contract review, legal research, compliance, due diligence, and rights management.",
+  lexi:        "You are Lexicon Lexi, GOAT Force's writing and content expert. Help with lyrics, scripts, press releases, blog posts, social media copy, and storytelling.",
+  nexus:       "You are Ms. Nexus, GOAT Force's data and strategy analyst. Help with data analysis, business intelligence, market research, strategic planning, and decision frameworks."
+};
+
+// ── STATE ──
+let selectedModel = 'gemma2-2b-local:latest';
+let selectedCloud = null;  // { provider, model }
+let chatHistory   = [];
+let isBusy        = false;
+let liveModels    = new Set();
+
+// ═══════════ RENDER MODEL TIERS ═══════════
+function renderModelTiers() {
+  const container = document.getElementById('modelTiers');
+  container.innerHTML = '';
+
+  Object.entries(OSCAR_MODELS).forEach(([tier, info]) => {
+    const div = document.createElement('div');
+    div.className = 'model-tier';
+    const firstOpen = tier === 'fast';
+    div.innerHTML = `
+      <div class="tier-label ${firstOpen ? 'open' : ''}" onclick="toggleTier(this)">
+        <span class="${info.badge} badge" style="padding:1px 6px;border-radius:8px;font-size:9px;font-weight:800;">${info.label}</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="model-list ${firstOpen ? 'show' : ''}">
+        ${info.models.map(m => `
+          <div class="model-item ${m === selectedModel ? 'selected' : ''}" onclick="selectModel('${m}')" id="mi_${CSS.escape(m)}">
+            <div class="model-dot checking" id="dot_${CSS.escape(m)}"></div>
+            <span class="model-name" title="${m}">${m}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function toggleTier(el) {
+  el.classList.toggle('open');
+  const list = el.nextElementSibling;
+  list.classList.toggle('show');
+}
+
+function CSS_escape(str) {
+  // Simple escape for use in getElementById
+  return str.replace(/[^a-zA-Z0-9-_]/g, c => '_' + c.charCodeAt(0) + '_');
+}
+
+function selectModel(model) {
+  selectedModel = model;
+  selectedCloud = null;
+  document.querySelectorAll('.model-item').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.cloud-model-btn').forEach(el => el.classList.remove('selected'));
+
+  // find item by traversing
+  document.querySelectorAll('.model-item').forEach(el => {
+    if (el.querySelector('.model-name')?.title === model) el.classList.add('selected');
+  });
+
+  updateActiveDisplay();
+}
+
+function selectCloudModel(provider, model) {
+  selectedCloud = { provider, model };
+  selectedModel = model;
+  document.querySelectorAll('.model-item').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.cloud-model-btn').forEach(el => el.classList.remove('selected'));
+
+  document.getElementById(`cbtn_${provider}_${model.replace(/[^a-z0-9]/gi,'_')}`).classList.add('selected');
+  updateActiveDisplay();
+}
+
+function updateActiveDisplay() {
+  document.getElementById('activeModelDisplay').textContent = selectedModel;
+  document.getElementById('srvSelected').textContent = selectedModel;
+}
+
+// ═══════════ RENDER CLOUD MODELS ═══════════
+function renderCloudModels() {
+  const container = document.getElementById('cloudModels');
+  container.innerHTML = '';
+  Object.entries(CLOUD_MODELS).forEach(([provider, info]) => {
+    const hasKey = !!localStorage.getItem(info.keyName);
+    const provDiv = document.createElement('div');
+    provDiv.style.marginBottom = '10px';
+    provDiv.innerHTML = `
+      <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:flex;align-items:center;gap:6px;">
+        ${info.label}
+        <span style="font-size:9px;color:${hasKey?'#22c55e':'#f59e0b'}">${hasKey?'✓ Key set':'No key'}</span>
+      </div>
+      ${info.models.map(m => `
+        <button class="cloud-model-btn" id="cbtn_${provider}_${m.replace(/[^a-z0-9]/gi,'_')}" onclick="selectCloudModel('${provider}','${m}')">
+          <span class="badge ${CLOUD_MODELS[provider]?'badge-cloud':''}" style="margin-right:6px;font-size:9px;padding:1px 5px;border-radius:6px;">☁</span>${m}
+        </button>
+      `).join('')}
+    `;
+    container.appendChild(provDiv);
+  });
+}
+
+// ═══════════ CREW MODE ═══════════
+function setCrewMode(crew) {
+  const prompt = CREW_PROMPTS[crew] || CREW_PROMPTS.oscar;
+  document.getElementById('systemPrompt').value = prompt;
+  // Reset chat with crew context
+  chatHistory = [];
+  const names = { oscar:'Oscar', moneypenny:'Ms. Money Penny', codex:'Sir Codex', vanessa:'Ms. Vanessa', lexi:'Lexicon Lexi', nexus:'Ms. Nexus' };
+  showSystemMsg(`Crew mode set to ${names[crew] || crew}. System prompt updated.`);
+}
+
+// ═══════════ CHAT MESSAGES ═══════════
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+
+function addMsg(role, text, modelTag) {
+  const wrap = document.getElementById('chatMessages');
+  const time = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const label = role === 'user' ? 'You' : (modelTag || selectedModel);
+  const el = document.createElement('div');
+  el.className = `msg ${role}`;
+  el.innerHTML = `
+    <div class="msg-bubble">${escHtml(text).replace(/\n/g,'<br>')}</div>
+    <div class="msg-meta">${escHtml(label)} · ${time}</div>
+  `;
+  wrap.appendChild(el);
+  wrap.scrollTop = wrap.scrollHeight;
+  return el;
+}
+
+function showSystemMsg(text) {
+  const wrap = document.getElementById('chatMessages');
+  const el = document.createElement('div');
+  el.className = 'msg system-msg';
+  el.innerHTML = `<div class="msg-bubble">${escHtml(text)}</div>`;
+  wrap.appendChild(el);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function showWelcome() {
+  const wrap = document.getElementById('chatMessages');
+  wrap.innerHTML = '';
+  showSystemMsg("Halito! 👋 Welcome to the GOAT AI Command Center. Select a model on the left, pick your crew member, and start chatting. All local models route through Oscar at 127.0.0.1:3333.");
+}
+
+function clearChat() {
+  chatHistory = [];
+  showWelcome();
+}
+
+function setBusy(v, label) {
+  isBusy = v;
+  document.getElementById('typingWrap').className = 'typing-wrap' + (v ? ' show' : '');
+  document.getElementById('typingLabel').textContent = label || 'Thinking...';
+  document.getElementById('sendBtn').disabled = v;
+}
+
+// ═══════════ SEND MESSAGE ═══════════
+async function sendMessage() {
+  const inp   = document.getElementById('chatInput');
+  const msg   = inp.value.trim();
+  if (!msg || isBusy) return;
+
+  inp.value = '';
+  inp.style.height = 'auto';
+  document.getElementById('charCount').textContent = '0 chars';
+
+  addMsg('user', msg);
+  chatHistory.push({ role: 'user', content: msg });
+  setBusy(true, `${selectedModel} thinking...`);
+
+  const sysPrompt = document.getElementById('systemPrompt').value.trim();
+
+  try {
+    if (selectedCloud) {
+      await sendCloudMsg(sysPrompt);
+    } else {
+      await sendLocalMsg(sysPrompt);
+    }
+  } catch (e) {
+    setBusy(false);
+    addMsg('assistant', `Error: ${e.message}\n\nMake sure the Oscar server is running at 127.0.0.1:3333 and the model "${selectedModel}" is available.`, 'System');
+  }
+}
+
+// ── LOCAL (streaming) ──
+async function sendLocalMsg(sysPrompt) {
+  const messages = [];
+  if (sysPrompt) messages.push({ role: 'system', content: sysPrompt });
+  messages.push(...chatHistory.slice(-20));
+
+  const wrap = document.getElementById('chatMessages');
+  const r = await fetch(CHAT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: selectedModel, messages, stream: true }),
+    signal: AbortSignal.timeout(120000)
+  });
+
+  if (!r.ok) throw new Error(`HTTP ${r.status} from Oscar proxy`);
+
+  setBusy(false);
+  // Create streaming bubble
+  const el = document.createElement('div');
+  el.className = 'msg assistant';
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble stream-cursor';
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = `${selectedModel} · streaming...`;
+  el.appendChild(bubble);
+  el.appendChild(meta);
+  wrap.appendChild(el);
+
+  const reader = r.body.getReader();
+  const decoder = new TextDecoder();
+  let fullText = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const chunk = decoder.decode(value, { stream: true });
+    const lines  = chunk.split('\n').filter(l => l.trim());
+    for (const line of lines) {
+      try {
+        const d = JSON.parse(line);
+        const token = d.message?.content || '';
+        fullText += token;
+        bubble.innerHTML = escHtml(fullText).replace(/\n/g,'<br>');
+        bubble.className = 'msg-bubble stream-cursor';
+        wrap.scrollTop = wrap.scrollHeight;
+        if (d.done) {
+          bubble.className = 'msg-bubble';
+          meta.textContent = `${selectedModel} · ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+          chatHistory.push({ role: 'assistant', content: fullText });
+          setOnlineIndicator(true);
+        }
+      } catch {}
+    }
+  }
+  bubble.className = 'msg-bubble'; // ensure cursor removed
+}
+
+// ── CLOUD ──
+async function sendCloudMsg(sysPrompt) {
+  const { provider, model } = selectedCloud;
+  const keyName = CLOUD_MODELS[provider]?.keyName;
+  const apiKey  = keyName ? localStorage.getItem(keyName) : null;
+
+  if (!apiKey) {
+    setBusy(false);
+    addMsg('assistant', `No API key for ${provider}. Add your key in the panel on the right, or in Settings.`, 'System');
+    return;
+  }
+
+  const messages = [];
+  if (sysPrompt) messages.push({ role: 'system', content: sysPrompt });
+  messages.push(...chatHistory.slice(-20));
+
+  let url, headers, body;
+
+  if (provider === 'openai') {
+    url = 'https://api.openai.com/v1/chat/completions';
+    headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+    body = JSON.stringify({ model, messages, stream: false });
+  } else if (provider === 'google') {
+    const geminiModel = model.includes('2.0') ? 'gemini-2.0-flash' : model;
+    url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`;
+    headers = { 'Content-Type': 'application/json' };
+    const contents = messages.filter(m => m.role !== 'system').map(m => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.content }]
+    }));
+    const sysPart = messages.find(m => m.role === 'system');
+    body = JSON.stringify({
+      contents,
+      systemInstruction: sysPart ? { parts: [{ text: sysPart.content }] } : undefined
+    });
+  } else if (provider === 'anthropic') {
+    url = 'https://api.anthropic.com/v1/messages';
+    headers = { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' };
+    const sysPart = messages.find(m => m.role === 'system');
+    body = JSON.stringify({
+      model, max_tokens: 2048,
+      system: sysPart?.content,
+      messages: messages.filter(m => m.role !== 'system')
+    });
+  } else if (provider === 'groq') {
+    url = 'https://api.groq.com/openai/v1/chat/completions';
+    headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+    body = JSON.stringify({ model, messages, stream: false });
+  }
+
+  const response = await fetch(url, { method: 'POST', headers, body, signal: AbortSignal.timeout(60000) });
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`${provider} API error ${response.status}: ${err.slice(0,200)}`);
+  }
+
+  const data = await response.json();
+  let reply = '';
+  if (provider === 'openai' || provider === 'groq') {
+    reply = data.choices?.[0]?.message?.content || 'Empty response';
+  } else if (provider === 'google') {
+    reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Empty response';
+  } else if (provider === 'anthropic') {
+    reply = data.content?.[0]?.text || 'Empty response';
+  }
+
+  setBusy(false);
+  addMsg('assistant', reply, `${provider}/${model}`);
+  chatHistory.push({ role: 'assistant', content: reply });
+  setOnlineIndicator(true);
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function onInputChange(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 180) + 'px';
+  document.getElementById('charCount').textContent = el.value.length + ' chars';
+}
+
+// ═══════════ SERVER STATUS ═══════════
+async function checkServerStatus() {
+  try {
+    const r = await fetch(TAGS_URL, { signal: AbortSignal.timeout(4000) });
+    const d = await r.json();
+    const names = (d.models || []).map(m => m.name);
+    liveModels = new Set(names);
+
+    document.getElementById('srvBridge').textContent  = 'Online ✓';
+    document.getElementById('srvBridge').className    = 'status-val ok';
+    document.getElementById('srvOllama').textContent  = 'Running ✓';
+    document.getElementById('srvOllama').className    = 'status-val ok';
+    document.getElementById('srvModels').textContent  = `${names.length} models`;
+    document.getElementById('srvModels').className    = 'status-val ok';
+
+    document.getElementById('heroBadgeOnline').textContent = '● Online';
+    document.getElementById('heroBadgeOnline').style.background = 'rgba(34,197,94,0.1)';
+    document.getElementById('heroBadgeOnline').style.color = '#22c55e';
+    document.getElementById('heroBadgeOnline').style.borderColor = 'rgba(34,197,94,0.3)';
+    document.getElementById('heroBadgeModels').textContent = `${names.length} Live`;
+
+    setOnlineIndicator(true);
+    updateModelDots(names);
+    renderLiveModelList(names);
+  } catch (e) {
+    document.getElementById('srvBridge').textContent = 'Offline';
+    document.getElementById('srvBridge').className   = 'status-val err';
+    document.getElementById('srvOllama').textContent = 'Not running';
+    document.getElementById('srvOllama').className   = 'status-val err';
+    document.getElementById('heroBadgeOnline').textContent = '● Offline';
+    document.getElementById('heroBadgeOnline').style.color = '#ef4444';
+    setOnlineIndicator(false);
+    renderLiveModelList([]);
+  }
+}
+
+function setOnlineIndicator(online) {
+  const dot  = document.getElementById('pingDot');
+  const txt  = document.getElementById('pingText');
+  dot.className = 'ping-dot ' + (online ? 'live' : 'dead');
+  txt.textContent = online ? 'Oscar online' : 'Oscar offline';
+}
+
+function updateModelDots(liveNames) {
+  const set = new Set(liveNames);
+  document.querySelectorAll('.model-item').forEach(el => {
+    const name = el.querySelector('.model-name')?.title;
+    const dot  = el.querySelector('.model-dot');
+    if (!dot) return;
+    if (set.has(name)) {
+      dot.className = 'model-dot live';
+    } else {
+      dot.className = 'model-dot';
+    }
+  });
+}
+
+function renderLiveModelList(names) {
+  const el = document.getElementById('liveModelList');
+  if (!names.length) {
+    el.innerHTML = '<div style="font-size:11px;color:#444;padding:4px;">No models found — is Ollama running?</div>';
+    return;
+  }
+
+  // Mark which ones are in our OSCAR_MODELS dict
+  const allKnown = new Set(Object.values(OSCAR_MODELS).flatMap(t => t.models));
+
+  el.innerHTML = names.slice(0, 30).map(n => {
+    const known = allKnown.has(n);
+    return `<div class="live-model-pill">
+      <div class="pill-dot ${known ? '' : 'off'}"></div>
+      <span class="pill-name" title="${n}">${n}</span>
+      ${known ? '<span style="font-size:9px;color:#555;">✓</span>' : ''}
+    </div>`;
+  }).join('');
+
+  if (names.length > 30) {
+    el.innerHTML += `<div style="font-size:10px;color:#444;padding:4px 8px;">+ ${names.length-30} more...</div>`;
+  }
+}
+
+// ═══════════ API KEY MANAGEMENT ═══════════
+function saveApiKey() {
+  const provider = document.getElementById('keyProvider').value;
+  const key      = document.getElementById('keyInput').value.trim();
+  if (!key) { alert('Please enter an API key.'); return; }
+
+  const keyNames = { openai: 'openai_key', google: 'gemini_key', anthropic: 'anthropic_key', groq: 'groq_key' };
+  const keyName  = keyNames[provider];
+  if (keyName) localStorage.setItem(keyName, key);
+
+  document.getElementById('keyInput').value = '';
+  const msg = document.getElementById('keySavedMsg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 3000);
+
+  renderCloudModels();
+  refreshKeyStatus();
+}
+
+function refreshKeyStatus() {
+  const providers = [
+    { name: 'OpenAI',     key: 'openai_key' },
+    { name: 'Google',     key: 'gemini_key' },
+    { name: 'Anthropic',  key: 'anthropic_key' },
+    { name: 'Groq',       key: 'groq_key' },
+  ];
+  const set = providers.filter(p => localStorage.getItem(p.key));
+  const panel = document.getElementById('keyStatusPanel');
+  if (!set.length) {
+    panel.innerHTML = '<span style="color:#444;">No API keys saved. Add keys above.</span>';
+    document.getElementById('heroBadgeKeys').textContent = '0 Keys';
+    return;
+  }
+  panel.innerHTML = set.map(p =>
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <span style="color:#888;">${p.name}</span>
+      <span style="color:#22c55e;font-size:10px;">✓ Set</span>
+    </div>`
+  ).join('');
+  document.getElementById('heroBadgeKeys').textContent = `${set.length} Keys`;
+}
+
+// ═══════════ OLLAMA PATH ═══════════
+function loadOllamaPath() {
+  const path = localStorage.getItem('ollamaModelsPath');
+  const el   = document.getElementById('ollamaFolder');
+  el.textContent = path || 'Click to set models path...';
+  el.style.color  = path ? '#22c55e' : '#666';
+}
+
+function setOllamaPath() {
+  const current = localStorage.getItem('ollamaModelsPath') || '~/.ollama/models';
+  const path    = prompt('Enter path to Ollama models folder:', current);
+  if (path !== null) {
+    localStorage.setItem('ollamaModelsPath', path.trim());
+    loadOllamaPath();
+  }
+}
+
+// ═══════════ INIT ═══════════
+document.addEventListener('DOMContentLoaded', () => {
+  renderModelTiers();
+  renderCloudModels();
+  loadOllamaPath();
+  refreshKeyStatus();
+  showWelcome();
+
+  // Set default crew + system prompt
+  setCrewMode('oscar');
+
+  checkServerStatus();
+  // Re-check every 30 seconds
+  setInterval(checkServerStatus, 30000);
+});
+</script>
+</body>
+</html>

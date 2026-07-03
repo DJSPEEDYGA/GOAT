@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐐 GOAT Force — Master Launcher Hub</title>
+<link rel="icon" href="favicon.ico">
+<style>
+:root {
+  --bg:#030608;--panel:#0d1117;--panel2:#161b22;--gold:#d4a03c;--gold2:#f0c040;
+  --green:#3fb950;--blue:#58a6ff;--red:#e63946;--purple:#a78bfa;--cyan:#00d4ff;
+  --ink:#f0ece4;--dim:#8b949e;--line:#21262d;--glow:rgba(212,160,60,.2);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-x:hidden;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:56px;background:rgba(3,6,8,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 20px;gap:12px;}
+nav img{width:32px;height:32px;border-radius:8px;object-fit:cover;}
+.nav-title{font-size:16px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-links{display:flex;gap:4px;margin-left:16px;flex-wrap:wrap;}
+.nav-links a{font-size:12px;color:var(--dim);padding:4px 10px;border-radius:6px;text-decoration:none;transition:.15s;}
+.nav-links a:hover{color:var(--ink);background:var(--panel2);}
+.nav-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.pill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;background:rgba(63,185,80,.15);color:var(--green);}
+
+/* HERO */
+.hero{padding:80px 20px 32px;text-align:center;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(212,160,60,.08),transparent);}
+.hero img{width:80px;height:80px;border-radius:18px;box-shadow:0 0 48px var(--glow);margin-bottom:16px;}
+.hero h1{font-size:clamp(28px,4vw,48px);font-weight:900;letter-spacing:-1px;}
+.hero h1 span{background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero p{color:var(--dim);font-size:14px;margin-top:8px;}
+
+/* SECTION */
+.wrap{max-width:1400px;margin:0 auto;padding:0 16px 60px;}
+.sec{margin-bottom:48px;}
+.sec-head{display:flex;align-items:center;gap:10px;padding:10px 0 12px;border-bottom:1px solid var(--line);margin-bottom:14px;}
+.sec-head .ico{font-size:20px;}
+.sec-head h2{font-size:17px;font-weight:700;}
+.sec-head .cnt{margin-left:auto;font-size:11px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:2px 8px;}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;}
+.grid-wide{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
+
+/* CARD */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;align-items:flex-start;gap:12px;text-decoration:none;color:var(--ink);transition:.15s;cursor:pointer;position:relative;}
+.card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 6px 24px rgba(212,160,60,.12);}
+.card.g:hover{border-color:var(--green);box-shadow:0 6px 24px rgba(63,185,80,.12);}
+.card.b:hover{border-color:var(--blue);box-shadow:0 6px 24px rgba(88,166,255,.12);}
+.card.r:hover{border-color:var(--red);box-shadow:0 6px 24px rgba(230,57,70,.12);}
+.card.p:hover{border-color:var(--purple);box-shadow:0 6px 24px rgba(167,139,250,.12);}
+.card.c:hover{border-color:var(--cyan);box-shadow:0 6px 24px rgba(0,212,255,.12);}
+.ci{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.cb{flex:1;min-width:0;}
+.cn{font-size:13px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cd{font-size:11px;color:var(--dim);line-height:1.5;}
+.tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
+.tag{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;}
+.tg{background:rgba(212,160,60,.12);color:var(--gold);}
+.tgr{background:rgba(63,185,80,.12);color:var(--green);}
+.tb{background:rgba(88,166,255,.12);color:var(--blue);}
+.tr{background:rgba(230,57,70,.12);color:var(--red);}
+.tp{background:rgba(167,139,250,.12);color:var(--purple);}
+.tc{background:rgba(0,212,255,.12);color:var(--cyan);}
+.td{background:rgba(139,148,158,.08);color:var(--dim);}
+
+/* STATUS BAR */
+.status-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:32px;}
+.sb{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dg{background:var(--green);box-shadow:0 0 6px var(--green);}
+.dy{background:#d29922;box-shadow:0 0 6px #d29922;}
+.dr{background:var(--red);box-shadow:0 0 6px var(--red);}
+.dd{background:var(--dim);}
+.sl{font-size:12px;font-weight:600;}
+.ss{font-size:10px;color:var(--dim);}
+
+/* TOAST */
+#toast{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;font-weight:700;font-size:13px;padding:10px 22px;border-radius:10px;z-index:999;}
+
+@media(max-width:600px){.grid{grid-template-columns:1fr;}.nav-links{display:none;}}
+</style>
+</head>
+<body>
+
+<nav>
+  <img src="goat-logo.png" onerror="this.style.display='none'">
+  <span class="nav-title">GOAT Force — Master Hub</span>
+  <div class="nav-links">
+    <a href="#live">Live</a>
+    <a href="#drive">Drive</a>
+    <a href="#agents">Agents</a>
+    <a href="#deploy">Deploy</a>
+    <a href="#server">Server</a>
+    <a href="#github">GitHub</a>
+    <a href="#hardware">Hardware</a>
+    <a href="#tools">Tools</a>
+    <a href="#epk">Investor EPK</a>
+    <a href="#llm">LLM</a>
+    <a href="#jetson">Jetson</a>
+  </div>
+  <div class="nav-right"><span class="pill">● All Systems</span></div>
+</nav>
+
+<div class="hero">
+  <img src="goat-logo.png" onerror="this.style.display='none'">
+  <h1>GOAT Force <span>Master Launcher</span></h1>
+  <p>DJ Speedy (Harvey L. Miller Jr.) × Waka Flocka Flame — Every tool, agent, server, and drive in one place</p>
+</div>
+
+<div class="wrap">
+
+  <!-- LIVE STATUS -->
+  <div id="live" class="sec">
+    <div class="sec-head"><span class="ico">📡</span><h2>Live System Status</h2></div>
+    <div class="status-bar">
+      <div class="sb"><div class="dot dg"></div><div><div class="sl">Agent-007 Local</div><div class="ss">localhost:3335 · Mac · RUNNING</div></div></div>
+      <div class="sb"><div class="dot dg"></div><div><div class="sl">Ollama Local</div><div class="ss">localhost:11434 · Mac</div></div></div>
+      <div class="sb"><div class="dot" id="d-intel"></div><div><div class="sl">GOAT Intel Brain</div><div class="ss">localhost:5500</div></div></div>
+      <div class="sb"><div class="dot dg"></div><div><div class="sl">Server 2 · Ubuntu</div><div class="ss">72.61.193.184 · LIVE</div></div></div>
+      <div class="sb"><div class="dot dg"></div><div><div class="sl">goat-intel.service</div><div class="ss">72.61.193.184:5500 · systemd</div></div></div>
+      <div class="sb"><div class="dot dg"></div><div><div class="sl">Agent-007 on Server 2</div><div class="ss">72.61.193.184:3335 · systemd</div></div></div>
+      <div class="sb"><div class="dot dg"></div><div><div class="sl">Production VPS</div><div class="ss">2.25.68.216 · DEPLOYED</div></div></div>
+      <div class="sb"><div class="dot dg"></div><div><div class="sl">SDK Manager</div><div class="ss">72.61.193.184 · v2.4.1 ✅</div></div></div>
+      <div class="sb"><div class="dot dg"></div><div><div class="sl">i2i 1 Drive</div><div class="ss">7.3TB · /Volumes/i2i 1 · Mounted</div></div></div>
+      <div class="sb"><div class="dot dg"></div><div><div class="sl">Win11 Boot Drive</div><div class="ss">disk9 · 512GB · READY</div></div></div>
+      <div class="sb"><div class="dot dr"></div><div><div class="sl">Ubuntu disk11</div><div class="ss">248GB · READ-ONLY — fix switch</div></div></div>
+    </div>
+  </div>
+
+  <!-- i2i DRIVE — AGENTS & AI -->
+  <div id="agents" class="sec">
+    <div class="sec-head"><span class="ico">🤖</span><h2>AI Agents — i2i 1 Drive</h2><span class="cnt">7 agents</span></div>
+    <div class="grid grid-wide">
+      <a href="http://localhost:3335" target="_blank" class="card">
+        <div class="ci" style="background:rgba(212,160,60,.15)">🔫</div>
+        <div class="cb"><div class="cn">Agent-007 · Local Mac</div><div class="cd">DJ Speedy's personal original LLM. FastChatUI. Tool-calling. Voice auto-speak ON. Port 3335.</div><div class="tags"><span class="tag tg">LIVE :3335</span><span class="tag tg">ORIGINAL LLM</span></div></div>
+      </a>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/BRING%20UP%20MS%20MONEY%20PENNY.command')">
+        <div class="ci" style="background:rgba(167,139,250,.15)">💼</div>
+        <div class="cb"><div class="cn">Money Penny · Executive AI</div><div class="cd">DJ Speedy's personal original AI. Orchestrates all agents. Gemini personality. Run from drive.</div><div class="tags"><span class="tag tp">ORIGINAL LLM</span><span class="tag td">COMMAND</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/BRING%20UP%20HANNAH%20MILLER.command')">
+        <div class="ci" style="background:rgba(255,182,193,.15)">👩</div>
+        <div class="cb"><div class="cn">Hannah Miller · Agent</div><div class="cd">Hannah Miller AI agent. Launch from drive via .command file.</div><div class="tags"><span class="tag tp">AGENT</span><span class="tag td">COMMAND</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Master-Oscar/')">
+        <div class="ci" style="background:rgba(88,166,255,.15)">🎭</div>
+        <div class="cb"><div class="cn">Oscar · Master Agent</div><div class="cd">Master-Oscar folder. GOAT Royalty chat agent. Raspy Oscar launcher included.</div><div class="tags"><span class="tag tb">MASTER-OSCAR</span><span class="tag td">DRIVE</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/agents/')">
+        <div class="ci" style="background:rgba(63,185,80,.15)">🤖</div>
+        <div class="cb"><div class="cn">Agents Folder</div><div class="cd">All agent definitions, configs, and crew setups on the drive.</div><div class="tags"><span class="tag tgr">AGENTS DIR</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/OPEN%20AGENTS%20BRAIN%20GOAT%20FORCE%20MEDIA.command')">
+        <div class="ci" style="background:rgba(212,160,60,.15)">🧠</div>
+        <div class="cb"><div class="cn">Agents Brain · GOAT Force Media</div><div class="cd">Opens the full GOAT Force Media agents brain. All 11 agents coordinated.</div><div class="tags"><span class="tag tg">COMMAND</span><span class="tag tg">11 AGENTS</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/OPEN%20GOAT%20CASINO%20NIGHT.command')">
+        <div class="ci" style="background:rgba(230,57,70,.15)">🎰</div>
+        <div class="cb"><div class="cn">GOAT Casino Night</div><div class="cd">Opens Casino Night mode. VIP access via hidden route.</div><div class="tags"><span class="tag tr">CASINO</span><span class="tag td">COMMAND</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- i2i DRIVE — LAUNCHERS -->
+  <div id="drive" class="sec">
+    <div class="sec-head"><span class="ico">💾</span><h2>i2i 1 Drive — All Launchers</h2><span class="cnt">/Volumes/i2i 1/Agent-007-GOAT</span></div>
+    <div class="grid">
+
+      <!-- STARTUP -->
+      <div class="card g" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/START%20AGENT-007.command')">
+        <div class="ci" style="background:rgba(63,185,80,.15)">▶️</div>
+        <div class="cb"><div class="cn">START AGENT-007</div><div class="cd">Main launcher. Starts Ollama + Agent-007 on port 3335.</div><div class="tags"><span class="tag tgr">START</span><span class="tag tgr">:3335</span></div></div>
+      </div>
+      <div class="card g" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Launch%20AGENT-007.command')">
+        <div class="ci" style="background:rgba(63,185,80,.15)">🚀</div>
+        <div class="cb"><div class="cn">Launch AGENT-007</div><div class="cd">Full launcher with LaunchAgent registration. Auto-restarts on crash.</div><div class="tags"><span class="tag tgr">LAUNCHD</span><span class="tag tgr">AUTO-RESTART</span></div></div>
+      </div>
+      <div class="card g" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/RESTART%20AGENT-007%20SECURE%20LOCAL.command')">
+        <div class="ci" style="background:rgba(63,185,80,.12)">🔄</div>
+        <div class="cb"><div class="cn">Restart Agent-007 Secure</div><div class="cd">Clean restart in secure local mode.</div><div class="tags"><span class="tag tgr">RESTART</span><span class="tag tgr">SECURE</span></div></div>
+      </div>
+
+      <!-- GOAT ROYALTY SUITE -->
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/OPEN%20GOAT%20ROYALTY%20SUITE%20LIVE.command')">
+        <div class="ci" style="background:rgba(212,160,60,.15)">🐐</div>
+        <div class="cb"><div class="cn">Open GOAT Royalty Suite Live</div><div class="cd">Opens full live GOAT Royalty Suite.</div><div class="tags"><span class="tag tg">ROYALTY</span><span class="tag tg">LIVE</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/OPEN%20GOAT%20LIVING%20EPK.command')">
+        <div class="ci" style="background:rgba(212,160,60,.15)">📊</div>
+        <div class="cb"><div class="cn">Open GOAT Living EPK</div><div class="cd">Opens investor EPK. Pitch deck, financials, catalog data.</div><div class="tags"><span class="tag tg">INVESTOR</span><span class="tag tg">EPK</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/INVESTOR%20PACK%20-%20START%20HERE.command')">
+        <div class="ci" style="background:rgba(212,160,60,.2)">💰</div>
+        <div class="cb"><div class="cn">Investor Pack — Start Here</div><div class="cd">Full investor package launcher. Waka Flocka × DJ Speedy deal deck.</div><div class="tags"><span class="tag tg">INVESTOR</span><span class="tag tgr">START HERE</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/SHARE%20GOAT%20LIVING%20EPK%20ON%20LAN.command')">
+        <div class="ci" style="background:rgba(88,166,255,.12)">📡</div>
+        <div class="cb"><div class="cn">Share EPK on LAN</div><div class="cd">Shares GOAT Living EPK over local network.</div><div class="tags"><span class="tag tb">LAN</span><span class="tag tb">SHARE</span></div></div>
+      </div>
+
+      <!-- STUDIO -->
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/OPEN%20GOAT%20STUDIO%20TOOL%20ARSENAL.command')">
+        <div class="ci" style="background:rgba(230,57,70,.12)">🎛️</div>
+        <div class="cb"><div class="cn">GOAT Studio Tool Arsenal</div><div class="cd">Opens full studio tool suite. All DAW tools, plugins, instruments.</div><div class="tags"><span class="tag tr">STUDIO</span><span class="tag td">COMMAND</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/OPEN%20SUPER%20GOAT%20ROYALTIES.command')">
+        <div class="ci" style="background:rgba(212,160,60,.15)">💎</div>
+        <div class="cb"><div class="cn">Super GOAT Royalties</div><div class="cd">Opens Super GOAT Royalties dashboard.</div><div class="tags"><span class="tag tg">ROYALTIES</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/OPEN%20PRO%20TOOLS%20BOOK%20VAULT.command')">
+        <div class="ci" style="background:rgba(88,166,255,.12)">📚</div>
+        <div class="cb"><div class="cn">Pro Tools Book Vault</div><div class="cd">Opens Pro Tools training book library.</div><div class="tags"><span class="tag tb">PRO TOOLS</span><span class="tag tb">BOOKS</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/OPEN%20GOAT%20FORCE%20MEDIA%20+%20CONTROL%20BENCH.command')">
+        <div class="ci" style="background:rgba(212,160,60,.15)">🎚️</div>
+        <div class="cb"><div class="cn">GOAT Force Media + Control Bench</div><div class="cd">Full media control bench. All screens, mixing, monitoring.</div><div class="tags"><span class="tag tg">MEDIA</span><span class="tag tg">CONTROL</span></div></div>
+      </div>
+
+      <!-- TRAINING -->
+      <div class="card b" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/LAUNCH%20AGENT-007%20PRO%20TOOLS%20TRAINING.command')">
+        <div class="ci" style="background:rgba(88,166,255,.15)">🎓</div>
+        <div class="cb"><div class="cn">Agent-007 Pro Tools Training</div><div class="cd">Launches Agent-007 in Pro Tools training mode.</div><div class="tags"><span class="tag tb">TRAINING</span><span class="tag tb">PRO TOOLS</span></div></div>
+      </div>
+      <div class="card b" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/LAUNCH%20AGENT-007%20WOOH%20FL%20TRAINING.command')">
+        <div class="ci" style="background:rgba(88,166,255,.15)">🎵</div>
+        <div class="cb"><div class="cn">Agent-007 Wooh FL Training</div><div class="cd">Launches Agent-007 FL Studio training for Wooh Da Kid.</div><div class="tags"><span class="tag tb">TRAINING</span><span class="tag tb">FL STUDIO</span></div></div>
+      </div>
+      <div class="card b" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/START-TRAINING.command')">
+        <div class="ci" style="background:rgba(88,166,255,.12)">📖</div>
+        <div class="cb"><div class="cn">Start Training</div><div class="cd">General training session launcher for all agents.</div><div class="tags"><span class="tag tb">TRAINING</span></div></div>
+      </div>
+
+      <!-- SECURITY -->
+      <div class="card r" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/GOAT%20SECURITY%20AUDIT.command')">
+        <div class="ci" style="background:rgba(230,57,70,.15)">🔐</div>
+        <div class="cb"><div class="cn">GOAT Security Audit</div><div class="cd">Full security audit across all systems.</div><div class="tags"><span class="tag tr">SECURITY</span><span class="tag tr">AUDIT</span></div></div>
+      </div>
+      <div class="card r" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/GOAT%20SERVER%20SECURITY%20VERIFY.command')">
+        <div class="ci" style="background:rgba(230,57,70,.12)">🛡️</div>
+        <div class="cb"><div class="cn">Server Security Verify</div><div class="cd">Verifies security posture of all servers.</div><div class="tags"><span class="tag tr">SECURITY</span><span class="tag tr">SERVER</span></div></div>
+      </div>
+      <div class="card r" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/AGENT-007%20SECURITY%20AND%20LLM%20VERIFY.command')">
+        <div class="ci" style="background:rgba(230,57,70,.15)">🔒</div>
+        <div class="cb"><div class="cn">Agent-007 Security + LLM Verify</div><div class="cd">Verifies Agent-007 identity separation and LLM integrity.</div><div class="tags"><span class="tag tr">VERIFY</span><span class="tag tg">LLM</span></div></div>
+      </div>
+      <div class="card r" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/GOAT%20MAC%20SECURITY%20HARDEN.command')">
+        <div class="ci" style="background:rgba(230,57,70,.12)">🔧</div>
+        <div class="cb"><div class="cn">Mac Security Harden</div><div class="cd">Hardens Mac security settings for GOAT studio environment.</div><div class="tags"><span class="tag tr">HARDEN</span><span class="tag tr">MAC</span></div></div>
+      </div>
+
+      <!-- NETWORK / SYSTEM -->
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/CHECK%20LIVE%20SERVER%20LINK%20STATUS.command')">
+        <div class="ci" style="background:rgba(88,166,255,.12)">📡</div>
+        <div class="cb"><div class="cn">Check Live Server Link Status</div><div class="cd">Pings all live servers and checks link health.</div><div class="tags"><span class="tag tb">NETWORK</span><span class="tag tb">STATUS</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/GOAT%20FULL%20SYSTEM%20VERIFY.command')">
+        <div class="ci" style="background:rgba(63,185,80,.12)">✅</div>
+        <div class="cb"><div class="cn">GOAT Full System Verify</div><div class="cd">Full end-to-end system health check across all services.</div><div class="tags"><span class="tag tgr">VERIFY</span><span class="tag tgr">FULL</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/CHECK%20RASPY%20DOWNSTAIRS%20CONNECTION.command')">
+        <div class="ci" style="background:rgba(88,166,255,.12)">🔌</div>
+        <div class="cb"><div class="cn">Check Raspy Downstairs</div><div class="cd">Checks Raspberry Pi / downstairs connection status.</div><div class="tags"><span class="tag tb">NETWORK</span><span class="tag td">RASPY</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/CHECK%20NETWORK%20THEN%20OPEN%20CASINO.command')">
+        <div class="ci" style="background:rgba(230,57,70,.12)">🎰</div>
+        <div class="cb"><div class="cn">Check Network → Open Casino</div><div class="cd">Network check then launches Casino if clear.</div><div class="tags"><span class="tag tr">CASINO</span><span class="tag tb">NETWORK</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/GOAT%20TOUCH%20ANY%20SCREEN.command')">
+        <div class="ci" style="background:rgba(0,212,255,.12)">📱</div>
+        <div class="cb"><div class="cn">GOAT Touch Any Screen</div><div class="cd">Enables touch interface on any connected screen.</div><div class="tags"><span class="tag tc">TOUCH</span></div></div>
+      </div>
+
+      <!-- MODELS -->
+      <div class="card p" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/DOWNLOAD%20ALL%2053%20LOCAL%20MODELS.command')">
+        <div class="ci" style="background:rgba(167,139,250,.15)">🦙</div>
+        <div class="cb"><div class="cn">Download All 53 Local Models</div><div class="cd">Pulls all 53 Ollama models to local storage on the drive.</div><div class="tags"><span class="tag tp">53 MODELS</span><span class="tag tp">OLLAMA</span></div></div>
+      </div>
+      <div class="card p" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/RESUME-LLM-DOWNLOADS.command')">
+        <div class="ci" style="background:rgba(167,139,250,.12)">⏩</div>
+        <div class="cb"><div class="cn">Resume LLM Downloads</div><div class="cd">Resumes any paused model downloads.</div><div class="tags"><span class="tag tp">RESUME</span><span class="tag tp">LLM</span></div></div>
+      </div>
+      <div class="card p" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/PULL-CREATOR-PACK.command')">
+        <div class="ci" style="background:rgba(167,139,250,.12)">📦</div>
+        <div class="cb"><div class="cn">Pull Creator Pack</div><div class="cd">Downloads the full creator model and tool pack.</div><div class="tags"><span class="tag tp">CREATOR</span><span class="tag tp">PACK</span></div></div>
+      </div>
+      <div class="card p" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/STUDIO%20AGENT%20CLONER%20+%20MODEL%20DRIVE%20PICKER.command')">
+        <div class="ci" style="background:rgba(167,139,250,.15)">🔁</div>
+        <div class="cb"><div class="cn">Studio Agent Cloner + Model Picker</div><div class="cd">Clone studio agents and pick which model drive to use.</div><div class="tags"><span class="tag tp">CLONE</span><span class="tag tp">MODEL</span></div></div>
+      </div>
+
+      <!-- FIXES -->
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/FIX%20MACBOOK%20PRO%20ETHERNET%20LINK.command')">
+        <div class="ci" style="background:rgba(139,148,158,.1)">🔧</div>
+        <div class="cb"><div class="cn">Fix MacBook Pro Ethernet</div><div class="cd">Fixes Ethernet link on MacBook Pro.</div><div class="tags"><span class="tag td">FIX</span><span class="tag td">ETHERNET</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/REPAIR%20OSCAR%20PORTS%20ON%20UBUNTU%20DRIVE.command')">
+        <div class="ci" style="background:rgba(139,148,158,.1)">🔌</div>
+        <div class="cb"><div class="cn">Repair Oscar Ports · Ubuntu</div><div class="cd">Repairs Oscar port bindings on Ubuntu drive.</div><div class="tags"><span class="tag td">REPAIR</span><span class="tag td">UBUNTU</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/FIX%20OSCAR%20UPGRADE%20VISIBILITY.command')">
+        <div class="ci" style="background:rgba(139,148,158,.1)">👁️</div>
+        <div class="cb"><div class="cn">Fix Oscar Upgrade Visibility</div><div class="cd">Makes Oscar upgrade panel visible after updates.</div><div class="tags"><span class="tag td">FIX</span><span class="tag td">OSCAR</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/ADD%20AGENT-007%20FEATURES%20TO%20OSCAR.command')">
+        <div class="ci" style="background:rgba(212,160,60,.12)">➕</div>
+        <div class="cb"><div class="cn">Add Agent-007 Features to Oscar</div><div class="cd">Adds all Agent-007 advanced features into Oscar.</div><div class="tags"><span class="tag tg">UPGRADE</span><span class="tag tg">OSCAR</span></div></div>
+      </div>
+
+      <!-- STORAGE -->
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/SETUP%20WD%20CLOUD%20GOAT%20STORAGE.command')">
+        <div class="ci" style="background:rgba(88,166,255,.12)">☁️</div>
+        <div class="cb"><div class="cn">Setup WD Cloud GOAT Storage</div><div class="cd">Sets up WD My Cloud EX4100 integration with GOAT system.</div><div class="tags"><span class="tag tb">WD CLOUD</span><span class="tag tb">STORAGE</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/LINK%20WD%20CLOUD%20STORAGE%20TO%20GOAT%20SERVER.command')">
+        <div class="ci" style="background:rgba(88,166,255,.12)">🔗</div>
+        <div class="cb"><div class="cn">Link WD Cloud to Server</div><div class="cd">Links WD Cloud storage to GOAT server for remote access.</div><div class="tags"><span class="tag tb">WD CLOUD</span><span class="tag tb">SERVER</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/COPY%20LATEST%20GOAT%20PACKAGE%20TO%20WD.command')">
+        <div class="ci" style="background:rgba(88,166,255,.12)">📤</div>
+        <div class="cb"><div class="cn">Copy Latest GOAT Package to WD</div><div class="cd">Copies the latest built GOAT package to WD cloud backup.</div><div class="tags"><span class="tag tb">BACKUP</span><span class="tag tb">WD</span></div></div>
+      </div>
+
+      <!-- MISC -->
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Reset%20Client%20Chats.command')">
+        <div class="ci" style="background:rgba(139,148,158,.1)">🗑️</div>
+        <div class="cb"><div class="cn">Reset Client Chats</div><div class="cd">Clears all client chat history and session data.</div><div class="tags"><span class="tag td">RESET</span><span class="tag td">CHATS</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/CHECK%20OSCAR%20AGENT007%20IDENTITY%20SEPARATION.command')">
+        <div class="ci" style="background:rgba(230,57,70,.12)">🆔</div>
+        <div class="cb"><div class="cn">Check Oscar/007 Identity Separation</div><div class="cd">Verifies Oscar and Agent-007 are properly separated identities.</div><div class="tags"><span class="tag tr">IDENTITY</span><span class="tag tr">VERIFY</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEPLOY -->
+  <div id="deploy" class="sec">
+    <div class="sec-head"><span class="ico">🚀</span><h2>Deploy — Click to Copy Commands</h2><span class="cnt">6 commands</span></div>
+    <div class="grid">
+      <div class="card g" onclick="copy('bash \"/Volumes/i2i 1/Agent-007-GOAT/DEPLOY GOAT ROYALTY + AGENT-007 TO UBUNTU.command\"')">
+        <div class="ci" style="background:rgba(63,185,80,.15)">🚀</div>
+        <div class="cb"><div class="cn">Deploy GOAT + Agent-007 → Ubuntu</div><div class="cd">Builds package from drive, uploads + installs to Hostinger VPS. Prompts for target.</div><div class="tags"><span class="tag tgr">COPY CMD</span><span class="tag tb">VPS</span></div></div>
+      </div>
+      <div class="card" onclick="copy('bash \"/Volumes/i2i 1/Agent-007-GOAT/DEPLOY GOAT LIVING EPK TO SERVER.command\"')">
+        <div class="ci" style="background:rgba(212,160,60,.15)">📊</div>
+        <div class="cb"><div class="cn">Deploy Living EPK → Server</div><div class="cd">Deploys investor EPK to live server.</div><div class="tags"><span class="tag tg">COPY CMD</span><span class="tag tg">EPK</span></div></div>
+      </div>
+      <div class="card" onclick="copy('bash \"/Volumes/i2i 1/Agent-007-GOAT/PREPARE GOAT CITY RP SERVER PACKAGE.command\"')">
+        <div class="ci" style="background:rgba(230,57,70,.15)">🎮</div>
+        <div class="cb"><div class="cn">Prepare GOAT City RP Package</div><div class="cd">Packages GTA FiveM GOAT City RP server for deployment.</div><div class="tags"><span class="tag tg">COPY CMD</span><span class="tag tr">FIVEM</span></div></div>
+      </div>
+      <div class="card" onclick="copy('ssh root@72.61.193.184')">
+        <div class="ci" style="background:rgba(88,166,255,.12)">🔒</div>
+        <div class="cb"><div class="cn">SSH → Server 2 (72.61.193.184)</div><div class="cd">Direct SSH to Ubuntu server. SSH key works.</div><div class="tags"><span class="tag tg">COPY CMD</span><span class="tag tgr">SSH OK</span></div></div>
+      </div>
+      <a href="http://2.25.68.216" target="_blank" class="card g">
+        <div class="ci" style="background:rgba(63,185,80,.15)">🌐</div>
+        <div class="cb"><div class="cn">Production VPS · Live</div><div class="cd">2.25.68.216 · GOAT Royalty web app deployed.</div><div class="tags"><span class="tag tgr">LIVE</span><span class="tag tgr">PRODUCTION</span></div></div>
+      </a>
+      <div class="card" onclick="copy('bash \"/Volumes/i2i 1/Agent-007-GOAT/SETUP GOAT SERVER SSH KEY.command\"')">
+        <div class="ci" style="background:rgba(212,160,60,.12)">🔑</div>
+        <div class="cb"><div class="cn">Setup GOAT Server SSH Key</div><div class="cd">Installs your SSH key on the server for passwordless login.</div><div class="tags"><span class="tag tg">COPY CMD</span><span class="tag tg">SSH KEY</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVER LIVE PAGES -->
+  <div id="server" class="sec">
+    <div class="sec-head"><span class="ico">🌐</span><h2>Server 2 · 72.61.193.184 · 249 Pages Live</h2></div>
+    <div class="grid grid-wide">
+      <a href="http://72.61.193.184" target="_blank" class="card g"><div class="ci" style="background:rgba(63,185,80,.15)">🌐</div><div class="cb"><div class="cn">GOAT Royalty · Home</div><div class="cd">Main live server. 249 HTML pages. Nginx port 80/443/8080.</div><div class="tags"><span class="tag tgr">LIVE</span><span class="tag tgr">PORT 80</span></div></div></a>
+      <a href="http://72.61.193.184/powerhouse.html" target="_blank" class="card g"><div class="ci" style="background:rgba(212,160,60,.15)">⚡</div><div class="cb"><div class="cn">Powerhouse</div><div class="cd">Full 65+ tool suite. Main hub on live server.</div><div class="tags"><span class="tag tgr">LIVE</span><span class="tag tg">FLAGSHIP</span></div></div></a>
+      <a href="http://72.61.193.184:8080" target="_blank" class="card b"><div class="ci" style="background:rgba(88,166,255,.15)">🏪</div><div class="cb"><div class="cn">GOAT Store · Port 8080</div><div class="cd">Investor/client store. Proxied AI brains on single port.</div><div class="tags"><span class="tag tgr">LIVE</span><span class="tag tb">:8080</span></div></div></a>
+      <a href="http://72.61.193.184:3335" target="_blank" class="card g"><div class="ci" style="background:rgba(63,185,80,.15)">🔫</div><div class="cb"><div class="cn">Agent-007 · Server 2</div><div class="cd">Just deployed. Ollama proxy. FastChatUI. Port 3335.</div><div class="tags"><span class="tag tgr">LIVE</span><span class="tag tgr">:3335</span></div></div></a>
+      <a href="http://72.61.193.184/api/intel/" target="_blank" class="card b"><div class="ci" style="background:rgba(88,166,255,.15)">🧠</div><div class="cb"><div class="cn">Intel Brain API</div><div class="cd">goat-intel.service · Money Penny crew brain proxied.</div><div class="tags"><span class="tag tgr">LIVE</span><span class="tag tgr">SYSTEMD</span></div></div></a>
+      <a href="http://72.61.193.184/agents-brain.html" target="_blank" class="card p"><div class="ci" style="background:rgba(167,139,250,.15)">🤖</div><div class="cb"><div class="cn">AI Agents Brain</div><div class="cd">11 agents live. Ollama: gemma2, qwen3.5, gemma4, llama3.2.</div><div class="tags"><span class="tag tgr">LIVE</span><span class="tag tp">11 AGENTS</span></div></div></a>
+      <a href="http://72.61.193.184/goat-apps.html" target="_blank" class="card"><div class="ci" style="background:rgba(212,160,60,.12)">📱</div><div class="cb"><div class="cn">All GOAT Apps Directory</div><div class="cd">Full app directory — all 249 pages.</div><div class="tags"><span class="tag tgr">LIVE</span></div></div></a>
+    </div>
+  </div>
+
+  <!-- GITHUB -->
+  <div id="github" class="sec">
+    <div class="sec-head"><span class="ico">🐙</span><h2>GitHub · DJSPEEDYGA</h2></div>
+    <div class="grid">
+      <a href="https://github.com/DJSPEEDYGA/GOAT-Royalty-App" target="_blank" class="card"><div class="ci" style="background:rgba(255,255,255,.05)">📦</div><div class="cb"><div class="cn">GOAT-Royalty-App</div><div class="cd">Main repo. Node.js backend. 86 HTML pages. All auth fixed. 26/26 tests pass.</div><div class="tags"><span class="tag tgr">26 TESTS ✓</span><span class="tag tgr">PUBLIC</span></div></div></a>
+      <a href="https://github.com/DJSPEEDYGA/GOAT-Royalty-App/tree/main/web-app" target="_blank" class="card"><div class="ci" style="background:rgba(88,166,255,.12)">🌐</div><div class="cb"><div class="cn">Web App Source</div><div class="cd">All 86 frontend pages. Gold theme. Deployed to both servers.</div><div class="tags"><span class="tag tb">WEB-APP</span></div></div></a>
+      <a href="https://github.com/DJSPEEDYGA/GOAT-Royalty-App/tree/main/src" target="_blank" class="card"><div class="ci" style="background:rgba(63,185,80,.12)">⚙️</div><div class="cb"><div class="cn">Backend API</div><div class="cd">Express routes, agents, middleware. All security fixes committed.</div><div class="tags"><span class="tag tgr">BACKEND</span></div></div></a>
+      <a href="https://github.com/DJSPEEDYGA/GOAT-Royalty-App/commits/main" target="_blank" class="card"><div class="ci" style="background:rgba(139,148,158,.1)">📝</div><div class="cb"><div class="cn">Commits</div><div class="cd">Latest: auth middleware fixes, crypto pages, security patches.</div><div class="tags"><span class="tag td">HISTORY</span></div></div></a>
+    </div>
+  </div>
+
+  <!-- HARDWARE -->
+  <div id="hardware" class="sec">
+    <div class="sec-head"><span class="ico">🖥️</span><h2>Hardware — Jetsons + Servers</h2></div>
+    <div class="grid grid-wide">
+      <div class="card c" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Jetson-Thor-Deploy-Kit/')">
+        <div class="ci" style="background:rgba(0,212,255,.15)">⚡</div>
+        <div class="cb"><div class="cn">Jetson Thor — Deploy Kit</div><div class="cd">AGX Thor setup kit. SDK Manager installed on server. Flash via USB-C recovery mode.</div><div class="tags"><span class="tag tc">JETSON</span><span class="tag tc">THOR</span><span class="tag tgr">SDK READY</span></div></div>
+      </div>
+      <div class="card c" onclick="copy('ssh root@72.61.193.184 sdkmanager --cli install --product Jetson')">
+        <div class="ci" style="background:rgba(0,212,255,.15)">🔧</div>
+        <div class="cb"><div class="cn">Flash Jetson AGX Orin</div><div class="cd">SDK Manager v2.4.1 installed on 72.61.193.184. Connect Jetson via USB-C in recovery mode then run.</div><div class="tags"><span class="tag tc">AGX ORIN</span><span class="tag tc">FLASH</span><span class="tag tgr">COPY CMD</span></div></div>
+      </div>
+      <div class="card c">
+        <div class="ci" style="background:rgba(0,212,255,.12)">🤖</div>
+        <div class="cb"><div class="cn">Jetson Nano</div><div class="cd">Flash via SD card. JetPack 6.x. Connect to host Ubuntu machine for SDK Manager flash.</div><div class="tags"><span class="tag tc">NANO</span><span class="tag td">SD CARD</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Thor/')">
+        <div class="ci" style="background:rgba(139,148,158,.1)">🖥️</div>
+        <div class="cb"><div class="cn">Thor · Threadripper Machine</div><div class="cd">Thor folder on drive. Local Ollama endpoint. Runs llama3:70b. Agent-007 home.</div><div class="tags"><span class="tag td">THOR</span><span class="tag tp">THREADRIPPER</span></div></div>
+      </div>
+      <div class="card g">
+        <div class="ci" style="background:rgba(63,185,80,.15)">💾</div>
+        <div class="cb"><div class="cn">Win11 Boot Drive · disk9</div><div class="cd">512GB · Writing Win11 25H2 ISO now via dd. Plug into laptop → install to 1TB internal.</div><div class="tags"><span class="tag td">WRITING…</span><span class="tag tgr">WIN11 25H2</span></div></div>
+      </div>
+      <div class="card b">
+        <div class="ci" style="background:rgba(88,166,255,.15)">🐧</div>
+        <div class="cb"><div class="cn">Ubuntu Drive · disk10 ✅</div><div class="cd">256GB Ubuntu flash drive. Complete. Boot any PC from it for Ubuntu install.</div><div class="tags"><span class="tag tgr">READY</span><span class="tag tb">UBUNTU</span></div></div>
+      </div>
+      <div class="card">
+        <div class="ci" style="background:rgba(139,148,158,.1)">🐧</div>
+        <div class="cb"><div class="cn">Ubuntu Drive · disk11 ⏳</div><div class="cd">248GB · Writing Ubuntu 24.04 LTS ISO now. Will be complete boot drive when done.</div><div class="tags"><span class="tag td">WRITING…</span><span class="tag tb">UBUNTU 24.04</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INVESTOR EPK -->
+  <div id="epk" class="sec">
+    <div class="sec-head"><span class="ico">💼</span><h2>Investor EPK — Ready to Send</h2><span class="cnt">391MB zip</span></div>
+    <div class="grid grid-wide">
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Investor-EPK/SEND-TO-INVESTORS/')">
+        <div class="ci" style="background:rgba(212,160,60,.2)">📤</div>
+        <div class="cb"><div class="cn">SEND TO INVESTORS — Ready Package</div><div class="cd">GOAT-Living-EPK-SEND-THIS-20260628 + ZIP. Final investor pack, ready to send right now.</div><div class="tags"><span class="tag tg">SEND NOW</span><span class="tag tgr">READY</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Investor-EPK/living-epk/index.html')">
+        <div class="ci" style="background:rgba(212,160,60,.15)">🌐</div>
+        <div class="cb"><div class="cn">Living EPK — Web Version</div><div class="cd">Interactive HTML investor EPK. Open in browser. Full pitch, catalog, agent demo.</div><div class="tags"><span class="tag tg">LIVING EPK</span><span class="tag tg">HTML</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Investor-EPK/Oscar-GOAT-Royalty-Investor-EPK-2026.docx')">
+        <div class="ci" style="background:rgba(88,166,255,.12)">📄</div>
+        <div class="cb"><div class="cn">Investor EPK — Word Doc</div><div class="cd">Oscar-GOAT-Royalty-Investor-EPK-2026.docx — full written deck.</div><div class="tags"><span class="tag tb">DOCX</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Investor-EPK/GOAT-VALUATION-MONEY-ROLLUP-20260628.md')">
+        <div class="ci" style="background:rgba(63,185,80,.12)">💰</div>
+        <div class="cb"><div class="cn">GOAT Valuation + Money Rollup</div><div class="cd">Full valuation breakdown and money rollup as of June 28 2026.</div><div class="tags"><span class="tag tgr">VALUATION</span><span class="tag tgr">MONEY</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Investor-EPK/rendered/')">
+        <div class="ci" style="background:rgba(167,139,250,.12)">🖼️</div>
+        <div class="cb"><div class="cn">Rendered Pages — 12 Slides</div><div class="cd">All 12 rendered investor deck pages as PNG. page-1 through page-12 + contact sheet.</div><div class="tags"><span class="tag tp">12 SLIDES</span><span class="tag tp">PNG</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Investor-EPK.zip')">
+        <div class="ci" style="background:rgba(212,160,60,.12)">📦</div>
+        <div class="cb"><div class="cn">Investor EPK — Full ZIP</div><div class="cd">391MB complete investor package ZIP. Share or archive.</div><div class="tags"><span class="tag td">391MB ZIP</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LLM FOLDERS -->
+  <div id="llm" class="sec">
+    <div class="sec-head"><span class="ico">🦙</span><h2>LLM — Models, Training, Portable AI</h2><span class="cnt">/Volumes/i2i 1/Agent-007-GOAT/LLM</span></div>
+    <div class="grid grid-wide">
+      <div class="card p" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/LLM/Training-Corpus/')">
+        <div class="ci" style="background:rgba(167,139,250,.15)">📚</div>
+        <div class="cb"><div class="cn">Training Corpus</div><div class="cd">Agent-007 training docs: Pro Tools, FL Studio, Wooh, Studio Security, Touch Screen, Trap Style Bible, Fine-Tune curriculum + video lessons.</div><div class="tags"><span class="tag tp">TRAINING</span><span class="tag tp">CORPUS</span><span class="tag td">MD + MP4</span></div></div>
+      </div>
+      <div class="card p" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/LLM/Training-Corpus/Fine-Tune-LLMs/')">
+        <div class="ci" style="background:rgba(167,139,250,.15)">🎓</div>
+        <div class="cb"><div class="cn">Fine-Tune LLMs — Video Course</div><div class="cd">20+ video lessons: Fine-tune Wikipedia, Customer Care, Chat Model, Synthetic Data, Classification. Full curriculum.</div><div class="tags"><span class="tag tp">FINE-TUNE</span><span class="tag tp">20+ VIDEOS</span></div></div>
+      </div>
+      <div class="card b" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/LLM/OSCAR-THOR-ONE-FOLDER/')">
+        <div class="ci" style="background:rgba(88,166,255,.15)">🖥️</div>
+        <div class="cb"><div class="cn">Oscar-Thor One Folder</div><div class="cd">Complete Oscar + Thor setup in one folder. GOAT-Royalty-App, GOAT-Royalty-USB, crew, data, image-runtimes, build scripts.</div><div class="tags"><span class="tag tb">OSCAR</span><span class="tag tb">THOR</span><span class="tag tb">ALL-IN-ONE</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/LLM/USB-Uncensored-LLM-main/')">
+        <div class="ci" style="background:rgba(230,57,70,.15)">🔓</div>
+        <div class="cb"><div class="cn">USB Uncensored LLM</div><div class="cd">Full uncensored LLM USB build. LM Studio, models, launchers, AnythingLLM, Portable AI, GOAT Royalty App backup, animated GOAT videos.</div><div class="tags"><span class="tag tr">UNCENSORED</span><span class="tag tr">USB</span><span class="tag td">LM STUDIO</span></div></div>
+      </div>
+      <div class="card g" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/LLM/Portable-AI-USB-main/')">
+        <div class="ci" style="background:rgba(63,185,80,.15)">💾</div>
+        <div class="cb"><div class="cn">Portable AI USB</div><div class="cd">Full portable AI setup. Ollama, AnythingLLM, NextJS commerce builds, NHQM, models, linux + windows installers.</div><div class="tags"><span class="tag tgr">PORTABLE</span><span class="tag tgr">USB</span><span class="tag tgr">CROSS-PLATFORM</span></div></div>
+      </div>
+      <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/LLM/Training/')">
+        <div class="ci" style="background:rgba(167,139,250,.12)">🏋️</div>
+        <div class="cb"><div class="cn">Training Folder</div><div class="cd">Fine-tune LLM training materials and datasets.</div><div class="tags"><span class="tag tp">TRAINING</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JETSON -->
+  <div id="jetson" class="sec">
+    <div class="sec-head"><span class="ico">⚡</span><h2>Jetson Flash — ISO + SDK Manager</h2></div>
+    <div class="grid grid-wide">
+      <div class="card c">
+        <div class="ci" style="background:rgba(0,212,255,.15)">💿</div>
+        <div class="cb"><div class="cn">Jetson Installer ISO — r39.2.0</div><div class="cd">jetsoninstaller-r39.2.0-2026-06-01 (arm64) · 4.7GB · JetPack flash image for AGX Orin/Thor.</div><div class="tags"><span class="tag tc">4.7GB ISO</span><span class="tag tc">ARM64</span><span class="tag tc">r39.2.0</span></div></div>
+      </div>
+      <div class="card c" onclick="copy('ssh root@72.61.193.184 \"sdkmanager --version\"')">
+        <div class="ci" style="background:rgba(0,212,255,.15)">✅</div>
+        <div class="cb"><div class="cn">SDK Manager · Server 2 — INSTALLED</div><div class="cd">NVIDIA SDK Manager v2.4.1 installed on 72.61.193.184. Ready to flash. Connect Jetson via USB-C in recovery mode.</div><div class="tags"><span class="tag tgr">v2.4.1 READY</span><span class="tag tc">COPY CMD</span></div></div>
+      </div>
+      <div class="card c" onclick="copy('ssh root@72.61.193.184 \"sdkmanager --cli install --logintype devzone --product Jetson --target JETSON_AGX_ORIN_TARGETS --targetos Linux --version 6.2 --host --downloads /root/nvidia/sdkm_downloads --log /root/nvidia/logs\"')">
+        <div class="ci" style="background:rgba(0,212,255,.2)">🚀</div>
+        <div class="cb"><div class="cn">Flash Jetson AGX Orin — CLI Command</div><div class="cd">Full SDK Manager CLI flash command for AGX Orin. Put Jetson in recovery → connect USB-C to server → run this.</div><div class="tags"><span class="tag tc">COPY CMD</span><span class="tag tc">AGX ORIN</span><span class="tag tc">JetPack 6.2</span></div></div>
+      </div>
+      <div class="card c" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Jetson-Thor-Deploy-Kit/scripts/check_jetson_recovery.sh')">
+        <div class="ci" style="background:rgba(0,212,255,.12)">🔍</div>
+        <div class="cb"><div class="cn">Check Jetson Recovery Mode</div><div class="cd">Run this script to verify Jetson is detected in recovery mode before flashing.</div><div class="tags"><span class="tag tc">CHECK</span><span class="tag tc">RECOVERY</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GOAT WEB APP TOOLS -->
+  <div id="tools" class="sec">
+    <div class="sec-head"><span class="ico">🎛️</span><h2>GOAT Web App · All Tools</h2><span class="cnt">86 pages</span></div>
+    <div class="grid">
+      <a href="powerhouse.html" class="card"><div class="ci" style="background:rgba(212,160,60,.15)">⚡</div><div class="cb"><div class="cn">Powerhouse</div><div class="cd">Main hub — all 65+ tools in one place.</div><div class="tags"><span class="tag tg">FLAGSHIP</span></div></div></a>
+      <a href="studio.html" class="card r"><div class="ci" style="background:rgba(230,57,70,.12)">🎙️</div><div class="cb"><div class="cn">Recording Studio</div><div class="cd">Multi-track, SSL signal chain, real-time monitoring.</div><div class="tags"><span class="tag tr">STUDIO</span></div></div></a>
+      <a href="beat-maker.html" class="card"><div class="ci" style="background:rgba(212,160,60,.12)">🎵</div><div class="cb"><div class="cn">Beat Maker</div><div class="cd">FL Studio-style. Step sequencer, 16 channels.</div><div class="tags"><span class="tag tg">PRO</span></div></div></a>
+      <a href="ssl-mixer.html" class="card"><div class="ci" style="background:rgba(212,160,60,.12)">🎚️</div><div class="cb"><div class="cn">SSL 32-Channel Mixer</div><div class="cd">32-channel SSL 9000 emulation.</div><div class="tags"><span class="tag tg">32CH</span></div></div></a>
+      <a href="mastering.html" class="card b"><div class="ci" style="background:rgba(88,166,255,.12)">💿</div><div class="cb"><div class="cn">AI Mastering Suite</div><div class="cd">Ozone-style dynamics, loudness targeting.</div><div class="tags"><span class="tag tb">AI</span></div></div></a>
+      <a href="vocal-studio.html" class="card p"><div class="ci" style="background:rgba(167,139,250,.12)">🎤</div><div class="cb"><div class="cn">Vocal Studio</div><div class="cd">Auto-Tune, harmony, compression, reverb.</div><div class="tags"><span class="tag tp">VOCAL</span></div></div></a>
+      <a href="autopilot.html" class="card g"><div class="ci" style="background:rgba(63,185,80,.12)">🤖</div><div class="cb"><div class="cn">Autopilot Agent</div><div class="cd">Full automation. Runs tasks while you sleep.</div><div class="tags"><span class="tag tgr">AUTO</span></div></div></a>
+      <a href="royalty-calc.html" class="card"><div class="ci" style="background:rgba(212,160,60,.12)">💰</div><div class="cb"><div class="cn">Royalty Calculator</div><div class="cd">DSP earnings, sync, mechanical with precision.</div><div class="tags"><span class="tag tg">MONEY</span></div></div></a>
+      <a href="catalog.html" class="card b"><div class="ci" style="background:rgba(88,166,255,.12)">📁</div><div class="cb"><div class="cn">Catalog Manager</div><div class="cd">ISRC, ISWC, UPC. 2,980 entries. CWR export.</div><div class="tags"><span class="tag tb">CATALOG</span></div></div></a>
+      <a href="distribution.html" class="card g"><div class="ci" style="background:rgba(63,185,80,.12)">🌍</div><div class="cb"><div class="cn">Distribution</div><div class="cd">Spotify, Apple, Tidal + 50 DSPs.</div><div class="tags"><span class="tag tgr">DSP</span></div></div></a>
+      <a href="goat-crypto-wallet.html" class="card"><div class="ci" style="background:rgba(212,160,60,.12)">💎</div><div class="cb"><div class="cn">Crypto Wallet</div><div class="cd">Multi-chain. ETH, BTC, SOL, GOAT Token.</div><div class="tags"><span class="tag tg">WEB3</span></div></div></a>
+      <a href="goat-nft-studio.html" class="card p"><div class="ci" style="background:rgba(167,139,250,.12)">🖼️</div><div class="cb"><div class="cn">NFT Studio</div><div class="cd">Mint, buy, sell. ETH, Polygon, Solana.</div><div class="tags"><span class="tag tp">NFT</span></div></div></a>
+      <a href="goat-virtual-world-rp.html" class="card r"><div class="ci" style="background:rgba(230,57,70,.12)">🎮</div><div class="cb"><div class="cn">GOAT City RP</div><div class="cd">FiveM virtual world roleplay. GTA RP server.</div><div class="tags"><span class="tag tr">FIVEM</span><span class="tag tr">RP</span></div></div></a>
+      <a href="touch-hub.html" class="card c"><div class="ci" style="background:rgba(0,212,255,.12)">📱</div><div class="cb"><div class="cn">Touch Hub</div><div class="cd">iPad/Surface touch interface. MPC, mixer, piano.</div><div class="tags"><span class="tag tc">TOUCH</span></div></div></a>
+      <a href="agents-brain.html" class="card p"><div class="ci" style="background:rgba(167,139,250,.12)">🧠</div><div class="cb"><div class="cn">AI Brain — All 11 Agents</div><div class="cd">Moneypenny, Codex, Legal, A&R, CFO, Producer and more.</div><div class="tags"><span class="tag tp">11 AGENTS</span></div></div></a>
+      <a href="goat-command-center.html" class="card"><div class="ci" style="background:rgba(212,160,60,.15)">🎯</div><div class="cb"><div class="cn">Command Center</div><div class="cd">Full system command center with status dashboard.</div><div class="tags"><span class="tag tg">HUB</span></div></div></a>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<footer style="border-top:1px solid var(--line);padding:24px;text-align:center;color:var(--dim);font-size:12px;">
+  🐐 <span style="color:var(--gold);font-weight:700;">GOAT Force Records</span> · DJ Speedy (Harvey L. Miller Jr.) × Waka Flocka Flame · Agent-007 + Money Penny are personal original LLMs built by DJ Speedy
+</footer>
+
+<div id="toast">✅ Copied to clipboard!</div>
+
+<script>
+function copy(cmd){
+  navigator.clipboard.writeText(cmd).then(()=>{
+    const t=document.getElementById('toast');
+    t.style.display='block';
+    setTimeout(()=>t.style.display='none',2000);
+  });
+}
+// Check local intel brain
+fetch('http://localhost:5500/health',{signal:AbortSignal.timeout(2500)})
+  .then(r=>{document.getElementById('d-intel').className='dot '+(r.ok?'dg':'dr');})
+  .catch(()=>{document.getElementById('d-intel').className='dot dr';});
+</script>
+</body>
+</html>

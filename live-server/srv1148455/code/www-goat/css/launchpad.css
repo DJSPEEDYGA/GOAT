@@ -1,0 +1,395 @@
+:root {
+  --lp-bg: #030609;
+  --lp-panel: rgba(13, 20, 32, 0.85);
+  --lp-gold: #d4a03c;
+  --lp-gold-light: #e8b84b;
+  --lp-text: #f0ece4;
+  --lp-text-secondary: #c8c0b0;
+  --lp-muted: #8a8070;
+  --lp-border: rgba(212, 160, 60, 0.14);
+  --lp-radius: 16px;
+  --lp-shadow: 0 4px 24px rgba(0, 0, 0, 0.55);
+}
+
+* { box-sizing: border-box; }
+
+body.lp-body {
+  margin: 0;
+  background: var(--lp-bg);
+  color: var(--lp-text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+}
+
+.lp-hero {
+  padding: 64px 24px 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--lp-border);
+}
+
+.lp-hero::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(212, 160, 60, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.lp-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.lp-logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.lp-logo-row img {
+  height: 48px;
+  width: auto;
+}
+
+.lp-hero h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  margin: 0 0 12px;
+  background: linear-gradient(135deg, var(--lp-gold-light), var(--lp-gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.lp-hero p {
+  color: var(--lp-text-secondary);
+  font-size: 1.1rem;
+  max-width: 640px;
+  margin: 0 auto 28px;
+  line-height: 1.5;
+}
+
+.lp-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.lp-stat {
+  background: var(--lp-panel);
+  border: 1px solid var(--lp-border);
+  border-radius: 12px;
+  padding: 14px 22px;
+  min-width: 140px;
+}
+
+.lp-stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--lp-gold-light);
+  line-height: 1;
+}
+
+.lp-stat-label {
+  font-size: 0.75rem;
+  color: var(--lp-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 6px;
+}
+
+.lp-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.lp-category {
+  margin-bottom: 48px;
+}
+
+.lp-category-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--lp-text);
+  margin: 0 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--lp-border);
+}
+
+.lp-category-title span {
+  font-size: 1.3rem;
+}
+
+.lp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+@media (min-width: 1200px) {
+  .lp-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .lp-grid { grid-template-columns: 1fr; }
+}
+
+.lp-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--lp-panel);
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius);
+  padding: 22px;
+  text-decoration: none;
+  color: var(--lp-text);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.lp-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--lp-gold), var(--lp-gold-light));
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.lp-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--lp-gold);
+  box-shadow: var(--lp-shadow), 0 0 40px rgba(212, 160, 60, 0.10);
+}
+
+.lp-card:hover::before { opacity: 1; }
+
+.lp-card-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 16px;
+  background: rgba(212, 160, 60, 0.08);
+  border: 1px solid rgba(212, 160, 60, 0.18);
+}
+
+.lp-card h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--lp-text);
+}
+
+.lp-card p {
+  font-size: 0.85rem;
+  color: var(--lp-muted);
+  line-height: 1.45;
+  margin: 0 0 16px;
+  flex: 1;
+}
+
+.lp-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--lp-muted);
+}
+
+.lp-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(46, 204, 113, 0.10);
+  color: #2ecc71;
+  font-weight: 600;
+}
+
+.lp-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2ecc71;
+  box-shadow: 0 0 8px #2ecc71;
+}
+
+.lp-arrow {
+  color: var(--lp-gold);
+  font-size: 1.1rem;
+  transition: transform 0.2s ease;
+}
+
+.lp-card:hover .lp-arrow { transform: translateX(4px); }
+
+.lp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--lp-border);
+  background: rgba(3, 6, 9, 0.85);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.lp-nav a {
+  color: var(--lp-text-secondary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s ease;
+}
+
+.lp-nav a:hover { color: var(--lp-gold-light); }
+
+.lp-footer {
+  text-align: center;
+  padding: 32px 24px;
+  color: var(--lp-muted);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--lp-border);
+}
+
+/* ================================================================
+   👑 MS. MONEY PENNY — POP OUT HERO
+   ================================================================ */
+.mp-hero-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 2;
+}
+
+.mp-hero-glow {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(212, 160, 60, 0.35) 0%, rgba(212, 160, 60, 0.08) 40%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(20px);
+  animation: mpPulse 4s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes mpPulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+.mp-hero-logo {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  border-radius: 24px;
+  filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 40px rgba(212, 160, 60, 0.35));
+  animation: mpFloat 5s ease-in-out infinite, mpTilt 8s ease-in-out infinite;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.mp-hero-logo:hover {
+  transform: scale(1.08) rotate(2deg);
+  filter: drop-shadow(0 20px 48px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 60px rgba(212, 160, 60, 0.55));
+}
+
+@keyframes mpFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-18px); }
+}
+
+@keyframes mpTilt {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+.mp-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 8px 18px;
+  border-radius: 30px;
+  background: rgba(212, 160, 60, 0.12);
+  border: 1px solid rgba(212, 160, 60, 0.35);
+  color: var(--lp-gold-light);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 0 24px rgba(212, 160, 60, 0.15);
+}
+
+.mp-hero-badge span {
+  font-size: 1.1rem;
+}
+
+.lp-card.featured {
+  background: linear-gradient(135deg, rgba(212, 160, 60, 0.12), rgba(13, 20, 32, 0.85));
+  border-color: rgba(212, 160, 60, 0.45);
+  box-shadow: 0 0 40px rgba(212, 160, 60, 0.12);
+  transform: scale(1.02);
+}
+
+.lp-card.featured:hover {
+  transform: scale(1.06) translateY(-4px);
+  box-shadow: 0 0 60px rgba(212, 160, 60, 0.25);
+}
+
+.lp-card.featured::before {
+  opacity: 1;
+}
+
+.lp-card.featured .lp-card-icon {
+  background: rgba(212, 160, 60, 0.18);
+  border-color: rgba(212, 160, 60, 0.35);
+  font-size: 2rem;
+}
+
+.lp-card.featured .lp-status {
+  background: rgba(212, 160, 60, 0.15);
+  color: var(--lp-gold-light);
+}
+
+.lp-card.featured .lp-status::before {
+  background: var(--lp-gold-light);
+  box-shadow: 0 0 8px var(--lp-gold-light);
+}
+
+@media (max-width: 600px) {
+  .mp-hero-logo { width: 140px; height: 140px; }
+  .mp-hero-glow { width: 240px; height: 240px; }
+}

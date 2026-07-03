@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waka Flocka Operations Hub | GOAT Force HQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --goat-gold: #FFD700;
+            --goat-purple: #8B5CF6;
+            --goat-dark: #0a0a0a;
+            --goat-accent: #FF6B00;
+            --waka-red: #FF3366;
+            --waka-orange: #FF6600;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a1a 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        
+        .glow-gold { 
+            text-shadow: 0 0 10px var(--goat-gold), 0 0 20px var(--goat-gold), 0 0 40px var(--goat-gold); 
+        }
+        
+        .glow-red {
+            text-shadow: 0 0 10px var(--waka-red), 0 0 20px var(--waka-red), 0 0 40px var(--waka-red);
+        }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(40, 20, 20, 0.9), rgba(20, 10, 10, 0.95));
+            border: 1px solid rgba(255, 51, 102, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(255, 215, 0, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(255, 51, 102, 0.1);
+        }
+        
+        .stat-card {
+            background: linear-gradient(145deg, rgba(255, 51, 102, 0.1), rgba(255, 102, 0, 0.1));
+            border: 1px solid rgba(255, 51, 102, 0.3);
+        }
+        
+        .crown-icon {
+            font-size: 3rem;
+            animation: crown-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes crown-glow {
+            0%, 100% { filter: drop-shadow(0 0 5px gold); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 20px gold); transform: scale(1.05); }
+        }
+        
+        .avatar-ring {
+            background: conic-gradient(var(--waka-red), var(--waka-orange), var(--goat-gold), var(--waka-red));
+            animation: rotate 4s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, var(--waka-red), var(--waka-orange), var(--goat-gold));
+            border-radius: 10px;
+            height: 8px;
+            transition: width 1s ease;
+        }
+        
+        .btn-royal {
+            background: linear-gradient(135deg, var(--waka-red), var(--waka-orange));
+            color: white;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-royal:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 51, 102, 0.4);
+        }
+        
+        .status-online {
+            background: #00FF88;
+            box-shadow: 0 0 10px #00FF88;
+        }
+        
+        .tour-date {
+            border-left: 3px solid var(--waka-red);
+            padding-left: 15px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .tour-date:hover {
+            border-left-color: var(--goat-gold);
+            background: rgba(255, 215, 0, 0.05);
+            margin-left: 5px;
+        }
+        
+        .fire-border {
+            position: relative;
+        }
+        
+        .fire-border::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--waka-red), var(--waka-orange), var(--goat-gold), var(--waka-red));
+            background-size: 400% 400%;
+            border-radius: 18px;
+            z-index: -1;
+            animation: fire-gradient 3s ease infinite;
+        }
+        
+        @keyframes fire-gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .floating-crowns {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .crown-particle {
+            position: absolute;
+            font-size: 20px;
+            opacity: 0.2;
+            animation: float-crown 20s infinite;
+        }
+        
+        @keyframes float-crown {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.2; }
+            90% { opacity: 0.2; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        .merch-item {
+            transition: all 0.3s ease;
+        }
+        
+        .merch-item:hover {
+            transform: scale(1.02);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Floating Crowns -->
+    <div class="floating-crowns" id="crowns"></div>
+    
+    <!-- Header -->
+    <header class="relative z-10 mb-8">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-4">
+                <div class="avatar-ring p-1 rounded-full">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center">
+                        <span class="text-3xl">👑</span>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-orbitron font-bold glow-red">WAKA FLOCKA FLAME</h1>
+                    <p class="text-gray-400">Operations Hub | King of the GOAT Force</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="crown-icon">👑</span>
+                <div>
+                    <div class="text-xs text-gray-400">KING STATUS</div>
+                    <div class="text-green-400 font-semibold">ACTIVE</div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Grid -->
+    <main class="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Column -->
+        <div class="space-y-6">
+            <!-- Royal Stats -->
+            <div class="card p-6 fire-border">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">👑 ROYAL STATS</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-red-400">500M+</div>
+                        <div class="text-gray-400 text-sm">Career Streams</div>
+                    </div>
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-orange-400">150+</div>
+                        <div class="text-gray-400 text-sm">Countries</div>
+                    </div>
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-yellow-400">50+</div>
+                        <div class="text-gray-400 text-sm">Collaborations</div>
+                    </div>
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-purple-400">∞</div>
+                        <div class="text-gray-400 text-sm">GOAT Status</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Royal Actions -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">⚡ ROYAL COMMANDS</h2>
+                <div class="space-y-3">
+                    <button class="btn-royal w-full" onclick="viewTourSchedule()">
+                        🎤 View Tour Schedule
+                    </button>
+                    <button class="btn-royal w-full" onclick="manageMerch()">
+                        👕 Manage Merch Store
+                    </button>
+                    <button class="btn-royal w-full" onclick="viewRoyalties()">
+                        💰 Check Royalties
+                    </button>
+                    <button class="btn-royal w-full" onclick="callNexus()">
+                        💜 Call Nexus
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Brand Partners -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🤝 BRAND PARTNERS</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <span>Brick Squad Monopoly</span>
+                        <span class="text-green-400 text-sm">Active</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <span>1017 Records</span>
+                        <span class="text-green-400 text-sm">Partner</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <span>GOAT Royalty App</span>
+                        <span class="text-yellow-400 text-sm">Building</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Center Column -->
+        <div class="space-y-6">
+            <!-- Tour Schedule -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🎤 TOUR SCHEDULE</h2>
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                    <div class="tour-date">
+                        <div class="font-semibold text-red-400">Atlanta, GA</div>
+                        <div class="text-sm text-gray-400">Tabernacle - Apr 25</div>
+                    </div>
+                    <div class="tour-date">
+                        <div class="font-semibold text-red-400">Miami, FL</div>
+                        <div class="text-sm text-gray-400">E11EVEN - May 2</div>
+                    </div>
+                    <div class="tour-date">
+                        <div class="font-semibold text-red-400">Los Angeles, CA</div>
+                        <div class="text-sm text-gray-400">The Novo - May 10</div>
+                    </div>
+                    <div class="tour-date">
+                        <div class="font-semibold text-red-400">New York, NY</div>
+                        <div class="text-sm text-gray-400">Terminal 5 - May 18</div>
+                    </div>
+                    <div class="tour-date">
+                        <div class="font-semibold text-red-400">Houston, TX</div>
+                        <div class="text-sm text-gray-400">Warehouse Live - May 25</div>
+                    </div>
+                </div>
+                <button class="btn-royal w-full mt-4" onclick="addTourDate()">
+                    + Add Tour Date
+                </button>
+            </div>
+            
+            <!-- Upcoming Releases -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🎵 UPCOMING RELEASES</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-600 rounded-lg flex items-center justify-center">
+                            🔥
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">New Single</div>
+                            <div class="text-xs text-gray-400">Coming Soon</div>
+                        </div>
+                        <div class="text-yellow-400 text-sm">75%</div>
+                    </div>
+                    <div class="flex items-center gap-4 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                            💜
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Collab Project</div>
+                            <div class="text-xs text-gray-400">In Progress</div>
+                        </div>
+                        <div class="text-yellow-400 text-sm">40%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Social Media Metrics -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📱 SOCIAL REACH</h2>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <div class="text-2xl font-orbitron font-bold text-blue-400">2.1M</div>
+                        <div class="text-xs text-gray-400">Instagram</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-orbitron font-bold text-sky-400">1.8M</div>
+                        <div class="text-xs text-gray-400">Twitter</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-orbitron font-bold text-red-400">850K</div>
+                        <div class="text-xs text-gray-400">YouTube</div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>Engagement Rate</span>
+                        <span class="text-green-400">8.5%</span>
+                    </div>
+                    <div class="bg-gray-800 rounded-full h-2">
+                        <div class="progress-bar" style="width: 85%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column -->
+        <div class="space-y-6">
+            <!-- GOAT Force Status -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🐐 GOAT FORCE STATUS</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                            🎧
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">DJ Speedy</div>
+                            <div class="text-xs text-gray-400">Commander</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                            💜
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Nexus</div>
+                            <div class="text-xs text-gray-400">PR Manager</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                            💎
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Money Penny</div>
+                            <div class="text-xs text-gray-400">Executive Assistant</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Merch Store Preview -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">👕 MERCH STORE</h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="merch-item bg-gray-900/50 rounded-xl p-3 text-center">
+                        <div class="text-3xl mb-2">👕</div>
+                        <div class="text-sm font-semibold">GOAT Tee</div>
+                        <div class="text-xs text-yellow-400">$35</div>
+                    </div>
+                    <div class="merch-item bg-gray-900/50 rounded-xl p-3 text-center">
+                        <div class="text-3xl mb-2">🧢</div>
+                        <div class="text-sm font-semibold">Crown Cap</div>
+                        <div class="text-xs text-yellow-400">$25</div>
+                    </div>
+                    <div class="merch-item bg-gray-900/50 rounded-xl p-3 text-center">
+                        <div class="text-3xl mb-2">👑</div>
+                        <div class="text-sm font-semibold">King Chain</div>
+                        <div class="text-xs text-yellow-400">$150</div>
+                    </div>
+                    <div class="merch-item bg-gray-900/50 rounded-xl p-3 text-center">
+                        <div class="text-3xl mb-2">🔥</div>
+                        <div class="text-sm font-semibold">Flame Hoodie</div>
+                        <div class="text-xs text-yellow-400">$65</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Royalty Recovery -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">💰 ROYALTY RECOVERY</h2>
+                <div class="text-center mb-4">
+                    <div class="text-4xl font-orbitron font-bold text-green-400">$2.7B+</div>
+                    <div class="text-gray-400 text-sm">In Unclaimed Royalties</div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>MLC Claims</span>
+                            <span class="text-cyan-400">In Progress</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 35%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>SoundExchange</span>
+                            <span class="text-cyan-400">Active</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="relative z-10 mt-8 text-center text-gray-500 text-sm">
+        <p>🐐 GOAT Royalty App | Waka Flocka Operations Hub</p>
+        <p class="text-xs mt-1">For The Kingdom. For The Code. For The Crown. 👑</p>
+    </footer>
+    
+    <script>
+        // Create floating crowns
+        function createCrowns() {
+            const container = document.getElementById('crowns');
+            for (let i = 0; i < 15; i++) {
+                const crown = document.createElement('div');
+                crown.className = 'crown-particle';
+                crown.textContent = '👑';
+                crown.style.left = Math.random() * 100 + '%';
+                crown.style.animationDelay = Math.random() * 20 + 's';
+                crown.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(crown);
+            }
+        }
+        createCrowns();
+        
+        // Action functions
+        function viewTourSchedule() {
+            alert('🎤 TOUR SCHEDULE\n\n📋 5 upcoming shows confirmed\n🌍 3 continents\n💰 Projected revenue: $500K+\n\nFull tour management available in app.');
+        }
+        
+        function manageMerch() {
+            alert('👕 MERCH STORE MANAGEMENT\n\n📦 24 products active\n💰 Monthly sales: $15K+\n🌍 Shipping to 50+ countries\n\nNew designs ready for approval!');
+        }
+        
+        function viewRoyalties() {
+            alert('💰 ROYALTY STATUS\n\n✅ ASCAP: Active\n✅ BMI: Linked\n✅ SoundExchange: Processing\n⏳ MLC: Pending verification\n\nTotal catalog value: Priceless 👑');
+        }
+        
+        function callNexus() {
+            const response = prompt('💜 Call Nexus\n\nSay something to Nexus:');
+            if (response) {
+                alert('Nexus: "Right here, King! What\'s good? I\'m ready to handle whatever you need." 💜');
+            }
+        }
+        
+        function addTourDate() {
+            alert('🎤 ADD TOUR DATE\n\nOpening tour date manager...\n\nFull booking system coming soon!');
+        }
+    </script>
+</body>
+</html>
