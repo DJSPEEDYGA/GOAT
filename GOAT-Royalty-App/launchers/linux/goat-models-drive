@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# GOAT — link your big Models Drive (set once, never re-download)
+set -u
+CONF_DIR="$HOME/.goat"
+CONF="$CONF_DIR/models-drive.txt"
+echo "  ============================================"
+echo "     GOAT ROYALTY  -  Link Models Drive"
+echo "  ============================================"
+echo
+if [ -f "$CONF" ]; then
+  echo "  Currently linked: $(head -n1 "$CONF")"
+  echo
+fi
+read -r -p "  New models drive path (e.g. /media/$USER/BigDrive/GOAT-Models): " MODELSDRIVE
+if [ -z "${MODELSDRIVE:-}" ]; then
+  echo "  Nothing entered - keeping current setting."
+  exit 0
+fi
+mkdir -p "$CONF_DIR" "$MODELSDRIVE/ollama" 2>/dev/null || true
+echo "$MODELSDRIVE" > "$CONF"
+echo
+echo "  [OK] Models Drive linked: $MODELSDRIVE"
+echo "       Ollama will store/read models at $MODELSDRIVE/ollama"
+echo "       (takes effect next time you start GOAT)"

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT City RP | GOAT Royalty</title>
+<meta name="description" content="GOAT City RP virtual-world command center for studio school, music economy, royalty missions, VIP events, and owner-approved FiveM server deployment.">
+<link rel="icon" href="favicon.ico">
+<style>
+:root{
+  --bg:#050608;
+  --panel:#0b1118;
+  --panel2:#111a24;
+  --ink:#f7f0df;
+  --muted:#93a4b6;
+  --gold:#f2b84b;
+  --gold2:#ffd36e;
+  --red:#ec4b4b;
+  --green:#41e69d;
+  --blue:#39c7ff;
+  --line:rgba(255,255,255,.12);
+  --shadow:0 24px 80px rgba(0,0,0,.44);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;background:linear-gradient(180deg,rgba(5,6,8,.64),rgba(5,6,8,.92) 68%,#050608),url("assets/goat-virtual-world-rp/images/goat-city-sky-hero.jpg") center/cover no-repeat;z-index:-2}
+body::after{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:64px 64px;mask-image:linear-gradient(180deg,rgba(0,0,0,.7),transparent 72%);z-index:-1}
+a{color:inherit}
+.topbar{position:sticky;top:0;z-index:20;height:66px;display:flex;align-items:center;gap:16px;padding:0 22px;background:rgba(5,6,8,.86);border-bottom:1px solid var(--line);backdrop-filter:blur(22px)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--gold2);white-space:nowrap}
+.brand img{width:38px;height:38px;border-radius:12px;object-fit:cover;border:1px solid rgba(242,184,75,.42)}
+.nav{display:flex;align-items:center;gap:6px;min-width:0;overflow:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{flex:0 0 auto;text-decoration:none;color:var(--muted);font-size:13px;padding:9px 11px;border-radius:9px;border:1px solid transparent}
+.nav a:hover,.nav a.active{color:var(--ink);border-color:rgba(242,184,75,.22);background:rgba(242,184,75,.08)}
+.shell{width:min(1440px,calc(100% - 32px));margin:0 auto;padding:26px 0 60px}
+.hero{display:grid;grid-template-columns:minmax(0,1.03fr) minmax(330px,.72fr);gap:18px;align-items:stretch;min-height:calc(100vh - 100px)}
+.command,.media-wall,.band,.console-panel{background:linear-gradient(180deg,rgba(17,26,36,.82),rgba(8,12,18,.86));border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(18px)}
+.command{border-radius:8px;padding:26px;display:flex;flex-direction:column;justify-content:space-between;min-height:560px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--gold2);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:800;margin-bottom:14px}
+.eyebrow::before{content:"";width:28px;height:3px;border-radius:999px;background:var(--gold)}
+h1{font-size:clamp(42px,7vw,96px);line-height:.92;margin:0 0 18px;letter-spacing:0;text-transform:uppercase}
+.lede{max-width:860px;color:#d8e1ea;font-size:clamp(17px,2vw,24px);line-height:1.45;margin:0 0 22px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.btn{border:1px solid rgba(242,184,75,.36);background:rgba(242,184,75,.1);color:var(--ink);min-height:42px;padding:11px 15px;border-radius:6px;font-weight:900;font-size:12px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;cursor:pointer}
+.btn.primary{background:linear-gradient(135deg,var(--gold2),#e38f22);color:#120b02;border-color:transparent}
+.status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:24px}
+.status{min-height:104px;border:1px solid rgba(255,255,255,.11);background:rgba(0,0,0,.28);border-radius:6px;padding:13px;display:flex;flex-direction:column;justify-content:space-between}
+.status b{font-size:22px;color:var(--gold2);letter-spacing:.04em}
+.status span{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.1em;line-height:1.35}
+.status.ok b{color:var(--green)}
+.status.warn b{color:var(--gold)}
+.status.lock b{color:var(--red)}
+.media-wall{border-radius:8px;overflow:hidden;display:grid;grid-template-rows:1.2fr .82fr}
+.media-main{position:relative;min-height:360px;background:url("assets/goat-virtual-world-rp/images/goat-royalty-recovery-command.jpg") center/cover no-repeat}
+.media-main::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.78))}
+.media-main div{position:absolute;left:18px;right:18px;bottom:18px}
+.media-main b{display:block;font-size:24px;line-height:1.05}
+.media-main span{display:block;color:#c7d2df;font-size:13px;margin-top:8px;max-width:430px}
+.portrait-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:#000}
+.portrait{min-height:170px;background:center/cover no-repeat;position:relative;display:flex;align-items:flex-end;padding:14px}
+.portrait::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.76))}
+.portrait b{position:relative;font-size:13px;text-transform:uppercase;letter-spacing:.13em}
+.bands{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:18px}
+.band{border-radius:8px;padding:22px}
+.band h2,.console-panel h2{font-size:24px;margin:0 0 14px;letter-spacing:0;text-transform:uppercase}
+.lane-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.lane{border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.035);border-radius:6px;padding:14px;min-height:170px}
+.lane b{display:block;color:var(--gold2);font-size:15px;margin-bottom:8px}
+.lane p{margin:0;color:#c5d0db;font-size:13px;line-height:1.48}
+.server-list{display:grid;gap:10px}
+.server{border:1px solid rgba(255,255,255,.11);background:rgba(0,0,0,.22);border-radius:6px;padding:13px}
+.server b{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--ink);font-size:14px}
+.server p{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.45}
+.tag{display:inline-flex;align-items:center;min-height:22px;border-radius:999px;padding:3px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.11em;background:rgba(57,199,255,.12);color:var(--blue);border:1px solid rgba(57,199,255,.28);white-space:nowrap}
+.tag.warn{background:rgba(242,184,75,.1);color:var(--gold2);border-color:rgba(242,184,75,.28)}
+.tag.lock{background:rgba(236,75,75,.11);color:#ff9b9b;border-color:rgba(236,75,75,.28)}
+.console{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.console-panel{border-radius:8px;padding:20px}
+.checklist{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.checklist li{display:flex;gap:10px;align-items:flex-start;border-bottom:1px solid rgba(255,255,255,.07);padding:9px 0;color:#d3dde7;font-size:13px;line-height:1.45}
+.checklist li::before{content:"";flex:0 0 9px;height:9px;margin-top:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 18px rgba(242,184,75,.5)}
+.codebox{min-height:150px;background:#020405;border:1px solid rgba(255,255,255,.11);border-radius:6px;padding:14px;color:#9effd0;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;overflow:auto}
+.footnote{margin-top:14px;color:var(--muted);font-size:12px;line-height:1.5}
+@media(max-width:1020px){.hero,.bands,.console{grid-template-columns:1fr}.command{min-height:auto}.lane-grid{grid-template-columns:repeat(2,1fr)}.status-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.topbar{height:auto;align-items:flex-start;flex-direction:column;padding:12px}.shell{width:min(100% - 20px,1440px);padding-top:12px}.command,.band,.console-panel{padding:16px}.lane-grid,.status-grid,.portrait-grid{grid-template-columns:1fr}h1{font-size:42px}.media-main{min-height:260px}}
+</style>
+  <link rel="stylesheet" href="css/goat-theme.css">
+  <link rel="stylesheet" href="css/goat-brand.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><img src="money-penny-logo.png" onerror="this.src='goat-logo.png'" alt="">GOAT City RP</a>
+  <nav class="nav" aria-label="GOAT City navigation">
+    <a href="index.html">Home</a>
+    <a href="goat-apps.html">Apps</a>
+    <a href="goat-cinema-forge.html">Cinema Forge</a>
+    <a href="unreal-copilot.html">Unreal</a>
+    <a href="studio.html">Studio</a>
+    <a href="ssl-mixer.html">SSL</a>
+    <a href="goat-casino.html">Casino</a>
+    <a class="active" href="goat-virtual-world-rp.html">GOAT City</a>
+  </nav>
+</header>
+
+<main class="shell">
+  <section class="hero" aria-label="GOAT City RP command">
+    <div class="command">
+      <div>
+        <div class="eyebrow">Virtual World Command</div>
+        <h1>GOAT City RP</h1>
+        <p class="lede">An original GOAT Royalty virtual city for studio school, music economy, royalty recovery missions, VIP events, creator commerce, and owner-approved FiveM server deployment.</p>
+        <div class="actions">
+          <a class="btn primary" href="#server-package">Server package</a>
+          <a class="btn" href="data/goat-virtual-world-rp.json">Open manifest</a>
+          <a class="btn" href="goat-cinema-forge.html">Cinema Forge</a>
+          <a class="btn" href="super-goat-royalties.html">Money engine</a>
+          <button class="btn" type="button" data-copy="connect 72.61.193.184:30120">Copy connect line</button>
+        </div>
+      </div>
+      <div>
+        <div class="status-grid" aria-label="Build status">
+          <div class="status ok"><b>Found</b><span>Reference FiveM scripts and lore</span></div>
+          <div class="status warn"><b>Pack</b><span>Server files prepared locally</span></div>
+          <div class="status lock"><b>Gate</b><span>No public live claim until verified</span></div>
+          <div class="status ok"><b>Local</b><span>GOAT app remains control center</span></div>
+        </div>
+        <p class="footnote">Public language stays original: GOAT City RP. FiveM/Cfx.re is an optional owner-approved compatibility lane, not the GOAT architecture center.</p>
+      </div>
+    </div>
+    <aside class="media-wall" aria-label="GOAT City media">
+      <div class="media-main">
+        <div>
+          <b>Royalty Recovery Data becomes playable.</b>
+          <span>Money Penny runs the financial command layer while AGENT-007 and Cody keep the local tools, server package, and studio workflows tight.</span>
+        </div>
+      </div>
+      <div class="portrait-grid">
+        <div class="portrait" style="background-image:url('assets/goat-virtual-world-rp/images/dj-speedy-billboard.webp')"><b>DJ Speedy</b></div>
+        <div class="portrait" style="background-image:url('assets/goat-virtual-world-rp/images/waka-billboard.webp')"><b>Waka</b></div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="bands" aria-label="Server and experience lanes">
+    <div class="band">
+      <h2>World Lanes</h2>
+      <div class="lane-grid" data-lanes>
+        <div class="lane"><b>Studio School</b><p>Five-room recording-school world for Pro Tools, FL Studio, mixing, songwriting, catalog prep, metadata, and release strategy.</p></div>
+        <div class="lane"><b>Royalty Missions</b><p>Story-driven ISRC, UPC, split-sheet, PRO, DSP, cue-sheet, sync, and payout review training powered by Money Penny.</p></div>
+        <div class="lane"><b>Brick Squad Events</b><p>Private listening parties, artist missions, livestream moments, and creator tournaments tied to approved catalog and media.</p></div>
+        <div class="lane"><b>Virtual Hardware</b><p>SSL room, Pro Tools room, FL Studio lab, vocal booth, MPC wall, and touch-screen surfaces as immersive training spaces.</p></div>
+        <div class="lane"><b>Creator Commerce</b><p>Merch, drops, VIP access, event tickets, licenses, and investor demos routed back to GOAT Royalty controls.</p></div>
+        <div class="lane"><b>Casino Night</b><p>VIP fun-play entertainment tie-in with real-money mode locked behind future legal and owner compliance gates.</p></div>
+      </div>
+    </div>
+    <div class="band">
+      <h2>Server Targets</h2>
+      <div class="server-list">
+        <div class="server"><b>Hostinger KVM 8 <span class="tag warn">main candidate</span></b><p>2.25.68.216. Stronger Ubuntu VPS candidate from owner notes. Needs SSH/key check and deployment approval.</p></div>
+        <div class="server"><b>Hostinger KVM 2 <span class="tag">legacy script</span></b><p>72.61.193.184. Existing reference scripts target this server. Package now separates live status from demo claims.</p></div>
+        <div class="server"><b>Thor / Threadripper <span class="tag lock">future home</span></b><p>Heavy model, render, local GPU, and long-context endpoint lane. GOAT City should talk to it through owner-controlled routes.</p></div>
+      </div>
+      <p class="footnote">No Cfx license key, txAdmin password, Rockstar login, banking key, or API key belongs in the app, git, PDF deck, or public dashboard.</p>
+    </div>
+  </section>
+
+  <section class="console" id="server-package" aria-label="Deployment console">
+    <div class="console-panel">
+      <h2>Launch Checklist</h2>
+      <ul class="checklist">
+        <li>Choose the real server target: KVM 8 for production or KVM 2 for legacy gaming tests.</li>
+        <li>Put the Cfx/FiveM license key and txAdmin password into server-only environment storage.</li>
+        <li>Deploy the GOAT City package, open ports, and verify health before the page says online.</li>
+        <li>Promote sanitized GOAT-owned assets only; keep GTA 6, Rockstar, and third-party terms as private reference language.</li>
+        <li>Confirm artist likeness and media rights before moving private DJ Speedy/Waka graphics into public investor or marketing builds.</li>
+      </ul>
+    </div>
+    <div class="console-panel">
+      <h2>Server Command</h2>
+      <div class="codebox" id="serverCommand">bash "/Volumes/i2i 1/Agent-007-GOAT/PREPARE GOAT CITY RP SERVER PACKAGE.command"
+
+# Then copy Deploy/goat-city-rp-server to the chosen Ubuntu VPS.
+# Add real secrets only on the server in .env.</div>
+      <div class="actions">
+        <button class="btn primary" type="button" data-copy-target="serverCommand">Copy command</button>
+        <a class="btn" href="data/goat-virtual-world-rp.json">Source manifest</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.left = "-9999px";
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+    document.execCommand("copy");
+    area.remove();
+    return Promise.resolve();
+  }
+  document.addEventListener("click", function (event) {
+    const direct = event.target.closest("[data-copy]");
+    const target = event.target.closest("[data-copy-target]");
+    if (!direct && !target) return;
+    const text = direct ? direct.dataset.copy : document.getElementById(target.dataset.copyTarget).textContent.trim();
+    copyText(text).then(function () {
+      const button = direct || target;
+      const old = button.textContent;
+      button.textContent = "Copied";
+      setTimeout(function () { button.textContent = old; }, 1100);
+    });
+  });
+}());
+</script>
+</body>
+</html>

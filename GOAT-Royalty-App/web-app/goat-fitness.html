@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Fitness Elite | Celebrity Workout Studio</title>
+<style>
+  :root {
+    --gold: #d4a03c; --gold2: #f5c842; --bg: #040608; --panel: #0d1117;
+    --panel2: #131920; --pink: #f472b6; --purple: #a78bfa; --green: #22c55e;
+    --red: #ef4444; --blue: #38bdf8; --orange: #fb923c;
+    --text: #e2e8f0; --muted: #64748b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* TOP NAV */
+  .topnav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 28px; background: rgba(13,17,23,0.95);
+    border-bottom: 1px solid rgba(212,160,60,0.3); position: sticky; top: 0; z-index: 100;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-logo span { font-size: 22px; font-weight: 900; background: linear-gradient(135deg, var(--gold), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .nav-links { display: flex; gap: 6px; }
+  .nav-links a { color: var(--muted); text-decoration: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; transition: all .3s; }
+  .nav-links a:hover, .nav-links a.active { background: rgba(212,160,60,0.15); color: var(--gold); }
+  .nav-right { display: flex; gap: 10px; align-items: center; }
+  .btn-gold { background: linear-gradient(135deg, var(--gold), #b8860b); color: #000; padding: 8px 20px; border: none; border-radius: 20px; font-weight: 700; cursor: pointer; font-size: 13px; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #040608 0%, #1a0d2e 50%, #040608 100%);
+    padding: 50px 28px 30px; text-align: center; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(212,160,60,0.15) 0%, transparent 70%);
+  }
+  .hero-badge { display: inline-block; background: linear-gradient(135deg, var(--green), #16a34a); color: #000; padding: 4px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 2px; margin-bottom: 16px; }
+  .hero h1 { font-size: 48px; font-weight: 900; line-height: 1.1; margin-bottom: 12px; }
+  .hero h1 span { background: linear-gradient(135deg, var(--gold), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { color: var(--muted); font-size: 16px; max-width: 600px; margin: 0 auto 24px; }
+  .hero-stats { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+  .hero-stat { text-align: center; }
+  .hero-stat .val { font-size: 28px; font-weight: 900; color: var(--gold); }
+  .hero-stat .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* LIVE METRICS */
+  .metrics-bar {
+    background: linear-gradient(90deg, rgba(34,197,94,0.1), rgba(212,160,60,0.1));
+    border-top: 1px solid rgba(34,197,94,0.2); border-bottom: 1px solid rgba(34,197,94,0.2);
+    padding: 12px 28px; overflow: hidden;
+  }
+  .metrics-scroll { display: flex; gap: 40px; animation: scrollLeft 30s linear infinite; white-space: nowrap; }
+  .metric-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .metric-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 1s infinite; }
+  @keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(1.5); } }
+
+  /* MAIN LAYOUT */
+  .main { display: grid; grid-template-columns: 300px 1fr; gap: 0; min-height: calc(100vh - 200px); }
+
+  /* SIDEBAR */
+  .sidebar { background: var(--panel); border-right: 1px solid rgba(255,255,255,0.05); padding: 20px; }
+  .sidebar-section { margin-bottom: 24px; }
+  .sidebar-title { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 12px; font-weight: 700; }
+
+  /* ACTIVE WORKOUT */
+  .active-workout {
+    background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(212,160,60,0.1));
+    border: 1px solid rgba(34,197,94,0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;
+  }
+  .workout-live { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 1s infinite; }
+  .live-text { font-size: 11px; color: var(--green); font-weight: 700; letter-spacing: 1px; }
+  .workout-name { font-size: 18px; font-weight: 800; color: var(--gold); margin-bottom: 4px; }
+  .workout-time { font-size: 32px; font-weight: 900; color: var(--text); font-family: monospace; }
+  .workout-progress { margin-top: 10px; background: rgba(255,255,255,0.1); border-radius: 4px; height: 6px; }
+  .workout-bar { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--green), var(--gold)); transition: width 1s; }
+
+  /* VITALS */
+  .vitals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .vital-card { background: var(--panel2); border-radius: 10px; padding: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+  .vital-icon { font-size: 20px; margin-bottom: 4px; }
+  .vital-val { font-size: 18px; font-weight: 800; }
+  .vital-lbl { font-size: 10px; color: var(--muted); }
+  .vital-card.heart .vital-val { color: var(--red); }
+  .vital-card.calories .vital-val { color: var(--orange); }
+  .vital-card.power .vital-val { color: var(--gold); }
+  .vital-card.speed .vital-val { color: var(--blue); }
+
+  /* MUSCLE MAP */
+  .muscle-map { background: var(--panel2); border-radius: 12px; padding: 16px; text-align: center; }
+  .muscle-figure { font-size: 64px; margin-bottom: 8px; filter: drop-shadow(0 0 12px rgba(212,160,60,0.5)); }
+  .muscle-tags { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 8px; }
+  .muscle-tag { background: rgba(212,160,60,0.15); color: var(--gold); font-size: 10px; padding: 3px 8px; border-radius: 10px; border: 1px solid rgba(212,160,60,0.3); }
+  .muscle-tag.active { background: rgba(34,197,94,0.2); color: var(--green); border-color: rgba(34,197,94,0.4); }
+
+  /* CONTENT AREA */
+  .content { padding: 24px; overflow-y: auto; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--panel); padding: 4px; border-radius: 12px; }
+  .tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; color: var(--muted); transition: all .3s; }
+  .tab.active { background: linear-gradient(135deg, var(--green), #16a34a); color: #000; }
+
+  /* WORKOUT PROGRAMS */
+  .programs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .program-card {
+    background: var(--panel); border-radius: 16px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: all .3s;
+  }
+  .program-card:hover { transform: translateY(-4px); border-color: var(--gold); }
+  .program-banner { height: 120px; display: flex; align-items: center; justify-content: center; font-size: 48px; position: relative; }
+  .program-banner.elite { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+  .program-banner.celeb { background: linear-gradient(135deg, #1a0533, #2d1b69); }
+  .program-banner.street { background: linear-gradient(135deg, #0f2027, #203a43); }
+  .program-banner.yoga { background: linear-gradient(135deg, #1a1a0f, #2d3319); }
+  .program-banner.hiit { background: linear-gradient(135deg, #1a0a0a, #2d1515); }
+  .program-banner.goat { background: linear-gradient(135deg, #1a1000, #2d2200); }
+  .program-badge { position: absolute; top: 10px; right: 10px; padding: 3px 10px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .badge-elite { background: var(--gold); color: #000; }
+  .badge-new { background: var(--green); color: #000; }
+  .badge-hot { background: var(--red); color: #fff; }
+  .badge-zen { background: var(--purple); color: #fff; }
+  .program-info { padding: 16px; }
+  .program-name { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+  .program-desc { font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.4; }
+  .program-meta { display: flex; gap: 12px; margin-bottom: 12px; }
+  .prog-meta { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+  .prog-meta span { color: var(--text); font-weight: 600; }
+  .program-progress-wrap { margin-bottom: 10px; }
+  .prog-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .prog-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; }
+  .prog-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--green), var(--gold)); }
+  .program-btn { width: 100%; padding: 10px; background: linear-gradient(135deg, var(--green), #16a34a); border: none; border-radius: 8px; color: #000; font-weight: 700; font-size: 13px; cursor: pointer; }
+  .program-btn:hover { opacity: .85; }
+
+  /* TODAY'S WORKOUT */
+  .workout-schedule { background: var(--panel); border-radius: 16px; padding: 20px; margin-bottom: 24px; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .section-title { font-size: 18px; font-weight: 800; }
+  .section-sub { font-size: 12px; color: var(--muted); }
+  .see-all { color: var(--gold); font-size: 13px; text-decoration: none; cursor: pointer; }
+  .exercise-list { display: flex; flex-direction: column; gap: 8px; }
+  .exercise-item {
+    display: grid; grid-template-columns: 40px 1fr auto auto;
+    align-items: center; gap: 12px;
+    background: var(--panel2); padding: 12px; border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .ex-num { width: 32px; height: 32px; border-radius: 50%; background: rgba(212,160,60,0.15); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--gold); }
+  .ex-name { font-size: 14px; font-weight: 600; }
+  .ex-detail { font-size: 11px; color: var(--muted); }
+  .ex-sets { font-size: 13px; font-weight: 700; color: var(--blue); text-align: right; }
+  .ex-done { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .3s; }
+  .ex-done.completed { background: var(--green); border-color: var(--green); }
+  .ex-done.completed::after { content: '✓'; color: #000; font-size: 12px; font-weight: 700; }
+
+  /* LEADERBOARD */
+  .leaderboard { background: var(--panel); border-radius: 16px; padding: 20px; margin-bottom: 24px; }
+  .leader-list { display: flex; flex-direction: column; gap: 8px; }
+  .leader-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--panel2); padding: 12px; border-radius: 10px;
+  }
+  .leader-rank { font-size: 18px; font-weight: 900; width: 32px; text-align: center; }
+  .rank-1 { color: var(--gold); }
+  .rank-2 { color: #c0c0c0; }
+  .rank-3 { color: #cd7f32; }
+  .leader-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 2px solid rgba(212,160,60,0.3); }
+  .leader-info { flex: 1; }
+  .leader-name { font-size: 14px; font-weight: 700; }
+  .leader-prog { font-size: 11px; color: var(--muted); }
+  .leader-score { font-size: 16px; font-weight: 800; color: var(--gold); }
+  .leader-badge { font-size: 20px; }
+
+  /* WEEKLY CHART */
+  .weekly-chart { background: var(--panel); border-radius: 16px; padding: 20px; margin-bottom: 24px; }
+  .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; margin-top: 16px; }
+  .chart-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .chart-bar { width: 100%; border-radius: 4px 4px 0 0; background: linear-gradient(to top, var(--green), rgba(34,197,94,0.4)); transition: height .5s ease; min-height: 4px; }
+  .chart-bar.gold { background: linear-gradient(to top, var(--gold), rgba(212,160,60,0.4)); }
+  .chart-bar.rest { background: rgba(255,255,255,0.08); }
+  .chart-label { font-size: 10px; color: var(--muted); }
+  .chart-val { font-size: 10px; color: var(--text); font-weight: 600; }
+  .chart-legend { display: flex; gap: 16px; margin-top: 8px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+
+  /* AI COACH */
+  .ai-coach { background: var(--panel); border-radius: 16px; overflow: hidden; }
+  .coach-header {
+    background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(212,160,60,0.2));
+    padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .coach-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--green), var(--gold)); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .coach-name { font-size: 16px; font-weight: 800; }
+  .coach-status { font-size: 11px; color: var(--green); }
+  .coach-body { height: 280px; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .chat-msg { display: flex; gap: 8px; }
+  .chat-msg.user { flex-direction: row-reverse; }
+  .chat-bubble { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.4; }
+  .chat-msg.ai .chat-bubble { background: var(--panel2); border: 1px solid rgba(34,197,94,0.2); }
+  .chat-msg.user .chat-bubble { background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(212,160,60,0.2)); }
+  .chat-input-wrap { padding: 12px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 8px; }
+  .chat-input { flex: 1; background: var(--panel2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 13px; }
+  .chat-input:focus { outline: none; border-color: var(--green); }
+  .chat-send { background: linear-gradient(135deg, var(--green), #16a34a); border: none; border-radius: 8px; padding: 10px 20px; color: #000; font-weight: 700; cursor: pointer; font-size: 13px; }
+
+  /* CHALLENGES */
+  .challenges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .challenge-card {
+    background: var(--panel); border-radius: 14px; padding: 16px;
+    border: 1px solid rgba(255,255,255,0.05); text-align: center; cursor: pointer; transition: all .3s;
+  }
+  .challenge-card:hover { transform: translateY(-3px); border-color: var(--purple); }
+  .challenge-icon { font-size: 36px; margin-bottom: 8px; }
+  .challenge-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .challenge-desc { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+  .challenge-reward { font-size: 12px; color: var(--gold); font-weight: 600; }
+  .challenge-progress { margin-top: 8px; background: rgba(255,255,255,0.08); height: 4px; border-radius: 2px; }
+  .challenge-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--purple), var(--pink)); }
+
+  /* NUTRITION */
+  .nutrition-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .nutrition-card { background: var(--panel); border-radius: 14px; padding: 16px; text-align: center; }
+  .nutri-icon { font-size: 28px; margin-bottom: 8px; }
+  .nutri-val { font-size: 22px; font-weight: 800; }
+  .nutri-lbl { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .nutri-bar { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; }
+  .nutri-fill { height: 100%; border-radius: 3px; }
+
+  @keyframes heartbeat { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+  .heartbeat { animation: heartbeat .8s infinite; display: inline-block; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .nutrition-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <a href="index.html" class="nav-logo">
+    <span>👑 GOAT</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Dashboard</a>
+    <a href="goat-health.html">Health</a>
+    <a href="goat-fitness.html" class="active">Fitness</a>
+    <a href="goat-fashion-hub.html">Fashion</a>
+    <a href="goat-celebrity-lounge.html">VIP Lounge</a>
+  </div>
+  <div class="nav-right">
+    <span style="color:var(--green);font-size:13px;">🔥 7-Day Streak</span>
+    <button class="btn-gold">Start Workout</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">ELITE FITNESS STUDIO</div>
+  <h1>GOAT <span>Fitness Elite</span></h1>
+  <p>Celebrity-grade workouts, AI coaching & real-time performance tracking</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="val">2,847</div><div class="lbl">Calories Burned</div></div>
+    <div class="hero-stat"><div class="val">94%</div><div class="lbl">Goal Progress</div></div>
+    <div class="hero-stat"><div class="val">🔥 7</div><div class="lbl">Day Streak</div></div>
+    <div class="hero-stat"><div class="val">$1,240</div><div class="lbl">Rewards Earned</div></div>
+    <div class="hero-stat"><div class="val">#3</div><div class="lbl">Leaderboard Rank</div></div>
+  </div>
+</div>
+
+<!-- LIVE METRICS BAR -->
+<div class="metrics-bar">
+  <div class="metrics-scroll" id="metricsScroll">
+    <span class="metric-item"><span class="metric-dot"></span>❤️ Heart Rate: <strong id="hrLive" style="color:var(--red)">142 BPM</strong></span>
+    <span class="metric-item"><span class="metric-dot"></span>🔥 Calories: <strong style="color:var(--orange)">847 kcal</strong></span>
+    <span class="metric-item"><span class="metric-dot"></span>👟 Steps: <strong style="color:var(--blue)">12,847</strong></span>
+    <span class="metric-item"><span class="metric-dot"></span>💪 Power Output: <strong style="color:var(--gold)">284W</strong></span>
+    <span class="metric-item"><span class="metric-dot"></span>⚡ VO2 Max: <strong style="color:var(--green)">58.4</strong></span>
+    <span class="metric-item"><span class="metric-dot"></span>🏃 Pace: <strong style="color:var(--purple)">6:24/mi</strong></span>
+    <span class="metric-item"><span class="metric-dot"></span>💧 Hydration: <strong style="color:var(--blue)">78%</strong></span>
+    <span class="metric-item"><span class="metric-dot"></span>😴 Recovery: <strong style="color:var(--green)">Optimal</strong></span>
+    <!-- duplicate for seamless loop -->
+    <span class="metric-item"><span class="metric-dot"></span>❤️ Heart Rate: <strong style="color:var(--red)">142 BPM</strong></span>
+    <span class="metric-item"><span class="metric-dot"></span>🔥 Calories: <strong style="color:var(--orange)">847 kcal</strong></span>
+    <span class="metric-item"><span class="metric-dot"></span>👟 Steps: <strong style="color:var(--blue)">12,847</strong></span>
+    <span class="metric-item"><span class="metric-dot"></span>💪 Power Output: <strong style="color:var(--gold)">284W</strong></span>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <!-- Active Workout -->
+    <div class="active-workout">
+      <div class="workout-live"><div class="live-dot"></div><div class="live-text">LIVE SESSION</div></div>
+      <div class="workout-name">💪 GOAT Body</div>
+      <div class="workout-time" id="workoutTimer">00:42:18</div>
+      <div class="workout-progress">
+        <div class="workout-bar" id="workoutBar" style="width:65%"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">Set 3 of 5 • Rest 45s</div>
+    </div>
+
+    <!-- Live Vitals -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">Live Vitals</div>
+      <div class="vitals-grid">
+        <div class="vital-card heart">
+          <div class="vital-icon"><span class="heartbeat">❤️</span></div>
+          <div class="vital-val" id="hrSide">142</div>
+          <div class="vital-lbl">BPM</div>
+        </div>
+        <div class="vital-card calories">
+          <div class="vital-icon">🔥</div>
+          <div class="vital-val">847</div>
+          <div class="vital-lbl">KCAL</div>
+        </div>
+        <div class="vital-card power">
+          <div class="vital-icon">⚡</div>
+          <div class="vital-val">284W</div>
+          <div class="vital-lbl">POWER</div>
+        </div>
+        <div class="vital-card speed">
+          <div class="vital-icon">🏃</div>
+          <div class="vital-val">8.4</div>
+          <div class="vital-lbl">MPH</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Muscle Map -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">Active Muscles</div>
+      <div class="muscle-map">
+        <div class="muscle-figure">🏋️</div>
+        <div class="muscle-tags">
+          <span class="muscle-tag active">Chest</span>
+          <span class="muscle-tag active">Triceps</span>
+          <span class="muscle-tag active">Shoulders</span>
+          <span class="muscle-tag">Back</span>
+          <span class="muscle-tag">Biceps</span>
+          <span class="muscle-tag">Core</span>
+          <span class="muscle-tag">Legs</span>
+          <span class="muscle-tag">Glutes</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Goals -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">Today's Goals</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Steps</span><span style="color:var(--gold)">12,847 / 15,000</span></div>
+          <div class="prog-bar"><div class="prog-fill" style="width:86%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Calories</span><span style="color:var(--orange)">847 / 1,200</span></div>
+          <div class="prog-bar"><div class="prog-fill" style="width:71%;background:linear-gradient(90deg,var(--orange),var(--gold))"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Active Min</span><span style="color:var(--blue)">68 / 90 min</span></div>
+          <div class="prog-bar"><div class="prog-fill" style="width:76%;background:linear-gradient(90deg,var(--blue),var(--purple))"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Workouts</span><span style="color:var(--green)">1 / 2</span></div>
+          <div class="prog-bar"><div class="prog-fill" style="width:50%"></div></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('programs',this)">Programs</div>
+      <div class="tab" onclick="switchTab('today',this)">Today</div>
+      <div class="tab" onclick="switchTab('challenges',this)">Challenges</div>
+      <div class="tab" onclick="switchTab('nutrition',this)">Nutrition</div>
+      <div class="tab" onclick="switchTab('leaderboard',this)">Leaderboard</div>
+      <div class="tab" onclick="switchTab('coach',this)">AI Coach</div>
+    </div>
+
+    <!-- PROGRAMS TAB -->
+    <div id="tab-programs">
+      <div class="programs-grid">
+        <div class="program-card">
+          <div class="program-banner elite">
+            🏆
+            <div class="program-badge badge-elite">ELITE</div>
+          </div>
+          <div class="program-info">
+            <div class="program-name">GOAT Body Transformation</div>
+            <div class="program-desc">12-week celebrity-grade transformation. Used by A-list performers and pro athletes.</div>
+            <div class="program-meta">
+              <div class="prog-meta">⏱ <span>12 Weeks</span></div>
+              <div class="prog-meta">🔥 <span>Advanced</span></div>
+              <div class="prog-meta">💪 <span>Full Body</span></div>
+            </div>
+            <div class="program-progress-wrap">
+              <div class="prog-label"><span>Week 4 of 12</span><span>33%</span></div>
+              <div class="prog-bar"><div class="prog-fill" style="width:33%"></div></div>
+            </div>
+            <button class="program-btn">Continue Training 💪</button>
+          </div>
+        </div>
+
+        <div class="program-card">
+          <div class="program-banner celeb">
+            🌟
+            <div class="program-badge badge-new">NEW</div>
+          </div>
+          <div class="program-info">
+            <div class="program-name">Celebrity Red Carpet</div>
+            <div class="program-desc">8-week program designed for red carpet readiness. Sculpt, tone & shine.</div>
+            <div class="program-meta">
+              <div class="prog-meta">⏱ <span>8 Weeks</span></div>
+              <div class="prog-meta">🔥 <span>Medium</span></div>
+              <div class="prog-meta">💃 <span>Sculpting</span></div>
+            </div>
+            <div class="program-progress-wrap">
+              <div class="prog-label"><span>Not Started</span><span>0%</span></div>
+              <div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div>
+            </div>
+            <button class="program-btn">Start Program ⭐</button>
+          </div>
+        </div>
+
+        <div class="program-card">
+          <div class="program-banner street">
+            🏃
+            <div class="program-badge badge-hot">HOT</div>
+          </div>
+          <div class="program-info">
+            <div class="program-name">Street Athlete Power</div>
+            <div class="program-desc">Urban-inspired HIIT & calisthenics. Build explosive power on any concrete.</div>
+            <div class="program-meta">
+              <div class="prog-meta">⏱ <span>6 Weeks</span></div>
+              <div class="prog-meta">⚡ <span>Intense</span></div>
+              <div class="prog-meta">🏙 <span>Anywhere</span></div>
+            </div>
+            <div class="program-progress-wrap">
+              <div class="prog-label"><span>Week 2 of 6</span><span>28%</span></div>
+              <div class="prog-bar"><div class="prog-fill" style="width:28%"></div></div>
+            </div>
+            <button class="program-btn">Resume 🔥</button>
+          </div>
+        </div>
+
+        <div class="program-card">
+          <div class="program-banner yoga">
+            🧘
+            <div class="program-badge badge-zen">ZEN</div>
+          </div>
+          <div class="program-info">
+            <div class="program-name">Mindful Recovery & Yoga</div>
+            <div class="program-desc">Holistic recovery program combining yoga, meditation & breathwork for peak performers.</div>
+            <div class="program-meta">
+              <div class="prog-meta">⏱ <span>30 Days</span></div>
+              <div class="prog-meta">🌿 <span>Beginner</span></div>
+              <div class="prog-meta">🧠 <span>Mind+Body</span></div>
+            </div>
+            <div class="program-progress-wrap">
+              <div class="prog-label"><span>Day 12 of 30</span><span>40%</span></div>
+              <div class="prog-bar"><div class="prog-fill" style="width:40%;background:linear-gradient(90deg,var(--purple),var(--pink))"></div></div>
+            </div>
+            <button class="program-btn" style="background:linear-gradient(135deg,var(--purple),#7c3aed)">Continue 🧘</button>
+          </div>
+        </div>
+
+        <div class="program-card">
+          <div class="program-banner hiit">
+            ⚡
+            <div class="program-badge badge-hot">INTENSE</div>
+          </div>
+          <div class="program-info">
+            <div class="program-name">HIIT Inferno</div>
+            <div class="program-desc">20-minute sessions, maximum burn. Military-grade interval training for time-pressed celebrities.</div>
+            <div class="program-meta">
+              <div class="prog-meta">⏱ <span>4 Weeks</span></div>
+              <div class="prog-meta">🔥 <span>Expert</span></div>
+              <div class="prog-meta">⚡ <span>20 Min</span></div>
+            </div>
+            <div class="program-progress-wrap">
+              <div class="prog-label"><span>Not Started</span><span>0%</span></div>
+              <div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div>
+            </div>
+            <button class="program-btn" style="background:linear-gradient(135deg,var(--red),#b91c1c)">Start HIIT ⚡</button>
+          </div>
+        </div>
+
+        <div class="program-card">
+          <div class="program-banner goat">
+            👑
+            <div class="program-badge badge-elite">GOAT TIER</div>
+          </div>
+          <div class="program-info">
+            <div class="program-name">GOAT Ultimate Challenge</div>
+            <div class="program-desc">The most elite fitness program ever created. 16-week legendary transformation for the GOATs only.</div>
+            <div class="program-meta">
+              <div class="prog-meta">⏱ <span>16 Weeks</span></div>
+              <div class="prog-meta">👑 <span>GOAT Only</span></div>
+              <div class="prog-meta">🏆 <span>Legendary</span></div>
+            </div>
+            <div class="program-progress-wrap">
+              <div class="prog-label"><span>Locked - Complete GOAT Body first</span><span>—</span></div>
+              <div class="prog-bar"><div class="prog-fill" style="width:0%;opacity:.3"></div></div>
+            </div>
+            <button class="program-btn" style="background:linear-gradient(135deg,var(--gold),#b8860b)">Unlock 👑</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TODAY TAB (hidden by default) -->
+    <div id="tab-today" style="display:none">
+      <!-- Weekly Chart -->
+      <div class="weekly-chart">
+        <div class="section-header">
+          <div><div class="section-title">Weekly Activity</div><div class="section-sub">Calories burned this week</div></div>
+        </div>
+        <div class="chart-bars" id="weekChart"></div>
+        <div class="chart-legend">
+          <span><span class="legend-dot" style="background:var(--green)"></span><span style="font-size:12px;color:var(--muted)">Workout Day</span></span>
+          <span><span class="legend-dot" style="background:var(--gold)"></span><span style="font-size:12px;color:var(--muted)">Personal Best</span></span>
+          <span><span class="legend-dot" style="background:rgba(255,255,255,.15)"></span><span style="font-size:12px;color:var(--muted)">Rest Day</span></span>
+        </div>
+      </div>
+
+      <!-- Today's Exercises -->
+      <div class="workout-schedule">
+        <div class="section-header">
+          <div><div class="section-title">Today's Workout: Push Day 💪</div><div class="section-sub">8 exercises • 65 min estimated</div></div>
+          <span class="see-all">View All</span>
+        </div>
+        <div class="exercise-list" id="exerciseList"></div>
+      </div>
+    </div>
+
+    <!-- CHALLENGES TAB (hidden) -->
+    <div id="tab-challenges" style="display:none">
+      <div style="margin-bottom:20px">
+        <div class="section-title" style="margin-bottom:16px">🏆 Active Challenges</div>
+        <div class="challenges-grid" id="challengeGrid"></div>
+      </div>
+    </div>
+
+    <!-- NUTRITION TAB (hidden) -->
+    <div id="tab-nutrition" style="display:none">
+      <div class="nutrition-grid">
+        <div class="nutrition-card">
+          <div class="nutri-icon">🔥</div>
+          <div class="nutri-val" style="color:var(--orange)">2,847</div>
+          <div class="nutri-lbl">Calories Today</div>
+          <div class="nutri-bar"><div class="nutri-fill" style="width:85%;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--gold))"></div></div>
+        </div>
+        <div class="nutrition-card">
+          <div class="nutri-icon">💪</div>
+          <div class="nutri-val" style="color:var(--blue)">184g</div>
+          <div class="nutri-lbl">Protein</div>
+          <div class="nutri-bar"><div class="nutri-fill" style="width:92%;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--purple))"></div></div>
+        </div>
+        <div class="nutrition-card">
+          <div class="nutri-icon">🌾</div>
+          <div class="nutri-val" style="color:var(--green)">248g</div>
+          <div class="nutri-lbl">Carbs</div>
+          <div class="nutri-bar"><div class="nutri-fill" style="width:70%;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),#16a34a)"></div></div>
+        </div>
+        <div class="nutrition-card">
+          <div class="nutri-icon">🥑</div>
+          <div class="nutri-val" style="color:var(--yellow,#facc15)">68g</div>
+          <div class="nutri-lbl">Healthy Fats</div>
+          <div class="nutri-bar"><div class="nutri-fill" style="width:60%;height:100%;border-radius:3px;background:linear-gradient(90deg,#facc15,var(--orange))"></div></div>
+        </div>
+      </div>
+      <div class="workout-schedule">
+        <div class="section-header"><div class="section-title">🍽 Meal Plan Today</div></div>
+        <div id="mealPlan"></div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD TAB (hidden) -->
+    <div id="tab-leaderboard" style="display:none">
+      <div class="leaderboard">
+        <div class="section-header">
+          <div><div class="section-title">🏆 GOAT Fitness Leaderboard</div><div class="section-sub">This Week's Top Performers</div></div>
+        </div>
+        <div class="leader-list" id="leaderList"></div>
+      </div>
+    </div>
+
+    <!-- COACH TAB (hidden) -->
+    <div id="tab-coach" style="display:none">
+      <div class="ai-coach">
+        <div class="coach-header">
+          <div class="coach-avatar">🤖</div>
+          <div>
+            <div class="coach-name">GOAT AI Coach — Max Elite</div>
+            <div class="coach-status">● Online • Analyzing your performance</div>
+          </div>
+          <div style="margin-left:auto;font-size:12px;color:var(--muted)">Response in <1s</div>
+        </div>
+        <div class="coach-body" id="coachChat">
+          <div class="chat-msg ai">
+            <div class="coach-avatar" style="width:32px;height:32px;font-size:16px;flex-shrink:0">🤖</div>
+            <div class="chat-bubble">👑 Welcome back, GOAT! You're on a 7-day streak — incredible dedication! Your heart rate averaged 142 BPM during today's push session, which is 8% above your personal best zone. Want me to adjust tomorrow's intensity?</div>
+          </div>
+          <div class="chat-msg user">
+            <div class="chat-bubble">What should I eat after this workout?</div>
+          </div>
+          <div class="chat-msg ai">
+            <div class="coach-avatar" style="width:32px;height:32px;font-size:16px;flex-shrink:0">🤖</div>
+            <div class="chat-bubble">🍗 Post-workout nutrition window is NOW! For maximum muscle synthesis after your push session:<br><br>• 40g whey protein shake with almond milk<br>• 1 banana (fast carbs for glycogen)<br>• 500ml water + electrolytes<br>• Optional: 2 rice cakes with almond butter<br><br>Eat within 30 minutes for optimal recovery. Your muscles are primed! 💪</div>
+          </div>
+        </div>
+        <div class="chat-input-wrap">
+          <input type="text" class="chat-input" id="coachInput" placeholder="Ask your AI Coach anything about fitness, nutrition, recovery..." onkeypress="if(event.key==='Enter')sendCoachMsg()">
+          <button class="chat-send" onclick="sendCoachMsg()">Send 💬</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Timer
+  let seconds = 42*60+18;
+  setInterval(() => {
+    seconds++;
+    const h = Math.floor(seconds/3600);
+    const m = Math.floor((seconds%3600)/60);
+    const s = seconds%60;
+    document.getElementById('workoutTimer').textContent =
+      `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }, 1000);
+
+  // Heart Rate Live
+  setInterval(() => {
+    const hr = Math.floor(138 + Math.random()*12);
+    const el = document.getElementById('hrSide');
+    if(el) el.textContent = hr;
+    const el2 = document.getElementById('hrLive');
+    if(el2) el2.textContent = hr + ' BPM';
+  }, 2000);
+
+  // Tab switching
+  function switchTab(name, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    ['programs','today','challenges','nutrition','leaderboard','coach'].forEach(t => {
+      const d = document.getElementById('tab-'+t);
+      if(d) d.style.display = t===name ? 'block' : 'none';
+    });
+  }
+
+  // Weekly Chart
+  const weekData = [
+    {day:'Mon',val:780,pct:65,type:''},
+    {day:'Tue',val:1240,pct:100,type:'gold'},
+    {day:'Wed',val:0,pct:5,type:'rest'},
+    {day:'Thu',val:920,pct:77,type:''},
+    {day:'Fri',val:847,pct:71,type:''},
+    {day:'Sat',val:0,pct:5,type:'rest'},
+    {day:'Sun',val:640,pct:54,type:''},
+  ];
+  const chartEl = document.getElementById('weekChart');
+  if(chartEl) {
+    weekData.forEach(d => {
+      chartEl.innerHTML += `
+        <div class="chart-day">
+          <div class="chart-val">${d.val||''}</div>
+          <div class="chart-bar ${d.type}" style="height:${d.pct}%"></div>
+          <div class="chart-label">${d.day}</div>
+        </div>`;
+    });
+  }
+
+  // Exercises
+  const exercises = [
+    {name:'Bench Press',detail:'Barbell • Chest',sets:'4 × 8',done:true},
+    {name:'Incline Dumbbell Press',detail:'Dumbbell • Upper Chest',sets:'3 × 10',done:true},
+    {name:'Cable Fly',detail:'Cable • Chest',sets:'3 × 12',done:true},
+    {name:'Overhead Press',detail:'Barbell • Shoulders',sets:'4 × 8',done:false},
+    {name:'Lateral Raises',detail:'Dumbbell • Side Delts',sets:'3 × 15',done:false},
+    {name:'Tricep Pushdown',detail:'Cable • Triceps',sets:'3 × 12',done:false},
+    {name:'Skull Crushers',detail:'EZ Bar • Triceps',sets:'3 × 10',done:false},
+    {name:'Diamond Push-ups',detail:'Bodyweight • Triceps',sets:'2 × Max',done:false},
+  ];
+  const exList = document.getElementById('exerciseList');
+  if(exList) {
+    exercises.forEach((e,i) => {
+      exList.innerHTML += `
+        <div class="exercise-item">
+          <div class="ex-num">${i+1}</div>
+          <div>
+            <div class="ex-name">${e.name}</div>
+            <div class="ex-detail">${e.detail}</div>
+          </div>
+          <div class="ex-sets">${e.sets}</div>
+          <div class="ex-done ${e.done?'completed':''}" onclick="this.classList.toggle('completed')"></div>
+        </div>`;
+    });
+  }
+
+  // Challenges
+  const challenges = [
+    {icon:'🔥',name:'Calorie Crusher',desc:'Burn 1,000 calories today',reward:'500 GOAT Points',pct:85},
+    {icon:'👟',name:'10K Steps',desc:'Hit 10,000 steps daily for 7 days',reward:'Gold Badge',pct:60},
+    {icon:'💪',name:'Iron Week',desc:'Complete all 7 planned workouts',reward:'$50 Credit',pct:43},
+    {icon:'🧘',name:'Zen Master',desc:'30-day meditation streak',reward:'Platinum Status',pct:40},
+    {icon:'🏃',name:'Speed Demon',desc:'Run 5K in under 25 minutes',reward:'Elite Badge',pct:70},
+    {icon:'🥗',name:'Clean Eater',desc:'Log meals for 14 consecutive days',reward:'250 Points',pct:57},
+    {icon:'🏆',name:'GOAT Challenge',desc:'Reach #1 on leaderboard this week',reward:'1,000 Points',pct:25},
+    {icon:'⚡',name:'HIIT Hero',desc:'Complete 5 HIIT sessions',reward:'Power Badge',pct:80},
+  ];
+  const cGrid = document.getElementById('challengeGrid');
+  if(cGrid) {
+    challenges.forEach(c => {
+      cGrid.innerHTML += `
+        <div class="challenge-card">
+          <div class="challenge-icon">${c.icon}</div>
+          <div class="challenge-name">${c.name}</div>
+          <div class="challenge-desc">${c.desc}</div>
+          <div class="challenge-reward">🏆 ${c.reward}</div>
+          <div class="challenge-progress"><div class="challenge-fill" style="width:${c.pct}%"></div></div>
+        </div>`;
+    });
+  }
+
+  // Leaderboard
+  const leaders = [
+    {rank:1,ava:'👑',name:'King James A.',prog:'GOAT Body Wk12',score:'9,847',badge:'🏆'},
+    {rank:2,ava:'🌟',name:'Serena V.',prog:'Red Carpet Wk8',score:'9,234',badge:'⭐'},
+    {rank:3,ava:'🔥',name:'Dre S.',prog:'GOAT Body Wk8',score:'8,901',badge:'🥉'},
+    {rank:4,ava:'💪',name:'YOU',prog:'GOAT Body Wk4',score:'8,420',badge:'👑'},
+    {rank:5,ava:'⚡',name:'Mike T.',prog:'Street Athlete Wk3',score:'7,890',badge:'⚡'},
+    {rank:6,ava:'🧘',name:'Zendaya K.',prog:'Mindful 30-Day',score:'7,240',badge:'🌿'},
+    {rank:7,ava:'🏃',name:'Rihanna F.',prog:'HIIT Inferno',score:'6,980',badge:'🔥'},
+  ];
+  const lList = document.getElementById('leaderList');
+  if(lList) {
+    leaders.forEach(l => {
+      lList.innerHTML += `
+        <div class="leader-item" style="${l.name==='YOU'?'border:1px solid rgba(212,160,60,0.4);background:rgba(212,160,60,0.05)':''}">
+          <div class="leader-rank rank-${l.rank}">${l.rank}</div>
+          <div class="leader-avatar">${l.ava}</div>
+          <div class="leader-info">
+            <div class="leader-name">${l.name} ${l.name==='YOU'?'<span style="font-size:10px;color:var(--gold);background:rgba(212,160,60,.15);padding:2px 8px;border-radius:8px">YOU</span>':''}</div>
+            <div class="leader-prog">${l.prog}</div>
+          </div>
+          <div class="leader-score">${l.score}</div>
+          <div class="leader-badge">${l.badge}</div>
+        </div>`;
+    });
+  }
+
+  // Meals
+  const meals = [
+    {meal:'Breakfast 7:00 AM',items:'Oatmeal + protein powder + berries + almonds',cal:480,color:'var(--orange)'},
+    {meal:'Pre-Workout 11:30 AM',items:'Banana + espresso + BCAA shake',cal:180,color:'var(--blue)'},
+    {meal:'Post-Workout 1:30 PM',items:'Grilled chicken + rice + broccoli + olive oil',cal:720,color:'var(--green)'},
+    {meal:'Snack 4:00 PM',items:'Greek yogurt + honey + granola',cal:290,color:'var(--purple)'},
+    {meal:'Dinner 7:30 PM',items:'Salmon + quinoa + asparagus + lemon',cal:680,color:'var(--gold)'},
+  ];
+  const mPlan = document.getElementById('mealPlan');
+  if(mPlan) {
+    meals.forEach(m => {
+      mPlan.innerHTML += `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--panel2);border-radius:10px;margin-bottom:8px;border:1px solid rgba(255,255,255,.04)">
+          <div style="width:4px;height:40px;background:${m.color};border-radius:2px;flex-shrink:0"></div>
+          <div style="flex:1">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:2px">${m.meal}</div>
+            <div style="font-size:13px;font-weight:600">${m.items}</div>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:${m.color}">${m.cal} kcal</div>
+        </div>`;
+    });
+  }
+
+  // AI Coach Chat
+  const coachResponses = [
+    "Great question! Based on your current heart rate zone and workout history, I recommend reducing rest periods to 45 seconds for maximum fat burn while maintaining muscle stimulus. Your recovery metrics look excellent — you're ready to push harder! 💪",
+    "Your weekly stats show you're trending 12% above your baseline! Here's what's working: consistent sleep (avg 7.8hrs), high protein intake, and back-to-back workout consistency. Keep that momentum going! 🔥",
+    "For tomorrow's leg day, I'm programming: Squats 5×5 (85% 1RM), Romanian Deadlifts 4×8, Leg Press 3×12, and Bulgarian Split Squats 3×10 each side. This follows progressive overload principles. Ready to grow? 👑",
+    "Your body fat percentage has dropped 2.1% in 4 weeks based on your measurements! You're on track for your transformation goal. The key has been your consistency with nutrition logging and morning cardio. Elite work! ⭐",
+    "Sleep is your secret weapon! Your performance data shows 23% better workout output on days after 8+ hours of sleep. Try to hit 9PM wind-down tonight for tomorrow's leg session. Recovery IS training! 😴",
+  ];
+  let rIdx = 0;
+  function sendCoachMsg() {
+    const input = document.getElementById('coachInput');
+    const chat = document.getElementById('coachChat');
+    if(!input.value.trim()) return;
+    chat.innerHTML += `<div class="chat-msg user"><div class="chat-bubble">${input.value}</div></div>`;
+    input.value = '';
+    chat.scrollTop = chat.scrollHeight;
+    setTimeout(() => {
+      chat.innerHTML += `
+        <div class="chat-msg ai">
+          <div class="coach-avatar" style="width:32px;height:32px;font-size:16px;flex-shrink:0">🤖</div>
+          <div class="chat-bubble">${coachResponses[rIdx % coachResponses.length]}</div>
+        </div>`;
+      rIdx++;
+      chat.scrollTop = chat.scrollHeight;
+    }, 800);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+name: Deploy live to GOAT VPS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - devin/1751506000-goat-royalty-consolidated
+      - main
+    paths:
+      - 'goat-launcher-home.html'
+      - 'index.html'
+      - 'js/**'
+      - 'css/**'
+      - 'apps/nextjs-commerce/web-app/usb-ai/Shared/OscarConsole.html'
+      - '.github/workflows/deploy-live.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Install sshpass
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
+
+      - name: Deploy site + launcher to /var/www/goat
+        env:
+          SSHPASS: ${{ secrets.GOAT_VPS_SSH_PASSWORD }}
+          HOST: 72.61.193.184
+        run: |
+          SSH="sshpass -e ssh -o StrictHostKeyChecking=no root@$HOST"
+          SCP="sshpass -e scp -o StrictHostKeyChecking=no"
+          $SSH "mkdir -p /var/www/goat/js /var/www/goat/css && cp -a /var/www/goat /root/goat-www-backup-$(date +%Y%m%d-%H%M%S) || true"
+          $SCP goat-launcher-home.html goat-logo.png root@$HOST:/var/www/goat/
+          $SCP js/goat-live-status.js js/goat-model-registry.js js/goat-platform-apps.js js/goat-touch-global.js root@$HOST:/var/www/goat/js/
+          $SCP css/goat-brand.css css/goat-platform-higgsfield.css css/goat-theme.css css/goat-touch-global.css root@$HOST:/var/www/goat/css/
+
+      - name: Deploy Oscar Console next to chat_server.py and restart Oscar
+        env:
+          SSHPASS: ${{ secrets.GOAT_VPS_SSH_PASSWORD }}
+          HOST: 72.61.193.184
+        run: |
+          SSH="sshpass -e ssh -o StrictHostKeyChecking=no root@$HOST"
+          SCP="sshpass -e scp -o StrictHostKeyChecking=no"
+          OSCAR_DIR=$($SSH "systemctl cat goat-oscar 2>/dev/null | sed -n 's/^WorkingDirectory=//p' | head -1")
+          if [ -z "$OSCAR_DIR" ]; then
+            OSCAR_DIR=$($SSH "dirname \$(find /root /opt /var/www -maxdepth 6 -name chat_server.py 2>/dev/null | head -1)")
+          fi
+          echo "Oscar dir: $OSCAR_DIR"
+          if [ -n "$OSCAR_DIR" ] && [ "$OSCAR_DIR" != "." ]; then
+            $SSH "cp $OSCAR_DIR/OscarConsole.html /root/OscarConsole.html.bak-$(date +%Y%m%d-%H%M%S) 2>/dev/null || true"
+            $SCP apps/nextjs-commerce/web-app/usb-ai/Shared/OscarConsole.html root@$HOST:$OSCAR_DIR/OscarConsole.html
+            $SSH "systemctl restart goat-oscar || true"
+          else
+            echo "chat_server.py not found on server; skipped Oscar Console update"
+          fi
+
+      - name: Verify live URLs
+        run: |
+          curl -sf -o /dev/null -w "launcher: %{http_code}\n" http://72.61.193.184/goat-launcher-home.html
+          curl -s -o /dev/null -w "oscar: %{http_code}\n" http://72.61.193.184:3333/ || true

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Royalty Launcher | Home Base</title>
+<meta name="description" content="GOAT Royalty cinematic launcher — every app, agent, model, and live server in one Higgsfield-style home base.">
+<link rel="icon" href="favicon.ico">
+<link rel="stylesheet" href="css/goat-platform-higgsfield.css?v=20260703-launcher">
+<link rel="stylesheet" href="css/goat-touch-global.css?v=20260608-touch">
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#050609;color:#f7f1e8;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overflow-x:hidden}
+.launch-nav{position:fixed;top:0;left:0;right:0;z-index:20;min-height:64px;display:flex;align-items:center;gap:14px;padding:10px 22px;background:rgba(5,6,9,.9);border-bottom:1px solid rgba(255,255,255,.1);backdrop-filter:blur(18px)}
+.launch-brand{display:flex;align-items:center;gap:10px;color:#f2c766;text-decoration:none;font-weight:900}
+.launch-brand img{width:38px;height:38px;border-radius:8px;object-fit:cover;border:1px solid rgba(242,199,102,.34)}
+.launch-links{display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:none;flex:1}
+.launch-links::-webkit-scrollbar{display:none}
+.launch-links a{min-height:34px;display:inline-flex;align-items:center;padding:7px 12px;border-radius:8px;color:#9ca6b4;text-decoration:none;white-space:nowrap;font-size:13px;font-weight:800}
+.launch-links a:hover,.launch-links a.active{color:#f7f1e8;background:rgba(255,255,255,.07)}
+.hf-hero{position:relative;min-height:520px;display:flex;align-items:flex-end;padding:120px 26px 46px;background:
+  linear-gradient(180deg,rgba(5,6,9,.15) 0%,rgba(5,6,9,.75) 62%,#050609 100%),
+  url("assets/epk-media/images/ssl-xl-studio-room.jpg") center/cover no-repeat}
+.hf-hero-inner{max-width:1180px;margin:0 auto;width:100%}
+.hf-kicker{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;border:1px solid rgba(242,199,102,.4);background:rgba(5,6,9,.55);color:#f2c766;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.hf-hero h1{margin:16px 0 10px;font-size:clamp(2rem,5vw,3.4rem);line-height:1.05;font-weight:900;text-shadow:0 4px 30px rgba(0,0,0,.7)}
+.hf-hero p{max-width:640px;margin:0 0 22px;color:#cfd6e0;line-height:1.55}
+.hf-cta{display:flex;gap:10px;flex-wrap:wrap}
+.hf-cta a{display:inline-flex;align-items:center;min-height:44px;padding:10px 22px;border-radius:999px;font-weight:800;text-decoration:none;font-size:14px}
+.hf-cta a.primary{background:linear-gradient(135deg,#f5c542,#b8860b);color:#07070c}
+.hf-cta a.ghost{border:1px solid rgba(255,255,255,.25);color:#f7f1e8;background:rgba(5,6,9,.45)}
+.hf-section{max-width:1180px;margin:0 auto;padding:34px 26px 6px}
+.hf-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:16px}
+.hf-section-head h2{margin:0;font-size:1.35rem;font-weight:900}
+.hf-section-head p{margin:4px 0 0;color:#9ca6b4;font-size:13px}
+.hf-section-head a{color:#f2c766;text-decoration:none;font-weight:800;font-size:13px;white-space:nowrap}
+.goat-live-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.goat-live-card{position:relative;display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(160deg,rgba(20,20,32,.95),rgba(10,10,16,.95));color:#f7f1e8;text-decoration:none;min-height:120px}
+.goat-live-card:hover{border-color:rgba(242,199,102,.6)}
+.goat-live-card b{font-size:15px}
+.goat-live-card p{margin:0;color:#9ca6b4;font-size:12.5px;line-height:1.45}
+.goat-live-card small{color:#6d7684;font-size:11px;word-break:break-all}
+.goat-live-badge{position:absolute;top:12px;right:12px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border:1px solid rgba(255,255,255,.2);color:#9ca6b4}
+.goat-live-badge[data-state="online"]{color:#7ee0a3;border-color:rgba(126,224,163,.5);background:rgba(126,224,163,.1)}
+.goat-live-badge[data-state="offline"]{color:#ff8a80;border-color:rgba(255,138,128,.5);background:rgba(255,138,128,.08)}
+.goat-live-badge[data-state="join"]{color:#8ab4ff;border-color:rgba(138,180,255,.5);background:rgba(138,180,255,.08)}
+.hf-agent-shelf{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,260px);gap:14px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
+.hf-agent-card{display:flex;flex-direction:column;gap:8px;padding:18px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(170deg,rgba(22,22,34,.96),rgba(9,9,14,.96));color:#f7f1e8;text-decoration:none}
+.hf-agent-card:hover{border-color:rgba(242,199,102,.6)}
+.hf-agent-avatar{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-weight:900;font-size:18px;color:#07070c}
+.hf-agent-card b{font-size:15px}
+.hf-agent-card p{margin:0;color:#9ca6b4;font-size:12.5px;line-height:1.45;flex:1}
+.hf-agent-models{font-size:11.5px;color:#f2c766;font-weight:800;letter-spacing:.04em}
+.hf-model-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.hf-model-toolbar input,.hf-model-toolbar select{min-height:42px;padding:8px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(12,12,20,.9);color:#f7f1e8;font-size:13px}
+.hf-model-toolbar input[type="search"]{flex:1;min-width:200px}
+.hf-model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.hf-model-card{position:relative;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(160deg,rgba(18,18,28,.95),rgba(8,8,13,.95))}
+.hf-model-card:hover{border-color:rgba(242,199,102,.5)}
+.hf-model-card b{display:block;font-size:13.5px;margin-bottom:4px}
+.hf-model-meta{display:flex;gap:6px;flex-wrap:wrap}
+.hf-model-meta span{padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border:1px solid rgba(255,255,255,.14);color:#9ca6b4}
+.hf-model-card .hf-model-loc{margin:6px 0 0;font-size:11px;color:#8ab4ff;word-break:break-all}
+.hf-model-remove{position:absolute;top:8px;right:8px;border:0;background:transparent;color:#ff8a80;font-weight:900;cursor:pointer;font-size:14px;line-height:1;padding:4px}
+.hf-add-panel{margin-top:18px;padding:18px;border-radius:14px;border:1px dashed rgba(242,199,102,.4);background:rgba(12,12,20,.6)}
+.hf-add-panel h3{margin:0 0 4px;font-size:15px;color:#f2c766}
+.hf-add-panel p{margin:0 0 12px;color:#9ca6b4;font-size:12.5px}
+.hf-add-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.hf-add-form input,.hf-add-form select{min-height:42px;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(8,8,13,.9);color:#f7f1e8;font-size:13px}
+.hf-add-form button{min-height:42px;border:0;border-radius:10px;background:linear-gradient(135deg,#f5c542,#b8860b);color:#07070c;font-weight:900;cursor:pointer;font-size:13px}
+.hf-count{color:#f2c766;font-weight:900}
+.hf-footer{max-width:1180px;margin:30px auto 0;padding:24px 26px 44px;color:#6d7684;font-size:12px;border-top:1px solid rgba(255,255,255,.08)}
+@media(max-width:720px){.launch-nav{align-items:flex-start;flex-direction:column}.launch-links{width:100%}.hf-hero{padding-top:150px}}
+</style>
+</head>
+<body>
+<nav class="launch-nav">
+  <a class="launch-brand" href="index.html">
+    <img src="goat-logo.png" alt="GOAT Royalty">
+    <span>GOAT Home Base</span>
+  </a>
+  <div class="launch-links" aria-label="GOAT launcher navigation">
+    <a href="index.html">Store</a>
+    <a class="active" href="goat-launcher-home.html">Home Base</a>
+    <a href="goat-apps.html">Apps</a>
+    <a href="agents-brain.html">Agents</a>
+    <a href="goat-ai-video.html">Video</a>
+    <a href="studio.html">Studio</a>
+    <a href="goat-cinema-forge.html">Cinema Forge</a>
+    <a href="goat-virtual-world-rp.html">GOAT City RP</a>
+    <a href="goat-casino.html">Casino</a>
+    <a href="goat-investor-living-epk.html">Investor EPK</a>
+  </div>
+</nav>
+
+<header class="hf-hero">
+  <div class="hf-hero-inner">
+    <span class="hf-kicker">GOAT Royalty &bull; Home Base</span>
+    <h1>Every app, agent, and model.<br>One cinematic launcher.</h1>
+    <p>
+      Launch the full GOAT Royalty platform from one place — live servers, the agent crew
+      with the complete <span class="hf-count" data-goat-model-count>59+</span>-model roster,
+      studio tools, the money engine, and GOAT City RP.
+    </p>
+    <div class="hf-cta">
+      <a class="primary" href="goat-apps.html">Open app directory</a>
+      <a class="ghost" href="agents-brain.html">Meet the agent crew</a>
+      <a class="ghost" href="#models">Browse models</a>
+    </div>
+  </div>
+</header>
+
+<section class="hf-section" aria-label="Live GOAT servers">
+  <div class="hf-section-head">
+    <div>
+      <h2>Live servers</h2>
+      <p>Real endpoints pinged live from this page — Oscar, AGENT-007, the casino, and GOAT City RP.</p>
+    </div>
+    <a href="goat-server-field-hub.html">Server field hub &rarr;</a>
+  </div>
+  <div class="goat-live-strip" data-goat-live-strip></div>
+</section>
+
+<section class="hf-section" aria-label="Agent crew">
+  <div class="hf-section-head">
+    <div>
+      <h2>Agent crew</h2>
+      <p>Every agent runs the full model roster, plus any models you add for this drive or computer.</p>
+    </div>
+    <a href="agents-brain.html">Open agents brain &rarr;</a>
+  </div>
+  <div class="hf-agent-shelf" data-goat-agent-shelf></div>
+</section>
+
+<section class="hf-section" aria-label="Featured media lanes">
+  <div class="hf-section-head">
+    <div>
+      <h2>Featured lanes</h2>
+      <p>Media-first launch lanes across the platform.</p>
+    </div>
+    <a href="goat-apps.html">View all apps &rarr;</a>
+  </div>
+  <div class="goat-media-strip" data-goat-media-strip></div>
+</section>
+
+<section class="hf-section" id="models" aria-label="Model roster">
+  <div class="hf-section-head">
+    <div>
+      <h2>Model roster</h2>
+      <p><span class="hf-count" data-goat-model-count>59+</span> models wired to every agent. Add your own per drive or computer below — saved locally on this device.</p>
+    </div>
+    <a href="nextjs-commerce/web-app/ai-models-download.html">Model downloads &rarr;</a>
+  </div>
+  <div class="hf-model-toolbar">
+    <input type="search" data-goat-model-search placeholder="Search models: llama, qwen, gemma, nemotron, mixtral…">
+    <select data-goat-model-provider>
+      <option value="">All providers</option>
+    </select>
+  </div>
+  <div class="hf-model-grid" data-goat-model-grid></div>
+  <div class="hf-add-panel">
+    <h3>Add a model manually</h3>
+    <p>Point to a model on any drive or computer (OSCAR drive, Thor SSD, Jetson, VPS…). Saved on this device only.</p>
+    <form class="hf-add-form" data-goat-model-add>
+      <input name="name" placeholder="Model name (e.g. Llama 3.1 8B Q4)" required>
+      <input name="provider" placeholder="Provider (e.g. meta)">
+      <input name="size" placeholder="Size (e.g. 8B)">
+      <input name="runtime" placeholder="Runtime (ollama / nim / gguf)">
+      <input name="location" placeholder="Drive / computer path (e.g. /Volumes/OSCAR/models)">
+      <button type="submit">Add model</button>
+    </form>
+  </div>
+</section>
+
+<section class="hf-section" aria-label="Full app directory" data-goat-directory>
+  <div class="hf-section-head">
+    <div>
+      <h2>All GOAT apps</h2>
+      <p>Filter by lane or search by task. Every card opens a real page.</p>
+    </div>
+    <a href="goat-apps.html">Full launcher &rarr;</a>
+  </div>
+  <div class="goat-suite-toolbar">
+    <label class="goat-suite-search">
+      <span>Search</span>
+      <input data-goat-search type="search" placeholder="Try: video, Pro Tools, royalty, casino, wallet, security">
+    </label>
+    <div class="goat-suite-filters" data-goat-filters aria-label="App filters"></div>
+  </div>
+  <div class="goat-app-grid" data-goat-app-grid></div>
+</section>
+
+<footer class="hf-footer">
+  GOAT Royalty Home Base &bull; live pings run in your browser &bull; manual models save to this device only.
+</footer>
+
+<script src="js/goat-platform-apps.js?v=20260703-launcher"></script>
+<script src="js/goat-model-registry.js?v=20260703-launcher"></script>
+<script src="js/goat-live-status.js?v=20260703-launcher"></script>
+<script src="js/goat-touch-global.js?v=20260608-touch"></script>
+<script>
+(function () {
+  "use strict";
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+  }
+
+  function initials(name) {
+    return name.split(/\s+/).map((part) => part[0]).join("").replace(/[^A-Za-z0-9]/g, "").slice(0, 3).toUpperCase();
+  }
+
+  function renderAgents() {
+    const shelf = document.querySelector("[data-goat-agent-shelf]");
+    if (!shelf || !window.GoatModelRegistry) return;
+    const total = window.GoatModelRegistry.allModels().length;
+    shelf.innerHTML = window.GoatModelRegistry.agents.map((agent) => `
+      <a class="hf-agent-card" href="${escapeHtml(agent.href)}">
+        <span class="hf-agent-avatar" style="background:${escapeHtml(agent.accent)}">${escapeHtml(initials(agent.name))}</span>
+        <b>${escapeHtml(agent.name)}</b>
+        <p>${escapeHtml(agent.role)}</p>
+        <span class="hf-agent-models">${total} models wired</span>
+      </a>
+    `).join("");
+  }
+
+  function renderModels() {
+    const grid = document.querySelector("[data-goat-model-grid]");
+    if (!grid || !window.GoatModelRegistry) return;
+    const search = document.querySelector("[data-goat-model-search]");
+    const providerSelect = document.querySelector("[data-goat-model-provider]");
+    const models = window.GoatModelRegistry.allModels();
+
+    const providers = Array.from(new Set(models.map((m) => m.provider))).sort();
+    const current = providerSelect.value;
+    providerSelect.innerHTML = '<option value="">All providers</option>' + providers.map((p) => (
+      `<option value="${escapeHtml(p)}" ${p === current ? "selected" : ""}>${escapeHtml(p)}</option>`
+    )).join("");
+
+    const term = (search.value || "").trim().toLowerCase();
+    const provider = providerSelect.value;
+    const filtered = models.filter((model) => {
+      if (provider && model.provider !== provider) return false;
+      if (!term) return true;
+      return `${model.name} ${model.provider} ${model.size} ${model.runtime}`.toLowerCase().includes(term);
+    });
+
+    grid.innerHTML = filtered.length ? filtered.map((model) => `
+      <div class="hf-model-card">
+        ${model.custom ? `<button class="hf-model-remove" type="button" data-goat-model-remove="${escapeHtml(model.id)}" title="Remove custom model">&times;</button>` : ""}
+        <b>${escapeHtml(model.name)}</b>
+        <div class="hf-model-meta">
+          <span>${escapeHtml(model.provider)}</span>
+          <span>${escapeHtml(model.size)}</span>
+          <span>${escapeHtml(model.runtime)}</span>
+          ${model.custom ? "<span>manual</span>" : ""}
+        </div>
+        ${model.custom && model.location ? `<p class="hf-model-loc">${escapeHtml(model.location)}</p>` : ""}
+      </div>
+    `).join("") : '<div class="goat-app-empty">No models matched that search.</div>';
+
+    document.querySelectorAll("[data-goat-model-count]").forEach((el) => {
+      el.textContent = String(models.length);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderAgents();
+    renderModels();
+
+    const search = document.querySelector("[data-goat-model-search]");
+    const providerSelect = document.querySelector("[data-goat-model-provider]");
+    if (search) search.addEventListener("input", renderModels);
+    if (providerSelect) providerSelect.addEventListener("change", renderModels);
+
+    const form = document.querySelector("[data-goat-model-add]");
+    if (form) {
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const data = new FormData(form);
+        const added = window.GoatModelRegistry.addCustomModel({
+          name: data.get("name"),
+          provider: data.get("provider"),
+          size: data.get("size"),
+          runtime: data.get("runtime"),
+          location: data.get("location")
+        });
+        if (added) {
+          form.reset();
+          renderModels();
+          renderAgents();
+        }
+      });
+    }
+
+    const grid = document.querySelector("[data-goat-model-grid]");
+    if (grid) {
+      grid.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-goat-model-remove]");
+        if (!button) return;
+        window.GoatModelRegistry.removeCustomModel(button.dataset.goatModelRemove);
+        renderModels();
+        renderAgents();
+      });
+    }
+  });
+}());
+</script>
+</body>
+</html>

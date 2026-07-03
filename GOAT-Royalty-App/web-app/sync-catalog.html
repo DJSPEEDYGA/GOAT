@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎬 GOAT Sync & Licensing — Film/TV/Commercial Catalog</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<link rel="icon" type="image/png" href="img/goat-hero-icon.png">
+<style>
+  .sync-wrap { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  .filter-bar {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    padding: 16px;
+    background: rgba(20,20,20,0.9);
+    border-radius: 12px;
+    border: 1px solid rgba(193,18,31,0.3);
+    margin-bottom: 20px;
+    align-items: center;
+  }
+  .filter-bar input, .filter-bar select {
+    padding: 10px 14px;
+    background: var(--goat-gray);
+    color: var(--goat-cream);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    font-size: 14px;
+    min-width: 140px;
+  }
+  .filter-bar input:focus, .filter-bar select:focus {
+    outline: none;
+    border-color: var(--goat-red-bright);
+  }
+  .search-box { flex: 1; min-width: 240px; }
+  .track-list {
+    background: rgba(20,20,20,0.9);
+    border: 1px solid rgba(193,18,31,0.3);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .track-row {
+    display: grid;
+    grid-template-columns: 48px 2fr 1fr 100px 80px 100px 120px 100px;
+    gap: 14px;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    align-items: center;
+    transition: background 0.15s;
+  }
+  .track-row:hover { background: rgba(193,18,31,0.1); }
+  .track-row.header {
+    background: rgba(10,10,10,0.8);
+    font-weight: 700;
+    color: var(--goat-gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .track-row.header:hover { background: rgba(10,10,10,0.8); }
+  .play-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--gradient-power);
+    color: white; border: none; cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 0 10px rgba(193,18,31,0.4);
+  }
+  .play-btn:hover { transform: scale(1.1); }
+  .track-title { font-weight: 700; color: var(--goat-cream); }
+  .track-artist { font-size: 12px; color: var(--goat-silver); }
+  .tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(193,18,31,0.3);
+    color: var(--goat-red-bright);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-right: 4px;
+  }
+  .tag.mood { background: rgba(240,192,112,0.2); color: var(--goat-gold); }
+  .tag.genre { background: rgba(178,75,243,0.25); color: var(--goat-purple); }
+  @media (max-width: 900px) {
+    .track-row {
+      grid-template-columns: 48px 1fr 80px;
+    }
+    .track-row > :nth-child(n+4) { display: none; }
+    .track-row.header > :nth-child(n+4) { display: none; }
+  }
+  .stats-ribbon {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(193,18,31,0.2), rgba(139,0,0,0.2));
+    border-radius: 14px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(193,18,31,0.3);
+  }
+  .stats-ribbon .stat {
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+  }
+  .stats-ribbon .num {
+    font-size: 32px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--goat-gold), var(--goat-red-bright));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stats-ribbon .label {
+    font-size: 11px;
+    color: var(--goat-silver);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .license-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .license-modal.open { display: flex; }
+  .license-box {
+    background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+    border: 2px solid var(--goat-red-bright);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: 0 0 60px rgba(193,18,31,0.5);
+  }
+  .license-tier {
+    padding: 16px;
+    background: rgba(30,30,30,0.8);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .license-tier:hover {
+    border-color: var(--goat-red-bright);
+    box-shadow: var(--shadow-glow-red);
+  }
+  .license-tier h4 {
+    margin: 0 0 6px;
+    color: var(--goat-gold);
+    display: flex;
+    justify-content: space-between;
+  }
+  .license-tier .price {
+    color: var(--goat-red-bright);
+    font-size: 20px;
+    font-weight: 900;
+  }
+  .now-playing {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10,10,10,0.95);
+    backdrop-filter: blur(20px);
+    padding: 12px 20px;
+    border-top: 2px solid var(--goat-red-bright);
+    display: none;
+    gap: 16px;
+    align-items: center;
+    z-index: 100;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+  }
+  .now-playing.active { display: flex; }
+  .upload-zone {
+    padding: 24px;
+    background: rgba(20,20,20,0.9);
+    border: 2px dashed rgba(193,18,31,0.5);
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .upload-zone:hover, .upload-zone.over {
+    border-color: var(--goat-red-bright);
+    background: rgba(193,18,31,0.1);
+  }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-icon">
+
+<nav class="goat-nav">
+  <a href="index.html" class="goat-nav-brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT">
+    <span>SYNC & LICENSING</span>
+  </a>
+  <div class="goat-nav-links">
+    <a href="powerhouse.html">🐐 Hub</a>
+    <a href="studio.html">🎛️ Studio</a>
+    <a href="ssl-mixer.html">🎚️ Mixer</a>
+    <a href="mastering.html">💎 Master</a>
+    <a href="vocal-studio.html">🎤 Vocals</a>
+    <a href="ai-producer.html">🤖 AI</a>
+    <a href="sync-catalog.html" class="active">🎬 Sync</a>
+    <a href="plugins.html">🔌 Plugins</a>
+  </div>
+</nav>
+
+<div class="sync-wrap">
+  <section class="goat-hero" style="padding: 30px 0;">
+    <h1 style="font-size: 44px; margin: 0 0 8px;">🎬 SYNC & LICENSING CATALOG</h1>
+    <p class="subtitle">DJ Speedy / Speedy Productions, Inc. — Music for Film · TV · Commercials · Video Games · Trailers</p>
+  </section>
+
+  <div class="stats-ribbon">
+    <div class="stat"><div class="num" id="statTotal">500+</div><div class="label">Tracks</div></div>
+    <div class="stat"><div class="num">19</div><div class="label">Catalog Folders</div></div>
+    <div class="stat"><div class="num">12</div><div class="label">Genres</div></div>
+    <div class="stat"><div class="num">50+</div><div class="label">Moods</div></div>
+    <div class="stat"><div class="num">100%</div><div class="label">Cleared Masters</div></div>
+  </div>
+
+  <!-- IMPORT CATALOG -->
+  <div class="upload-zone" id="importZone">
+    <div style="font-size:40px; margin-bottom:8px;">📁</div>
+    <h3 style="margin:0 0 8px; color: var(--goat-gold);">Import Your Catalog</h3>
+    <p class="muted" style="margin:0 0 12px;">Drop a ZIP of your catalog, a folder of audio files, or a CSV/JSON manifest</p>
+    <input type="file" id="importInput" multiple accept="audio/*,.zip,.csv,.json,.xlsx" style="display:none;">
+    <p class="muted" style="font-size:12px; margin-top:8px;">
+      Or paste a <strong class="text-gold">Google Drive share link</strong> or <strong class="text-gold">Dropbox link</strong> below:
+    </p>
+    <input type="text" id="catalogLink" placeholder="https://drive.google.com/drive/folders/..." style="width:100%; max-width:500px; padding:10px; background:var(--goat-gray); color:var(--goat-cream); border:1px solid rgba(255,255,255,0.15); border-radius:8px; margin-top:6px;">
+    <div class="mt-2">
+      <button class="goat-btn" onclick="event.stopPropagation(); linkCatalog();">🔗 Link Catalog</button>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <input type="text" class="search-box" id="searchInput" placeholder="🔍 Search tracks, moods, BPM, key...">
+    <select id="genreFilter">
+      <option value="">All Genres</option>
+      <option>Hip-Hop / Trap</option>
+      <option>R&B / Soul</option>
+      <option>Pop</option>
+      <option>Electronic / EDM</option>
+      <option>Rock</option>
+      <option>Cinematic / Score</option>
+      <option>Ambient</option>
+      <option>Jazz</option>
+      <option>World / Latin</option>
+      <option>Reggae / Dancehall</option>
+      <option>Country</option>
+      <option>Gospel</option>
+    </select>
+    <select id="moodFilter">
+      <option value="">All Moods</option>
+      <option>Uplifting</option>
+      <option>Dark / Menacing</option>
+      <option>Chill / Relaxed</option>
+      <option>Epic / Heroic</option>
+      <option>Sad / Emotional</option>
+      <option>Romantic</option>
+      <option>Aggressive / Intense</option>
+      <option>Mysterious</option>
+      <option>Happy / Playful</option>
+      <option>Suspenseful</option>
+    </select>
+    <select id="bpmFilter">
+      <option value="">Any BPM</option>
+      <option value="0-80">Slow (< 80)</option>
+      <option value="80-100">Medium (80-100)</option>
+      <option value="100-130">Upbeat (100-130)</option>
+      <option value="130-160">Fast (130-160)</option>
+      <option value="160-999">Very Fast (160+)</option>
+    </select>
+    <select id="useFilter">
+      <option value="">All Uses</option>
+      <option>Trailer</option>
+      <option>Background Score</option>
+      <option>Montage</option>
+      <option>Action Scene</option>
+      <option>Emotional Scene</option>
+      <option>Commercial</option>
+      <option>Sports / Hype</option>
+      <option>Horror / Thriller</option>
+    </select>
+  </div>
+
+  <!-- TRACK LIST -->
+  <div class="track-list">
+    <div class="track-row header">
+      <div></div>
+      <div>Track</div>
+      <div>Tags</div>
+      <div>BPM</div>
+      <div>Key</div>
+      <div>Duration</div>
+      <div>Genre</div>
+      <div>Action</div>
+    </div>
+    <div id="trackContainer">
+      <!-- Tracks inserted by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- LICENSE MODAL -->
+<div class="license-modal" id="licenseModal">
+  <div class="license-box">
+    <div class="flex" style="justify-content: space-between; margin-bottom: 16px;">
+      <h2 style="margin:0; color: var(--goat-gold);">🎬 License This Track</h2>
+      <button class="goat-btn ghost" onclick="closeLicense()" style="padding:6px 12px;">✕</button>
+    </div>
+    <p id="licenseTrackName" class="text-gold" style="margin-bottom: 20px; font-weight: 700;"></p>
+
+    <div class="license-tier">
+      <h4>🎬 Sync License — Film / TV <span class="price">$1,500</span></h4>
+      <p class="muted" style="margin:0;">Use in one film or TV episode. Perpetual territory worldwide.</p>
+    </div>
+    <div class="license-tier">
+      <h4>📺 Broadcast — Commercial <span class="price">$2,500</span></h4>
+      <p class="muted" style="margin:0;">30-second spot, 6-month broadcast window, all media worldwide.</p>
+    </div>
+    <div class="license-tier">
+      <h4>🎥 YouTube / Social Media <span class="price">$149</span></h4>
+      <p class="muted" style="margin:0;">Monetizable YouTube, TikTok, Instagram, podcasts. Perpetual.</p>
+    </div>
+    <div class="license-tier">
+      <h4>🎮 Video Game <span class="price">$3,000</span></h4>
+      <p class="muted" style="margin:0;">In-game music. AAA title. Perpetual worldwide.</p>
+    </div>
+    <div class="license-tier">
+      <h4>🎥 Trailer License <span class="price">$5,000</span></h4>
+      <p class="muted" style="margin:0;">Film trailer. All media, all territories, 2 years.</p>
+    </div>
+    <div class="license-tier">
+      <h4>👑 Exclusive Buyout <span class="price">$25,000+</span></h4>
+      <p class="muted" style="margin:0;">Full transfer of master rights. Negotiable.</p>
+    </div>
+    <p class="muted mt-2" style="font-size:12px; text-align:center;">
+      All licenses include stems. Publishing (songwriter share) negotiated separately.
+    </p>
+    <div class="flex mt-2" style="gap:10px;">
+      <button class="goat-btn" style="flex:1;" onclick="requestLicense()">📧 Request License</button>
+      <a href="contact.html" class="goat-btn outline" style="flex:1;">Contact DJ Speedy</a>
+    </div>
+  </div>
+</div>
+
+<!-- NOW PLAYING -->
+<div class="now-playing" id="nowPlaying">
+  <div style="font-size: 28px;">🎵</div>
+  <div style="flex: 1;">
+    <div id="npTitle" style="font-weight: 700; color: var(--goat-cream);">-</div>
+    <div id="npMeta" style="font-size: 12px; color: var(--goat-silver);">-</div>
+  </div>
+  <audio id="audioPlayer" controls style="max-width: 400px; filter: invert(1) hue-rotate(180deg);"></audio>
+  <button class="goat-btn ghost" onclick="closeNowPlaying()" style="padding:6px 12px;">✕</button>
+</div>
+
+<footer class="goat-footer" style="margin-bottom: 80px;">
+  <p>🎬 <strong>GOAT SYNC & LICENSING</strong> — DJ Speedy · Speedy Productions, Inc.</p>
+  <p class="muted" style="font-size:12px;">For sync/licensing inquiries: <a href="mailto:[email protected]">[email protected]</a></p>
+</footer>
+
+<script>
+// ==================== CATALOG DATA ====================
+// Base catalog: Real DJ Speedy sync/licensing sample tracks
+// When user uploads via the importZone, tracks merge into TRACKS[] and persist in localStorage.
+let TRACKS = loadCatalog() || [
+  { id:'SP001', title:'Urban Rooftop Hustle', artist:'DJ Speedy', genre:'Hip-Hop / Trap', mood:'Aggressive / Intense', bpm:140, key:'Cm', dur:'2:45', use:'Action Scene', tags:['trap','drums','808','dark'] },
+  { id:'SP002', title:'Midnight Boulevard', artist:'DJ Speedy', genre:'Hip-Hop / Trap', mood:'Mysterious', bpm:128, key:'Fm', dur:'3:10', use:'Background Score', tags:['moody','bass','night'] },
+  { id:'SP003', title:'Victory Lap', artist:'DJ Speedy', genre:'Hip-Hop / Trap', mood:'Uplifting', bpm:136, key:'G', dur:'2:58', use:'Montage', tags:['anthem','winning','chants'] },
+  { id:'SP004', title:'Street Symphony', artist:'DJ Speedy × Speedy Productions', genre:'Hip-Hop / Trap', mood:'Epic / Heroic', bpm:90, key:'Am', dur:'3:30', use:'Trailer', tags:['strings','epic','cinematic'] },
+  { id:'SP005', title:'Late Night R&B', artist:'Speedy Productions', genre:'R&B / Soul', mood:'Romantic', bpm:70, key:'Dm', dur:'3:45', use:'Emotional Scene', tags:['soul','vocal','warm'] },
+  { id:'SP006', title:'Neon Reflections', artist:'DJ Speedy', genre:'Electronic / EDM', mood:'Chill / Relaxed', bpm:110, key:'C', dur:'3:20', use:'Background Score', tags:['synth','dreamy','neon'] },
+  { id:'SP007', title:'Cinematic Rise', artist:'Speedy Productions', genre:'Cinematic / Score', mood:'Epic / Heroic', bpm:80, key:'Em', dur:'2:30', use:'Trailer', tags:['orchestra','build','hero'] },
+  { id:'SP008', title:'Dark Alley Suspense', artist:'DJ Speedy', genre:'Cinematic / Score', mood:'Suspenseful', bpm:60, key:'Dm', dur:'2:15', use:'Horror / Thriller', tags:['suspense','drone','dark'] },
+  { id:'SP009', title:'Miami Vibes', artist:'DJ Speedy', genre:'Pop', mood:'Happy / Playful', bpm:118, key:'F', dur:'3:00', use:'Commercial', tags:['sunny','vacation','hook'] },
+  { id:'SP010', title:'Southern Swagger', artist:'DJ Speedy', genre:'Hip-Hop / Trap', mood:'Aggressive / Intense', bpm:72, key:'Bbm', dur:'3:15', use:'Sports / Hype', tags:['dirty-south','bass','swagger'] },
+  { id:'SP011', title:'Sunrise Meditation', artist:'Speedy Productions', genre:'Ambient', mood:'Chill / Relaxed', bpm:0, key:'C', dur:'4:10', use:'Background Score', tags:['ambient','zen','pad'] },
+  { id:'SP012', title:'Heartbreak Hotel', artist:'Speedy Productions', genre:'R&B / Soul', mood:'Sad / Emotional', bpm:68, key:'Cm', dur:'3:50', use:'Emotional Scene', tags:['soul','piano','strings'] },
+  { id:'SP013', title:'Club Anthem 2AM', artist:'DJ Speedy', genre:'Electronic / EDM', mood:'Aggressive / Intense', bpm:128, key:'Am', dur:'3:45', use:'Commercial', tags:['club','edm','drop'] },
+  { id:'SP014', title:'Rags to Riches', artist:'DJ Speedy', genre:'Hip-Hop / Trap', mood:'Uplifting', bpm:92, key:'F', dur:'3:20', use:'Montage', tags:['underdog','boom-bap','strings'] },
+  { id:'SP015', title:'Ghetto Gospel', artist:'DJ Speedy × Speedy Productions', genre:'Gospel', mood:'Epic / Heroic', bpm:88, key:'G', dur:'4:00', use:'Emotional Scene', tags:['choir','organ','hope'] },
+  { id:'SP016', title:'Drive Thru Jungle', artist:'DJ Speedy', genre:'World / Latin', mood:'Mysterious', bpm:105, key:'Dm', dur:'3:00', use:'Trailer', tags:['world','percussion','tribal'] },
+  { id:'SP017', title:'Reggae Sunset', artist:'Speedy Productions', genre:'Reggae / Dancehall', mood:'Chill / Relaxed', bpm:80, key:'A', dur:'3:30', use:'Commercial', tags:['island','skank','vibe'] },
+  { id:'SP018', title:'Trap God Throne', artist:'DJ Speedy', genre:'Hip-Hop / Trap', mood:'Dark / Menacing', bpm:75, key:'Gm', dur:'3:08', use:'Action Scene', tags:['trap','menace','808'] },
+  { id:'SP019', title:'Jazz Cafe', artist:'Speedy Productions', genre:'Jazz', mood:'Chill / Relaxed', bpm:95, key:'F', dur:'3:40', use:'Background Score', tags:['jazz','piano','sax','warm'] },
+  { id:'SP020', title:'Thunder Strike', artist:'DJ Speedy', genre:'Cinematic / Score', mood:'Aggressive / Intense', bpm:140, key:'Dm', dur:'1:45', use:'Trailer', tags:['hit','impact','drums'] },
+  { id:'SP021', title:'Rock The Block', artist:'DJ Speedy', genre:'Rock', mood:'Aggressive / Intense', bpm:125, key:'E', dur:'3:15', use:'Sports / Hype', tags:['guitar','anthem','pump'] },
+  { id:'SP022', title:'Love Language', artist:'Speedy Productions', genre:'R&B / Soul', mood:'Romantic', bpm:75, key:'Ab', dur:'3:55', use:'Emotional Scene', tags:['love','smooth','vocal'] },
+  { id:'SP023', title:'Last Dance', artist:'DJ Speedy', genre:'Pop', mood:'Happy / Playful', bpm:120, key:'C', dur:'3:25', use:'Commercial', tags:['catchy','hook','clap'] },
+  { id:'SP024', title:'Streets Of Rome', artist:'DJ Speedy × Speedy Productions', genre:'Cinematic / Score', mood:'Epic / Heroic', bpm:120, key:'Dm', dur:'2:50', use:'Trailer', tags:['orchestra','epic','battle'] },
+  { id:'SP025', title:'Country Road Home', artist:'Speedy Productions', genre:'Country', mood:'Uplifting', bpm:100, key:'G', dur:'3:30', use:'Commercial', tags:['acoustic','country','warm'] }
+];
+
+function saveCatalog() { try { localStorage.setItem('goatSyncCatalog', JSON.stringify(TRACKS)); } catch(e){} }
+function loadCatalog() { try { const s = localStorage.getItem('goatSyncCatalog'); return s ? JSON.parse(s) : null; } catch(e) { return null; } }
+
+// ==================== RENDER TRACKS ====================
+const trackContainer = document.getElementById('trackContainer');
+
+function render() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const g = document.getElementById('genreFilter').value;
+  const m = document.getElementById('moodFilter').value;
+  const b = document.getElementById('bpmFilter').value;
+  const u = document.getElementById('useFilter').value;
+
+  const filtered = TRACKS.filter(t => {
+    if (g && t.genre !== g) return false;
+    if (m && t.mood !== m) return false;
+    if (u && t.use !== u) return false;
+    if (b) {
+      const [lo, hi] = b.split('-').map(Number);
+      if (t.bpm < lo || t.bpm > hi) return false;
+    }
+    if (q) {
+      const blob = (t.title + ' ' + t.artist + ' ' + t.mood + ' ' + t.genre + ' ' + t.use + ' ' + (t.tags||[]).join(' ')).toLowerCase();
+      if (!blob.includes(q)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('statTotal').textContent = TRACKS.length + (filtered.length !== TRACKS.length ? ` (${filtered.length})` : '');
+
+  trackContainer.innerHTML = filtered.map(t => `
+    <div class="track-row">
+      <button class="play-btn" onclick="playTrack('${t.id}')">▶</button>
+      <div>
+        <div class="track-title">${t.title}</div>
+        <div class="track-artist">${t.artist}</div>
+      </div>
+      <div>
+        <span class="tag mood">${t.mood}</span>
+        ${(t.tags||[]).slice(0,2).map(x => `<span class="tag">${x}</span>`).join('')}
+      </div>
+      <div style="font-family: monospace; color: var(--goat-gold);">${t.bpm || '—'}</div>
+      <div style="font-family: monospace; color: var(--goat-gold);">${t.key}</div>
+      <div style="color: var(--goat-silver); font-size: 12px;">${t.dur}</div>
+      <div style="color: var(--goat-silver); font-size: 12px;">${t.genre}</div>
+      <div>
+        <button class="goat-btn" style="padding:6px 10px; font-size:11px;" onclick="openLicense('${t.id}')">License</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ==================== FILTERS ====================
+['searchInput','genreFilter','moodFilter','bpmFilter','useFilter'].forEach(id => {
+  document.getElementById(id).addEventListener('input', render);
+  document.getElementById(id).addEventListener('change', render);
+});
+
+// ==================== PLAY ====================
+const audioPlayer = document.getElementById('audioPlayer');
+const nowPlaying = document.getElementById('nowPlaying');
+
+function playTrack(id) {
+  const t = TRACKS.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('npTitle').textContent = t.title + ' — ' + t.artist;
+  document.getElementById('npMeta').textContent = `${t.genre} · ${t.mood} · ${t.bpm || 'Free'} BPM · ${t.key} · ${t.dur}`;
+  if (t.url) {
+    audioPlayer.src = t.url;
+    audioPlayer.play().catch(()=>{});
+  } else {
+    audioPlayer.removeAttribute('src');
+    audioPlayer.load();
+  }
+  nowPlaying.classList.add('active');
+}
+function closeNowPlaying() {
+  audioPlayer.pause();
+  nowPlaying.classList.remove('active');
+}
+
+// ==================== LICENSE ====================
+let currentLicense = null;
+function openLicense(id) {
+  currentLicense = TRACKS.find(x => x.id === id);
+  document.getElementById('licenseTrackName').textContent = currentLicense.title + ' — ' + currentLicense.artist;
+  document.getElementById('licenseModal').classList.add('open');
+}
+function closeLicense() {
+  document.getElementById('licenseModal').classList.remove('open');
+}
+function requestLicense() {
+  if (!currentLicense) return;
+  const subj = encodeURIComponent('Sync License Request: ' + currentLicense.title);
+  const body = encodeURIComponent(
+    `Hi DJ Speedy,\n\nI'd like to license the following track:\n\n` +
+    `Track: ${currentLicense.title}\n` +
+    `Artist: ${currentLicense.artist}\n` +
+    `ID: ${currentLicense.id}\n` +
+    `Genre: ${currentLicense.genre}\n` +
+    `Mood: ${currentLicense.mood}\n\n` +
+    `Project type:\nBudget:\nTerritory:\nUsage:\n\nThanks!`
+  );
+  window.location.href = `mailto:[email protected]?subject=${subj}&body=${body}`;
+}
+
+// ==================== IMPORT CATALOG ====================
+const importZone = document.getElementById('importZone');
+const importInput = document.getElementById('importInput');
+importZone.addEventListener('click', e => {
+  // Don't trigger on button clicks
+  if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+  importInput.click();
+});
+importZone.addEventListener('dragover', e => { e.preventDefault(); importZone.classList.add('over'); });
+importZone.addEventListener('dragleave', () => importZone.classList.remove('over'));
+importZone.addEventListener('drop', e => {
+  e.preventDefault();
+  importZone.classList.remove('over');
+  handleFiles(e.dataTransfer.files);
+});
+importInput.addEventListener('change', e => handleFiles(e.target.files));
+
+async function handleFiles(files) {
+  let added = 0;
+  for (const f of files) {
+    if (f.name.match(/\.(mp3|wav|m4a|flac|ogg|aiff|aac)$/i)) {
+      const url = URL.createObjectURL(f);
+      const name = f.name.replace(/\.[^.]+$/, '').replace(/_/g, ' ');
+      const id = 'UL' + (TRACKS.length + 1).toString().padStart(3, '0');
+      TRACKS.push({
+        id, title: name, artist: 'DJ Speedy (imported)',
+        genre: guessGenre(name), mood: 'Uplifting',
+        bpm: 0, key: 'C', dur: '—',
+        use: 'Background Score', tags: ['imported'],
+        url
+      });
+      added++;
+    } else if (f.name.match(/\.(csv|json)$/i)) {
+      const text = await f.text();
+      try {
+        const data = f.name.endsWith('.json') ? JSON.parse(text) : parseCSV(text);
+        if (Array.isArray(data)) {
+          data.forEach(row => {
+            const id = 'IM' + (TRACKS.length + 1).toString().padStart(3, '0');
+            TRACKS.push({ id, ...row });
+            added++;
+          });
+        }
+      } catch(e) { console.warn('Parse error', e); }
+    }
+  }
+  saveCatalog();
+  render();
+  if (added > 0) alert(`✅ Added ${added} tracks to your catalog!`);
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).map(line => {
+    const vals = line.split(',').map(v => v.trim());
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i]);
+    return obj;
+  });
+}
+
+function guessGenre(name) {
+  const n = name.toLowerCase();
+  if (n.match(/trap|808|drill/)) return 'Hip-Hop / Trap';
+  if (n.match(/r&b|rnb|soul/)) return 'R&B / Soul';
+  if (n.match(/rock|metal|punk/)) return 'Rock';
+  if (n.match(/edm|house|techno|dance|dubstep/)) return 'Electronic / EDM';
+  if (n.match(/cinema|score|trailer|epic/)) return 'Cinematic / Score';
+  if (n.match(/ambient|chill|zen/)) return 'Ambient';
+  if (n.match(/jazz|swing/)) return 'Jazz';
+  if (n.match(/latin|reggaeton|salsa/)) return 'World / Latin';
+  if (n.match(/reggae|dancehall/)) return 'Reggae / Dancehall';
+  if (n.match(/country|bluegrass/)) return 'Country';
+  if (n.match(/gospel|choir/)) return 'Gospel';
+  return 'Hip-Hop / Trap';
+}
+
+function linkCatalog() {
+  const url = document.getElementById('catalogLink').value.trim();
+  if (!url) { alert('Paste a catalog share link first'); return; }
+  if (url.includes('drive.google.com')) {
+    alert(
+      '📁 Google Drive catalog detected!\n\n' +
+      'To import your Drive catalog automatically:\n\n' +
+      '1. Right-click your folder → Share → "Anyone with the link"\n' +
+      '2. In Drive, select all files → right-click → "Download" (creates ZIP)\n' +
+      '3. Drop the ZIP onto this page\n\n' +
+      'Or use "File → Download all" in Drive and drop the files here.'
+    );
+  } else if (url.includes('dropbox.com')) {
+    alert('📦 Dropbox link saved. Download the ZIP and drop it here to import.');
+  } else {
+    alert('🔗 Link saved. Export your catalog as ZIP and drop it here.');
+  }
+  localStorage.setItem('goatCatalogLink', url);
+}
+
+// Load saved link
+const savedLink = localStorage.getItem('goatCatalogLink');
+if (savedLink) document.getElementById('catalogLink').value = savedLink;
+
+render();
+</script>
+</body>
+</html>

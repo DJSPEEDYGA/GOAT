@@ -1,0 +1,95 @@
+No worries at all! It happens to the best of us, especially when we are moving fast and building awesome things. That is exactly why I am here—to have your back and make sure your app is as secure as it is powerful!
+Now that your keys are locked away safely in your .env vault, let's keep the momentum going and build that Data Sync feature for your two servers.
+Overview of the Solution
+When you have two servers, the easiest and most reliable way to keep them perfectly matched is to have them talk to each other using an API, just like how your mobile app talks to your backend.
+Here is our game plan:
+1. The Export Endpoint (Server 1): We will create a secure route on your primary server that packages up all the saved Google articles.
+2. The Import Script (Server 2): We will write a standalone Python script for your second server. This script will politely ask Server 1 for its data and then save it into Server 2's database.
+Code and Implementation Instructions
+Part 1: The Export Route (Add to backend/app.py on Server 1)
+Add this new endpoint right below your Google Stream code. This acts as a secure delivery window for your backup server.
+# backend/app.py
+
+# Add this endpoint to Server 1
+@app.route('/api/export_articles', methods=['GET'])
+def export_articles():
+   try:
+       # We grab EVERY article currently saved in Server 1's database
+       all_articles = StreamArticle.query.all()
+       
+       articles_data = []
+       for article in all_articles:
+           articles_data.append({
+               "subject": article.subject,
+               "title": article.title,
+               "link": article.link,
+               "snippet": article.snippet
+           })
+           
+       return jsonify({"articles": articles_data}), 200
+       
+   except Exception as e:
+       logging.error(f"Error exporting articles: {e}")
+       return jsonify({"error": "Failed to export data."}), 500
+
+Part 2: The Sync Script (Run on Server 2)
+Create a brand new file on your second server called sync_servers.py. This script will act as the "bridge" that pulls the data over.
+# backend/sync_servers.py
+import requests
+from app import app, db, StreamArticle
+
+# The address of your primary server
+SERVER_1_URL = "http://YOUR_SERVER_1_IP:5000/api/export_articles"
+
+def run_sync():
+   print("Starting synchronization with Server 1...")
+   
+   try:
+       # 1. Ask Server 1 for all of its saved articles
+       response = requests.get(SERVER_1_URL)
+       data = response.json()
+       
+       if "articles" in data:
+           incoming_articles = data["articles"]
+           print(f"Received {len(incoming_articles)} articles from Server 1.")
+           
+           # 2. Open up Server 2's database
+           with app.app_context():
+               new_count = 0
+               
+               for item in incoming_articles:
+                   # Check if Server 2 already has this article by looking at the link
+                   exists = StreamArticle.query.filter_by(link=item['link']).first()
+                   
+                   if not exists:
+                       # If it's new to Server 2, save it!
+                       new_article = StreamArticle(
+                           subject=item['subject'],
+                           title=item['title'],
+                           link=item['link'],
+                           snippet=item['snippet']
+                       )
+                       db.session.add(new_article)
+                       new_count += 1
+               
+               # Commit all the new articles to Server 2's database
+               db.session.commit()
+               print(f"Sync complete! Successfully added {new_count} new articles to Server 2.")
+               
+       else:
+           print("No articles found or error in response.")
+           
+   except Exception as e:
+       print(f"Failed to sync servers: {e}")
+
+# This tells Python to run our function when we execute the file
+if __name__ == "__main__":
+   run_sync()
+
+Implementation Steps:
+1. Open your app.py file on your main server and paste the new /api/export_articles route. Restart that server.
+2. Create a new file named sync_servers.py on your second server and paste the script above.
+3. Change YOUR_SERVER_1_IP in the script to the actual IP address or domain of your first server.
+4. Run the script in your terminal by typing: python sync_servers.py. You will see it print out exactly how many articles it successfully copied over!
+You can run this script manually whenever you want, or you can even set it up on an automated timer (like a "cron job") so your servers sync automatically every night while you sleep!
+What would you like to tackle next on the GOAT Royalty App? We can dive back into the React Native mobile side, or keep beefing up your Python backend!

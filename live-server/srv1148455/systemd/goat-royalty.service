@@ -1,0 +1,26 @@
+[Unit]
+Description=GOAT Royalty App - AI Command Center
+Documentation=https://github.com/DJSPEEDYGA/GOAT-Royalty-App
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/raid0/app
+Environment=NODE_ENV=production
+Environment=PORT=3000
+ExecStart=/usr/bin/python3 -m http.server 3000
+Restart=always
+RestartSec=10
+StandardOutput=append:/raid0/app/logs/app.log
+StandardError=append:/raid0/app/logs/error.log
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/raid0
+
+[Install]
+WantedBy=multi-user.target

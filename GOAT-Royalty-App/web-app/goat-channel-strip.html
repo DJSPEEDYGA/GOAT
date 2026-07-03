@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>GOAT Channel Strip — SSL/Neve/API Console</title>
+<style>
+:root{
+  --bg:#080810;--bg2:#0c0c18;--bg3:#101020;--bg4:#14142a;
+  --panel:#0b0b18;--border:#1e1e35;--border2:#252540;
+  --gold:#f5a623;--gold2:#ffcc44;--red:#ff2244;--green:#00ff88;
+  --blue:#0088ff;--purple:#8833ff;--cyan:#00eedd;--orange:#ff6600;
+  --text:#dde0f8;--text2:#6868a0;--text3:#3a3a60;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+.topbar{display:flex;align-items:center;gap:10px;padding:7px 14px;background:var(--panel);border-bottom:1px solid var(--border);height:50px;flex-shrink:0;}
+.logo{font-size:17px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px;}
+.sep{width:1px;height:26px;background:var(--border);margin:0 3px;}
+.tb-btn{padding:4px 12px;border-radius:5px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:11px;cursor:pointer;transition:.15s;}
+.tb-btn:hover{border-color:var(--gold);color:var(--gold);}
+.tb-btn.active{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700;}
+.spacer{flex:1;}
+/* Main layout */
+.main{display:flex;flex:1;overflow:hidden;}
+/* Strip column */
+.strip-scroll{display:flex;overflow-x:auto;overflow-y:hidden;flex:1;background:var(--bg);padding:8px;}
+.strip-scroll::-webkit-scrollbar{height:6px;}
+.strip-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+/* Individual channel strip */
+.strip{display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--border2);border-radius:6px;width:100px;min-width:100px;flex-shrink:0;overflow:hidden;position:relative;transition:border-color .2s;}
+.strip:hover{border-color:var(--border2);}
+.strip.selected{border-color:var(--gold)!important;}
+/* Strip header */
+.strip-head{padding:5px 4px 4px;background:linear-gradient(180deg,var(--bg3),var(--panel));border-bottom:1px solid var(--border);text-align:center;cursor:pointer;}
+.strip-num{font-size:8px;color:var(--text2);letter-spacing:1px;}
+.strip-name{font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.strip-type{font-size:8px;color:var(--gold);letter-spacing:1px;text-transform:uppercase;}
+/* HPF/LPF */
+.filter-section{padding:4px 6px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.filter-btn{font-size:9px;padding:2px 5px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:.15s;}
+.filter-btn.on{border-color:var(--gold);color:var(--gold);background:rgba(245,166,35,.1);}
+/* EQ section */
+.eq-section{padding:5px 6px;border-bottom:1px solid var(--border);}
+.eq-label{font-size:8px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;text-align:center;}
+.mini-knob-row{display:flex;justify-content:space-around;margin-bottom:2px;}
+/* Dynamics */
+.dyn-section{padding:5px 6px;border-bottom:1px solid var(--border);}
+/* Aux sends */
+.aux-section{padding:5px 6px;border-bottom:1px solid var(--border);}
+.aux-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
+.aux-label{font-size:8px;color:var(--text2);width:20px;}
+/* Pan + fader */
+.pan-section{padding:5px 6px;border-bottom:1px solid var(--border);}
+.fader-section{padding:5px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
+.fader-track{width:16px;flex:1;background:var(--bg3);border-radius:8px;position:relative;overflow:visible;border:1px solid var(--border2);min-height:80px;}
+.fader-fill{position:absolute;bottom:0;left:2px;right:2px;background:linear-gradient(0deg,var(--gold),var(--gold2));border-radius:6px;transition:height .05s;}
+.fader-cap{position:absolute;left:-6px;right:-6px;height:12px;background:linear-gradient(180deg,#c0c0c0,#707070);border-radius:3px;cursor:ns-resize;border:1px solid #888;box-shadow:0 2px 4px rgba(0,0,0,.5);}
+.fader-db{font-size:9px;font-weight:700;color:var(--text2);font-variant-numeric:tabular-nums;text-align:center;}
+/* Meters */
+.meter-section{padding:3px 4px;display:flex;gap:3px;justify-content:center;}
+.meter-col{display:flex;flex-direction:column;gap:2px;}
+.meter-bar{width:12px;background:var(--bg3);border-radius:2px;overflow:hidden;flex:1;min-height:80px;border:1px solid var(--border2);}
+.meter-fill{width:100%;background:linear-gradient(0deg,#00ff88 0%,#00ff88 60%,#f5a623 80%,#ff2244 100%);transition:height .05s;border-radius:2px;}
+.meter-peak{font-size:7px;color:var(--text2);text-align:center;padding:1px;font-variant-numeric:tabular-nums;}
+/* Solo/Mute */
+.solo-mute{display:flex;gap:2px;padding:3px 4px;justify-content:center;border-bottom:1px solid var(--border);}
+.sm-btn{flex:1;padding:3px 0;text-align:center;border-radius:3px;border:1px solid var(--border);font-size:8px;font-weight:700;cursor:pointer;transition:.15s;letter-spacing:.5px;}
+.sm-btn.solo{border-color:var(--gold2);color:var(--gold2);}
+.sm-btn.solo.on{background:var(--gold2);color:#000;}
+.sm-btn.mute{border-color:var(--text3);color:var(--text3);}
+.sm-btn.mute.on{background:var(--red);color:#fff;border-color:var(--red);}
+.sm-btn.rec{border-color:var(--text3);color:var(--text3);}
+.sm-btn.rec.on{background:var(--red);color:#fff;border-color:var(--red);}
+/* Mini knob canvas */
+.mknob{cursor:ns-resize;}
+/* Right panel */
+.right-panel{width:280px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;}
+.right-panel::-webkit-scrollbar{width:4px;}
+.right-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.rp-section{border-bottom:1px solid var(--border);padding:12px;}
+.rp-title{font-size:9px;font-weight:700;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+/* Big EQ display */
+.eq-display{background:var(--bg);border:1px solid var(--border2);border-radius:6px;overflow:hidden;}
+/* Slider */
+.s-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.s-row label{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;width:55px;}
+.s-row input[type=range]{flex:1;height:3px;accent-color:var(--gold);cursor:pointer;}
+.s-row .sv{font-size:9px;font-weight:700;color:var(--gold);width:32px;text-align:right;font-variant-numeric:tabular-nums;}
+/* AI badge */
+.ai-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);border-radius:4px;padding:3px 8px;font-size:9px;color:var(--gold);letter-spacing:1px;}
+/* Strip color stripe */
+.color-stripe{height:3px;width:100%;}
+/* Console model selector */
+.console-bar{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+.console-btn{padding:4px 14px;border-radius:5px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:11px;cursor:pointer;transition:.15s;font-weight:600;letter-spacing:1px;}
+.console-btn:hover{border-color:var(--gold);color:var(--gold);}
+.console-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(245,166,35,.1);}
+/* Toggle */
+.tog{width:28px;height:16px;background:var(--bg3);border-radius:8px;cursor:pointer;position:relative;border:1px solid var(--border);transition:.2s;flex-shrink:0;}
+.tog.on{background:var(--gold);border-color:var(--gold);}
+.tog::after{content:'';position:absolute;width:12px;height:12px;background:#fff;border-radius:50%;top:1px;left:1px;transition:.2s;}
+.tog.on::after{left:13px;}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">GOAT</div>
+  <span style="font-size:12px;color:var(--text2);font-weight:600;">Channel Strip</span>
+  <div class="sep"></div>
+  <button class="tb-btn" onclick="addStrip()">+ Add Channel</button>
+  <button class="tb-btn" onclick="resetAll()">Reset All</button>
+  <div class="sep"></div>
+  <span style="font-size:10px;color:var(--text2);">BPM: <span style="color:var(--gold);" id="bpmDisp">140</span></span>
+  <span style="font-size:10px;color:var(--text2);margin-left:6px;">Bars: <span style="color:var(--cyan);">3|2</span></span>
+  <div class="spacer"></div>
+  <span style="font-size:10px;color:var(--text2);">CPU: <span id="cpuDisp" style="color:var(--green)">16%</span></span>
+  <div class="sep"></div>
+  <a href="powerhouse.html" style="text-decoration:none;"><button class="tb-btn">Back</button></a>
+</div>
+
+<!-- CONSOLE MODEL BAR -->
+<div class="console-bar">
+  <span style="font-size:9px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;">Console Model:</span>
+  <button class="console-btn active" onclick="setConsole(this,'ssl')">SSL 9000</button>
+  <button class="console-btn" onclick="setConsole(this,'neve')">Neve 8078</button>
+  <button class="console-btn" onclick="setConsole(this,'api')">API 2448</button>
+  <button class="console-btn" onclick="setConsole(this,'ssl4k')">SSL 4000</button>
+  <button class="console-btn" onclick="setConsole(this,'trident')">Trident A-Range</button>
+  <div class="sep"></div>
+  <span style="font-size:9px;color:var(--text2);">SHOW:</span>
+  <button class="tb-btn active" style="font-size:10px;" onclick="toggleView('eq',this)">EQ</button>
+  <button class="tb-btn active" style="font-size:10px;" onclick="toggleView('dyn',this)">DYN</button>
+  <button class="tb-btn active" style="font-size:10px;" onclick="toggleView('aux',this)">AUX</button>
+  <div class="sep"></div>
+  <div class="ai-badge">🧠 AI Suggestions</div>
+  <div class="spacer"></div>
+  <span style="font-size:10px;color:var(--text2);">Scene: </span>
+  <select style="background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:10px;padding:3px 6px;border-radius:4px;">
+    <option>Full Mix</option><option>Tracking</option><option>Overdub</option><option>Mix Down</option>
+  </select>
+</div>
+
+<!-- MAIN AREA -->
+<div class="main">
+
+  <!-- STRIP SCROLL AREA -->
+  <div class="strip-scroll" id="stripScroll">
+    <!-- Strips rendered by JS -->
+  </div>
+
+  <!-- RIGHT PANEL — SELECTED CHANNEL DETAIL -->
+  <div class="right-panel" id="rightPanel">
+    <div class="rp-section">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="font-size:16px;font-weight:900;color:var(--gold);" id="rp-name">Ch 1 — Kick</div>
+        <div class="ai-badge" id="rp-type">DRM</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <button class="tb-btn active" id="rp-solo" onclick="this.classList.toggle('active')" style="font-size:10px;">SOLO</button>
+        <button class="tb-btn" id="rp-mute" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'var(--red)':''" style="font-size:10px;">MUTE</button>
+        <button class="tb-btn" style="font-size:10px;" onclick="this.classList.toggle('active');this.style.borderColor='var(--red)'">REC</button>
+        <div class="spacer"></div>
+        <div class="tog on" onclick="this.classList.toggle('on')" title="Phase"></div>
+        <span style="font-size:9px;color:var(--text2);">Ø</span>
+      </div>
+    </div>
+
+    <!-- BIG EQ DISPLAY -->
+    <div class="rp-section">
+      <div class="rp-title">EQ — 4-Band Parametric</div>
+      <canvas id="bigEQ" height="100" style="width:100%;background:var(--bg);border-radius:6px;border:1px solid var(--border2);margin-bottom:8px;"></canvas>
+      <div class="s-row"><label>HF Freq</label><input type="range" min="2000" max="20000" value="10000" oninput="updateBigEQ(this,'hf_freq',this.value);this.nextElementSibling.textContent=Math.round(this.value/1000)+'kHz'"><span class="sv" style="color:#0088ff;">10kHz</span></div>
+      <div class="s-row"><label>HF Gain</label><input type="range" min="-12" max="12" value="3" oninput="updateBigEQ(this,'hf_gain',this.value);this.nextElementSibling.textContent=(this.value>0?'+':'')+this.value+'dB'"><span class="sv">+3dB</span></div>
+      <div class="s-row"><label>HMF Freq</label><input type="range" min="500" max="8000" value="3000" oninput="updateBigEQ(this,'hmf_freq',this.value);this.nextElementSibling.textContent=Math.round(this.value/100)/10+'kHz'"><span class="sv" style="color:#9833ff;">3kHz</span></div>
+      <div class="s-row"><label>HMF Gain</label><input type="range" min="-12" max="12" value="2" oninput="this.nextElementSibling.textContent=(this.value>0?'+':'')+this.value+'dB'"><span class="sv">+2dB</span></div>
+      <div class="s-row"><label>LMF Freq</label><input type="range" min="100" max="2000" value="400" oninput="this.nextElementSibling.textContent=this.value+'Hz'"><span class="sv" style="color:#f5a623;">400Hz</span></div>
+      <div class="s-row"><label>LMF Gain</label><input type="range" min="-12" max="12" value="-2" oninput="this.nextElementSibling.textContent=(this.value>0?'+':'')+this.value+'dB'"><span class="sv">-2dB</span></div>
+      <div class="s-row"><label>LF Freq</label><input type="range" min="20" max="500" value="80" oninput="this.nextElementSibling.textContent=this.value+'Hz'"><span class="sv" style="color:#ff2244;">80Hz</span></div>
+      <div class="s-row"><label>LF Gain</label><input type="range" min="-12" max="12" value="4" oninput="this.nextElementSibling.textContent=(this.value>0?'+':'')+this.value+'dB'"><span class="sv">+4dB</span></div>
+      <div class="s-row"><label>HPF</label><input type="range" min="20" max="400" value="40" oninput="this.nextElementSibling.textContent=this.value+'Hz'"><span class="sv" style="color:#ff2244;">40Hz</span></div>
+    </div>
+
+    <!-- DYNAMICS -->
+    <div class="rp-section">
+      <div class="rp-title">Dynamics</div>
+      <div style="display:flex;gap:12px;margin-bottom:8px;">
+        <div style="flex:1;">
+          <div style="font-size:9px;color:var(--blue);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;">Compressor</div>
+          <div class="s-row"><label>Thresh</label><input type="range" min="-60" max="0" value="-18" oninput="this.nextElementSibling.textContent=this.value+'dB'"><span class="sv">-18dB</span></div>
+          <div class="s-row"><label>Ratio</label><input type="range" min="1" max="20" value="4" oninput="this.nextElementSibling.textContent=this.value+':1'"><span class="sv">4:1</span></div>
+          <div class="s-row"><label>Attack</label><input type="range" min="0" max="100" value="10" oninput="this.nextElementSibling.textContent=this.value+'ms'"><span class="sv">10ms</span></div>
+          <div class="s-row"><label>Release</label><input type="range" min="0" max="500" value="80" oninput="this.nextElementSibling.textContent=this.value+'ms'"><span class="sv">80ms</span></div>
+          <div class="s-row"><label>Makeup</label><input type="range" min="0" max="20" value="3" oninput="this.nextElementSibling.textContent='+'+this.value+'dB'"><span class="sv">+3dB</span></div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:9px;color:var(--red);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;">Gate</div>
+          <div class="s-row"><label>Thresh</label><input type="range" min="-80" max="0" value="-50" oninput="this.nextElementSibling.textContent=this.value+'dB'"><span class="sv">-50dB</span></div>
+          <div class="s-row"><label>Attack</label><input type="range" min="0" max="50" value="1" oninput="this.nextElementSibling.textContent=this.value+'ms'"><span class="sv">1ms</span></div>
+          <div class="s-row"><label>Hold</label><input type="range" min="0" max="500" value="50" oninput="this.nextElementSibling.textContent=this.value+'ms'"><span class="sv">50ms</span></div>
+          <div class="s-row"><label>Release</label><input type="range" min="0" max="500" value="100" oninput="this.nextElementSibling.textContent=this.value+'ms'"><span class="sv">100ms</span></div>
+          <div class="s-row"><label>Range</label><input type="range" min="0" max="60" value="40" oninput="this.nextElementSibling.textContent='-'+this.value+'dB'"><span class="sv">-40dB</span></div>
+        </div>
+      </div>
+      <div style="height:16px;background:var(--bg);border:1px solid var(--border2);border-radius:4px;overflow:hidden;">
+        <div id="grBarBig" style="height:100%;background:var(--blue);transition:width .08s;border-radius:4px;width:0%;margin-left:auto;"></div>
+      </div>
+    </div>
+
+    <!-- AUX SENDS -->
+    <div class="rp-section">
+      <div class="rp-title">Aux Sends / FX Returns</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:2px;">
+          <label style="color:var(--gold);">Aux 1 — Reverb</label>
+          <div style="display:flex;gap:4px;align-items:center;width:100%;">
+            <input type="range" min="0" max="100" value="30" style="flex:1;accent-color:var(--gold);height:3px;">
+            <span style="font-size:9px;color:var(--gold);width:20px;">30</span>
+          </div>
+        </div>
+        <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:2px;">
+          <label style="color:var(--cyan);">Aux 2 — Delay</label>
+          <div style="display:flex;gap:4px;align-items:center;width:100%;">
+            <input type="range" min="0" max="100" value="15" style="flex:1;accent-color:var(--cyan);height:3px;">
+            <span style="font-size:9px;color:var(--cyan);width:20px;">15</span>
+          </div>
+        </div>
+        <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:2px;">
+          <label style="color:var(--purple);">Aux 3 — Chorus</label>
+          <div style="display:flex;gap:4px;align-items:center;width:100%;">
+            <input type="range" min="0" max="100" value="0" style="flex:1;accent-color:var(--purple);height:3px;">
+            <span style="font-size:9px;color:var(--purple);width:20px;">0</span>
+          </div>
+        </div>
+        <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:2px;">
+          <label style="color:var(--orange);">Aux 4 — Cue Mix</label>
+          <div style="display:flex;gap:4px;align-items:center;width:100%;">
+            <input type="range" min="0" max="100" value="75" style="flex:1;accent-color:var(--orange);height:3px;">
+            <span style="font-size:9px;color:var(--orange);width:20px;">75</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI SUGGESTIONS -->
+    <div class="rp-section">
+      <div class="rp-title">🧠 AI Mix Suggestions</div>
+      <div style="display:flex;flex-direction:column;gap:6px;" id="aiSuggestions">
+        <div style="background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.2);border-radius:6px;padding:8px;">
+          <div style="font-size:10px;font-weight:700;color:var(--gold);margin-bottom:2px;">EQ Suggestion</div>
+          <div style="font-size:10px;color:var(--text2);">Cut 250Hz by 3dB to reduce mud. Boost 5kHz +2dB for presence.</div>
+          <button onclick="applyAISuggestion('eq')" style="margin-top:6px;padding:3px 10px;background:rgba(245,166,35,.2);border:1px solid var(--gold);color:var(--gold);border-radius:4px;font-size:10px;cursor:pointer;">Apply</button>
+        </div>
+        <div style="background:rgba(0,136,255,.07);border:1px solid rgba(0,136,255,.2);border-radius:6px;padding:8px;">
+          <div style="font-size:10px;font-weight:700;color:var(--blue);margin-bottom:2px;">Compression Tip</div>
+          <div style="font-size:10px;color:var(--text2);">Attack 4ms, Release 80ms. Ratio 4:1 for tight transient control.</div>
+          <button onclick="applyAISuggestion('comp')" style="margin-top:6px;padding:3px 10px;background:rgba(0,136,255,.15);border:1px solid var(--blue);color:var(--blue);border-radius:4px;font-size:10px;cursor:pointer;">Apply</button>
+        </div>
+        <button onclick="getAISuggestion()" style="width:100%;padding:6px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:var(--gold);border-radius:5px;font-size:11px;cursor:pointer;font-weight:700;">🧠 Get New Suggestion</button>
+      </div>
+    </div>
+
+    <!-- SEND TO -->
+    <div class="rp-section">
+      <div class="rp-title">Send To</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <a href="goat-plugin-rack.html" style="text-decoration:none;"><button class="tb-btn" style="font-size:10px;width:100%;text-align:left;">Plugin Rack</button></a>
+        <a href="ssl-mixer.html" style="text-decoration:none;"><button class="tb-btn" style="font-size:10px;width:100%;text-align:left;">SSL Mixer</button></a>
+        <a href="goat-autotune.html" style="text-decoration:none;"><button class="tb-btn" style="font-size:10px;width:100%;text-align:left;">AutoTune Pro</button></a>
+        <a href="vocal-studio.html" style="text-decoration:none;"><button class="tb-btn" style="font-size:10px;width:100%;text-align:left;">Vocal Studio</button></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== CHANNEL DATA =====
+const channels = [
+  {id:1,name:'Kick',type:'DRM',color:'#ff2244',fader:80,muted:false,soloed:false,rec:false},
+  {id:2,name:'Snare',type:'DRM',color:'#ff6600',fader:75,muted:false,soloed:false,rec:false},
+  {id:3,name:'Hi-Hat',type:'DRM',color:'#ff6600',fader:65,muted:false,soloed:false,rec:false},
+  {id:4,name:'OH L',type:'DRM',color:'#ff6600',fader:70,muted:false,soloed:false,rec:false},
+  {id:5,name:'OH R',type:'DRM',color:'#ff6600',fader:70,muted:false,soloed:false,rec:false},
+  {id:6,name:'Bass',type:'BASS',color:'#8833ff',fader:82,muted:false,soloed:false,rec:false},
+  {id:7,name:'Gtr L',type:'GTR',color:'#0088ff',fader:72,muted:false,soloed:false,rec:false},
+  {id:8,name:'Gtr R',type:'GTR',color:'#0088ff',fader:72,muted:false,soloed:false,rec:false},
+  {id:9,name:'Lead Vox',type:'VOX',color:'#f5a623',fader:85,muted:false,soloed:false,rec:true},
+  {id:10,name:'BGV 1',type:'VOX',color:'#f5a623',fader:60,muted:false,soloed:false,rec:false},
+  {id:11,name:'BGV 2',type:'VOX',color:'#f5a623',fader:58,muted:false,soloed:false,rec:false},
+  {id:12,name:'Keys',type:'KEYS',color:'#00eedd',fader:68,muted:false,soloed:false,rec:false},
+  {id:13,name:'Synth',type:'SYNTH',color:'#00eedd',fader:62,muted:false,soloed:false,rec:false},
+  {id:14,name:'Pad',type:'PAD',color:'#00eedd',fader:55,muted:false,soloed:false,rec:false},
+  {id:15,name:'Brass',type:'ORCH',color:'#00ff88',fader:65,muted:false,soloed:false,rec:false},
+  {id:16,name:'Strings',type:'ORCH',color:'#00ff88',fader:60,muted:false,soloed:false,rec:false},
+  {id:17,name:'Perc',type:'DRM',color:'#ff6600',fader:50,muted:true,soloed:false,rec:false},
+  {id:18,name:'FX 1',type:'FX',color:'#6868a0',fader:40,muted:false,soloed:false,rec:false},
+  {id:19,name:'FX 2',type:'FX',color:'#6868a0',fader:35,muted:false,soloed:false,rec:false},
+  {id:20,name:'Drum Bus',type:'BUS',color:'#ff2244',fader:88,muted:false,soloed:false,rec:false},
+  {id:21,name:'Music Bus',type:'BUS',color:'#0088ff',fader:85,muted:false,soloed:false,rec:false},
+  {id:22,name:'Vox Bus',type:'BUS',color:'#f5a623',fader:85,muted:false,soloed:false,rec:false},
+  {id:23,name:'Mix Bus',type:'BUS',color:'#00ff88',fader:90,muted:false,soloed:false,rec:false},
+  {id:24,name:'Mstr',type:'MSTR',color:'#f5a623',fader:95,muted:false,soloed:false,rec:false},
+];
+
+let selectedCh = 1;
+let faderDrag = null;
+let meterVals = channels.map(() => ({ l: 0, r: 0 }));
+
+// ===== BUILD STRIPS =====
+function buildStrips() {
+  const scroll = document.getElementById('stripScroll');
+  scroll.innerHTML = '';
+  channels.forEach(ch => {
+    const div = document.createElement('div');
+    div.className = 'strip' + (ch.id === selectedCh ? ' selected' : '');
+    div.id = 'strip-' + ch.id;
+    div.innerHTML = `
+      <div class="color-stripe" style="background:${ch.color};"></div>
+      <div class="strip-head" onclick="selectChannel(${ch.id})">
+        <div class="strip-num">CH ${ch.id}</div>
+        <div class="strip-name">${ch.name}</div>
+        <div class="strip-type">${ch.type}</div>
+      </div>
+      <div class="filter-section">
+        <button class="filter-btn on" onclick="this.classList.toggle('on')">HPF</button>
+        <button class="filter-btn" onclick="this.classList.toggle('on')">LPF</button>
+      </div>
+      <div class="eq-section">
+        <div class="eq-label">EQ</div>
+        <div class="mini-knob-row">
+          <canvas class="mknob" id="mk-${ch.id}-hf" width="22" height="22" data-v="65" data-c="${ch.color}" title="HF"></canvas>
+          <canvas class="mknob" id="mk-${ch.id}-hmf" width="22" height="22" data-v="55" data-c="${ch.color}" title="HMF"></canvas>
+          <canvas class="mknob" id="mk-${ch.id}-lmf" width="22" height="22" data-v="50" data-c="${ch.color}" title="LMF"></canvas>
+          <canvas class="mknob" id="mk-${ch.id}-lf" width="22" height="22" data-v="60" data-c="${ch.color}" title="LF"></canvas>
+        </div>
+      </div>
+      <div class="dyn-section">
+        <div class="eq-label">COMP</div>
+        <div class="mini-knob-row">
+          <canvas class="mknob" id="mk-${ch.id}-thr" width="22" height="22" data-v="55" data-c="#0088ff" title="Threshold"></canvas>
+          <canvas class="mknob" id="mk-${ch.id}-rat" width="22" height="22" data-v="45" data-c="#0088ff" title="Ratio"></canvas>
+          <canvas class="mknob" id="mk-${ch.id}-atk" width="22" height="22" data-v="35" data-c="#ff2244" title="Attack"></canvas>
+        </div>
+      </div>
+      <div class="aux-section">
+        <div class="eq-label">AUX</div>
+        <div class="aux-row">
+          <span class="aux-label" style="color:var(--gold);">1</span>
+          <input type="range" min="0" max="100" value="30" style="flex:1;height:3px;accent-color:var(--gold);">
+        </div>
+        <div class="aux-row">
+          <span class="aux-label" style="color:var(--cyan);">2</span>
+          <input type="range" min="0" max="100" value="0" style="flex:1;height:3px;accent-color:var(--cyan);">
+        </div>
+      </div>
+      <div class="pan-section">
+        <div class="eq-label">PAN</div>
+        <input type="range" min="-100" max="100" value="0" style="width:100%;height:4px;accent-color:${ch.color};">
+      </div>
+      <div class="solo-mute">
+        <div class="sm-btn solo ${ch.soloed?'on':''}" onclick="toggleSolo(${ch.id},this)">S</div>
+        <div class="sm-btn mute ${ch.muted?'on':''}" onclick="toggleMute(${ch.id},this)">M</div>
+        <div class="sm-btn rec ${ch.rec?'on':''}" onclick="toggleRec(${ch.id},this)">R</div>
+      </div>
+      <div style="display:flex;gap:4px;padding:4px;flex:1;min-height:120px;">
+        <div class="meter-bar" id="meter-l-${ch.id}"><div class="meter-fill" id="mfl-${ch.id}" style="height:${ch.fader}%;width:100%;position:relative;bottom:0;"></div></div>
+        <div class="fader-track" id="ftrack-${ch.id}">
+          <div class="fader-fill" id="ffill-${ch.id}" style="height:${ch.fader}%;"></div>
+          <div class="fader-cap" id="fcap-${ch.id}" style="bottom:calc(${ch.fader}% - 6px);" 
+            onmousedown="startFaderDrag(event,${ch.id})" ontouchstart="startFaderDrag(event,${ch.id})"></div>
+        </div>
+        <div class="meter-bar" id="meter-r-${ch.id}"><div class="meter-fill" id="mfr-${ch.id}" style="height:${ch.fader}%;width:100%;position:relative;bottom:0;"></div></div>
+      </div>
+      <div class="fader-db" id="fdb-${ch.id}">${ch.fader >= 85 ? '0' : ch.fader >= 70 ? String(-(85-ch.fader)) : String(-(85-ch.fader))}dB</div>
+    `;
+    scroll.appendChild(div);
+    // spacer between groups
+    if([5,8,11,14,16,19].includes(ch.id)){
+      const spacer = document.createElement('div');
+      spacer.style.cssText='width:6px;flex-shrink:0;';
+      scroll.appendChild(spacer);
+    }
+  });
+  initMiniKnobs();
+}
+
+// ===== MINI KNOBS =====
+function initMiniKnobs() {
+  document.querySelectorAll('.mknob').forEach(c => {
+    let v = parseFloat(c.dataset.v || 50);
+    let dragging = false, sy = 0, sv2 = 0;
+    const col = c.dataset.c || '#f5a623';
+    function draw(val) {
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0,0,22,22);
+      const sa = 0.75*Math.PI, ea = 2.25*Math.PI;
+      const pct = val/100;
+      ctx.beginPath(); ctx.arc(11,11,8,sa,ea);
+      ctx.strokeStyle='#1e1e35'; ctx.lineWidth=3; ctx.stroke();
+      ctx.beginPath(); ctx.arc(11,11,8,sa,sa+(ea-sa)*pct);
+      ctx.strokeStyle=col; ctx.lineWidth=3; ctx.lineCap='round'; ctx.stroke();
+    }
+    draw(v);
+    c.addEventListener('mousedown', e=>{dragging=true;sy=e.clientY;sv2=v;e.preventDefault();});
+    document.addEventListener('mousemove', e=>{
+      if(!dragging) return;
+      v=Math.max(0,Math.min(100,sv2+(sy-e.clientY)*0.7));
+      draw(v);
+    });
+    document.addEventListener('mouseup',()=>{dragging=false;});
+  });
+}
+
+// ===== FADER DRAG =====
+function startFaderDrag(e, chId) {
+  e.preventDefault(); e.stopPropagation();
+  faderDrag = { chId, startY: e.touches ? e.touches[0].clientY : e.clientY, startVal: channels[chId-1].fader };
+}
+document.addEventListener('mousemove', e => {
+  if(!faderDrag) return;
+  const track = document.getElementById('ftrack-'+faderDrag.chId);
+  const h = track.offsetHeight;
+  const dy = faderDrag.startY - (e.clientY);
+  const dv = (dy / h) * 100;
+  setFader(faderDrag.chId, Math.max(0, Math.min(100, faderDrag.startVal + dv)));
+});
+document.addEventListener('touchmove', e => {
+  if(!faderDrag) return;
+  const track = document.getElementById('ftrack-'+faderDrag.chId);
+  const h = track.offsetHeight;
+  const dy = faderDrag.startY - e.touches[0].clientY;
+  const dv = (dy / h) * 100;
+  setFader(faderDrag.chId, Math.max(0, Math.min(100, faderDrag.startVal + dv)));
+}, {passive:true});
+document.addEventListener('mouseup', () => { faderDrag = null; });
+document.addEventListener('touchend', () => { faderDrag = null; });
+
+function setFader(chId, val) {
+  channels[chId-1].fader = val;
+  const fill = document.getElementById('ffill-'+chId);
+  const cap = document.getElementById('fcap-'+chId);
+  const db = document.getElementById('fdb-'+chId);
+  if(fill) fill.style.height = val+'%';
+  if(cap) cap.style.bottom = 'calc('+val+'% - 6px)';
+  if(db) db.textContent = val>=85?'0dB':(val>=70?'-'+(Math.round((85-val)/3))+'dB':'-'+(Math.round((85-val)/2))+'dB');
+}
+
+function selectChannel(id) {
+  selectedCh = id;
+  document.querySelectorAll('.strip').forEach(s => s.classList.remove('selected'));
+  document.getElementById('strip-'+id)?.classList.add('selected');
+  const ch = channels[id-1];
+  document.getElementById('rp-name').textContent = 'Ch '+ch.id+' — '+ch.name;
+  document.getElementById('rp-type').textContent = ch.type;
+}
+
+function toggleSolo(id, el) { el.classList.toggle('on'); channels[id-1].soloed = el.classList.contains('on'); }
+function toggleMute(id, el) { el.classList.toggle('on'); channels[id-1].muted = el.classList.contains('on'); }
+function toggleRec(id, el) { el.classList.toggle('on'); channels[id-1].rec = el.classList.contains('on'); }
+
+function addStrip() {
+  const id = channels.length+1;
+  channels.push({id,name:'Ch '+id,type:'AUX',color:'#6868a0',fader:70,muted:false,soloed:false,rec:false});
+  buildStrips();
+  document.getElementById('strip-'+id)?.scrollIntoView({behavior:'smooth',inline:'end'});
+}
+
+function resetAll() {
+  channels.forEach(ch => { ch.fader = 75; ch.muted = false; ch.soloed = false; });
+  buildStrips();
+}
+
+function setConsole(el, model) {
+  document.querySelectorAll('.console-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  showToast('Console: '+el.textContent+' loaded');
+}
+
+function toggleView(section, btn) {
+  btn.classList.toggle('active');
+}
+
+// ===== BIG EQ =====
+const bigEQVals = { hf_gain:3, hmf_gain:2, lmf_gain:-2, lf_gain:4, hf_freq:10000, hmf_freq:3000 };
+function updateBigEQ(input, param, val) {
+  bigEQVals[param] = parseFloat(val);
+  drawBigEQ();
+}
+function drawBigEQ() {
+  const c = document.getElementById('bigEQ');
+  if(!c||!c.offsetWidth) return;
+  c.width=c.offsetWidth; c.height=100;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#080810'; ctx.fillRect(0,0,c.width,100);
+  ctx.strokeStyle='rgba(30,30,53,0.8)'; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=i*25;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke();}
+  ctx.strokeStyle='rgba(245,166,35,0.6)'; ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(0,50);ctx.lineTo(c.width,50);ctx.stroke();
+  const colors=['#ff2244','#f5a623','#9833ff','#0088ff'];
+  const bands=[{g:bigEQVals.lf_gain,x:0.1,w:0.15,c:colors[0]},{g:bigEQVals.lmf_gain,x:0.3,w:0.12,c:colors[1]},{g:bigEQVals.hmf_gain,x:0.6,w:0.12,c:colors[2]},{g:bigEQVals.hf_gain,x:0.85,w:0.1,c:colors[3]}];
+  ctx.beginPath();
+  for(let x=0;x<c.width;x++){
+    const t=x/c.width;
+    let total=0;
+    bands.forEach(b=>{
+      const dist=Math.abs(t-b.x);
+      const bell=Math.exp(-(dist*dist)/(2*b.w*b.w));
+      total+=b.g*bell;
+    });
+    const y=50-(total/12)*40;
+    x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  const grad=ctx.createLinearGradient(0,0,c.width,0);
+  grad.addColorStop(0,'#ff2244');grad.addColorStop(0.3,'#f5a623');grad.addColorStop(0.7,'#9833ff');grad.addColorStop(1,'#0088ff');
+  ctx.strokeStyle=grad;ctx.lineWidth=2.5;ctx.shadowColor='rgba(245,166,35,.5)';ctx.shadowBlur=6;ctx.stroke();ctx.shadowBlur=0;
+}
+
+// ===== AI SUGGESTIONS =====
+const aiSuggestions = [
+  {type:'eq',label:'EQ Suggestion',color:'var(--gold)',text:'Cut 250Hz by 3dB to reduce mud. Boost 5kHz +2dB for presence.',action:'eq'},
+  {type:'comp',label:'Compression Tip',color:'var(--blue)',text:'Try fast attack 2ms, 8:1 ratio for a punchy transient clamp.',action:'comp'},
+  {type:'eq',label:'Low End Tip',color:'var(--purple)',text:'High-pass at 80Hz, shelf boost 60Hz by +2dB for warmth.',action:'eq'},
+  {type:'comp',label:'Glue Tip',color:'var(--green)',text:'Slow attack 20ms lets transients through for natural feel.',action:'comp'},
+];
+let aiIdx=0;
+function getAISuggestion(){
+  aiIdx=(aiIdx+1)%aiSuggestions.length;
+  const s=aiSuggestions[aiIdx];
+  showToast('New AI suggestion loaded');
+}
+function applyAISuggestion(type){showToast('AI '+type+' suggestion applied');}
+
+// ===== METERS ANIMATION =====
+let frame2=0;
+function animateMeters(){
+  frame2++;
+  channels.forEach((ch,i)=>{
+    if(ch.muted){
+      const lEl=document.getElementById('mfl-'+ch.id);
+      const rEl=document.getElementById('mfr-'+ch.id);
+      if(lEl){lEl.style.height='0%';} if(rEl){rEl.style.height='0%';} return;
+    }
+    const base=ch.fader*0.7;
+    const noise=Math.sin(frame2*0.07+i*0.8)*15+Math.random()*10;
+    const lv=Math.max(0,Math.min(100,base+noise));
+    const rv=Math.max(0,Math.min(100,base+noise*0.9+Math.random()*5));
+    const lEl=document.getElementById('mfl-'+ch.id);
+    const rEl=document.getElementById('mfr-'+ch.id);
+    if(lEl) lEl.style.height=lv+'%';
+    if(rEl) rEl.style.height=rv+'%';
+  });
+  // GR bar big
+  const gr=Math.max(0,Math.sin(frame2*0.05)*20+10)*0.4;
+  const grEl=document.getElementById('grBarBig');
+  if(grEl) grEl.style.width=gr+'%';
+  // BPM flicker
+  document.getElementById('cpuDisp').textContent=Math.round(14+Math.sin(frame2*0.03)*4)+'%';
+  if(frame2%2===0) drawBigEQ();
+  requestAnimationFrame(animateMeters);
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:16px;right:16px;background:#f5a623;color:#000;padding:7px 14px;border-radius:6px;font-size:11px;font-weight:700;z-index:9999;';
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+}
+
+window.addEventListener('load',()=>{
+  buildStrips();
+  setTimeout(drawBigEQ,200);
+  animateMeters();
+});
+window.addEventListener('resize',drawBigEQ);
+</script>
+</body>
+</html>

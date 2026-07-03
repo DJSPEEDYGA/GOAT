@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT NFT Studio | Create, Mint & Trade</title>
+<style>
+  :root{--gold:#d4a03c;--gold2:#f5c842;--bg:#040608;--panel:#0d1117;--panel2:#131920;
+  --pink:#f472b6;--purple:#a78bfa;--green:#22c55e;--red:#ef4444;--blue:#38bdf8;
+  --text:#e2e8f0;--muted:#64748b;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;}
+
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:rgba(13,17,23,.97);border-bottom:1px solid rgba(212,160,60,.3);position:sticky;top:0;z-index:100;}
+  .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+  .nav-logo span{font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .nav-links a{color:var(--muted);text-decoration:none;padding:6px 14px;border-radius:20px;font-size:13px;transition:.3s;margin:0 3px;}
+  .nav-links a:hover,.nav-links a.active{background:rgba(212,160,60,.15);color:var(--gold);}
+  .btn-gold{background:linear-gradient(135deg,var(--gold),#b8860b);color:#000;padding:8px 20px;border:none;border-radius:20px;font-weight:700;cursor:pointer;font-size:13px;}
+  .wallet-badge{background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);color:var(--purple);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;}
+
+  /* HERO */
+  .hero{padding:50px 28px 40px;text-align:center;background:radial-gradient(ellipse at 50% -10%,rgba(167,139,250,.15) 0%,transparent 60%);position:relative;overflow:hidden;}
+  .hero-orbs{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+  .orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.15;}
+  .orb1{width:300px;height:300px;background:var(--purple);top:-100px;left:10%;}
+  .orb2{width:400px;height:400px;background:var(--pink);top:-150px;right:5%;}
+  .orb3{width:200px;height:200px;background:var(--gold);bottom:0;left:50%;}
+  .hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);padding:5px 16px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--purple);margin-bottom:16px;}
+  .hero h1{font-size:52px;font-weight:900;margin-bottom:12px;}
+  .hero h1 span{background:linear-gradient(135deg,var(--purple),var(--pink),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .hero p{color:var(--muted);max-width:600px;margin:0 auto 28px;line-height:1.6;}
+  .hero-stats{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;margin-bottom:28px;}
+  .h-stat .val{font-size:30px;font-weight:900;color:var(--gold);}
+  .h-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+  .hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .cta-primary{background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff;padding:14px 32px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;}
+  .cta-secondary{background:rgba(255,255,255,.05);color:var(--text);padding:14px 32px;border:1px solid rgba(255,255,255,.15);border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;backdrop-filter:blur(8px);}
+
+  /* LIVE STATS STRIP */
+  .stats-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:rgba(255,255,255,.05);border-top:1px solid rgba(167,139,250,.2);border-bottom:1px solid rgba(167,139,250,.2);}
+  .strip-stat{background:rgba(13,17,23,.9);padding:16px;text-align:center;}
+  .strip-val{font-size:20px;font-weight:800;}
+  .strip-lbl{font-size:10px;color:var(--muted);margin-top:3px;}
+
+  /* MAIN LAYOUT */
+  .main{display:grid;grid-template-columns:1fr 380px;gap:0;min-height:80vh;}
+
+  /* MARKETPLACE */
+  .marketplace{padding:28px;border-right:1px solid rgba(255,255,255,.05);}
+
+  /* SECTION */
+  .sec-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .sec-title{font-size:18px;font-weight:800;}
+  .sec-sub{font-size:12px;color:var(--muted);}
+  .see-all{color:var(--gold);font-size:13px;cursor:pointer;}
+
+  /* FILTER TABS */
+  .filter-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
+  .ftab{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.1);color:var(--muted);transition:.3s;}
+  .ftab.active,.ftab:hover{background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff;border-color:transparent;}
+
+  /* NFT GRID */
+  .nft-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:28px;}
+  .nft-card{background:var(--panel);border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.06);transition:all .35s;cursor:pointer;position:relative;}
+  .nft-card:hover{transform:translateY(-6px);border-color:var(--purple);box-shadow:0 16px 40px rgba(167,139,250,.2);}
+  .nft-art{height:220px;display:flex;align-items:center;justify-content:center;font-size:80px;position:relative;overflow:hidden;}
+  .nft-art::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.7));}
+  .art-a{background:linear-gradient(135deg,#1a0533,#4c1d95,#7c3aed);}
+  .art-b{background:linear-gradient(135deg,#0c1a0c,#14532d,#22c55e);}
+  .art-c{background:linear-gradient(135deg,#1a1000,#713f12,#d4a03c);}
+  .art-d{background:linear-gradient(135deg,#1a0a1a,#6b21a8,#f472b6);}
+  .art-e{background:linear-gradient(135deg,#0c1220,#1e3a5f,#38bdf8);}
+  .art-f{background:linear-gradient(135deg,#1a0a00,#7f1d1d,#ef4444);}
+  .nft-live-bid{position:absolute;top:12px;left:12px;z-index:2;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);border:1px solid rgba(239,68,68,.4);color:var(--red);font-size:10px;font-weight:700;padding:3px 10px;border-radius:8px;display:flex;align-items:center;gap:4px;}
+  .bid-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse .8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .nft-exclusive{position:absolute;top:12px;right:12px;z-index:2;background:linear-gradient(135deg,var(--gold),#b8860b);color:#000;font-size:9px;font-weight:800;padding:3px 10px;border-radius:8px;text-transform:uppercase;}
+  .nft-info{padding:14px;}
+  .nft-collection{font-size:10px;color:var(--purple);font-weight:700;letter-spacing:1px;margin-bottom:4px;}
+  .nft-name{font-size:15px;font-weight:800;margin-bottom:6px;}
+  .nft-creator{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+  .creator-av{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--pink));display:flex;align-items:center;justify-content:center;font-size:10px;}
+  .creator-name{font-size:11px;color:var(--muted);}
+  .nft-pricing{display:flex;justify-content:space-between;align-items:center;}
+  .nft-price{font-size:15px;font-weight:800;color:var(--gold);}
+  .nft-usd{font-size:10px;color:var(--muted);}
+  .nft-bid-btn{background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff;border:none;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
+
+  /* CREATOR / MINT PANEL */
+  .creator-panel{background:var(--panel);padding:24px;border-left:1px solid rgba(255,255,255,.05);}
+  .panel-tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--panel2);padding:4px;border-radius:10px;}
+  .ptab{flex:1;padding:8px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;border-radius:7px;color:var(--muted);transition:.3s;}
+  .ptab.active{background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff;}
+
+  /* MINT FORM */
+  .mint-form{display:flex;flex-direction:column;gap:14px;}
+  .upload-zone{height:180px;border:2px dashed rgba(167,139,250,.3);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:.3s;background:rgba(167,139,250,.03);}
+  .upload-zone:hover{border-color:var(--purple);background:rgba(167,139,250,.07);}
+  .upload-icon{font-size:40px;}
+  .upload-text{font-size:13px;color:var(--muted);}
+  .upload-hint{font-size:11px;color:rgba(100,116,139,.6);}
+  .form-group{display:flex;flex-direction:column;gap:6px;}
+  .form-label{font-size:12px;font-weight:600;color:var(--muted);}
+  .form-input{background:var(--panel2);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;transition:.3s;}
+  .form-input:focus{border-color:var(--purple);}
+  .form-select{background:var(--panel2);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .royalty-slider{width:100%;accent-color:var(--purple);}
+  .properties-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .prop-item{background:var(--panel2);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:8px;text-align:center;}
+  .prop-type{font-size:10px;color:var(--purple);font-weight:700;margin-bottom:3px;}
+  .prop-val{font-size:12px;font-weight:600;}
+  .mint-price-row{background:rgba(212,160,60,.05);border:1px solid rgba(212,160,60,.2);border-radius:10px;padding:14px;}
+  .price-breakdown{display:flex;flex-direction:column;gap:6px;}
+  .pb-row{display:flex;justify-content:space-between;font-size:12px;}
+  .pb-total{font-size:14px;font-weight:800;color:var(--gold);}
+  .mint-btn{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;width:100%;transition:.3s;}
+  .mint-btn:hover{opacity:.85;transform:translateY(-1px);}
+
+  /* MY COLLECTION */
+  .collection-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .coll-item{background:var(--panel2);border-radius:12px;overflow:hidden;cursor:pointer;transition:.3s;border:1px solid rgba(255,255,255,.05);}
+  .coll-item:hover{border-color:var(--gold);}
+  .coll-art{height:100px;display:flex;align-items:center;justify-content:center;font-size:36px;}
+  .coll-info{padding:8px;}
+  .coll-name{font-size:12px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .coll-val{font-size:11px;color:var(--gold);font-weight:600;}
+
+  /* ACTIVITY FEED */
+  .activity-feed{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;}
+  .act-item{display:flex;align-items:center;gap:10px;padding:10px;background:var(--panel2);border-radius:10px;font-size:12px;}
+  .act-icon{font-size:20px;flex-shrink:0;}
+  .act-info{flex:1;}
+  .act-title{font-weight:600;margin-bottom:2px;}
+  .act-sub{color:var(--muted);font-size:11px;}
+  .act-val{font-size:13px;font-weight:700;color:var(--gold);flex-shrink:0;}
+  .act-time{font-size:10px;color:var(--muted);flex-shrink:0;}
+
+  /* PORTFOLIO */
+  .portfolio-card{background:linear-gradient(135deg,rgba(167,139,250,.1),rgba(212,160,60,.08));border:1px solid rgba(167,139,250,.2);border-radius:16px;padding:20px;margin-bottom:16px;}
+  .port-val{font-size:32px;font-weight:900;color:var(--gold);}
+  .port-change{color:var(--green);font-size:14px;font-weight:600;}
+  .port-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+  .port-stat{text-align:center;background:rgba(0,0,0,.2);border-radius:8px;padding:10px;}
+  .port-stat-val{font-size:16px;font-weight:800;}
+  .port-stat-lbl{font-size:10px;color:var(--muted);}
+
+  @media(max-width:900px){.main{grid-template-columns:1fr;}.creator-panel{display:none;}.stats-strip{grid-template-columns:repeat(3,1fr);}}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="nav-logo"><span>👑 GOAT</span></a>
+  <div class="nav-links">
+    <a href="index.html">Dashboard</a>
+    <a href="goat-nft-studio.html" class="active">NFT Studio</a>
+    <a href="goat-crypto-wallet.html">Wallet</a>
+    <a href="goat-entertainment.html">Entertainment</a>
+    <a href="goat-celebrity-lounge.html">VIP Lounge</a>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <div class="wallet-badge">🦊 0x4f3a...e92c • Ξ 8.42</div>
+    <button class="btn-gold">Connect Wallet</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-orbs"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
+  <div style="position:relative;z-index:1">
+    <div class="hero-badge">💎 NFT CREATION & TRADING PLATFORM</div>
+    <h1>GOAT <span>NFT Studio</span></h1>
+    <p>Create, mint, and trade exclusive celebrity NFTs. AI-powered artwork generation, instant minting, and a marketplace trusted by the world's most iconic artists and athletes.</p>
+    <div class="hero-stats">
+      <div class="h-stat"><div class="val">$2.8B</div><div class="lbl">Total Volume</div></div>
+      <div class="h-stat"><div class="val">847K</div><div class="lbl">NFTs Minted</div></div>
+      <div class="h-stat"><div class="val">124K</div><div class="lbl">Creators</div></div>
+      <div class="h-stat"><div class="val">Ξ 0.08</div><div class="lbl">Floor Price</div></div>
+    </div>
+    <div class="hero-ctas">
+      <button class="cta-primary">🎨 Create NFT</button>
+      <button class="cta-secondary">🛒 Browse Marketplace</button>
+      <button class="cta-secondary">📊 My Portfolio</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="strip-stat"><div class="strip-val" style="color:var(--gold)">Ξ 12.4</div><div class="strip-lbl">24h Volume</div></div>
+  <div class="strip-stat"><div class="strip-val" style="color:var(--green)">+18.4%</div><div class="strip-lbl">Floor Change</div></div>
+  <div class="strip-stat"><div class="strip-val" style="color:var(--purple)">4,821</div><div class="strip-lbl">Active Listings</div></div>
+  <div class="strip-stat"><div class="strip-val" style="color:var(--pink)">892</div><div class="strip-lbl">Sales Today</div></div>
+  <div class="strip-stat"><div class="strip-val" style="color:var(--blue)">Ξ 8.42</div><div class="strip-lbl">Highest Sale</div></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- MARKETPLACE -->
+  <div class="marketplace">
+
+    <!-- FILTER TABS -->
+    <div class="filter-tabs">
+      <div class="ftab active">All</div>
+      <div class="ftab">Celebrity Drops</div>
+      <div class="ftab">Music</div>
+      <div class="ftab">Fashion</div>
+      <div class="ftab">Sports</div>
+      <div class="ftab">Art</div>
+      <div class="ftab">GOAT Originals</div>
+      <div class="ftab">Live Auctions</div>
+    </div>
+
+    <!-- FEATURED NFTS -->
+    <div class="sec-head">
+      <div><div class="sec-title">🔥 Featured Drops</div><div class="sec-sub">Exclusive celebrity NFTs — Limited editions</div></div>
+      <span class="see-all">View All 4,821 →</span>
+    </div>
+    <div class="nft-grid" id="nftGrid"></div>
+
+    <!-- TRENDING COLLECTIONS -->
+    <div class="sec-head" style="margin-top:10px">
+      <div><div class="sec-title">📈 Trending Collections</div><div class="sec-sub">Top performing this week</div></div>
+      <span class="see-all">Full Rankings →</span>
+    </div>
+    <div id="trendingCollections"></div>
+
+  </div>
+
+  <!-- RIGHT PANEL: CREATOR / MINT -->
+  <div class="creator-panel">
+    <div class="panel-tabs">
+      <div class="ptab active" onclick="switchPanel('mint',this)">🎨 Mint</div>
+      <div class="ptab" onclick="switchPanel('collection',this)">💎 My NFTs</div>
+      <div class="ptab" onclick="switchPanel('activity',this)">📊 Activity</div>
+    </div>
+
+    <!-- MINT PANEL -->
+    <div id="panel-mint">
+      <div class="mint-form">
+        <div class="upload-zone" onclick="triggerUpload()">
+          <div class="upload-icon">🖼</div>
+          <div class="upload-text">Drop artwork or click to upload</div>
+          <div class="upload-hint">PNG, JPG, GIF, MP4, 3D • Max 100MB</div>
+          <div style="margin-top:8px;display:flex;gap:8px">
+            <span style="background:rgba(167,139,250,.15);color:var(--purple);font-size:10px;padding:3px 10px;border-radius:6px;cursor:pointer">🤖 AI Generate</span>
+            <span style="background:rgba(212,160,60,.15);color:var(--gold);font-size:10px;padding:3px 10px;border-radius:6px;cursor:pointer">🎬 3D Studio</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-label">NFT Name *</div>
+          <input class="form-input" placeholder="e.g. Crown Legacy #001" id="nftName">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Description</div>
+          <textarea class="form-input" rows="2" placeholder="Describe your NFT..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <div class="form-label">Collection</div>
+            <select class="form-select">
+              <option>GOAT Royals</option>
+              <option>Crown Legacy</option>
+              <option>Street Icons</option>
+              <option>Create New</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <div class="form-label">Blockchain</div>
+            <select class="form-select">
+              <option>Ethereum</option>
+              <option>Polygon</option>
+              <option>Solana</option>
+              <option>GOAT Chain</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <div class="form-label">Supply</div>
+            <input class="form-input" value="1" type="number" min="1">
+          </div>
+          <div class="form-group">
+            <div class="form-label">List Price (ETH)</div>
+            <input class="form-input" value="0.5" type="number" step="0.01" id="listPrice">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Creator Royalty: <span id="royaltyVal" style="color:var(--purple)">10%</span></div>
+          <input type="range" class="royalty-slider" min="0" max="25" value="10" oninput="document.getElementById('royaltyVal').textContent=this.value+'%'">
+        </div>
+
+        <div class="form-group">
+          <div class="form-label">Properties</div>
+          <div class="properties-grid">
+            <div class="prop-item"><div class="prop-type">RARITY</div><div class="prop-val">Legendary</div></div>
+            <div class="prop-item"><div class="prop-type">EDITION</div><div class="prop-val">1 of 1</div></div>
+            <div class="prop-item"><div class="prop-type">TIER</div><div class="prop-val">GOAT</div></div>
+            <div class="prop-item"><div class="prop-type">UTILITY</div><div class="prop-val">VIP Access</div></div>
+          </div>
+        </div>
+
+        <div class="mint-price-row">
+          <div class="price-breakdown">
+            <div class="pb-row"><span>List Price</span><span style="color:var(--text)" id="displayPrice">Ξ 0.50</span></div>
+            <div class="pb-row"><span>Gas Fee (est.)</span><span>Ξ 0.003</span></div>
+            <div class="pb-row"><span>GOAT Platform (2%)</span><span>Ξ 0.010</span></div>
+            <div style="height:1px;background:rgba(255,255,255,.08);margin:6px 0"></div>
+            <div class="pb-row"><span class="pb-total">You Receive</span><span class="pb-total" id="youReceive">Ξ 0.487</span></div>
+          </div>
+        </div>
+
+        <button class="mint-btn" onclick="mintNFT()">⚡ Mint & List NFT Now</button>
+      </div>
+    </div>
+
+    <!-- MY COLLECTION PANEL -->
+    <div id="panel-collection" style="display:none">
+      <div class="portfolio-card">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Portfolio Value</div>
+        <div class="port-val">Ξ 24.8 <span class="port-change">↑ +34.2%</span></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">≈ $42,840 USD</div>
+        <div class="port-grid">
+          <div class="port-stat"><div class="port-stat-val" style="color:var(--purple)">12</div><div class="port-stat-lbl">NFTs Owned</div></div>
+          <div class="port-stat"><div class="port-stat-val" style="color:var(--green)">8</div><div class="port-stat-lbl">Minted</div></div>
+          <div class="port-stat"><div class="port-stat-val" style="color:var(--gold)">Ξ 4.2</div><div class="port-stat-lbl">Earned</div></div>
+          <div class="port-stat"><div class="port-stat-val" style="color:var(--pink)">3</div><div class="port-stat-lbl">Listed</div></div>
+        </div>
+      </div>
+      <div class="collection-grid" id="myCollection"></div>
+    </div>
+
+    <!-- ACTIVITY PANEL -->
+    <div id="panel-activity" style="display:none">
+      <div class="activity-feed" id="activityFeed"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// NFT DATA
+const nfts = [
+  {emoji:'👑',bg:'art-a',collection:'GOAT ROYALS',name:'Crown of Kings #001',creator:'DJ Speedyga',creatorAv:'👑',price:'Ξ 8.42',usd:'$14,580',isLive:true,isExclusive:true},
+  {emoji:'🎵',bg:'art-b',collection:'SOUND LEGENDS',name:'Golden Frequency',creator:'Musikal',creatorAv:'🎵',price:'Ξ 2.80',usd:'$4,848',isLive:false,isExclusive:true},
+  {emoji:'💎',bg:'art-c',collection:'DIAMOND TIER',name:'Ice Crown Genesis',creator:'Luxe Studio',creatorAv:'💎',price:'Ξ 5.60',usd:'$9,688',isLive:true,isExclusive:false},
+  {emoji:'👗',bg:'art-d',collection:'FASHION GODS',name:'Runway Goddess',creator:'FashionForge',creatorAv:'👗',price:'Ξ 1.20',usd:'$2,076',isLive:false,isExclusive:false},
+  {emoji:'🏆',bg:'art-e',collection:'SPORT ICONS',name:'Legend Status',creator:'AthletiX',creatorAv:'🏆',price:'Ξ 3.40',usd:'$5,882',isLive:true,isExclusive:true},
+  {emoji:'🔥',bg:'art-f',collection:'INFERNO ART',name:'Blaze of Glory',creator:'PixelKing',creatorAv:'🔥',price:'Ξ 0.95',usd:'$1,643',isLive:false,isExclusive:false},
+];
+
+const nftGrid = document.getElementById('nftGrid');
+nfts.forEach(n => {
+  nftGrid.innerHTML += `
+    <div class="nft-card">
+      <div class="nft-art ${n.bg}">
+        ${n.emoji}
+        ${n.isLive ? '<div class="nft-live-bid"><div class="bid-dot"></div>LIVE BID</div>' : ''}
+        ${n.isExclusive ? '<div class="nft-exclusive">Exclusive</div>' : ''}
+      </div>
+      <div class="nft-info">
+        <div class="nft-collection">${n.collection}</div>
+        <div class="nft-name">${n.name}</div>
+        <div class="nft-creator">
+          <div class="creator-av">${n.creatorAv}</div>
+          <div class="creator-name">@${n.creator}</div>
+        </div>
+        <div class="nft-pricing">
+          <div>
+            <div class="nft-price">${n.price}</div>
+            <div class="nft-usd">${n.usd}</div>
+          </div>
+          <button class="nft-bid-btn" onclick="event.stopPropagation();placeBid('${n.name}','${n.price}')">
+            ${n.isLive ? '⚡ Bid Now' : '🛒 Buy Now'}
+          </button>
+        </div>
+      </div>
+    </div>`;
+});
+
+// Trending Collections
+const collections = [
+  {rank:1,emoji:'👑',name:'GOAT Royals',vol:'Ξ 284.2',change:'+42%',items:'1,000',floor:'Ξ 8.42'},
+  {rank:2,emoji:'🎵',name:'Sound Legends',vol:'Ξ 142.8',change:'+28%',items:'500',floor:'Ξ 2.80'},
+  {rank:3,emoji:'💎',name:'Diamond Tier',vol:'Ξ 98.4',change:'+19%',items:'250',floor:'Ξ 5.60'},
+  {rank:4,emoji:'👗',name:'Fashion Gods',vol:'Ξ 76.2',change:'+35%',items:'750',floor:'Ξ 1.20'},
+  {rank:5,emoji:'🏆',name:'Sport Icons',vol:'Ξ 54.1',change:'+12%',items:'2,000',floor:'Ξ 0.48'},
+];
+const tcEl = document.getElementById('trendingCollections');
+collections.forEach(c => {
+  tcEl.innerHTML += `
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--panel);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,.04);cursor:pointer;transition:.3s" onmouseover="this.style.borderColor='rgba(167,139,250,.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,.04)'">
+      <div style="font-weight:900;font-size:16px;width:24px;text-align:center;color:${c.rank<=3?'var(--gold)':'var(--muted)'}">${c.rank}</div>
+      <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,rgba(167,139,250,.2),rgba(212,160,60,.2));display:flex;align-items:center;justify-content:center;font-size:20px">${c.emoji}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700">${c.name}</div>
+        <div style="font-size:11px;color:var(--muted)">Floor: <span style="color:var(--gold)">${c.floor}</span> • ${c.items} items</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:14px;font-weight:800;color:var(--gold)">${c.vol}</div>
+        <div style="font-size:11px;color:var(--green)">${c.change}</div>
+      </div>
+    </div>`;
+});
+
+// My Collection
+const myNFTs = [
+  {emoji:'👑',bg:'art-a',name:'Crown of Kings',val:'Ξ 8.42'},
+  {emoji:'🎵',bg:'art-b',name:'Golden Sound',val:'Ξ 2.80'},
+  {emoji:'💎',bg:'art-c',name:'Ice Diamond',val:'Ξ 5.60'},
+  {emoji:'🔥',bg:'art-f',name:'Inferno #1',val:'Ξ 0.95'},
+];
+const collEl = document.getElementById('myCollection');
+myNFTs.forEach(n => {
+  collEl.innerHTML += `
+    <div class="coll-item">
+      <div class="coll-art ${n.bg}">${n.emoji}</div>
+      <div class="coll-info">
+        <div class="coll-name">${n.name}</div>
+        <div class="coll-val">${n.val}</div>
+      </div>
+    </div>`;
+});
+
+// Activity
+const activities = [
+  {icon:'💰',title:'Crown of Kings #001 Sold',sub:'To 0x8f2b...c4a1',val:'Ξ 8.42',time:'2m ago'},
+  {icon:'🔥',title:'Inferno #47 Minted',sub:'By @PixelKing',val:'Ξ 0.95',time:'8m ago'},
+  {icon:'⚡',title:'Bid Placed — Golden Sound',sub:'0x3e1f...9d7c bid',val:'Ξ 3.20',time:'14m ago'},
+  {icon:'🛒',title:'Runway Goddess Purchased',sub:'By 0x7a4d...2b8e',val:'Ξ 1.20',time:'22m ago'},
+  {icon:'🎨',title:'New Drop: GOAT Royals Vol.2',sub:'1,000 items dropped',val:'—',time:'1h ago'},
+  {icon:'💎',title:'Legend Status — Rare Mint',sub:'1 of 1 Minted',val:'Ξ 3.40',time:'2h ago'},
+  {icon:'📈',title:'GOAT Royals Floor Up',sub:'+18% in 24h',val:'Ξ 8.42',time:'3h ago'},
+];
+const afEl = document.getElementById('activityFeed');
+activities.forEach(a => {
+  afEl.innerHTML += `
+    <div class="act-item">
+      <div class="act-icon">${a.icon}</div>
+      <div class="act-info"><div class="act-title">${a.title}</div><div class="act-sub">${a.sub}</div></div>
+      <div class="act-val">${a.val}</div>
+      <div class="act-time">${a.time}</div>
+    </div>`;
+});
+
+// Panel switching
+function switchPanel(name, el) {
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['mint','collection','activity'].forEach(p => {
+    const d = document.getElementById('panel-'+p);
+    if(d) d.style.display = p===name ? 'block' : 'none';
+  });
+}
+
+// Filter tabs
+document.querySelectorAll('.ftab').forEach(t => {
+  t.addEventListener('click', function() {
+    document.querySelectorAll('.ftab').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// Mint simulation
+function mintNFT() {
+  const name = document.getElementById('nftName').value || 'My GOAT NFT';
+  const btn = document.querySelector('.mint-btn');
+  btn.textContent = '⏳ Minting on blockchain...';
+  btn.style.opacity = '.7';
+  setTimeout(() => {
+    btn.textContent = '✅ Minted Successfully!';
+    btn.style.background = 'linear-gradient(135deg,var(--green),#16a34a)';
+    setTimeout(() => {
+      btn.textContent = '⚡ Mint & List NFT Now';
+      btn.style.background = '';
+      btn.style.opacity = '1';
+    }, 3000);
+  }, 2000);
+}
+
+// Price calc
+document.getElementById('listPrice').addEventListener('input', function() {
+  const p = parseFloat(this.value)||0;
+  document.getElementById('displayPrice').textContent = 'Ξ ' + p.toFixed(2);
+  document.getElementById('youReceive').textContent = 'Ξ ' + Math.max(0, p-0.003-p*0.02).toFixed(3);
+});
+
+function placeBid(name, price) {
+  alert(`🔥 Bid placed on "${name}" at ${price}!\n\nConfirm in your wallet to complete.`);
+}
+
+function triggerUpload() {
+  // Would trigger file input in real implementation
+}
+
+// Live price updates simulation
+setInterval(() => {
+  const priceEls = document.querySelectorAll('.nft-price');
+  priceEls.forEach(el => {
+    const base = parseFloat(el.textContent.replace('Ξ ',''));
+    const jitter = (Math.random() - 0.5) * 0.05;
+    el.textContent = 'Ξ ' + Math.max(0.1, base+jitter).toFixed(2);
+  });
+}, 5000);
+</script>
+</body>
+</html>

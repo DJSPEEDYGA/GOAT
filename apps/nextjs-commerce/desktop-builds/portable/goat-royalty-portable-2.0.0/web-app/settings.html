@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚙️ Settings — API Keys · GOAT Royalty App</title>
+<style>
+:root { --bg:#0a0e17; --card:#121826; --border:#1e2535; --text:#e4e4e7; --muted:#8b92a7; --gold:#FFD700; --cyan:#00E5FF; --green:#10b981; --red:#ef4444; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; line-height:1.6; }
+.container { max-width:1000px; margin:0 auto; padding:32px 24px; }
+.topbar { display:flex; align-items:center; gap:12px; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.brand { font-size:20px; font-weight:900; background:linear-gradient(90deg,var(--gold),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.navlinks { margin-left:auto; display:flex; gap:6px; flex-wrap:wrap; }
+.navlinks a { padding:6px 10px; background:#1a2035; border:1px solid var(--border); border-radius:6px; color:var(--text); text-decoration:none; font-size:12px; }
+.hero { background:linear-gradient(135deg,#1a0f3a 0%,#0a1a3e 100%); border:1px solid var(--cyan); border-radius:16px; padding:28px; margin-bottom:24px; }
+.hero h1 { font-size:28px; background:linear-gradient(90deg,var(--gold),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; font-weight:900; }
+.hero p { color:#d4d4d8; font-size:14px; }
+
+.engine-status { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin-top:16px; }
+.engine { background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; padding:10px; font-size:12px; }
+.engine .row { display:flex; align-items:center; gap:8px; }
+.engine .dot { width:8px; height:8px; border-radius:50%; }
+.engine.ok .dot { background:var(--green); box-shadow:0 0 8px var(--green); }
+.engine.off .dot { background:var(--red); }
+
+.key-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px; margin-bottom:16px; }
+.key-card h3 { color:var(--gold); font-size:18px; margin-bottom:4px; display:flex; align-items:center; gap:10px; }
+.key-card .tag { font-size:10px; padding:3px 8px; border-radius:10px; background:rgba(16,185,129,0.15); color:var(--green); border:1px solid var(--green); }
+.key-card .tag.paid { background:rgba(239,68,68,0.15); color:var(--red); border-color:var(--red); }
+.key-card p { color:var(--muted); font-size:13px; margin:6px 0 14px; }
+.key-card .input-row { display:flex; gap:8px; align-items:center; }
+.key-card input { flex:1; padding:10px 14px; background:#0a0e17; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; font-family:monospace; }
+.key-card input:focus { outline:none; border-color:var(--gold); }
+.key-card button { padding:10px 16px; background:var(--gold); color:#000; border:none; border-radius:8px; font-weight:800; cursor:pointer; font-size:13px; }
+.key-card button:hover { filter:brightness(1.1); }
+.key-card .test-btn { background:#1a2035; color:var(--cyan); border:1px solid var(--cyan); }
+.key-card .link { font-size:12px; color:var(--cyan); text-decoration:none; display:inline-block; margin-top:8px; }
+.key-card .link:hover { text-decoration:underline; }
+.key-card .status { font-size:12px; margin-top:8px; padding:8px 12px; border-radius:6px; display:none; }
+.key-card .status.ok { display:block; background:rgba(16,185,129,0.1); color:var(--green); border:1px solid var(--green); }
+.key-card .status.err { display:block; background:rgba(239,68,68,0.1); color:var(--red); border:1px solid var(--red); }
+
+.connected { display:inline-block; font-size:11px; padding:3px 8px; border-radius:10px; background:rgba(16,185,129,0.15); color:var(--green); border:1px solid var(--green); margin-left:8px; }
+.not-connected { display:inline-block; font-size:11px; padding:3px 8px; border-radius:10px; background:rgba(239,68,68,0.15); color:var(--red); border:1px solid var(--red); margin-left:8px; }
+
+.danger-zone { background:#2a1010; border:1px solid var(--red); border-radius:14px; padding:22px; margin-top:32px; }
+.danger-zone h3 { color:var(--red); margin-bottom:8px; }
+.danger-zone button { background:var(--red); color:#fff; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-weight:700; }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="topbar">
+    <div class="brand">⚙️ Settings</div>
+    <div class="navlinks">
+      <a href="powerhouse.html">Powerhouse</a>
+      <a href="agents-brain.html">AI Brain</a>
+      <a href="autopilot.html">Autopilot</a>
+      <a href="intel.html">Intel</a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>🔐 API Keys & Connections</h1>
+    <p>Paste your keys here. They save to <code>goat-intel-server/local_keys.json</code> on YOUR machine only. Never pushed to GitHub. Never shared.</p>
+    <div class="engine-status" id="engineStatus">
+      <div class="engine"><div class="row"><div class="dot"></div>Checking engines...</div></div>
+    </div>
+  </div>
+
+  <!-- GEMINI -->
+  <div class="key-card">
+    <h3>🌟 Google Gemini <span class="tag">FREE</span> <span id="geminiStatus" class="not-connected">checking...</span></h3>
+    <p>Powers Moneypenny, Legal Eagle, and all creative agents. Get access to Gemini 2.5 Flash, Pro, and even Gemini 3 Pro Preview.</p>
+    <div class="input-row">
+      <input id="geminiKey" type="password" placeholder="AIzaSy...">
+      <button onclick="saveKey('gemini_key', 'geminiKey', 'gemini')">💾 Save</button>
+      <button class="test-btn" onclick="testKey('gemini')">🧪 Test</button>
+    </div>
+    <div class="status" id="geminiResult"></div>
+    <a href="https://aistudio.google.com/apikey" target="_blank" class="link">→ Get free Gemini key (takes 30 seconds)</a>
+  </div>
+
+  <!-- SPOTIFY -->
+  <div class="key-card">
+    <h3>🎧 Spotify Developer <span class="tag">FREE</span> <span id="spotifyStatus" class="not-connected">checking...</span></h3>
+    <p>Real follower counts, top tracks, audio features, and related artists for DJ Speedy + Waka Flocka.</p>
+    <div class="input-row" style="margin-bottom:8px;">
+      <input id="spotifyClientId" type="password" placeholder="Client ID (32-char string)">
+    </div>
+    <div class="input-row">
+      <input id="spotifyClientSecret" type="password" placeholder="Client Secret (32-char string)">
+      <button onclick="saveSpotify()">💾 Save Both</button>
+      <button class="test-btn" onclick="testKey('spotify')">🧪 Test</button>
+    </div>
+    <div class="status" id="spotifyResult"></div>
+    <a href="spotify-setup.html" class="link">→ 6-step guide to get Spotify Developer credentials</a>
+  </div>
+
+  <!-- NVIDIA -->
+  <div class="key-card">
+    <h3>⚡ NVIDIA Build (NIM) <span class="tag">FREE</span> <span id="nvidiaStatus" class="not-connected">checking...</span></h3>
+    <p>Free Llama 3.3 70B on NVIDIA's GPU cloud. Powers Autopilot and Codex when Ollama isn't running locally.</p>
+    <div class="input-row">
+      <input id="nvidiaKey" type="password" placeholder="nvapi-...">
+      <button onclick="saveKey('nvidia_key', 'nvidiaKey', 'nvidia')">💾 Save</button>
+      <button class="test-btn" onclick="testKey('nvidia')">🧪 Test</button>
+    </div>
+    <div class="status" id="nvidiaResult"></div>
+    <a href="https://build.nvidia.com" target="_blank" class="link">→ Get free NVIDIA Build API key</a>
+  </div>
+
+  <!-- YOUTUBE -->
+  <div class="key-card">
+    <h3>📺 YouTube Data API <span class="tag">FREE</span> <span id="youtubeStatus" class="not-connected">optional</span></h3>
+    <p>Optional — we use yt-dlp as free fallback. Only needed for heavy-volume channel stats.</p>
+    <div class="input-row">
+      <input id="youtubeKey" type="password" placeholder="AIzaSy... (optional)">
+      <button onclick="saveKey('youtube_key', 'youtubeKey', 'youtube')">💾 Save</button>
+    </div>
+    <div class="status" id="youtubeResult"></div>
+    <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="link">→ Get YouTube Data API v3 key</a>
+  </div>
+
+  <!-- TIKTOK -->
+  <div class="key-card">
+    <h3>🎵 TikTok ms_token <span class="tag">FREE</span> <span id="tiktokStatus" class="not-connected">optional</span></h3>
+    <p>Optional — yt-dlp handles TikTok profile scraping without this. Paste only if you want authenticated requests.</p>
+    <div class="input-row">
+      <input id="tiktokToken" type="password" placeholder="ms_token from TikTok cookie (optional)">
+      <button onclick="saveKey('tiktok_ms_token', 'tiktokToken', 'tiktok')">💾 Save</button>
+    </div>
+    <div class="status" id="tiktokResult"></div>
+  </div>
+
+  <!-- OLLAMA -->
+  <div class="key-card">
+    <h3>🔒 Ollama Local AI <span class="tag">FREE + PRIVATE</span> <span id="ollamaStatus" class="not-connected">checking...</span></h3>
+    <p>Runs on YOUR machine. Powers the Vault agent. No keys needed — just install + pull a model.</p>
+    <div style="background:#0a0e17;border:1px solid var(--border);border-radius:8px;padding:12px;font-family:monospace;font-size:12px;color:var(--cyan);">
+      # 1. Install (macOS/Linux)<br>
+      curl -fsSL https://ollama.com/install.sh | sh<br>
+      # 1. Windows: download from ollama.com<br>
+      <br>
+      # 2. Pull model (~3GB one-time)<br>
+      ollama pull gemma3:4b<br>
+      <br>
+      # 3. It auto-starts; app finds it at localhost:11434
+    </div>
+    <button style="margin-top:12px;" onclick="testKey('ollama')">🧪 Check if Ollama is running</button>
+    <div class="status" id="ollamaResult"></div>
+  </div>
+
+  <!-- SUPABASE -->
+  <div class="key-card">
+    <h3>🔌 Supabase <span class="tag">FREE</span> <span class="connected">✅ Pre-wired</span></h3>
+    <p>Your project <code>xmvlnonsxmrpvlssjstl</code> is already wired up in <code>web-app/lib/supabase-client.js</code>. Run the setup SQL once:</p>
+    <button onclick="showSupabaseSQL()">📋 Copy Supabase Setup SQL</button>
+    <a href="https://supabase.com/dashboard/project/xmvlnonsxmrpvlssjstl/sql" target="_blank" class="link">→ Open your Supabase SQL editor</a>
+    <div class="status" id="supabaseResult"></div>
+  </div>
+
+  <!-- DANGER ZONE -->
+  <div class="danger-zone">
+    <h3>⚠️ Danger Zone</h3>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:14px;">Wipe all API keys from this machine. This cannot be undone.</p>
+    <button onclick="clearAllKeys()">🗑️ Delete All Keys</button>
+  </div>
+
+</div>
+
+<script>
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://localhost:5500'
+  : 'https://010dy.app.super.myninja.ai';
+
+async function checkStatus(){
+  try {
+    const r = await fetch(API + '/brain/status');
+    const s = await r.json();
+    const div = document.getElementById('engineStatus');
+    div.innerHTML = '';
+    Object.entries(s).forEach(([name, e]) => {
+      const el = document.createElement('div');
+      el.className = 'engine ' + (e.online ? 'ok' : 'off');
+      el.innerHTML = `<div class="row"><div class="dot"></div><strong>${name}</strong> ${e.online ? '✅' : '⏸'}</div>`;
+      div.appendChild(el);
+    });
+
+    // Update inline badges
+    ['gemini','nvidia','ollama'].forEach(k => {
+      const el = document.getElementById(k+'Status');
+      if (el) {
+        el.className = s[k]?.online ? 'connected' : 'not-connected';
+        el.textContent = s[k]?.online ? '✅ Connected' : '⏸ Not connected';
+      }
+    });
+
+    // Check Spotify separately
+    try {
+      const k = await fetch(API + '/keys/status').then(r => r.json());
+      const sp = document.getElementById('spotifyStatus');
+      if (k.spotify && k.spotify.includes('✅')) { sp.className='connected'; sp.textContent='✅ Connected'; }
+      else { sp.className='not-connected'; sp.textContent='⏸ Not set'; }
+    } catch(e){}
+  } catch (e) {
+    document.getElementById('engineStatus').innerHTML =
+      '<div class="engine off"><div class="row"><div class="dot"></div>⚠️ Intel server not running on port 5500</div></div>';
+  }
+}
+
+async function saveKey(field, inputId, label){
+  const val = document.getElementById(inputId).value.trim();
+  const status = document.getElementById(label+'Result');
+  if (!val){ status.className='status err'; status.textContent='Please paste a key first'; return; }
+  try {
+    const r = await fetch(API + '/keys/save', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({[field]: val})
+    });
+    const d = await r.json();
+    status.className = 'status ok';
+    status.textContent = '✅ Saved to local_keys.json on your machine';
+    document.getElementById(inputId).value = '••••••••••••••••';
+    setTimeout(checkStatus, 500);
+  } catch (e) {
+    status.className='status err'; status.textContent='❌ '+e.message;
+  }
+}
+
+async function saveSpotify(){
+  const cid = document.getElementById('spotifyClientId').value.trim();
+  const csec = document.getElementById('spotifyClientSecret').value.trim();
+  const status = document.getElementById('spotifyResult');
+  if (!cid || !csec){ status.className='status err'; status.textContent='Both Client ID and Secret required'; return; }
+  try {
+    await fetch(API + '/keys/save', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ spotify_client_id: cid, spotify_client_secret: csec, spotify_key: `${cid}:${csec}` })
+    });
+    status.className = 'status ok';
+    status.textContent = '✅ Spotify credentials saved. Dashboard is ready.';
+    document.getElementById('spotifyClientId').value='••••••••••••••••';
+    document.getElementById('spotifyClientSecret').value='••••••••••••••••';
+    setTimeout(checkStatus, 500);
+  } catch (e) {
+    status.className='status err'; status.textContent='❌ '+e.message;
+  }
+}
+
+async function testKey(svc){
+  const status = document.getElementById(svc+'Result');
+  status.className = 'status';
+  status.style.display = 'block';
+  status.textContent = '⏳ Testing...';
+  status.style.background = 'rgba(0,229,255,0.1)';
+  status.style.color = 'var(--cyan)';
+
+  try {
+    if (svc === 'gemini' || svc === 'nvidia' || svc === 'ollama') {
+      const r = await fetch(API + '/brain/status');
+      const s = await r.json();
+      if (s[svc]?.online){
+        status.className='status ok'; status.textContent=`✅ ${svc} is ONLINE — `+(s[svc].model||s[svc].hint||'ready');
+      } else {
+        status.className='status err'; status.textContent=`❌ ${svc} offline — `+(s[svc].hint||'check key');
+      }
+    } else if (svc === 'spotify') {
+      const r = await fetch(API + '/spotify/artist-real?id=6f4XkbvYlXMH0QgVRzW0sM');
+      const d = await r.json();
+      if (d.ok || d.name){
+        status.className='status ok';
+        status.textContent='✅ Spotify works — fetched '+(d.name||d.data?.name||'artist')+' successfully';
+      } else {
+        status.className='status err'; status.textContent='❌ '+(d.error||'Spotify call failed');
+      }
+    }
+  } catch (e) {
+    status.className='status err'; status.textContent='❌ '+e.message;
+  }
+}
+
+async function showSupabaseSQL(){
+  try {
+    const r = await fetch('lib/supabase-client.js');
+    const js = await r.text();
+    const match = js.match(/setupSQL:\s*`([\s\S]+?)`/);
+    if (match) {
+      await navigator.clipboard.writeText(match[1].trim());
+      const s = document.getElementById('supabaseResult');
+      s.className='status ok';
+      s.textContent='✅ SQL copied to clipboard. Paste it into your Supabase SQL editor and run.';
+    }
+  } catch (e) {
+    alert('Could not load SQL. Open web-app/lib/supabase-client.js and copy the setupSQL manually.');
+  }
+}
+
+async function clearAllKeys(){
+  if (!confirm('Really wipe ALL API keys from this machine?')) return;
+  try {
+    await fetch(API + '/keys/clear', { method:'POST' });
+    alert('✅ All keys cleared');
+    location.reload();
+  } catch (e){
+    alert('❌ '+e.message);
+  }
+}
+
+checkStatus();
+setInterval(checkStatus, 10000);
+</script>
+</body>
+</html>

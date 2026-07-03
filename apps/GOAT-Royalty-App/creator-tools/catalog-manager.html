@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalog Manager | GOAT Royalty App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --goat-gold: #FFD700;
+            --goat-purple: #8B5CF6;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        .glow-gold { text-shadow: 0 0 10px var(--goat-gold), 0 0 20px var(--goat-gold); }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(20, 20, 40, 0.9), rgba(10, 10, 20, 0.95));
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .input-field {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--goat-gold);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--goat-gold), #FF6B00);
+            color: black;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(255, 215, 0, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            color: white;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(139, 92, 246, 0.3);
+        }
+        
+        .catalog-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .catalog-table th {
+            text-align: left;
+            padding: 12px;
+            background: rgba(255, 215, 0, 0.1);
+            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .catalog-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+        
+        .catalog-table tr:hover {
+            background: rgba(255, 215, 0, 0.05);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .status-registered { background: rgba(0, 255, 136, 0.2); color: #00FF88; }
+        .status-pending { background: rgba(255, 215, 0, 0.2); color: #FFD700; }
+        .status-issue { background: rgba(255, 51, 102, 0.2); color: #FF3366; }
+        
+        .stat-box {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--goat-gold), var(--goat-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: linear-gradient(145deg, rgba(20, 20, 40, 0.98), rgba(10, 10, 20, 0.98));
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Header -->
+    <header class="mb-8">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400 to-yellow-500 flex items-center justify-center">
+                    <span class="text-2xl">📚</span>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-orbitron font-bold glow-gold">CATALOG MANAGER</h1>
+                    <p class="text-gray-400">Manage your music catalog & track royalty status</p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button class="btn-secondary" onclick="importCatalog()">
+                    📥 Import CSV
+                </button>
+                <button class="btn-secondary" onclick="exportCatalog()">
+                    📤 Export
+                </button>
+                <button class="btn-primary" onclick="openAddModal()">
+                    + ADD WORK
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="card stat-box">
+            <div class="stat-number">438</div>
+            <div class="text-gray-400 text-sm">Total Works</div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-number">339</div>
+            <div class="text-gray-400 text-sm">Registered</div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-number">77%</div>
+            <div class="text-gray-400 text-sm">Accept Rate</div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-number">99</div>
+            <div class="text-gray-400 text-sm">Pending</div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="card p-4 mb-6">
+        <div class="flex flex-wrap gap-4 items-center">
+            <div class="flex-1 min-w-64">
+                <input type="text" id="search-input" class="input-field" placeholder="🔍 Search by title, ISRC, or writer..." onkeyup="filterCatalog()">
+            </div>
+            <select id="status-filter" class="input-field w-auto" onchange="filterCatalog()">
+                <option value="">All Status</option>
+                <option value="registered">Registered</option>
+                <option value="pending">Pending</option>
+                <option value="issue">Issues</option>
+            </select>
+            <select id="pro-filter" class="input-field w-auto" onchange="filterCatalog()">
+                <option value="">All PROs</option>
+                <option value="ASCAP">ASCAP</option>
+                <option value="BMI">BMI</option>
+                <option value="SESAC">SESAC</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Catalog Table -->
+    <div class="card overflow-x-auto">
+        <table class="catalog-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Writers</th>
+                    <th>ISRC</th>
+                    <th>PRO</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="catalog-body">
+                <!-- Dynamic rows -->
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="flex justify-between items-center mt-6">
+        <div class="text-gray-400 text-sm">
+            Showing <span id="showing-count">1-10</span> of <span id="total-count">438</span> works
+        </div>
+        <div class="flex gap-2">
+            <button class="btn-secondary" onclick="prevPage()">← Previous</button>
+            <button class="btn-secondary" onclick="nextPage()">Next →</button>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Modal -->
+    <div class="modal hidden" id="add-modal">
+        <div class="modal-content">
+            <h2 class="font-orbitron text-xl mb-6 glow-gold" id="modal-title">Add New Work</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Song Title *</label>
+                    <input type="text" id="work-title" class="input-field" placeholder="Enter song title">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Alternate Title</label>
+                    <input type="text" id="work-alt-title" class="input-field" placeholder="Alternate/working title">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">ISRC Code</label>
+                        <input type="text" id="work-isrc" class="input-field" placeholder="QZ-ABC-12-34567">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">PRO</label>
+                        <select id="work-pro" class="input-field">
+                            <option value="ASCAP">ASCAP</option>
+                            <option value="BMI">BMI</option>
+                            <option value="SESAC">SESAC</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Writers (comma separated)</label>
+                    <input type="text" id="work-writers" class="input-field" placeholder="Harvey Miller, Juaquin Malphurs">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Publishers (comma separated)</label>
+                    <input type="text" id="work-publishers" class="input-field" placeholder="FastAssMan Publishing, BSM Publishing">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Release Date</label>
+                        <input type="date" id="work-release" class="input-field">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Status</label>
+                        <select id="work-status" class="input-field">
+                            <option value="pending">Pending</option>
+                            <option value="registered">Registered</option>
+                            <option value="issue">Has Issues</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Notes</label>
+                    <textarea id="work-notes" class="input-field" rows="3" placeholder="Additional notes..."></textarea>
+                </div>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button class="btn-primary flex-1" onclick="saveWork()">SAVE WORK</button>
+                <button class="btn-secondary" onclick="closeModal()">CANCEL</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="mt-8 text-center text-gray-500 text-sm">
+        <p>🐐 GOAT Royalty App | Catalog Manager</p>
+        <p class="text-xs mt-1">For The Kingdom. For The Code. For The Crown. 👑</p>
+    </footer>
+    
+    <script>
+        // Sample catalog data
+        let catalogData = [
+            { id: 1, title: 'No Hands', writers: 'Harvey Miller, Juaquin Malphurs, Kanye West', isrc: 'QZ-ABC-11-00001', pro: 'ASCAP', status: 'registered', publishers: 'FastAssMan Publishing', release: '2010-10-12' },
+            { id: 2, title: 'Hard in the Paint', writers: 'Harvey Miller, Juaquin Malphurs', isrc: 'QZ-ABC-11-00002', pro: 'ASCAP', status: 'registered', publishers: 'FastAssMan Publishing', release: '2010-05-01' },
+            { id: 3, title: 'Grove St. Party', writers: 'Harvey Miller, Juaquin Malphurs', isrc: 'QZ-ABC-11-00003', pro: 'ASCAP', status: 'registered', publishers: 'FastAssMan Publishing', release: '2011-03-01' },
+            { id: 4, title: 'Round of Applause', writers: 'Harvey Miller, Juaquin Malphurs, Drake', isrc: 'QZ-ABC-12-00001', pro: 'ASCAP', status: 'registered', publishers: 'FastAssMan Publishing', release: '2012-08-01' },
+            { id: 5, title: '50K Remix', writers: 'Harvey Miller, Juaquin Malphurs, Gucci Mane', isrc: 'QZ-ABC-15-00001', pro: 'ASCAP', status: 'pending', publishers: 'BSM Publishing', release: '2015-01-01' },
+            { id: 6, title: 'Trap My A Off', writers: 'Harvey Miller', isrc: 'QZ-ABC-16-00001', pro: 'ASCAP', status: 'registered', publishers: 'FastAssMan Publishing', release: '2016-03-01' },
+            { id: 7, title: 'Workin', writers: 'Harvey Miller, Juaquin Malphurs', isrc: 'QZ-ABC-17-00001', pro: 'ASCAP', status: 'registered', publishers: 'FastAssMan Publishing', release: '2017-08-01' },
+            { id: 8, title: 'Big Dawg', writers: 'Harvey Miller, Juaquin Malphurs', isrc: 'QZ-ABC-18-00001', pro: 'ASCAP', status: 'issue', publishers: 'FastAssMan Publishing', release: '2018-02-01' },
+            { id: 9, title: 'Circles', writers: 'Harvey Miller', isrc: 'QZ-ABC-19-00001', pro: 'ASCAP', status: 'pending', publishers: 'FastAssMan Publishing', release: '2019-01-01' },
+            { id: 10, title: 'Trap God', writers: 'Harvey Miller, Juaquin Malphurs', isrc: 'QZ-ABC-20-00001', pro: 'ASCAP', status: 'registered', publishers: 'BSM Publishing', release: '2020-01-01' },
+        ];
+        
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let editingId = null;
+        
+        function renderCatalog(data = catalogData) {
+            const tbody = document.getElementById('catalog-body');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageData = data.slice(start, end);
+            
+            tbody.innerHTML = pageData.map(item => `
+                <tr>
+                    <td>
+                        <div class="font-semibold">${item.title}</div>
+                        <div class="text-xs text-gray-500">${item.publishers || ''}</div>
+                    </td>
+                    <td class="text-sm">${item.writers}</td>
+                    <td class="text-sm text-gray-400">${item.isrc || '—'}</td>
+                    <td>${item.pro}</td>
+                    <td>
+                        <span class="status-badge status-${item.status}">${item.status}</span>
+                    </td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button class="btn-secondary text-xs py-1 px-3" onclick="editWork(${item.id})">Edit</button>
+                            <button class="btn-secondary text-xs py-1 px-3" onclick="viewDetails(${item.id})">View</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('showing-count').textContent = `${start + 1}-${Math.min(end, data.length)}`;
+            document.getElementById('total-count').textContent = data.length;
+        }
+        
+        function filterCatalog() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const status = document.getElementById('status-filter').value;
+            const pro = document.getElementById('pro-filter').value;
+            
+            const filtered = catalogData.filter(item => {
+                const matchSearch = !search || 
+                    item.title.toLowerCase().includes(search) ||
+                    item.isrc?.toLowerCase().includes(search) ||
+                    item.writers.toLowerCase().includes(search);
+                const matchStatus = !status || item.status === status;
+                const matchPro = !pro || item.pro === pro;
+                return matchSearch && matchStatus && matchPro;
+            });
+            
+            renderCatalog(filtered);
+        }
+        
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modal-title').textContent = 'Add New Work';
+            document.getElementById('work-title').value = '';
+            document.getElementById('work-alt-title').value = '';
+            document.getElementById('work-isrc').value = '';
+            document.getElementById('work-pro').value = 'ASCAP';
+            document.getElementById('work-writers').value = '';
+            document.getElementById('work-publishers').value = '';
+            document.getElementById('work-release').value = '';
+            document.getElementById('work-status').value = 'pending';
+            document.getElementById('work-notes').value = '';
+            document.getElementById('add-modal').classList.remove('hidden');
+        }
+        
+        function editWork(id) {
+            const work = catalogData.find(w => w.id === id);
+            if (!work) return;
+            
+            editingId = id;
+            document.getElementById('modal-title').textContent = 'Edit Work';
+            document.getElementById('work-title').value = work.title;
+            document.getElementById('work-alt-title').value = work.altTitle || '';
+            document.getElementById('work-isrc').value = work.isrc || '';
+            document.getElementById('work-pro').value = work.pro;
+            document.getElementById('work-writers').value = work.writers;
+            document.getElementById('work-publishers').value = work.publishers || '';
+            document.getElementById('work-release').value = work.release || '';
+            document.getElementById('work-status').value = work.status;
+            document.getElementById('add-modal').classList.remove('hidden');
+        }
+        
+        function closeModal() {
+            document.getElementById('add-modal').classList.add('hidden');
+        }
+        
+        function saveWork() {
+            const title = document.getElementById('work-title').value;
+            if (!title) {
+                alert('Please enter a song title');
+                return;
+            }
+            
+            const workData = {
+                title,
+                altTitle: document.getElementById('work-alt-title').value,
+                isrc: document.getElementById('work-isrc').value,
+                pro: document.getElementById('work-pro').value,
+                writers: document.getElementById('work-writers').value,
+                publishers: document.getElementById('work-publishers').value,
+                release: document.getElementById('work-release').value,
+                status: document.getElementById('work-status').value
+            };
+            
+            if (editingId) {
+                const index = catalogData.findIndex(w => w.id === editingId);
+                if (index !== -1) {
+                    catalogData[index] = { ...catalogData[index], ...workData };
+                }
+            } else {
+                workData.id = Date.now();
+                catalogData.push(workData);
+            }
+            
+            closeModal();
+            renderCatalog();
+        }
+        
+        function viewDetails(id) {
+            const work = catalogData.find(w => w.id === id);
+            if (work) {
+                alert(`📖 ${work.title}\n\nWriters: ${work.writers}\nISRC: ${work.isrc || 'N/A'}\nPRO: ${work.pro}\nPublishers: ${work.publishers || 'N/A'}\nStatus: ${work.status}\nRelease: ${work.release || 'N/A'}`);
+            }
+        }
+        
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderCatalog();
+            }
+        }
+        
+        function nextPage() {
+            const maxPage = Math.ceil(catalogData.length / itemsPerPage);
+            if (currentPage < maxPage) {
+                currentPage++;
+                renderCatalog();
+            }
+        }
+        
+        function importCatalog() {
+            alert('📥 Import CSV\n\nIn the full app, this will open a file picker to import your catalog from CSV format (ASCAP, MLC, etc.)');
+        }
+        
+        function exportCatalog() {
+            alert('📤 Export Catalog\n\nIn the full app, this will export your catalog to CSV or Excel format.');
+        }
+        
+        // Initial render
+        renderCatalog();
+    </script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0a">
+<title>⏯️ GOAT Transport</title>
+<link rel="stylesheet" href="css/goat-touch.css">
+<script src="js/goat-touch.js" defer></script>
+<style>
+  .trans-page {
+    padding: calc(64px + env(safe-area-inset-top) + 10px) 12px calc(84px + env(safe-area-inset-bottom)) 12px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+  .timecode {
+    font-family: 'SF Mono', 'Monaco', monospace;
+    font-size: 52px;
+    font-weight: 900;
+    color: var(--goat-gold);
+    font-variant-numeric: tabular-nums;
+    background: var(--goat-black);
+    padding: 14px 28px;
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--goat-gold);
+    box-shadow: var(--shadow-glow-gold);
+    letter-spacing: 2px;
+    text-align: center;
+  }
+  .tempo-display {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+  }
+  .tempo-val {
+    font-size: 56px;
+    font-weight: 900;
+    color: var(--goat-cream);
+    font-variant-numeric: tabular-nums;
+    min-width: 140px;
+    text-align: center;
+  }
+  .tempo-unit { font-size: 14px; color: var(--goat-silver); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+  .loop-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="touch-mode">
+
+<header class="t-topbar">
+  <button class="t-btn" onclick="history.back()" style="min-width:auto;min-height:44px;padding:8px 12px;">←</button>
+  <div class="brand"><span class="emoji">⏯️</span><span>TRANSPORT</span></div>
+  <span class="spacer"></span>
+  <span class="chip" id="stateChip">⏹ STOPPED</span>
+</header>
+
+<main class="trans-page">
+
+  <div class="timecode" id="tc">00:00:00.00</div>
+
+  <div class="tempo-display">
+    <button class="tp-btn" onclick="bpmShift(-5)">−5</button>
+    <button class="tp-btn" onclick="bpmShift(-1)">−1</button>
+    <div style="text-align:center;">
+      <div class="tempo-unit">BPM</div>
+      <div class="tempo-val" id="bpmVal">90</div>
+      <div class="tempo-unit" id="bpmDesc">Mid-tempo trap</div>
+    </div>
+    <button class="tp-btn" onclick="bpmShift(1)">+1</button>
+    <button class="tp-btn" onclick="bpmShift(5)">+5</button>
+  </div>
+
+  <div class="transport-bar">
+    <button class="tp-btn" onclick="rewind()">⏮</button>
+    <button class="tp-btn" onclick="seekBack()">◀◀</button>
+    <button class="tp-btn play big" id="playBtn" onclick="togglePlay()">▶</button>
+    <button class="tp-btn" onclick="seekFwd()">▶▶</button>
+    <button class="tp-btn rec big" id="recBtn" onclick="toggleRec()">●</button>
+  </div>
+
+  <div class="loop-bar">
+    <button class="t-btn" id="loopBtn" onclick="toggleLoop()">🔁 LOOP</button>
+    <button class="t-btn" id="metroBtn" onclick="toggleMetro()">🎵 METRONOME</button>
+    <button class="t-btn" onclick="tap()">👆 TAP TEMPO</button>
+    <button class="t-btn gold" onclick="location.href='studio.html'">🎙️ DAW</button>
+  </div>
+
+  <!-- JOG WHEEL -->
+  <div style="text-align:center;">
+    <div style="font-size:12px;color:var(--goat-gold);font-weight:800;letter-spacing:1px;margin-bottom:8px;">JOG WHEEL — DRAG TO SCRUB</div>
+    <div class="jog-wheel" id="jog">
+      <div class="jog-marker"></div>
+      <div class="jog-center">SCRUB</div>
+    </div>
+  </div>
+
+  <!-- QUICK BPM PRESETS -->
+  <div style="width:100%;text-align:center;">
+    <div style="font-size:12px;color:var(--goat-gold);font-weight:800;letter-spacing:1px;margin-bottom:8px;">QUICK TEMPOS</div>
+    <div class="loop-bar">
+      <button class="t-btn" onclick="setBpm(70)">70 · LO-FI</button>
+      <button class="t-btn" onclick="setBpm(90)">90 · BOOM-BAP</button>
+      <button class="t-btn" onclick="setBpm(140)">140 · TRAP</button>
+      <button class="t-btn" onclick="setBpm(150)">150 · DRILL</button>
+      <button class="t-btn" onclick="setBpm(128)">128 · DANCE</button>
+      <button class="t-btn" onclick="setBpm(174)">174 · DnB</button>
+    </div>
+  </div>
+
+</main>
+
+<nav class="t-tabbar">
+  <a class="t-tab" href="touch-hub.html"><span class="ic">🏠</span><span class="lb">Hub</span></a>
+  <a class="t-tab" href="touch-brain.html"><span class="ic">🧠</span><span class="lb">AI</span></a>
+  <a class="t-tab" href="touch-pads.html"><span class="ic">🎹</span><span class="lb">Pads</span></a>
+  <a class="t-tab" href="touch-mixer.html"><span class="ic">🎚️</span><span class="lb">Mix</span></a>
+  <a class="t-tab" href="touch-keys.html"><span class="ic">🎼</span><span class="lb">Keys</span></a>
+  <a class="t-tab active" href="touch-transport.html"><span class="ic">⏯️</span><span class="lb">Trans</span></a>
+</nav>
+
+<script>
+let bpm = 90;
+let playing = false;
+let recording = false;
+let looping = false;
+let metro = false;
+let startedAt = null;
+let pausedAt = 0;
+let uiTimer = null;
+let metroTimer = null;
+
+function setBpm(v) {
+  bpm = Math.max(40, Math.min(240, v));
+  document.getElementById('bpmVal').textContent = bpm;
+  document.getElementById('bpmDesc').textContent = bpmDescribe(bpm);
+  if (metro && metroTimer) { clearInterval(metroTimer); startMetro(); }
+  GoatTouch.haptic('medium');
+}
+function bpmShift(d) { setBpm(bpm + d); }
+function bpmDescribe(b) {
+  if (b < 80) return 'Lo-fi / slow';
+  if (b < 95) return 'Boom-bap / hip-hop';
+  if (b < 120) return 'Mid-tempo';
+  if (b < 135) return 'Dance / pop';
+  if (b < 155) return 'Trap / drill';
+  if (b < 180) return 'DnB / footwork';
+  return 'Extreme';
+}
+
+function togglePlay() {
+  playing = !playing;
+  document.getElementById('playBtn').textContent = playing ? '⏸' : '▶';
+  document.getElementById('stateChip').textContent = playing ? '▶ PLAYING' : '⏹ STOPPED';
+  GoatTouch.haptic('medium');
+  if (playing) {
+    startedAt = performance.now() - pausedAt;
+    uiTimer = setInterval(tick, 50);
+  } else {
+    pausedAt = performance.now() - startedAt;
+    clearInterval(uiTimer);
+  }
+}
+function rewind() {
+  pausedAt = 0;
+  startedAt = performance.now();
+  updateTC(0);
+  GoatTouch.haptic('medium');
+}
+function seekBack() { pausedAt = Math.max(0, pausedAt - 5000); if (playing) startedAt = performance.now() - pausedAt; else updateTC(pausedAt); GoatTouch.haptic('light'); }
+function seekFwd()  { pausedAt += 5000; if (playing) startedAt = performance.now() - pausedAt; else updateTC(pausedAt); GoatTouch.haptic('light'); }
+function toggleRec() {
+  recording = !recording;
+  document.getElementById('recBtn').classList.toggle('armed', recording);
+  document.getElementById('stateChip').textContent = recording ? '● RECORDING' : (playing ? '▶ PLAYING' : '⏹ STOPPED');
+  GoatTouch.haptic(recording ? 'success' : 'medium');
+}
+function toggleLoop() {
+  looping = !looping;
+  document.getElementById('loopBtn').classList.toggle('active', looping);
+  GoatTouch.haptic('medium');
+}
+function toggleMetro() {
+  metro = !metro;
+  document.getElementById('metroBtn').classList.toggle('active', metro);
+  if (metro) startMetro(); else stopMetro();
+  GoatTouch.haptic('medium');
+}
+function startMetro() {
+  let beat = 0;
+  const stepMs = 60000 / bpm;
+  metroTimer = setInterval(() => {
+    GoatTouch.playTone(beat % 4 === 0 ? 1200 : 800, 0.05, 'square', 0.15);
+    beat++;
+  }, stepMs);
+}
+function stopMetro() { if (metroTimer) { clearInterval(metroTimer); metroTimer = null; } }
+
+function tick() {
+  const elapsed = performance.now() - startedAt;
+  updateTC(elapsed);
+}
+function updateTC(ms) {
+  const totalSec = ms / 1000;
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = Math.floor(totalSec % 60);
+  const cs = Math.floor((totalSec * 100) % 100);
+  document.getElementById('tc').textContent =
+    String(h).padStart(2,'0') + ':' +
+    String(m).padStart(2,'0') + ':' +
+    String(s).padStart(2,'0') + '.' +
+    String(cs).padStart(2,'0');
+}
+
+// TAP TEMPO
+const tapTimes = [];
+function tap() {
+  const now = performance.now();
+  tapTimes.push(now);
+  if (tapTimes.length > 6) tapTimes.shift();
+  if (tapTimes.length >= 2) {
+    const intervals = [];
+    for (let i = 1; i < tapTimes.length; i++) intervals.push(tapTimes[i] - tapTimes[i-1]);
+    const avg = intervals.reduce((a,b)=>a+b,0) / intervals.length;
+    setBpm(Math.round(60000 / avg));
+  }
+  GoatTouch.haptic('medium');
+}
+
+// JOG WHEEL
+GoatTouch.bindJogWheel(document.getElementById('jog'), {
+  onRotate: (delta, angle) => {
+    pausedAt = Math.max(0, pausedAt + delta * 20);
+    if (playing) startedAt = performance.now() - pausedAt;
+    else updateTC(pausedAt);
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Plugin Suite — Pro Tools · Logic · FL Studio · Ableton</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #ffa500;
+    --gold-bright: #ffcc33;
+    --red: #ff3030;
+    --green: #00ff66;
+    --bg: #0a0a0a;
+    --panel: #141414;
+    --panel-hi: #1f1f1f;
+    --border: #2a2a2a;
+    --text: #e0e0e0;
+    --dim: #888;
+  }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* ---- Top nav ---- */
+  .nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,10,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex; align-items: center; gap: 24px;
+  }
+  .logo {
+    font-family: 'Arial Black', sans-serif;
+    font-size: 18px;
+    color: var(--gold);
+    letter-spacing: 2px;
+  }
+  .nav-links { display: flex; gap: 20px; font-size: 13px; }
+  .nav-links a { color: var(--dim); transition: color .15s; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-cta {
+    margin-left: auto;
+    padding: 8px 18px;
+    background: linear-gradient(180deg, var(--gold), #cc7700);
+    color: #000;
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    padding: 80px 28px 60px;
+    text-align: center;
+    background: radial-gradient(ellipse at top, rgba(255,165,0,0.15) 0%, transparent 70%);
+    border-bottom: 1px solid var(--border);
+  }
+  .hero h1 {
+    font-family: 'Arial Black', sans-serif;
+    font-size: 64px;
+    letter-spacing: 4px;
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 40px rgba(255,165,0,0.3);
+    margin-bottom: 20px;
+  }
+  .hero .tagline {
+    font-size: 18px;
+    color: var(--text);
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+  .hero .sub {
+    font-size: 14px;
+    color: var(--dim);
+    margin-bottom: 40px;
+    letter-spacing: 2px;
+  }
+  .hero .daw-badges {
+    display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;
+    margin-top: 30px;
+  }
+  .daw-badge {
+    padding: 10px 20px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .daw-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+
+  /* ---- Bundle row (hero products) ---- */
+  .bundle-strip {
+    padding: 40px 28px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+  .bundle-strip h2 {
+    font-size: 14px;
+    color: var(--dim);
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+  }
+  .bundles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .bundle {
+    padding: 24px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-align: left;
+    transition: all .2s;
+  }
+  .bundle:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(255,165,0,0.15);
+  }
+  .bundle .ribbon {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--red);
+    color: #fff;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    border-radius: 2px;
+    margin-bottom: 12px;
+  }
+  .bundle h3 {
+    font-family: 'Arial Black', sans-serif;
+    font-size: 20px;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .bundle .count { font-size: 12px; color: var(--dim); margin-bottom: 14px; }
+  .bundle .desc { font-size: 13px; line-height: 1.5; color: #ccc; margin-bottom: 16px; }
+  .bundle .price-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+  .bundle .price { font-size: 28px; font-weight: 900; color: var(--gold-bright); }
+  .bundle .price-old { font-size: 13px; color: var(--dim); text-decoration: line-through; }
+  .bundle .price-save { font-size: 11px; color: var(--green); font-weight: 700; }
+  .bundle .btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(180deg, var(--gold), #cc7700);
+    color: #000;
+    border: none;
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .bundle .btn:hover { filter: brightness(1.1); }
+
+  /* ---- Plugin grid ---- */
+  .section-hdr {
+    padding: 60px 28px 20px;
+    text-align: center;
+  }
+  .section-hdr h2 {
+    font-family: 'Arial Black', sans-serif;
+    font-size: 32px;
+    color: var(--text);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+  .section-hdr p {
+    color: var(--dim);
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+  .plugin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px 28px 60px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .plug {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: all .2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .plug:hover {
+    border-color: var(--gold);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  }
+  .plug .header-art {
+    height: 140px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .plug .header-art::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 30%, rgba(255,165,0,0.15), transparent 70%);
+  }
+  .plug .icon {
+    font-size: 48px;
+    filter: drop-shadow(0 0 10px rgba(255,165,0,0.5));
+    z-index: 1;
+  }
+  .plug .body { padding: 18px; }
+  .plug h3 { font-family: 'Arial Black', sans-serif; font-size: 16px; color: var(--gold); margin-bottom: 4px; letter-spacing: 1px; }
+  .plug .type { font-size: 10px; color: var(--dim); letter-spacing: 2px; margin-bottom: 10px; }
+  .plug .desc { font-size: 12px; line-height: 1.5; color: #bbb; margin-bottom: 14px; min-height: 54px; }
+  .plug .formats { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 14px; }
+  .plug .format-chip {
+    padding: 2px 7px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 2px; font-size: 9px; letter-spacing: 1px; color: var(--dim);
+  }
+  .plug .format-chip.ready { color: var(--green); border-color: var(--green); }
+  .plug .price-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .plug .price { font-size: 20px; font-weight: 900; color: var(--gold-bright); }
+  .plug .price-old { font-size: 11px; color: var(--dim); text-decoration: line-through; }
+  .plug .buy {
+    padding: 7px 14px; background: var(--gold); color: #000;
+    border: none; border-radius: 3px; font-size: 11px; font-weight: 700;
+    letter-spacing: 1px; cursor: pointer; font-family: inherit;
+  }
+  .plug .buy.owned { background: var(--green); }
+  .plug .status-ribbon {
+    position: absolute; top: 10px; right: 10px;
+    padding: 2px 7px;
+    background: var(--green);
+    color: #000;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    border-radius: 2px;
+    font-weight: 700;
+  }
+  .plug .status-ribbon.coming { background: var(--dim); color: #fff; }
+  .plug .status-ribbon.beta   { background: var(--red); color: #fff; }
+
+  /* ---- Feature blocks ---- */
+  .features {
+    padding: 60px 28px;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .features-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+  }
+  .feat { text-align: center; }
+  .feat .feat-icon { font-size: 36px; margin-bottom: 14px; }
+  .feat h4 { font-size: 14px; color: var(--gold); letter-spacing: 2px; margin-bottom: 8px; }
+  .feat p { font-size: 13px; line-height: 1.6; color: #bbb; }
+
+  /* ---- CTA banner ---- */
+  .cta-banner {
+    padding: 60px 28px;
+    text-align: center;
+    background: linear-gradient(135deg, #2a1a05 0%, #1a0a05 100%);
+  }
+  .cta-banner h2 { font-family: 'Arial Black', sans-serif; font-size: 32px; color: var(--gold); letter-spacing: 2px; margin-bottom: 14px; }
+  .cta-banner p { font-size: 14px; color: #ccc; margin-bottom: 24px; }
+  .cta-banner .btn-primary {
+    padding: 14px 32px;
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    color: #000;
+    border-radius: 3px;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 2px;
+    display: inline-block;
+  }
+
+  /* ---- Footer ---- */
+  footer {
+    padding: 40px 28px;
+    text-align: center;
+    color: var(--dim);
+    font-size: 11px;
+    letter-spacing: 1px;
+    border-top: 1px solid var(--border);
+  }
+  footer .brand { color: var(--gold); font-weight: 700; }
+
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 40px; }
+    .hero .tagline { font-size: 14px; }
+    .nav-links { display: none; }
+  }
+</style>
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms Money Penny">
+    <span>Ms Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="logo">🐐 GOAT FORCE</div>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/ssl-mixer.html">SSL Mixer</a>
+    <a href="/beat-maker.html">Beat Maker</a>
+    <a href="/plugins.html" style="color:var(--gold)">Plugins</a>
+    <a href="/catalog.html">Catalog</a>
+    <a href="/agents.html">AI Agents</a>
+  </div>
+  <a class="nav-cta" href="#bundles">GET THE SUITE</a>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <h1>GOAT PLUGINS</h1>
+  <div class="tagline">The Sound of BrickSquad. The Power of GOAT Force.</div>
+  <div class="sub">Pro Tools · Logic Pro · FL Studio · Ableton · Cubase · Studio One · Reaper</div>
+
+  <div class="daw-badges">
+    <div class="daw-badge"><span class="dot"></span>AAX — Pro Tools</div>
+    <div class="daw-badge"><span class="dot"></span>AU — Logic Pro</div>
+    <div class="daw-badge"><span class="dot"></span>VST3 — FL Studio · Ableton · Cubase · Studio One · Reaper</div>
+    <div class="daw-badge"><span class="dot"></span>Standalone</div>
+  </div>
+</section>
+
+<!-- ============ BUNDLES ============ -->
+<section class="bundle-strip" id="bundles">
+  <h2>▸ BUNDLES ◂</h2>
+  <div class="bundles">
+    <div class="bundle">
+      <div class="ribbon">MOST POPULAR</div>
+      <h3>GOAT ULTIMATE</h3>
+      <div class="count">All 9 plugins — Lifetime license</div>
+      <div class="desc">Every plugin in the GOAT Force suite. Saturator, 808, Vocal Chain, Bus, Reverb, Delay, Kick, AdLib FX, AutoTune. Free lifetime updates.</div>
+      <div class="price-row">
+        <div class="price">$249</div>
+        <div class="price-old">$799</div>
+        <div class="price-save">SAVE 69%</div>
+      </div>
+      <button class="btn" onclick="buy('ultimate')">ADD TO CART</button>
+    </div>
+
+    <div class="bundle">
+      <div class="ribbon" style="background:var(--gold);color:#000">ESSENTIALS</div>
+      <h3>GOAT STUDIO</h3>
+      <div class="count">4 core plugins — Great starting point</div>
+      <div class="desc">The 4 plugins you'll use on every session: GOAT Saturator, BrickSquad 808, Waka Vocal Chain, GOAT Bus.</div>
+      <div class="price-row">
+        <div class="price">$99</div>
+        <div class="price-old">$279</div>
+        <div class="price-save">SAVE 65%</div>
+      </div>
+      <button class="btn" onclick="buy('studio')">ADD TO CART</button>
+    </div>
+
+    <div class="bundle">
+      <div class="ribbon" style="background:#6600ff;color:#fff">BEATMAKER</div>
+      <h3>BRICKSQUAD TRAP</h3>
+      <div class="count">808 + Kick + Saturator + Bus</div>
+      <div class="desc">Everything you need for BrickSquad-style trap & drill production. Hit harder than a brick wall.</div>
+      <div class="price-row">
+        <div class="price">$69</div>
+        <div class="price-old">$199</div>
+        <div class="price-save">SAVE 65%</div>
+      </div>
+      <button class="btn" onclick="buy('trap')">ADD TO CART</button>
+    </div>
+
+    <div class="bundle">
+      <div class="ribbon" style="background:#ff00cc;color:#fff">VOCAL</div>
+      <h3>WAKA VOCAL</h3>
+      <div class="count">Vocal Chain + AutoTune + AdLib FX</div>
+      <div class="desc">Grammy-grade vocal processing. The exact chain used on Waka Flocka's legendary tracks.</div>
+      <div class="price-row">
+        <div class="price">$79</div>
+        <div class="price-old">$199</div>
+        <div class="price-save">SAVE 60%</div>
+      </div>
+      <button class="btn" onclick="buy('vocal')">ADD TO CART</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ALL PLUGINS ============ -->
+<div class="section-hdr">
+  <h2>INDIVIDUAL PLUGINS</h2>
+  <p>Each plugin available standalone · AAX + AU + VST3 + Standalone from one installer</p>
+</div>
+
+<div class="plugin-grid" id="pluginGrid"></div>
+
+<!-- ============ FEATURES ============ -->
+<section class="features">
+  <div class="features-grid">
+    <div class="feat">
+      <div class="feat-icon">🎛️</div>
+      <h4>ALL DAWS</h4>
+      <p>One plugin, every DAW. Pro Tools (AAX), Logic (AU), FL Studio / Ableton / Cubase / Studio One / Reaper (VST3), plus Standalone.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🐐</div>
+      <h4>SIGNATURE SOUND</h4>
+      <p>Designed by DJ Speedy and the GOAT Force team. The exact processing chains used on platinum BrickSquad / Waka Flocka records.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">⚡</div>
+      <h4>CPU-EFFICIENT</h4>
+      <p>Hand-tuned C++ DSP. Native AAX DSP support for HDX systems. Load 100+ instances on a modern session.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🔄</div>
+      <h4>FREE UPDATES</h4>
+      <p>Buy once, own forever. Free updates for life. New plugins added to the Ultimate bundle monthly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta-banner">
+  <h2>🐐 TRY BEFORE YOU BUY</h2>
+  <p>Download a 14-day trial of the full GOAT Ultimate bundle. All plugins, all DAWs, no watermark.</p>
+  <a class="btn-primary" href="#" onclick="alert('Trial downloader launches once we publish the installer. For now, build from source on GitHub.'); return false;">START FREE TRIAL</a>
+</section>
+
+<footer>
+  <div class="brand">🐐 GOAT FORCE · BRICKSQUAD · DJ SPEEDY</div>
+  <div style="margin-top:8px">Built with Avid AAX SDK 2.9.0 · JUCE 7 · Pro Tools Developer Certified</div>
+  <div style="margin-top:8px"><a href="https://github.com/DJSPEEDYGA/nextjs-commerce" style="color:var(--gold)">View source on GitHub →</a></div>
+</footer>
+
+<script>
+const plugins = [
+  {
+    name: "GOAT Saturator",
+    code: "goat-sat",
+    type: "HARMONIC · SATURATION",
+    icon: "🔥",
+    desc: "Analog tape, tube, transformer and GOAT modes. 4-band harmonic exciter with air band. The BrickSquad warmth sound.",
+    formats: ["AAX","AU","VST3","STANDALONE"],
+    ready: true,
+    price: 49, priceOld: 129,
+    status: "SHIPPING"
+  },
+  {
+    name: "BrickSquad 808",
+    code: "bs808",
+    type: "BASS ENHANCER",
+    icon: "🧱",
+    desc: "Dedicated 808 bass plugin. Sub boost, click layer, distortion, glue comp, glide. Makes your 808s hit through ANY system.",
+    formats: ["AAX","AU","VST3","STANDALONE"],
+    ready: true,
+    price: 59, priceOld: 149,
+    status: "SHIPPING"
+  },
+  {
+    name: "Waka Vocal Chain",
+    code: "waka-vox",
+    type: "VOCAL CHAIN",
+    icon: "🎤",
+    desc: "Complete vocal chain in one plugin. HPF + 3-band EQ + comp + de-esser + saturator + reverb. Waka's signature vocal sound.",
+    formats: ["AAX","AU","VST3","STANDALONE"],
+    ready: true,
+    price: 69, priceOld: 169,
+    status: "SHIPPING"
+  },
+  {
+    name: "GOAT Bus",
+    code: "goat-bus",
+    type: "MASTER BUS",
+    icon: "🎚️",
+    desc: "Master bus processor. Glue comp + tilt EQ + soft clip + stereo width + LUFS meter. Transparent · Warm · Punchy · GOAT modes.",
+    formats: ["AAX","AU","VST3","STANDALONE"],
+    ready: true,
+    price: 79, priceOld: 199,
+    status: "SHIPPING"
+  },
+  {
+    name: "GOAT Reverb",
+    code: "goat-verb",
+    type: "REVERB",
+    icon: "🌫️",
+    desc: "Plate, hall, chamber, and 'GOAT Cathedral' algorithms. Pre-delay, freeze, shimmer, and ducking. Mix-ready vocal reverb.",
+    formats: ["AAX","AU","VST3","STANDALONE"],
+    ready: true,
+    price: 59, priceOld: 149,
+    status: "BETA"
+  },
+  {
+    name: "GOAT Delay",
+    code: "goat-delay",
+    type: "DELAY",
+    icon: "📡",
+    desc: "Tape delay + digital delay + slapback modes. BPM sync, ping-pong, feedback saturation. Ideal for vocals and guitars.",
+    formats: ["AAX","AU","VST3","STANDALONE"],
+    ready: true,
+    price: 49, priceOld: 129,
+    status: "BETA"
+  },
+  {
+    name: "GOAT AutoTune",
+    code: "goat-tune",
+    type: "PITCH CORRECTION",
+    icon: "🎵",
+    desc: "Real-time pitch correction with graph mode. Key/scale lock, humanize, formant preservation, T-Pain hard-tune mode.",
+    formats: ["AAX","AU","VST3","STANDALONE"],
+    ready: true,
+    price: 89, priceOld: 249,
+    status: "BETA"
+  },
+  {
+    name: "BrickSquad Kick",
+    code: "bs-kick",
+    type: "KICK DRUM SYNTH",
+    icon: "🦵",
+    desc: "Layered kick synthesis. Sub layer + mid punch + click top. MIDI-triggered, side-chain ready. Build your signature kick.",
+    formats: ["AAX","AU","VST3","STANDALONE"],
+    ready: true,
+    price: 39, priceOld: 99,
+    status: "BETA"
+  },
+  {
+    name: "Waka AdLib FX",
+    code: "waka-adlib",
+    type: "VOCAL FX",
+    icon: "🎙️",
+    desc: "Ad-lib FX chain: granular pitch, tape stop, reverse reverb, crowd doubler, phone filter. Inspired by Waka's ad-lib signature.",
+    formats: ["AAX","AU","VST3","STANDALONE"],
+    ready: true,
+    price: 49, priceOld: 129,
+    status: "BETA"
+  }
+];
+
+function renderPlugins() {
+  const grid = document.getElementById('pluginGrid');
+  grid.innerHTML = plugins.map(p => {
+    const fmtChips = p.formats.map(f => `<span class="format-chip ${p.ready?'ready':''}">${f}</span>`).join('');
+    const statusClass = p.status === 'SHIPPING' ? '' : (p.status === 'BETA' ? 'beta' : 'coming');
+    return `
+      <div class="plug" onclick="showPlugin('${p.code}')">
+        <div class="status-ribbon ${statusClass}">${p.status}</div>
+        <div class="header-art">
+          <div class="icon">${p.icon}</div>
+        </div>
+        <div class="body">
+          <h3>${p.name}</h3>
+          <div class="type">${p.type}</div>
+          <div class="desc">${p.desc}</div>
+          <div class="formats">${fmtChips}</div>
+          <div class="price-row">
+            <div>
+              <div class="price">$${p.price}</div>
+              <div class="price-old">$${p.priceOld}</div>
+            </div>
+            <button class="buy" onclick="event.stopPropagation();buy('${p.code}')">${p.ready?'BUY':'RESERVE'}</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+// --- Cart system ---
+const BUNDLES = {
+  ultimate:{ name:'GOAT Ultimate Bundle', price:249, desc:'All 9 plugins (4 now + 5 coming free)' },
+  studio:  { name:'GOAT Studio Bundle',   price:99,  desc:'All 4 shipping plugins' },
+  trap:    { name:'BrickSquad Trap Pack', price:69,  desc:'BrickSquad 808 + GOAT Saturator' },
+  vocal:   { name:'Waka Vocal Bundle',    price:79,  desc:'Waka Vocal Chain + GOAT Bus' }
+};
+
+let CART = JSON.parse(localStorage.getItem('goatCart') || '[]');
+
+function saveCart() { localStorage.setItem('goatCart', JSON.stringify(CART)); updateCartBadge(); }
+
+function updateCartBadge() {
+  const b = document.getElementById('cartBadge');
+  if (b) b.textContent = CART.length;
+}
+
+function buy(code) {
+  let item = null;
+  if (BUNDLES[code]) {
+    item = { code, name: BUNDLES[code].name, price: BUNDLES[code].price, type:'bundle' };
+  } else {
+    const p = plugins.find(x => x.code === code);
+    if (!p) return;
+    if (!p.ready) {
+      openModal('⏳ ' + p.name + ' is launching soon!', 'Reserve your copy now. We will email you when it drops and you will get 20% off launch pricing.\n\nExpected: Q1 2026');
+      return;
+    }
+    item = { code, name: p.name, price: p.price, type:'plugin' };
+  }
+  if (CART.find(x => x.code === code)) {
+    openModal('✅ Already in cart', item.name + ' is already in your cart. Open cart to checkout.');
+    return;
+  }
+  CART.push(item);
+  saveCart();
+  openModal('🛍️ Added to Cart', item.name + ' - $' + item.price + '\n\nClick CHECKOUT below to complete your order.', true);
+}
+
+function removeFromCart(code) {
+  CART = CART.filter(x => x.code !== code);
+  saveCart();
+  renderCart();
+}
+
+function cartTotal() { return CART.reduce((s,i) => s + i.price, 0); }
+
+function openCart() {
+  const modal = document.getElementById('cartModal');
+  if (!modal) return;
+  renderCart();
+  modal.style.display = 'flex';
+}
+
+function closeCart() {
+  const modal = document.getElementById('cartModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function renderCart() {
+  const body = document.getElementById('cartBody');
+  const totalEl = document.getElementById('cartTotal');
+  if (!body) return;
+  if (CART.length === 0) {
+    body.innerHTML = '<p style="color:#888;text-align:center;padding:20px">Your cart is empty. Add some plugins!</p>';
+    if (totalEl) totalEl.textContent = '$0';
+    return;
+  }
+  body.innerHTML = CART.map(i => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #222;">
+      <div>
+        <div style="font-weight:700;color:#ffa500">${i.name}</div>
+        <div style="font-size:11px;color:#666">${i.type.toUpperCase()}</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div style="font-weight:700">$${i.price}</div>
+        <button onclick="removeFromCart('${i.code}')" style="background:#300;color:#f66;border:1px solid #600;padding:4px 10px;cursor:pointer;border-radius:4px">✕</button>
+      </div>
+    </div>`).join('');
+  if (totalEl) totalEl.textContent = '$' + cartTotal();
+}
+
+// --- Stripe checkout ---
+async function checkout() {
+  if (CART.length === 0) { openModal('Cart empty','Add items first'); return; }
+  const email = prompt('Email for license delivery:');
+  if (!email) return;
+  if (!/@/.test(email)) { alert('Invalid email'); return; }
+
+  try {
+    const res = await fetch('/api/stripe/create-checkout-session', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ items: CART, email })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.url) { window.location.href = data.url; return; }
+    }
+  } catch(e) {}
+
+  const LINKS = {
+    ultimate:     'https://buy.stripe.com/test_ultimate',
+    studio:       'https://buy.stripe.com/test_studio',
+    trap:         'https://buy.stripe.com/test_trap',
+    vocal:        'https://buy.stripe.com/test_vocal',
+    'goat-sat':   'https://buy.stripe.com/test_goatsat',
+    'bs808':      'https://buy.stripe.com/test_bs808',
+    'waka-vox':   'https://buy.stripe.com/test_wakavox',
+    'goat-bus':   'https://buy.stripe.com/test_goatbus',
+    'goat-verb':  'https://buy.stripe.com/test_goatverb',
+    'goat-delay': 'https://buy.stripe.com/test_goatdelay',
+    'goat-tune':  'https://buy.stripe.com/test_goattune',
+    'bs-kick':    'https://buy.stripe.com/test_bskick',
+    'waka-adlib': 'https://buy.stripe.com/test_wakaadlib'
+  };
+  if (CART.length === 1 && LINKS[CART[0].code]) {
+    const ok = confirm('Proceed to Stripe checkout for ' + CART[0].name + ' ($' + CART[0].price + ')?\n\nAfter payment, your license will be emailed to ' + email);
+    if (ok) window.open(LINKS[CART[0].code], '_blank');
+    return;
+  }
+  const orderId = 'GR-' + Date.now().toString(36).toUpperCase();
+  const orders = JSON.parse(localStorage.getItem('goatOrders') || '[]');
+  orders.push({ orderId, email, items: CART, total: cartTotal(), status: 'pending', ts: Date.now() });
+  localStorage.setItem('goatOrders', JSON.stringify(orders));
+  openModal('🧾 Order Received: ' + orderId,
+    'Total: $' + cartTotal() + '\nEmail: ' + email + '\n\nYou will receive a Stripe invoice by email within minutes. License keys will be delivered after payment clears.\n\nOrder #: ' + orderId);
+  CART = [];
+  saveCart();
+  renderCart();
+}
+
+function showPlugin(code) {
+  const p = plugins.find(x => x.code === code);
+  if (!p) return;
+  openModal(p.icon + ' ' + p.name,
+    p.type + ' - $' + p.price + '\n\n' + p.desc + '\n\nFormats: ' + p.formats.join(', ') + '\nStatus: ' + p.status,
+    p.ready, () => buy(code));
+}
+
+function openModal(title, body, showAction, actionFn) {
+  const el = document.getElementById('genericModal');
+  if (!el) { alert(title + '\n\n' + body); return; }
+  document.getElementById('gmTitle').textContent = title;
+  document.getElementById('gmBody').textContent = body;
+  const act = document.getElementById('gmAction');
+  if (showAction) {
+    act.style.display = 'inline-block';
+    act.textContent = actionFn ? 'BUY NOW' : 'OPEN CART';
+    act.onclick = actionFn || (() => { closeModal(); openCart(); });
+  } else {
+    act.style.display = 'none';
+  }
+  el.style.display = 'flex';
+}
+function closeModal() {
+  const el = document.getElementById('genericModal');
+  if (el) el.style.display = 'none';
+}
+
+renderPlugins();
+updateCartBadge();
+</script>
+
+<!-- Floating cart button -->
+<button onclick="openCart()" style="position:fixed;bottom:24px;right:24px;z-index:998;background:linear-gradient(135deg,#ffa500,#ff6600);color:#000;border:none;padding:14px 22px;border-radius:40px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(255,165,0,0.4);font-size:14px;letter-spacing:1px;">
+  🛍️ CART <span id="cartBadge" style="background:#000;color:#ffa500;padding:2px 8px;border-radius:12px;margin-left:6px">0</span>
+</button>
+
+<div id="cartModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;justify-content:center;align-items:center;padding:20px">
+  <div style="background:#0a0a0a;border:2px solid #ffa500;border-radius:12px;padding:28px;max-width:540px;width:100%;max-height:80vh;overflow:auto;box-shadow:0 20px 60px rgba(255,165,0,0.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h2 style="margin:0;color:#ffa500;letter-spacing:2px">🛍️ YOUR CART</h2>
+      <button onclick="closeCart()" style="background:#222;color:#fff;border:none;padding:6px 12px;cursor:pointer;border-radius:6px;font-size:18px">✕</button>
+    </div>
+    <div id="cartBody"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:16px;border-top:2px solid #ffa500">
+      <div style="font-size:18px;color:#888">TOTAL:</div>
+      <div style="font-size:28px;font-weight:800;color:#ffa500" id="cartTotal">$0</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button onclick="closeCart()" style="flex:1;background:#222;color:#fff;border:1px solid #444;padding:14px;cursor:pointer;border-radius:8px;font-weight:700;letter-spacing:1px">CONTINUE SHOPPING</button>
+      <button onclick="checkout()" style="flex:1;background:linear-gradient(135deg,#00ff66,#009944);color:#000;border:none;padding:14px;cursor:pointer;border-radius:8px;font-weight:800;letter-spacing:1px;font-size:14px">💳 CHECKOUT</button>
+    </div>
+    <div style="text-align:center;color:#555;font-size:10px;margin-top:12px;letter-spacing:1px">SECURED BY STRIPE - 14-DAY MONEY BACK</div>
+  </div>
+</div>
+
+<div id="genericModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;justify-content:center;align-items:center;padding:20px">
+  <div style="background:#0a0a0a;border:2px solid #ffa500;border-radius:12px;padding:28px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(255,165,0,0.3)">
+    <h2 id="gmTitle" style="margin:0 0 16px 0;color:#ffa500">Title</h2>
+    <p id="gmBody" style="color:#ccc;white-space:pre-wrap;line-height:1.6"></p>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+      <button onclick="closeModal()" style="background:#222;color:#fff;border:1px solid #444;padding:10px 20px;cursor:pointer;border-radius:6px;font-weight:700">CLOSE</button>
+      <button id="gmAction" style="display:none;background:linear-gradient(135deg,#ffa500,#ff6600);color:#000;border:none;padding:10px 20px;cursor:pointer;border-radius:6px;font-weight:800">BUY NOW</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>

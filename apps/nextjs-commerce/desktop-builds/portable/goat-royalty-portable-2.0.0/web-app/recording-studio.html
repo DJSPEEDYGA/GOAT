@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOAT Royalty - Recording Studio</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-900 min-h-screen text-white">
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms. Money Penny">
+    <span>Ms. Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-black/50 backdrop-blur-md z-50 border-b border-purple-500/30">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-crown text-yellow-400 text-2xl"></i>
+                <span class="text-xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">GOAT Royalty</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html" class="hover:text-purple-400 transition"><i class="fas fa-home mr-1"></i>Home</a>
+                <a href="agents.html" class="hover:text-purple-400 transition"><i class="fas fa-robot mr-1"></i>AI Agents</a>
+                <a href="cryptoMining.html" class="hover:text-purple-400 transition"><i class="fas fa-coins mr-1"></i>Crypto Mining</a>
+                <a href="recording-studio.html" class="text-purple-400 font-semibold"><i class="fas fa-microphone mr-1"></i>Recording Studio</a>
+                <a href="production-studio.html" class="hover:text-purple-400 transition"><i class="fas fa-film mr-1"></i>Production Studio</a>
+                <a href="movie-studio.html" class="hover:text-purple-400 transition"><i class="fas fa-video mr-1"></i>Movie Studio</a>
+                <a href="dating.html" class="hover:text-purple-400 transition"><i class="fas fa-heart mr-1"></i>Dating</a>
+                <a href="banking.html" class="hover:text-purple-400 transition"><i class="fas fa-user-shield mr-1"></i>Background Checks</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="pt-20 pb-10 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
+                <i class="fas fa-microphone-alt mr-3"></i>Recording Studio
+            </h1>
+            <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                Professional-grade recording capabilities with AI-powered audio processing, real-time collaboration, and seamless integration with production workflows.
+            </p>
+        </div>
+    </div>
+
+    <!-- Recording Interface -->
+    <div class="max-w-7xl mx-auto px-4 pb-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Main Recording Panel -->
+            <div class="lg:col-span-2 bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-purple-500/30">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold"><i class="fas fa-sliders-h mr-2 text-purple-400"></i>Recording Console</h2>
+                    <div class="flex space-x-2">
+                        <button id="recordBtn" class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-lg font-bold transition flex items-center">
+                            <i class="fas fa-circle mr-2 animate-pulse"></i>Record
+                        </button>
+                        <button id="pauseBtn" class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg transition disabled:opacity-50" disabled>
+                            <i class="fas fa-pause"></i>
+                        </button>
+                        <button id="stopBtn" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg transition disabled:opacity-50" disabled>
+                            <i class="fas fa-stop"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Waveform Display -->
+                <div class="bg-gradient-to-b from-slate-900 to-black rounded-xl p-4 mb-6 min-h-64">
+                    <canvas id="waveformCanvas" class="w-full h-48"></canvas>
+                    <div class="flex justify-between text-sm text-gray-500 mt-2">
+                        <span id="recordingTime">00:00:00</span>
+                        <span id="recordingStatus">Ready to Record</span>
+                        <span id="fileSize">0 KB</span>
+                    </div>
+                </div>
+
+                <!-- Audio Input Configuration -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <label class="block text-sm font-semibold mb-2 text-purple-300"><i class="fas fa-microphone mr-1"></i>Input Device</label>
+                        <select id="inputDevice" class="w-full bg-slate-700 rounded-lg p-2 border border-purple-500/30 focus:outline-none focus:border-purple-500">
+                            <option value="default">Default Microphone</option>
+                            <option value="usb">USB Microphone (XLR)</option>
+                            <option value="builtin">Built-in Microphone</option>
+                            <option value="line">Line Input</option>
+                        </select>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <label class="block text-sm font-semibold mb-2 text-purple-300"><i class="fas fa-volume-up mr-1"></i>Input Gain</label>
+                        <input type="range" id="inputGain" min="0" max="100" value="75" class="w-full accent-purple-500">
+                        <div class="text-sm text-gray-400 mt-1">Gain: <span id="gainValue">75</span>%</div>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <label class="block text-sm font-semibold mb-2 text-purple-300"><i class="fas fa-wave-square mr-1"></i>Sample Rate</label>
+                        <select id="sampleRate" class="w-full bg-slate-700 rounded-lg p-2 border border-purple-500/30 focus:outline-none focus:border-purple-500">
+                            <option value="44100">44.1 kHz (CD Quality)</option>
+                            <option value="48000" selected>48 kHz (Professional)</option>
+                            <option value="96000">96 kHz (High-Resolution)</option>
+                            <option value="192000">192 kHz (Studio Master)</option>
+                        </select>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <label class="block text-sm font-semibold mb-2 text-purple-300"><i class="fas fa-file-audio mr-1"></i>Output Format</label>
+                        <select id="outputFormat" class="w-full bg-slate-700 rounded-lg p-2 border border-purple-500/30 focus:outline-none focus:border-purple-500">
+                            <option value="wav">WAV (Uncompressed)</option>
+                            <option value="flac">FLAC (Lossless)</option>
+                            <option value="mp3_320">MP3 320kbps</option>
+                            <option value="aac">AAC (256kbps)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- AI Audio Processing -->
+                <div class="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl p-4 mb-6">
+                    <h3 class="text-lg font-bold mb-3"><i class="fas fa-magic mr-2 text-pink-400"></i>AI Audio Processing</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="aiNoiseReduction" checked class="accent-purple-500">
+                            <span class="text-sm">Noise Reduction</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="aiVoiceClarity" checked class="accent-purple-500">
+                            <span class="text-sm">Voice Clarity</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="aiToneCorrection" class="accent-purple-500">
+                            <span class="text-sm">Tone Correction</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="aiBreathRemoval" class="accent-purple-500">
+                            <span class="text-sm">Breath Removal</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="aiDeEss" checked class="accent-purple-500">
+                            <span class="text-sm">De-Essing</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="aiCompression" class="accent-purple-500">
+                            <span class="text-sm">AI Compression</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="aiReverb" class="accent-purple-500">
+                            <span class="text-sm">Reverb Enhancement</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="aiMaster" class="accent-purple-500">
+                            <span class="text-sm">Auto-Master</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Recording History -->
+                <div class="bg-slate-800/50 rounded-xl p-4">
+                    <h3 class="text-lg font-bold mb-3"><i class="fas fa-history mr-2 text-purple-400"></i>Recording Sessions</h3>
+                    <div id="recordingList" class="space-y-2 max-h-48 overflow-y-auto">
+                        <div class="text-gray-500 text-center py-4">No recordings yet. Start recording to see sessions here.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Panel - Effects & Collaboration -->
+            <div class="space-y-6">
+                <!-- Real-time Effects -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-pink-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-sliders-h mr-2 text-pink-400"></i>Real-time Effects</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Equalizer</span>
+                                <span id="eqValue">Flat</span>
+                            </div>
+                            <select id="equalizer" class="w-full bg-slate-700 rounded-lg p-2 border border-pink-500/30">
+                                <option value="flat">Flat</option>
+                                <option value="vocal">Vocal Boost</option>
+                                <option value="spoken">Spoken Word</option>
+                                <option value="music">Music</option>
+                                <option value="bass">Bass Heavy</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Reverb</span>
+                                <span id="reverbValue">0%</span>
+                            </div>
+                            <input type="range" id="reverbAmount" min="0" max="100" value="0" class="w-full accent-pink-500">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Delay</span>
+                                <span id="delayValue">0ms</span>
+                            </div>
+                            <input type="range" id="delayAmount" min="0" max="500" value="0" class="w-full accent-pink-500">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Compressor</span>
+                                <span id="compressorValue">Off</span>
+                            </div>
+                            <select id="compressor" class="w-full bg-slate-700 rounded-lg p-2 border border-pink-500/30">
+                                <option value="off">Off</option>
+                                <option value="light">Light</option>
+                                <option value="medium">Medium</option>
+                                <option value="heavy">Heavy</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collaboration Panel -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-green-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-users mr-2 text-green-400"></i>Live Collaboration</h2>
+                    <div class="space-y-3">
+                        <button id="inviteBtn" class="w-full bg-green-600 hover:bg-green-700 py-2 rounded-lg transition flex items-center justify-center">
+                            <i class="fas fa-user-plus mr-2"></i>Invite Collaborators
+                        </button>
+                        <div id="collaboratorList" class="space-y-2 max-h-32 overflow-y-auto">
+                            <div class="flex items-center justify-between bg-slate-800/50 p-2 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center mr-2">Y</div>
+                                    <span class="text-sm">You (Host)</span>
+                                </div>
+                                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-blue-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-download mr-2 text-blue-400"></i>Export Options</h2>
+                    <div class="space-y-3">
+                        <button id="exportBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded-lg transition flex items-center justify-center">
+                            <i class="fas fa-file-export mr-2"></i>Export Recording
+                        </button>
+                        <button id="exportToProdBtn" class="w-full bg-purple-600 hover:bg-purple-700 py-2 rounded-lg transition flex items-center justify-center">
+                            <i class="fas fa-arrow-right mr-2"></i>Send to Production
+                        </button>
+                        <button id="exportToDSPBtn" class="w-full bg-orange-600 hover:bg-orange-700 py-2 rounded-lg transition flex items-center justify-center">
+                            <i class="fas fa-music mr-2"></i>Distribute to DSPs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="lib/audio/audio-engine.js"></script>
+    <script src="lib/audio/vocal-processor.js"></script>
+    <script src="lib/audio/ai-audio-enhancer.js"></script>
+    <script>
+        // Recording Studio Controller
+        const RecordingStudio = {
+            audioContext: null,
+            mediaRecorder: null,
+            audioChunks: [],
+            isRecording: false,
+            isPaused: false,
+            startTime: 0,
+            elapsedTime: 0,
+            timerInterval: null,
+            recordings: [],
+            analyser: null,
+            dataArray: null,
+            source: null,
+            audioStream: null,
+
+            async init() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    await this.setupAudioInput();
+                    this.setupEventListeners();
+                    this.drawWaveform();
+                    console.log('Recording Studio initialized');
+                } catch (error) {
+                    console.error('Failed to initialize recording studio:', error);
+                    alert('Failed to access audio input. Please grant microphone permissions.');
+                }
+            },
+
+            async setupAudioInput() {
+                const constraints = {
+                    audio: {
+                        deviceId: document.getElementById('inputDevice').value !== 'default' ? 
+                          { exact: document.getElementById('inputDevice').value } : undefined,
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false
+                    }
+                };
+                
+                this.audioStream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                // Setup audio analysis
+                this.analyser = this.audioContext.createAnalyser();
+                this.analyser.fftSize = 2048;
+                this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+                
+                this.source = this.audioContext.createMediaStreamSource(this.audioStream);
+                this.source.connect(this.analyser);
+            },
+
+            setupEventListeners() {
+                document.getElementById('recordBtn').addEventListener('click', () => this.startRecording());
+                document.getElementById('pauseBtn').addEventListener('click', () => this.pauseRecording());
+                document.getElementById('stopBtn').addEventListener('click', () => this.stopRecording());
+                document.getElementById('inputGain').addEventListener('input', (e) => {
+                    document.getElementById('gainValue').textContent = e.target.value;
+                });
+                document.getElementById('exportBtn').addEventListener('click', () => this.exportRecording());
+                document.getElementById('exportToProdBtn').addEventListener('click', () => this.exportToProduction());
+                document.getElementById('exportToDSPBtn').addEventListener('click', () => this.exportToDSP());
+                
+                // Effect controls
+                document.getElementById('reverbAmount').addEventListener('input', (e) => {
+                    document.getElementById('reverbValue').textContent = e.target.value + '%';
+                });
+                document.getElementById('delayAmount').addEventListener('input', (e) => {
+                    document.getElementById('delayValue').textContent = e.target.value + 'ms';
+                });
+                document.getElementById('equalizer').addEventListener('change', (e) => {
+                    document.getElementById('eqValue').textContent = e.target.options[e.target.selectedIndex].text;
+                });
+            },
+
+            async startRecording() {
+                if (!this.isRecording) {
+                    this.isRecording = true;
+                    this.isPaused = false;
+                    this.audioChunks = [];
+                    this.startTime = Date.now() - this.elapsedTime;
+                    
+                    const sampleRate = parseInt(document.getElementById('sampleRate').value);
+                    this.mediaRecorder = new MediaRecorder(this.audioStream, {
+                        mimeType: 'audio/webm;codecs=opus',
+                        audioBitsPerSecond: 256000
+                    });
+                    
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            this.audioChunks.push(event.data);
+                        }
+                    };
+                    
+                    this.mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                        this.saveRecording(audioBlob);
+                    };
+                    
+                    this.mediaRecorder.start(100);
+                    this.updateUI('recording');
+                    this.startTimer();
+                    document.getElementById('recordingStatus').textContent = 'Recording...';
+                    document.getElementById('recordBtn').disabled = true;
+                    document.getElementById('pauseBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = false;
+                }
+            },
+
+            pauseRecording() {
+                if (this.isRecording && !this.isPaused) {
+                    this.isPaused = true;
+                    this.mediaRecorder.pause();
+                    clearInterval(this.timerInterval);
+                    document.getElementById('recordingStatus').textContent = 'Paused';
+                    document.getElementById('pauseBtn').innerHTML = '<i class="fas fa-play"></i>';
+                } else if (this.isRecording && this.isPaused) {
+                    this.isPaused = false;
+                    this.mediaRecorder.resume();
+                    this.startTimer();
+                    document.getElementById('recordingStatus').textContent = 'Recording...';
+                    document.getElementById('pauseBtn').innerHTML = '<i class="fas fa-pause"></i>';
+                }
+            },
+
+            stopRecording() {
+                if (this.isRecording) {
+                    this.isRecording = false;
+                    this.isPaused = false;
+                    this.mediaRecorder.stop();
+                    clearInterval(this.timerInterval);
+                    this.updateUI('stopped');
+                    document.getElementById('recordingStatus').textContent = 'Stopped';
+                    document.getElementById('recordBtn').disabled = false;
+                    document.getElementById('pauseBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = true;
+                    
+                    // Apply AI processing
+                    this.processWithAI();
+                }
+            },
+
+            startTimer() {
+                this.timerInterval = setInterval(() => {
+                    this.elapsedTime = Date.now() - this.startTime;
+                    const hours = Math.floor(this.elapsedTime / 3600000);
+                    const minutes = Math.floor((this.elapsedTime % 3600000) / 60000);
+                    const seconds = Math.floor((this.elapsedTime % 60000) / 1000);
+                    document.getElementById('recordingTime').textContent = 
+                        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    // Update file size estimate
+                    const fileSize = Math.round((this.elapsedTime / 1000) * 256 * 1024 / 8);
+                    document.getElementById('fileSize').textContent = this.formatFileSize(fileSize);
+                }, 100);
+            },
+
+            saveRecording(audioBlob) {
+                const now = new Date();
+                const formattedDate = now.toISOString().slice(0, 10);
+                const formattedTime = now.toTimeString().slice(0, 8);
+                const filename = `Recording_${formattedDate}_${formattedTime.replace(/:/g, '-')}`;
+                
+                const recording = {
+                    id: Date.now(),
+                    name: filename,
+                    blob: audioBlob,
+                    duration: this.elapsedTime,
+                    date: now.toLocaleString(),
+                    sampleRate: document.getElementById('sampleRate').value,
+                    format: document.getElementById('outputFormat').value
+                };
+                
+                this.recordings.unshift(recording);
+                this.updateRecordingList();
+                
+                // Reset timer
+                this.elapsedTime = 0;
+                document.getElementById('recordingTime').textContent = '00:00:00';
+                document.getElementById('fileSize').textContent = '0 KB';
+            },
+
+            updateRecordingList() {
+                const list = document.getElementById('recordingList');
+                if (this.recordings.length === 0) {
+                    list.innerHTML = '<div class="text-gray-500 text-center py-4">No recordings yet. Start recording to see sessions here.</div>';
+                    return;
+                }
+                
+                list.innerHTML = this.recordings.map(rec => `
+                    <div class="flex items-center justify-between bg-slate-700/50 p-3 rounded-lg hover:bg-slate-700 transition">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-file-audio text-purple-400"></i>
+                            <div>
+                                <div class="font-semibold text-sm">${rec.name}</div>
+                                <div class="text-xs text-gray-400">${this.formatDuration(rec.duration)} • ${rec.sampleRate}Hz</div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="RecordingStudio.playRecording(${rec.id})" class="text-purple-400 hover:text-purple-300">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button onclick="RecordingStudio.deleteRecording(${rec.id})" class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            playRecording(id) {
+                const recording = this.recordings.find(r => r.id === id);
+                if (recording) {
+                    const audio = new Audio(URL.createObjectURL(recording.blob));
+                    audio.play();
+                }
+            },
+
+            deleteRecording(id) {
+                this.recordings = this.recordings.filter(r => r.id !== id);
+                this.updateRecordingList();
+            },
+
+            async processWithAI() {
+                if (!document.getElementById('aiNoiseReduction').checked && 
+                    !document.getElementById('aiVoiceClarity').checked) {
+                    return;
+                }
+                
+                console.log('Processing audio with AI...');
+                // AI processing would be done here
+                // This would integrate with your AI audio enhancement library
+            },
+
+            exportRecording() {
+                if (this.recordings.length === 0) {
+                    alert('No recordings to export');
+                    return;
+                }
+                
+                const recording = this.recordings[0];
+                const url = URL.createObjectURL(recording.blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${recording.name}.${recording.format}`;
+                a.click();
+                URL.revokeObjectURL(url);
+            },
+
+            exportToProduction() {
+                if (this.recordings.length === 0) {
+                    alert('No recordings to send to production');
+                    return;
+                }
+                alert('Recording sent to Production Studio for further processing!');
+            },
+
+            exportToDSP() {
+                if (this.recordings.length === 0) {
+                    alert('No recordings to distribute');
+                    return;
+                }
+                alert('Recording ready for DSP distribution! Navigate to Distribution page.');
+            },
+
+            drawWaveform() {
+                const canvas = document.getElementById('waveformCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                const draw = () => {
+                    requestAnimationFrame(draw);
+                    
+                    if (this.analyser && this.isRecording) {
+                        this.analyser.getByteTimeDomainData(this.dataArray);
+                    } else {
+                        // Draw flat line when not recording
+                        this.dataArray.fill(128);
+                    }
+                    
+                    canvas.width = canvas.offsetWidth * 2;
+                    canvas.height = canvas.offsetHeight * 2;
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = this.isRecording ? '#a855f7' : '#64748b';
+                    ctx.beginPath();
+                    
+                    const sliceWidth = canvas.width / this.dataArray.length;
+                    let x = 0;
+                    
+                    for (let i = 0; i < this.dataArray.length; i++) {
+                        const v = this.dataArray[i] / 128.0;
+                        const y = v * canvas.height / 2;
+                        
+                        if (i === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                        x += sliceWidth;
+                    }
+                    
+                    ctx.lineTo(canvas.width, canvas.height / 2);
+                    ctx.stroke();
+                };
+                
+                draw();
+            },
+
+            updateUI(state) {
+                const recordBtn = document.getElementById('recordBtn');
+                if (state === 'recording') {
+                    recordBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    recordBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                    recordBtn.innerHTML = '<i class="fas fa-circle mr-2 animate-pulse"></i>Recording...';
+                } else {
+                    recordBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    recordBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                    recordBtn.innerHTML = '<i class="fas fa-circle mr-2 animate-pulse"></i>Record';
+                }
+            },
+
+            formatDuration(ms) {
+                const seconds = Math.floor(ms / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(minutes / 60);
+                
+                if (hours > 0) {
+                    return `${hours}:${(minutes % 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+                }
+                return `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
+            },
+
+            formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            }
+        };
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            RecordingStudio.init();
+        });
+    </script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>

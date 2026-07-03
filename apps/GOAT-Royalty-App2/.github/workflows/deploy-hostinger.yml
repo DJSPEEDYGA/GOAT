@@ -1,0 +1,97 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
+      
+      - name: Create deployment package
+        run: |
+          cd .next/standalone
+          tar -czf ../../deployment-package.tar.gz .
+      
+      - name: Upload to Hostinger
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USERNAME }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          source: "deployment-package.tar.gz"
+          target: "~/"
+      
+      - name: Extract and deploy on Hostinger
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USERNAME }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          script: |
+            # Backup current version
+            cd ~/public_html
+            if [ -d "backup" ]; then
+              rm -rf backup
+            fi
+            mkdir -p backup
+            cp -r .next backup/ 2>/dev/null || true
+            cp server.js backup/ 2>/dev/null || true
+            cp package.json backup/ 2>/dev/null || true
+            
+            # Extract new version
+            cd ~
+            rm -rf public_html/.next
+            rm -f public_html/server.js
+            tar -xzf deployment-package.tar.gz -C ~/public_html
+            
+            # Install production dependencies
+            cd ~/public_html
+            npm install --production
+            
+            # Set permissions
+            chmod 755 server.js
+            chmod -R 755 .next
+            chmod -R 755 node_modules
+            
+            # Restart application
+            pm2 restart goat-royalty-app || pm2 start server.js --name goat-royalty-app
+            
+            echo "Deployment completed successfully!"
+      
+      - name: Health check
+        run: |
+          sleep 10
+          curl -f ${{ secrets.HOSTINGER_URL }} || exit 1
+          echo "Health check passed!"
+      
+      - name: Create deployment summary
+        run: |
+          echo "## ✅ Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployed to:** ${{ secrets.HOSTINGER_URL }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp:** $(date)" >> $GITHUB_STEP_SUMMARY

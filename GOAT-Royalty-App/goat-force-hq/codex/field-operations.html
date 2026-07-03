@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codex Field Operations | GOAT Force HQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --goat-gold: #FFD700;
+            --goat-purple: #8B5CF6;
+            --goat-dark: #0a0a0a;
+            --codex-green: #00FF88;
+            --codex-teal: #00CED1;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #001a0a 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        
+        .glow-gold { 
+            text-shadow: 0 0 10px var(--goat-gold), 0 0 20px var(--goat-gold), 0 0 40px var(--goat-gold); 
+        }
+        
+        .glow-green {
+            text-shadow: 0 0 10px var(--codex-green), 0 0 20px var(--codex-green), 0 0 40px var(--codex-green);
+        }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(0, 40, 20, 0.9), rgba(0, 20, 10, 0.95));
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(0, 255, 136, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.1);
+        }
+        
+        .stat-card {
+            background: linear-gradient(145deg, rgba(0, 255, 136, 0.1), rgba(0, 206, 209, 0.1));
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+        
+        .avatar-ring {
+            background: conic-gradient(var(--codex-green), var(--codex-teal), var(--goat-gold), var(--codex-green));
+            animation: rotate 4s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, var(--codex-green), var(--codex-teal));
+            border-radius: 10px;
+            height: 8px;
+            transition: width 1s ease;
+        }
+        
+        .btn-codex {
+            background: linear-gradient(135deg, var(--codex-green), var(--codex-teal));
+            color: black;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-codex:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+        }
+        
+        .status-online {
+            background: #00FF88;
+            box-shadow: 0 0 10px #00FF88;
+        }
+        
+        .status-active {
+            background: var(--codex-teal);
+            box-shadow: 0 0 10px var(--codex-teal);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .mission-card {
+            border-left: 3px solid var(--codex-green);
+            padding-left: 15px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .mission-card:hover {
+            border-left-color: var(--goat-gold);
+            background: rgba(255, 215, 0, 0.05);
+            margin-left: 5px;
+        }
+        
+        .floating-scrolls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .scroll {
+            position: absolute;
+            font-size: 18px;
+            opacity: 0.12;
+            animation: float-scroll 22s infinite;
+        }
+        
+        @keyframes float-scroll {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.12; }
+            90% { opacity: 0.12; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--codex-green), transparent);
+            animation: scan 3s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { top: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        
+        .world-map {
+            background: linear-gradient(145deg, rgba(0, 30, 15, 0.8), rgba(0, 15, 8, 0.9));
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--codex-green);
+            border-radius: 50%;
+            animation: ping 2s infinite;
+        }
+        
+        @keyframes ping {
+            0% { transform: scale(1); opacity: 1; }
+            75%, 100% { transform: scale(2); opacity: 0; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Floating Scrolls -->
+    <div class="floating-scrolls" id="scrolls"></div>
+    
+    <!-- Header -->
+    <header class="relative z-10 mb-8">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-4">
+                <div class="avatar-ring p-1 rounded-full">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center">
+                        <span class="text-2xl">📜</span>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-orbitron font-bold glow-green">CODEX</h1>
+                    <p class="text-gray-400">Field Operations | Intelligence & Archives</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="w-3 h-3 rounded-full status-active"></div>
+                <span class="text-green-400 font-semibold">SCANNING</span>
+                <span class="text-gray-500">|</span>
+                <span class="text-gray-400">Global Active</span>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Grid -->
+    <main class="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Column -->
+        <div class="space-y-6">
+            <!-- Global Intel Stats -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🌍 GLOBAL INTEL</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-green-400">150+</div>
+                        <div class="text-gray-400 text-sm">Countries</div>
+                    </div>
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-teal-400">45+</div>
+                        <div class="text-gray-400 text-sm">Platforms</div>
+                    </div>
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-yellow-400">500M+</div>
+                        <div class="text-gray-400 text-sm">Data Points</div>
+                    </div>
+                    <div class="stat-card p-4 rounded-xl text-center">
+                        <div class="text-3xl font-orbitron font-bold text-purple-400">24/7</div>
+                        <div class="text-gray-400 text-sm">Monitoring</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Active Missions -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🎯 ACTIVE MISSIONS</h2>
+                <div class="space-y-3">
+                    <button class="btn-codex w-full" onclick="viewRoyaltyHunt()">
+                        💰 Royalty Recovery Hunt
+                    </button>
+                    <button class="btn-codex w-full" onclick="viewCatalogScan()">
+                        📋 Catalog Deep Scan
+                    </button>
+                    <button class="btn-codex w-full" onclick="viewMarketIntel()">
+                        📊 Market Intelligence
+                    </button>
+                    <button class="btn-codex w-full" onclick="viewNewReleases()">
+                        🎵 New Release Tracker
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Intelligence Sources -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📡 INTEL SOURCES</h2>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <span>ASCAP Database</span>
+                        <span class="text-green-400 text-sm">✅ Active</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <span>MLC Registry</span>
+                        <span class="text-green-400 text-sm">✅ Active</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <span>SoundExchange</span>
+                        <span class="text-green-400 text-sm">✅ Active</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-xl">
+                        <span>Spotify for Artists</span>
+                        <span class="text-teal-400 text-sm">🔄 Syncing</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Center Column -->
+        <div class="space-y-6">
+            <!-- World Map -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🗺️ GLOBAL PRESENCE</h2>
+                <div class="world-map h-48 relative">
+                    <div class="scanner-line"></div>
+                    <!-- Simulated map dots -->
+                    <div class="map-dot" style="top: 35%; left: 20%;"></div>
+                    <div class="map-dot" style="top: 40%; left: 48%;"></div>
+                    <div class="map-dot" style="top: 30%; left: 75%;"></div>
+                    <div class="map-dot" style="top: 60%; left: 85%;"></div>
+                    <div class="map-dot" style="top: 55%; left: 25%;"></div>
+                    <div class="absolute bottom-2 right-2 text-xs text-gray-400">
+                        5 regions active
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mission Log -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📜 MISSION LOG</h2>
+                <div class="space-y-2 max-h-48 overflow-y-auto">
+                    <div class="mission-card">
+                        <div class="text-sm font-semibold text-green-400">Royalty Claim Filed</div>
+                        <div class="text-xs text-gray-500">ASCAP #438 - 2 hours ago</div>
+                    </div>
+                    <div class="mission-card">
+                        <div class="text-sm font-semibold text-teal-400">Catalog Updated</div>
+                        <div class="text-xs text-gray-500">344 titles synced - 5 hours ago</div>
+                    </div>
+                    <div class="mission-card">
+                        <div class="text-sm font-semibold text-yellow-400">New Platform Detected</div>
+                        <div class="text-xs text-gray-500">TikTok Music - 1 day ago</div>
+                    </div>
+                    <div class="mission-card">
+                        <div class="text-sm font-semibold text-purple-400">MLC Match Found</div>
+                        <div class="text-xs text-gray-500">12 new works - 2 days ago</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Data Processing -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">⚙️ DATA PROCESSING</h2>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Royalty Scanning</span>
+                            <span class="text-green-400">Active</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 67%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Catalog Analysis</span>
+                            <span class="text-green-400">Processing</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 89%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Market Intelligence</span>
+                            <span class="text-teal-400">Updating</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-full h-2">
+                            <div class="progress-bar" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column -->
+        <div class="space-y-6">
+            <!-- GOAT Force Network -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🐐 FORCE NETWORK</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                            🎧
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">DJ Speedy</div>
+                            <div class="text-xs text-gray-400">Command Center</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center">
+                            👑
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Waka Flocka</div>
+                            <div class="text-xs text-gray-400">Operations Hub</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
+                            💎
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Money Penny</div>
+                            <div class="text-xs text-gray-400">Integration Panel</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                            💜
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Nexus</div>
+                            <div class="text-xs text-gray-400">AI Core</div>
+                        </div>
+                        <div class="w-2 h-2 rounded-full status-online"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Archives Access -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📁 ARCHIVES</h2>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3 p-2 bg-gray-900/50 rounded-xl cursor-pointer hover:bg-gray-800/50 transition-all">
+                        <span class="text-lg">📄</span>
+                        <span class="text-sm flex-1">Contracts Vault</span>
+                        <span class="text-xs text-gray-400">24 files</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2 bg-gray-900/50 rounded-xl cursor-pointer hover:bg-gray-800/50 transition-all">
+                        <span class="text-lg">📊</span>
+                        <span class="text-sm flex-1">Royalty Reports</span>
+                        <span class="text-xs text-gray-400">156 files</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2 bg-gray-900/50 rounded-xl cursor-pointer hover:bg-gray-800/50 transition-all">
+                        <span class="text-lg">🎵</span>
+                        <span class="text-sm flex-1">Catalog Files</span>
+                        <span class="text-xs text-gray-400">438 works</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2 bg-gray-900/50 rounded-xl cursor-pointer hover:bg-gray-800/50 transition-all">
+                        <span class="text-lg">🔐</span>
+                        <span class="text-sm flex-1">Secure Documents</span>
+                        <span class="text-xs text-gray-400">12 files</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alert System -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">🚨 ALERTS</h2>
+                <div class="space-y-2">
+                    <div class="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+                        <div class="text-sm font-semibold text-yellow-400">⚠️ Unclaimed Royalties</div>
+                        <div class="text-xs text-gray-400">$2.7B potential recovery</div>
+                    </div>
+                    <div class="p-3 bg-green-500/10 border border-green-500/30 rounded-xl">
+                        <div class="text-sm font-semibold text-green-400">✅ Catalog Sync Complete</div>
+                        <div class="text-xs text-gray-400">All 438 works verified</div>
+                    </div>
+                    <div class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                        <div class="text-sm font-semibold text-blue-400">📡 New Streaming Data</div>
+                        <div class="text-xs text-gray-400">Updated 5 min ago</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="relative z-10 mt-8 text-center text-gray-500 text-sm">
+        <p>🐐 GOAT Royalty App | Codex Field Operations</p>
+        <p class="text-xs mt-1">For The Kingdom. For The Code. For The Crown. 👑</p>
+    </footer>
+    
+    <script>
+        // Create floating scrolls
+        function createScrolls() {
+            const container = document.getElementById('scrolls');
+            for (let i = 0; i < 15; i++) {
+                const scroll = document.createElement('div');
+                scroll.className = 'scroll';
+                scroll.textContent = '📜';
+                scroll.style.left = Math.random() * 100 + '%';
+                scroll.style.animationDelay = Math.random() * 22 + 's';
+                scroll.style.animationDuration = (18 + Math.random() * 8) + 's';
+                container.appendChild(scroll);
+            }
+        }
+        createScrolls();
+        
+        // Mission functions
+        function viewRoyaltyHunt() {
+            alert('💰 ROYALTY RECOVERY HUNT\n\n🔍 Scanning 45+ platforms...\n📊 Processing 500M+ data points...\n\nPotential recovery: $2.7B+\nActive claims: 67\nPending matches: 234\n\nMission status: ACTIVE');
+        }
+        
+        function viewCatalogScan() {
+            alert('📋 CATALOG DEEP SCAN\n\n✅ ASCAP Works: 438\n✅ Unique Titles: 344\n✅ Accepted: 339 (77.4%)\n⏳ Pending: 99\n\nLast scan: Today\nNext scan: Tomorrow 3 AM');
+        }
+        
+        function viewMarketIntel() {
+            alert('📊 MARKET INTELLIGENCE\n\n🎵 Streaming trends: +15%\n💰 Royalty rates: Stable\n🌍 Top markets: US, UK, DE, FR, JP\n\nNew opportunities detected: 7\nPotential partnerships: 3');
+        }
+        
+        function viewNewReleases() {
+            alert('🎵 NEW RELEASE TRACKER\n\n📀 Recent releases: 12\n📈 Performance: Above average\n🌍 Reach: 150+ countries\n\nNext scheduled: TBA\nCollaboration opportunities: 5');
+        }
+    </script>
+</body>
+</html>

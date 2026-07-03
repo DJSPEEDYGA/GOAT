@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOAT Royalty - AI Stylist</title>
+    <link rel="stylesheet" href="goat-theme.css">
+    <style>
+        .style-ai-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .style-ai-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,10 90,90 10,90" fill="rgba(255,255,255,0.08)"/></svg>');
+            background-size: 80px 80px;
+            animation: floatPattern 15s ease-in-out infinite;
+        }
+
+        @keyframes floatPattern {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(20px, 20px); }
+        }
+
+        .style-ai-header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .style-ai-header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin-top: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ai-badge-icon {
+            font-size: 1.2rem;
+        }
+
+        .ai-badge-text {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .style-ai-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .ai-chat-container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            height: 600px;
+        }
+
+        .chat-sidebar {
+            background: var(--bg-color);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .chat-sidebar-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .conversation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .conversation-item {
+            padding: 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .conversation-item:hover {
+            background: var(--primary-color-light);
+        }
+
+        .conversation-item.active {
+            background: var(--primary-color-light);
+            border-color: var(--primary-color);
+        }
+
+        .conversation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.3rem;
+        }
+
+        .conversation-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .conversation-time {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .conversation-preview {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .chat-main {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-action-btn {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+
+        .chat-action-btn:hover {
+            background: var(--primary-color);
+            color: var(--text-light);
+            border-color: var(--primary-color);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            max-width: 80%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .message.ai .message-avatar {
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--warning-color) 100%);
+        }
+
+        .message-content {
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .message.ai .message-content {
+            background: var(--bg-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-top-left-radius: 4px;
+        }
+
+        .message.user .message-content {
+            background: var(--primary-color);
+            color: var(--text-light);
+            border-top-right-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .message.user .message-time {
+            text-align: right;
+        }
+
+        .outfit-suggestion {
+            background: linear-gradient(135deg, var(--primary-color-light) 0%, var(--secondary-color-light) 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .outfit-suggestion h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .outfit-items {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .outfit-item {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1rem;
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .outfit-item-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .outfit-item-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .outfit-item-brand {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .chat-input {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .chat-input textarea {
+            flex: 1;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            resize: none;
+            height: 60px;
+            font-family: inherit;
+        }
+
+        .chat-input textarea::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .chat-input textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .send-btn {
+            background: var(--primary-color);
+            color: var(--text-light);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            height: 60px;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(168, 85, 247, 0.4);
+        }
+
+        .style-suggestions {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .suggestions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .suggestions-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .suggestion-card {
+            background: var(--bg-color);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .suggestion-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+        }
+
+        .suggestion-image {
+            height: 200px;
+            background: linear-gradient(135deg, var(--primary-color-light) 0%, var(--secondary-color-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .suggestion-info {
+            padding: 1.5rem;
+        }
+
+        .suggestion-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .suggestion-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .suggestion-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .suggestion-tag {
+            background: var(--primary-color-light);
+            color: var(--primary-color);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .style-analysis {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .analysis-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .analysis-card h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .analysis-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .analysis-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .analysis-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .analysis-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background: var(--bg-color);
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .analysis-item-name {
+            color: var(--text-primary);
+        }
+
+        .analysis-item-value {
+            color: var(--text-secondary);
+        }
+
+        .quick-prompts {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quick-prompts::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="10" cy="10" r="5" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="90" r="5" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: 50px 50px;
+        }
+
+        .quick-prompts h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .prompt-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .prompt-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--primary-color);
+        }
+
+        .prompt-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 1024px) {
+            .ai-chat-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .chat-sidebar {
+                display: none;
+            }
+
+            .suggestions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .style-analysis {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .style-ai-header h1 {
+                font-size: 2rem;
+            }
+
+            .suggestions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .style-analysis {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-input {
+                flex-direction: column;
+            }
+
+            .send-btn {
+                width: 100%;
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <header class="style-ai-header">
+        <h1>AI Style Assistant</h1>
+        <p>Personalized fashion recommendations powered by artificial intelligence</p>
+        <div class="ai-badge">
+            <span class="ai-badge-icon">🤖</span>
+            <span class="ai-badge-text">Powered by Advanced AI</span>
+        </div>
+    </header>
+
+    <div class="style-ai-content">
+        <div class="ai-chat-container">
+            <div class="chat-sidebar">
+                <h3 class="chat-sidebar-title">💬 Conversations</h3>
+                <div class="conversation-list">
+                    <div class="conversation-item active">
+                        <div class="conversation-header">
+                            <span class="conversation-title">Daily Look</span>
+                            <span class="conversation-time">2 min</span>
+                        </div>
+                        <p class="conversation-preview">Suggested an outfit for casual Friday with your Gucci shirt and Nike sneakers...</p>
+                    </div>
+                    <div class="conversation-item">
+                        <div class="conversation-header">
+                            <span class="conversation-title">Event Outfit</span>
+                            <span class="conversation-time">1 hr</span>
+                        </div>
+                        <p class="conversation-preview">Helping plan attire for the upcoming gala event with designer pieces...</p>
+                    </div>
+                    <div class="conversation-item">
+                        <div class="conversation-header">
+                            <span class="conversation-title">Wardrobe Review</span>
+                            <span class="conversation-time">3 hrs</span>
+                        </div>
+                        <p class="conversation-preview">Analyzed your entire wardrobe and suggested 12 new combinations...</p>
+                    </div>
+                    <div class="conversation-item">
+                        <div class="conversation-header">
+                            <span class="conversation-title">Seasonal Update</span>
+                            <span class="conversation-time">Yesterday</span>
+                        </div>
+                        <p class="conversation-preview">Created summer wardrobe recommendations based on your style...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-main">
+                <div class="chat-header">
+                    <h2>Daily Look Consultation</h2>
+                    <div class="chat-actions">
+                        <button class="chat-action-btn">📋 Copy</button>
+                        <button class="chat-action-btn">🔗 Share</button>
+                        <button class="chat-action-btn">❤️ Save</button>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message ai">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            Hello! I'm your AI Style Assistant. I've analyzed your wardrobe and your style preferences. Based on today's weather and your schedule, I have some personalized recommendations for you.
+                            <div class="outfit-suggestion">
+                                <h4>👔 Today's Recommended Outfit</h4>
+                                <div class="outfit-items">
+                                    <div class="outfit-item">
+                                        <span class="outfit-item-icon">👕</span>
+                                        <div class="outfit-item-name">GG Monogram Shirt</div>
+                                        <div class="outfit-item-brand">GUCCI</div>
+                                    </div>
+                                    <div class="outfit-item">
+                                        <span class="outfit-item-icon">👖</span>
+                                        <div class="outfit-item-name">Pleated Trousers</div>
+                                        <div class="outfit-item-brand">PRADA</div>
+                                    </div>
+                                    <div class="outfit-item">
+                                        <span class="outfit-item-icon">👟</span>
+                                        <div class="outfit-item-name">Air Jordan 1 Retro</div>
+                                        <div class="outfit-item-brand">NIKE</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="message-time">10:30 AM</div>
+                    </div>
+
+                    <div class="message user">
+                        <div class="message-avatar">👤</div>
+                        <div class="message-content">
+                            That looks great! I love the combination of the Gucci shirt with the Prada trousers. Can you suggest alternatives if I want something more casual?
+                        </div>
+                        <div class="message-time">10:32 AM</div>
+                    </div>
+
+                    <div class="message ai">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            Absolutely! For a more casual look while still maintaining sophistication, I recommend:
+                            <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+                                <li><strong>Top:</strong> Off-White Arrows Hoodie for that streetwear aesthetic</li>
+                                <li><strong>Bottom:</strong> Balenciaga Track Pants for comfort and style</li>
+                                <li><strong>Footwear:</strong> Alexander McQueen Oversized Sneakers for a bold statement</li>
+                            </ul>
+                            This combination keeps your luxury brand preference while offering maximum comfort. The color palette works perfectly together! What do you think?
+                        </div>
+                        <div class="message-time">10:33 AM</div>
+                    </div>
+                </div>
+
+                <div class="chat-input">
+                    <textarea placeholder="Ask for style recommendations, outfit suggestions, or fashion advice..."></textarea>
+                    <button class="send-btn">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-prompts">
+            <h3>⚡ Quick Prompts</h3>
+            <div class="prompt-buttons">
+                <button class="prompt-btn">Suggest outfit for tomorrow</button>
+                <button class="prompt-btn">Review my wardrobe</button>
+                <button class="prompt-btn">Style for event</button>
+                <button class="prompt-btn">Seasonal recommendations</button>
+                <button class="prompt-btn">Color coordination</button>
+            </div>
+        </div>
+
+        <div class="style-suggestions">
+            <div class="suggestions-header">
+                <h2>🎯 Style Suggestions for You</h2>
+            </div>
+            <div class="suggestions-grid">
+                <div class="suggestion-card">
+                    <div class="suggestion-image">🌟</div>
+                    <div class="suggestion-info">
+                        <h3 class="suggestion-title">Evening Elegance</h3>
+                        <p class="suggestion-description">A sophisticated evening look featuring your Balmain leather jacket paired with designer accessories.</p>
+                        <div class="suggestion-tags">
+                            <span class="suggestion-tag">Luxury</span>
+                            <span class="suggestion-tag">Evening</span>
+                            <span class="suggestion-tag">Statement</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="suggestion-card">
+                    <div class="suggestion-image">🏃</div>
+                    <div class="suggestion-info">
+                        <h3 class="suggestion-title">Streetwear Chic</h3>
+                        <p class="suggestion-description">Urban street style combining Off-White hoodie with Stone Island compass patch pieces.</p>
+                        <div class="suggestion-tags">
+                            <span class="suggestion-tag">Streetwear</span>
+                            <span class="suggestion-tag">Casual</span>
+                            <span class="suggestion-tag">Urban</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="suggestion-card">
+                    <div class="suggestion-image">💼</div>
+                    <div class="suggestion-info">
+                        <h3 class="suggestion-title">Business Casual</h3>
+                        <p class="suggestion-description">Professional yet stylish ensemble perfect for meetings and networking events.</p>
+                        <div class="suggestion-tags">
+                            <span class="suggestion-tag">Professional</span>
+                            <span class="suggestion-tag">Elegant</span>
+                            <span class="suggestion-tag">Versatile</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="style-analysis">
+            <div class="analysis-card">
+                <h3>📊 Style Score</h3>
+                <div class="analysis-score">92</div>
+                <p class="analysis-label">Your style coherence score</p>
+                <div class="analysis-items">
+                    <div class="analysis-item">
+                        <span class="analysis-item-name">Brand Consistency</span>
+                        <span class="analysis-item-value">95%</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-item-name">Color Harmony</span>
+                        <span class="analysis-item-value">88%</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-item-name">Occasion Fit</span>
+                        <span class="analysis-item-value">93%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="analysis-card">
+                <h3>🏷️ Top Categories</h3>
+                <div class="analysis-items">
+                    <div class="analysis-item">
+                        <span class="analysis-item-name">Streetwear</span>
+                        <span class="analysis-item-value">42%</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-item-name">Luxury</span>
+                        <span class="analysis-item-value">35%</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-item-name">Designer</span>
+                        <span class="analysis-item-value">18%</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-item-name">Casual</span>
+                        <span class="analysis-item-value">5%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="analysis-card">
+                <h3>⚡ Optimization Tips</h3>
+                <div class="analysis-items">
+                    <div class="analysis-item">
+                        <span class="analysis-item-name">Unused Items</span>
+                        <span class="analysis-item-value">12 pieces</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-item-name">Color Gaps</span>
+                        <span class="analysis-item-value">3 shades</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-item-name">Suggested Adds</span>
+                        <span class="analysis-item-value">8 items</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chat functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.querySelector('.chat-input textarea');
+        const sendBtn = document.querySelector('.send-btn');
+        const promptButtons = document.querySelectorAll('.prompt-btn');
+
+        // Send message function
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user';
+            userMessage.innerHTML = `
+                <div class="message-avatar">👤</div>
+                <div class="message-content">${message}</div>
+                <div class="message-time">${getCurrentTime()}</div>
+            `;
+            chatMessages.appendChild(userMessage);
+
+            // Clear input
+            messageInput.value = '';
+
+            // Simulate AI response
+            setTimeout(() => {
+                const aiMessage = document.createElement('div');
+                aiMessage.className = 'message ai';
+                aiMessage.innerHTML = `
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        ${generateAIResponse(message)}
+                    </div>
+                    <div class="message-time">${getCurrentTime()}</div>
+                `;
+                chatMessages.appendChild(aiMessage);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000);
+
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Generate AI response
+        function generateAIResponse(message) {
+            const responses = {
+                'tomorrow': `Based on tomorrow's weather forecast and your schedule, I recommend wearing your Gucci GG Monogram Shirt with Prada Pleated Trousers and Air Jordan 1 Retro sneakers. This combination balances professionalism with your signature streetwear aesthetic.`,
+                'review': `I've analyzed your wardrobe of 247 items valued at $58.4K. Your style profile shows 89% coherence with a strong preference for luxury streetwear. You have excellent brand consistency (95%) and could benefit from adding more neutral color options to increase outfit versatility.`,
+                'event': `For your upcoming event, I suggest a sophisticated look featuring your Balmain leather jacket as the centerpiece. Pair it with Gucci shirt, Prada trousers, and Alexander McQueen sneakers. Add the Versace Medusa necklace as a statement piece.`,
+                'seasonal': `Current season recommendations focus on lightweight fabrics and bright colors. I suggest prioritizing your Off-White hoodie and Stone Island pieces. Consider adding summer-appropriate items to complement your existing collection.`,
+                'default': `Thank you for your style question! Based on your wardrobe analysis and style preferences, I provide personalized recommendations that align with your luxury streetwear aesthetic. Feel free to ask about specific occasions, color combinations, or wardrobe optimization!`
+            };
+
+            const lowerMessage = message.toLowerCase();
+            let response = responses.default;
+
+            for (const [key, value] of Object.entries(responses)) {
+                if (lowerMessage.includes(key) && key !== 'default') {
+                    response = value;
+                    break;
+                }
+            }
+
+            return response;
+        }
+
+        // Get current time
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        }
+
+        // Send button click
+        sendBtn.addEventListener('click', sendMessage);
+
+        // Enter key to send
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Quick prompt buttons
+        promptButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                messageInput.value = this.textContent;
+                sendMessage();
+            });
+        });
+
+        // Conversation item clicks
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.conversation-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

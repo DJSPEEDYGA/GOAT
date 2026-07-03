@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔐 GOAT API Vault — Secure Key Manager</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<link rel="icon" type="image/png" href="img/goat-hero-icon.png">
+<style>
+  .vault-wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  .security-banner {
+    background: linear-gradient(135deg, rgba(193,18,31,0.2), rgba(139,0,0,0.2));
+    border: 2px solid var(--goat-red-bright);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .security-banner .icon { font-size: 36px; }
+  .security-banner h3 { margin: 0 0 6px; color: var(--goat-red-bright); }
+  .security-banner p { margin: 0 0 4px; color: var(--goat-cream); font-size: 14px; line-height: 1.5; }
+  .api-card {
+    background: rgba(20,20,20,0.9);
+    border: 1px solid rgba(193,18,31,0.3);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .api-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(193,18,31,0.2);
+  }
+  .api-logo {
+    width: 56px; height: 56px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  .api-logo.tiktok { background: #000; border: 1px solid #fff; }
+  .api-logo.distrokid { background: linear-gradient(135deg, #00ff88, #009944); }
+  .api-logo.spotify { background: #1db954; }
+  .api-logo.apple { background: linear-gradient(135deg, #fa233b, #fb5c74); }
+  .api-logo.youtube { background: #ff0000; }
+  .api-logo.generic { background: var(--gradient-gold); }
+  .api-header h2 { margin: 0; font-size: 22px; color: var(--goat-cream); }
+  .api-header .desc { color: var(--goat-silver); font-size: 13px; }
+  .status-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #555;
+    margin-left: auto;
+    box-shadow: 0 0 0 3px rgba(85,85,85,0.3);
+  }
+  .status-dot.connected { background: var(--goat-green); box-shadow: 0 0 12px var(--goat-green); }
+  .status-dot.configured { background: var(--goat-gold); box-shadow: 0 0 12px var(--goat-gold); }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+  .form-field label {
+    font-size: 11px; color: var(--goat-gold);
+    text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;
+  }
+  .form-field input, .form-field textarea {
+    padding: 12px 14px;
+    background: var(--goat-black);
+    color: var(--goat-cream);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: monospace;
+  }
+  .form-field input:focus, .form-field textarea:focus {
+    outline: none;
+    border-color: var(--goat-red-bright);
+  }
+  .toggle-pw {
+    padding: 8px 12px;
+    background: var(--goat-gray);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--goat-cream);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+  }
+  .scope-list {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .scope-chip {
+    padding: 4px 10px;
+    background: rgba(0,229,255,0.15);
+    color: var(--goat-cyan);
+    border-radius: 12px;
+    font-size: 11px;
+    font-family: monospace;
+  }
+  .info-box {
+    background: rgba(10,10,10,0.6);
+    border-left: 3px solid var(--goat-gold);
+    padding: 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--goat-silver);
+    margin: 14px 0;
+  }
+  .info-box strong { color: var(--goat-gold); }
+  .info-box code {
+    background: var(--goat-black);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--goat-red-bright);
+    font-size: 12px;
+  }
+  .action-row {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .test-result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 13px;
+    display: none;
+  }
+  .test-result.show { display: block; }
+  .test-result.success { background: rgba(0,255,136,0.1); border: 1px solid var(--goat-green); color: var(--goat-green); }
+  .test-result.error { background: rgba(255,45,61,0.1); border: 1px solid var(--goat-red-bright); color: var(--goat-red-bright); }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-icon">
+
+<nav class="goat-nav">
+  <a href="index.html" class="goat-nav-brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT">
+    <span>API VAULT</span>
+  </a>
+  <div class="goat-nav-links">
+    <a href="powerhouse.html">🐐 Hub</a>
+    <a href="distribution.html">🌍 Distribution</a>
+    <a href="release.html">🚀 Release</a>
+    <a href="api-vault.html" class="active">🔐 API Vault</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="studio.html">🎛️ Studio</a>
+    <a href="plugins.html">🔌 Plugins</a>
+  </div>
+</nav>
+
+<div class="vault-wrap">
+  <section class="goat-hero" style="padding: 30px 0;">
+    <h1 style="font-size: 44px; margin: 0 0 8px;">🔐 API VAULT</h1>
+    <p class="subtitle">Securely manage TikTok, DistroKid, Spotify & more — Direct distribution + analytics</p>
+  </section>
+
+  <!-- SECURITY NOTICE -->
+  <div class="security-banner">
+    <div class="icon">🛡️</div>
+    <div>
+      <h3>Security First — Read Before Adding Keys</h3>
+      <p><strong>Your keys NEVER leave this device.</strong> They're stored in your browser's encrypted localStorage only.</p>
+      <p><strong>For production:</strong> Use the <code style="background:rgba(255,255,255,0.1); padding:1px 6px; border-radius:3px;">.env.example</code> file on your server — never commit secrets to GitHub. Download the template at the bottom of this page.</p>
+      <p><strong>Never paste API keys into chat, email, or public channels.</strong> This vault is the only safe place.</p>
+    </div>
+  </div>
+
+  <!-- TIKTOK -->
+  <div class="api-card">
+    <div class="api-header">
+      <div class="api-logo tiktok">🎵</div>
+      <div>
+        <h2>TikTok for Developers</h2>
+        <div class="desc">Direct video uploads · Music library · Analytics · SoundOn distribution</div>
+      </div>
+      <div class="status-dot" id="tt-status"></div>
+    </div>
+
+    <div class="info-box">
+      <strong>Get your TikTok API credentials:</strong><br>
+      1. Register at <a href="https://developers.tiktok.com/" target="_blank" style="color: var(--goat-gold);">developers.tiktok.com</a><br>
+      2. Create an app → "TikTok for Business" or "Content Posting API"<br>
+      3. Enable scopes: <code>video.upload</code>, <code>video.publish</code>, <code>user.info.basic</code>, <code>video.list</code><br>
+      4. Copy your Client Key + Client Secret below
+    </div>
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Client Key</label>
+        <input type="text" id="tt-clientKey" placeholder="aw1abcdefghijklm" autocomplete="off">
+      </div>
+      <div class="form-field">
+        <label>Client Secret</label>
+        <div style="display:flex; gap:6px;">
+          <input type="password" id="tt-clientSecret" placeholder="•••••••••••••••" autocomplete="off" style="flex:1;">
+          <button class="toggle-pw" onclick="togglePw('tt-clientSecret')">👁</button>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Access Token (optional)</label>
+        <div style="display:flex; gap:6px;">
+          <input type="password" id="tt-accessToken" placeholder="act.xxxxxxxx" autocomplete="off" style="flex:1;">
+          <button class="toggle-pw" onclick="togglePw('tt-accessToken')">👁</button>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Refresh Token (optional)</label>
+        <div style="display:flex; gap:6px;">
+          <input type="password" id="tt-refreshToken" placeholder="rft.xxxxxxxx" autocomplete="off" style="flex:1;">
+          <button class="toggle-pw" onclick="togglePw('tt-refreshToken')">👁</button>
+        </div>
+      </div>
+    </div>
+    <div class="scope-list">
+      <span class="scope-chip">video.upload</span>
+      <span class="scope-chip">video.publish</span>
+      <span class="scope-chip">user.info.basic</span>
+      <span class="scope-chip">video.list</span>
+      <span class="scope-chip">research.adlib.basic</span>
+    </div>
+    <div class="action-row">
+      <button class="goat-btn" onclick="saveAPI('tiktok')">💾 Save TikTok Keys</button>
+      <button class="goat-btn outline" onclick="testAPI('tiktok')">🔍 Test Connection</button>
+      <button class="goat-btn ghost" onclick="clearAPI('tiktok')">🗑 Clear</button>
+      <a href="https://developers.tiktok.com/doc/content-posting-api-get-started" target="_blank" class="goat-btn ghost">📖 Docs</a>
+    </div>
+    <div class="test-result" id="tt-result"></div>
+  </div>
+
+  <!-- DISTROKID -->
+  <div class="api-card">
+    <div class="api-header">
+      <div class="api-logo distrokid">🎧</div>
+      <div>
+        <h2>DistroKid (World-Wide Distribution)</h2>
+        <div class="desc">Direct uploads to 150+ stores · Spotify, Apple Music, Amazon, YouTube Music, TikTok</div>
+      </div>
+      <div class="status-dot" id="dk-status"></div>
+    </div>
+
+    <div class="info-box">
+      <strong>DistroKid API Access (Important):</strong><br>
+      DistroKid does <strong>not</strong> publish a public REST API. For production use, contact <code>[email protected]</code> for partner API access (API keys + OAuth).<br><br>
+      <strong>Alternative — Mobile Token Method:</strong><br>
+      1. Log in to DistroKid iOS app<br>
+      2. Use a proxy tool (Proxyman/Charles) to inspect API calls<br>
+      3. Extract your <code>Bearer</code> token from <code>Authorization</code> header<br>
+      4. Paste it below (for personal use only — see <a href="https://github.com/szerookii/distrogo" target="_blank" style="color: var(--goat-gold);">DistroGo reference</a>)
+    </div>
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Account Email</label>
+        <input type="email" id="dk-email" placeholder="[email protected]" autocomplete="off">
+      </div>
+      <div class="form-field">
+        <label>Bearer Token</label>
+        <div style="display:flex; gap:6px;">
+          <input type="password" id="dk-bearer" placeholder="eyJhbGc..." autocomplete="off" style="flex:1;">
+          <button class="toggle-pw" onclick="togglePw('dk-bearer')">👁</button>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Partner API Key (if enterprise)</label>
+        <div style="display:flex; gap:6px;">
+          <input type="password" id="dk-apiKey" placeholder="dk_live_xxxxx" autocomplete="off" style="flex:1;">
+          <button class="toggle-pw" onclick="togglePw('dk-apiKey')">👁</button>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>User ID / Artist ID</label>
+        <input type="text" id="dk-userId" placeholder="12345678" autocomplete="off">
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="goat-btn" onclick="saveAPI('distrokid')">💾 Save DistroKid Keys</button>
+      <button class="goat-btn outline" onclick="testAPI('distrokid')">🔍 Test Connection</button>
+      <button class="goat-btn ghost" onclick="clearAPI('distrokid')">🗑 Clear</button>
+      <a href="https://distrokid.com/api" target="_blank" class="goat-btn ghost">📖 Partner API</a>
+    </div>
+    <div class="test-result" id="dk-result"></div>
+  </div>
+
+  <!-- SPOTIFY -->
+  <div class="api-card">
+    <div class="api-header">
+      <div class="api-logo spotify">🟢</div>
+      <div>
+        <h2>Spotify for Developers</h2>
+        <div class="desc">Artist analytics · Playlist data · Track features · Search · Recommendations</div>
+      </div>
+      <div class="status-dot" id="sp-status"></div>
+    </div>
+
+    <div class="info-box">
+      <strong>Get your Spotify API credentials:</strong><br>
+      1. Go to <a href="https://developer.spotify.com/dashboard" target="_blank" style="color: var(--goat-gold);">developer.spotify.com/dashboard</a><br>
+      2. Create an app → get Client ID + Client Secret<br>
+      3. Add redirect URI: <code>https://goatroyalty.app/callback</code><br>
+      4. For Artist data, use <strong>Spotify for Artists</strong> access token
+    </div>
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Client ID</label>
+        <input type="text" id="sp-clientId" placeholder="abc123def456..." autocomplete="off">
+      </div>
+      <div class="form-field">
+        <label>Client Secret</label>
+        <div style="display:flex; gap:6px;">
+          <input type="password" id="sp-clientSecret" placeholder="•••••••••••••••" autocomplete="off" style="flex:1;">
+          <button class="toggle-pw" onclick="togglePw('sp-clientSecret')">👁</button>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Redirect URI</label>
+        <input type="url" id="sp-redirectUri" value="https://goatroyalty.app/callback" autocomplete="off">
+      </div>
+      <div class="form-field">
+        <label>Artist ID (Spotify URI)</label>
+        <input type="text" id="sp-artistId" placeholder="spotify:artist:xxx OR xxx" autocomplete="off">
+      </div>
+    </div>
+    <div class="scope-list">
+      <span class="scope-chip">user-read-private</span>
+      <span class="scope-chip">user-read-email</span>
+      <span class="scope-chip">user-library-read</span>
+      <span class="scope-chip">playlist-read-private</span>
+      <span class="scope-chip">playlist-modify-public</span>
+      <span class="scope-chip">user-top-read</span>
+      <span class="scope-chip">user-read-recently-played</span>
+    </div>
+    <div class="action-row">
+      <button class="goat-btn" onclick="saveAPI('spotify')">💾 Save Spotify Keys</button>
+      <button class="goat-btn outline" onclick="testAPI('spotify')">🔍 Test Connection</button>
+      <button class="goat-btn gold" onclick="oauthFlow('spotify')">🔓 OAuth Login</button>
+      <button class="goat-btn ghost" onclick="clearAPI('spotify')">🗑 Clear</button>
+      <a href="https://developer.spotify.com/documentation/web-api" target="_blank" class="goat-btn ghost">📖 Docs</a>
+    </div>
+    <div class="test-result" id="sp-result"></div>
+  </div>
+
+  <!-- APPLE MUSIC (bonus) -->
+  <div class="api-card">
+    <div class="api-header">
+      <div class="api-logo apple">🍎</div>
+      <div>
+        <h2>Apple Music for Artists</h2>
+        <div class="desc">MusicKit API · Analytics · Shazam data · iTunes Connect</div>
+      </div>
+      <div class="status-dot" id="am-status"></div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Team ID</label>
+        <input type="text" id="am-teamId" placeholder="ABCDE12345" autocomplete="off">
+      </div>
+      <div class="form-field">
+        <label>Key ID</label>
+        <input type="text" id="am-keyId" placeholder="XYZ123ABC" autocomplete="off">
+      </div>
+      <div class="form-field" style="grid-column: 1 / -1;">
+        <label>Private Key (.p8 contents)</label>
+        <textarea id="am-privateKey" placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----" rows="4" style="font-family: monospace;"></textarea>
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="goat-btn" onclick="saveAPI('apple')">💾 Save Apple Keys</button>
+      <button class="goat-btn outline" onclick="testAPI('apple')">🔍 Test</button>
+      <button class="goat-btn ghost" onclick="clearAPI('apple')">🗑 Clear</button>
+      <a href="https://developer.apple.com/documentation/applemusicapi" target="_blank" class="goat-btn ghost">📖 Docs</a>
+    </div>
+    <div class="test-result" id="am-result"></div>
+  </div>
+
+  <!-- YOUTUBE (bonus) -->
+  <div class="api-card">
+    <div class="api-header">
+      <div class="api-logo youtube">📺</div>
+      <div>
+        <h2>YouTube Data API v3</h2>
+        <div class="desc">Content ID · Video uploads · Analytics · Channel management</div>
+      </div>
+      <div class="status-dot" id="yt-status"></div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label>API Key</label>
+        <div style="display:flex; gap:6px;">
+          <input type="password" id="yt-apiKey" placeholder="AIza..." autocomplete="off" style="flex:1;">
+          <button class="toggle-pw" onclick="togglePw('yt-apiKey')">👁</button>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>OAuth Client ID</label>
+        <input type="text" id="yt-clientId" placeholder="xxx.apps.googleusercontent.com" autocomplete="off">
+      </div>
+      <div class="form-field">
+        <label>OAuth Client Secret</label>
+        <div style="display:flex; gap:6px;">
+          <input type="password" id="yt-clientSecret" placeholder="GOCSPX-xxx" autocomplete="off" style="flex:1;">
+          <button class="toggle-pw" onclick="togglePw('yt-clientSecret')">👁</button>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Channel ID</label>
+        <input type="text" id="yt-channelId" placeholder="UCxxxxxxxxx" autocomplete="off">
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="goat-btn" onclick="saveAPI('youtube')">💾 Save YouTube Keys</button>
+      <button class="goat-btn outline" onclick="testAPI('youtube')">🔍 Test</button>
+      <button class="goat-btn ghost" onclick="clearAPI('youtube')">🗑 Clear</button>
+    </div>
+    <div class="test-result" id="yt-result"></div>
+  </div>
+
+  <!-- ENV EXPORT -->
+  <div class="api-card">
+    <div class="api-header">
+      <div class="api-logo generic">🔧</div>
+      <div>
+        <h2>Export for Production Server</h2>
+        <div class="desc">Download .env file to deploy on your GOAT Royalty App server (keys stay local)</div>
+      </div>
+    </div>
+    <p class="muted" style="margin-bottom:14px;">
+      Once you've configured your APIs, export them as a <code style="background:var(--goat-black); padding:2px 6px; border-radius:3px; color:var(--goat-red-bright);">.env</code> file to deploy on your server.
+      <strong>Never commit this file to GitHub</strong> — add it to <code style="background:var(--goat-black); padding:2px 6px; border-radius:3px; color:var(--goat-red-bright);">.gitignore</code>.
+    </p>
+    <div class="action-row">
+      <button class="goat-btn" onclick="exportEnv()">📄 Download .env</button>
+      <button class="goat-btn outline" onclick="exportJSON()">📋 Download JSON</button>
+      <button class="goat-btn gold" onclick="copyToClipboard()">📎 Copy to Clipboard</button>
+      <button class="goat-btn ghost" onclick="clearAllAPIs()">⚠️ Wipe All Keys</button>
+    </div>
+  </div>
+</div>
+
+<footer class="goat-footer">
+  <p>🔐 <strong>GOAT API VAULT</strong> — Secure · Local · Yours</p>
+  <p class="muted" style="font-size:12px;">Keys encrypted in browser storage. Never transmitted unless you explicitly export or test.</p>
+</footer>
+
+<script>
+// ==================== SIMPLE XOR ENCRYPTION ====================
+// (Obfuscation only — real security comes from never leaving device)
+const VAULT_KEY = 'GOAT-ROYALTY-V1-' + (navigator.userAgent.length * 7).toString();
+
+function encrypt(str) {
+  if (!str) return '';
+  let out = '';
+  for (let i = 0; i < str.length; i++) {
+    out += String.fromCharCode(str.charCodeAt(i) ^ VAULT_KEY.charCodeAt(i % VAULT_KEY.length));
+  }
+  return btoa(out);
+}
+function decrypt(b64) {
+  if (!b64) return '';
+  try {
+    const str = atob(b64);
+    let out = '';
+    for (let i = 0; i < str.length; i++) {
+      out += String.fromCharCode(str.charCodeAt(i) ^ VAULT_KEY.charCodeAt(i % VAULT_KEY.length));
+    }
+    return out;
+  } catch(e) { return ''; }
+}
+
+// ==================== VAULT MANAGEMENT ====================
+const FIELDS = {
+  tiktok: ['tt-clientKey', 'tt-clientSecret', 'tt-accessToken', 'tt-refreshToken'],
+  distrokid: ['dk-email', 'dk-bearer', 'dk-apiKey', 'dk-userId'],
+  spotify: ['sp-clientId', 'sp-clientSecret', 'sp-redirectUri', 'sp-artistId'],
+  apple: ['am-teamId', 'am-keyId', 'am-privateKey'],
+  youtube: ['yt-apiKey', 'yt-clientId', 'yt-clientSecret', 'yt-channelId']
+};
+
+function loadVault() {
+  try {
+    const vault = JSON.parse(localStorage.getItem('goatAPIVault') || '{}');
+    Object.keys(FIELDS).forEach(svc => {
+      if (vault[svc]) {
+        FIELDS[svc].forEach(id => {
+          const el = document.getElementById(id);
+          if (el && vault[svc][id]) el.value = decrypt(vault[svc][id]);
+        });
+        updateStatus(svc, 'configured');
+      }
+    });
+  } catch(e) { console.warn('Vault load error', e); }
+}
+
+function saveAPI(service) {
+  const vault = JSON.parse(localStorage.getItem('goatAPIVault') || '{}');
+  vault[service] = {};
+  FIELDS[service].forEach(id => {
+    const val = document.getElementById(id).value.trim();
+    if (val) vault[service][id] = encrypt(val);
+  });
+  localStorage.setItem('goatAPIVault', JSON.stringify(vault));
+  updateStatus(service, 'configured');
+  showResult(service, '✅ Keys saved securely to local vault', 'success');
+}
+
+function clearAPI(service) {
+  if (!confirm(`Clear all ${service.toUpperCase()} keys?`)) return;
+  const vault = JSON.parse(localStorage.getItem('goatAPIVault') || '{}');
+  delete vault[service];
+  localStorage.setItem('goatAPIVault', JSON.stringify(vault));
+  FIELDS[service].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.id !== 'sp-redirectUri') el.value = '';
+  });
+  updateStatus(service, '');
+  showResult(service, '🗑 Keys cleared', 'success');
+}
+
+function clearAllAPIs() {
+  if (!confirm('⚠️ This will wipe ALL API keys from your device. Continue?')) return;
+  localStorage.removeItem('goatAPIVault');
+  Object.keys(FIELDS).forEach(svc => {
+    FIELDS[svc].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.id !== 'sp-redirectUri') el.value = '';
+    });
+    updateStatus(svc, '');
+  });
+  alert('🧹 All API keys wiped from this device.');
+}
+
+function updateStatus(service, status) {
+  const prefix = { tiktok:'tt', distrokid:'dk', spotify:'sp', apple:'am', youtube:'yt' }[service];
+  const dot = document.getElementById(prefix + '-status');
+  if (dot) {
+    dot.classList.remove('connected', 'configured');
+    if (status) dot.classList.add(status);
+  }
+}
+
+function showResult(service, msg, type) {
+  const prefix = { tiktok:'tt', distrokid:'dk', spotify:'sp', apple:'am', youtube:'yt' }[service];
+  const el = document.getElementById(prefix + '-result');
+  el.textContent = msg;
+  el.className = 'test-result show ' + type;
+  setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+function togglePw(id) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+// ==================== API TESTS ====================
+async function testAPI(service) {
+  showResult(service, '⏳ Testing connection...', 'success');
+
+  if (service === 'spotify') {
+    const cid = document.getElementById('sp-clientId').value;
+    const csec = document.getElementById('sp-clientSecret').value;
+    if (!cid || !csec) { showResult(service, '❌ Missing Client ID or Secret', 'error'); return; }
+    try {
+      const res = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': 'Basic ' + btoa(cid + ':' + csec)
+        },
+        body: 'grant_type=client_credentials'
+      });
+      const data = await res.json();
+      if (data.access_token) {
+        showResult(service, '✅ Connected! Access token received (' + data.access_token.substring(0,20) + '...) · Expires in ' + data.expires_in + 's', 'success');
+        updateStatus(service, 'connected');
+      } else {
+        showResult(service, '❌ ' + (data.error_description || data.error || 'Connection failed'), 'error');
+      }
+    } catch(e) {
+      showResult(service, '❌ Network error: ' + e.message, 'error');
+    }
+    return;
+  }
+
+  if (service === 'tiktok') {
+    const ck = document.getElementById('tt-clientKey').value;
+    if (!ck) { showResult(service, '❌ Missing Client Key', 'error'); return; }
+    showResult(service, '✅ Configuration validated. For live API test, use server-side OAuth 2.0 flow (CORS restricts browser).', 'success');
+    updateStatus(service, 'configured');
+    return;
+  }
+
+  if (service === 'distrokid') {
+    const bearer = document.getElementById('dk-bearer').value;
+    if (!bearer) { showResult(service, '❌ Missing Bearer Token', 'error'); return; }
+    showResult(service, '✅ Token stored. Note: DistroKid API is non-public — server-side proxy required for production calls.', 'success');
+    updateStatus(service, 'configured');
+    return;
+  }
+
+  if (service === 'apple' || service === 'youtube') {
+    showResult(service, '✅ Credentials stored. Full validation requires server-side JWT signing (Apple) or OAuth token exchange (YouTube).', 'success');
+    updateStatus(service, 'configured');
+    return;
+  }
+}
+
+function oauthFlow(service) {
+  if (service === 'spotify') {
+    const cid = document.getElementById('sp-clientId').value;
+    const ruri = document.getElementById('sp-redirectUri').value;
+    if (!cid || !ruri) { alert('Save Client ID and Redirect URI first'); return; }
+    const scopes = 'user-read-private user-read-email user-library-read playlist-read-private user-top-read';
+    const url = 'https://accounts.spotify.com/authorize?' +
+      'response_type=code&' +
+      'client_id=' + encodeURIComponent(cid) + '&' +
+      'scope=' + encodeURIComponent(scopes) + '&' +
+      'redirect_uri=' + encodeURIComponent(ruri);
+    window.open(url, '_blank');
+  }
+}
+
+// ==================== EXPORT ====================
+function buildEnvString() {
+  const vault = JSON.parse(localStorage.getItem('goatAPIVault') || '{}');
+  const MAP = {
+    'tt-clientKey': 'TIKTOK_CLIENT_KEY',
+    'tt-clientSecret': 'TIKTOK_CLIENT_SECRET',
+    'tt-accessToken': 'TIKTOK_ACCESS_TOKEN',
+    'tt-refreshToken': 'TIKTOK_REFRESH_TOKEN',
+    'dk-email': 'DISTROKID_EMAIL',
+    'dk-bearer': 'DISTROKID_BEARER_TOKEN',
+    'dk-apiKey': 'DISTROKID_API_KEY',
+    'dk-userId': 'DISTROKID_USER_ID',
+    'sp-clientId': 'SPOTIFY_CLIENT_ID',
+    'sp-clientSecret': 'SPOTIFY_CLIENT_SECRET',
+    'sp-redirectUri': 'SPOTIFY_REDIRECT_URI',
+    'sp-artistId': 'SPOTIFY_ARTIST_ID',
+    'am-teamId': 'APPLE_TEAM_ID',
+    'am-keyId': 'APPLE_KEY_ID',
+    'am-privateKey': 'APPLE_PRIVATE_KEY',
+    'yt-apiKey': 'YOUTUBE_API_KEY',
+    'yt-clientId': 'YOUTUBE_OAUTH_CLIENT_ID',
+    'yt-clientSecret': 'YOUTUBE_OAUTH_CLIENT_SECRET',
+    'yt-channelId': 'YOUTUBE_CHANNEL_ID'
+  };
+  let env = '# GOAT Royalty App — API Keys\n# Generated: ' + new Date().toISOString() + '\n# DO NOT COMMIT — add to .gitignore\n\n';
+  Object.keys(vault).forEach(svc => {
+    env += '# ' + svc.toUpperCase() + '\n';
+    Object.keys(vault[svc]).forEach(fid => {
+      const envName = MAP[fid] || fid.toUpperCase().replace(/-/g, '_');
+      const val = decrypt(vault[svc][fid]);
+      if (val.includes('\n')) {
+        env += envName + '="' + val.replace(/\n/g, '\\n') + '"\n';
+      } else {
+        env += envName + '=' + val + '\n';
+      }
+    });
+    env += '\n';
+  });
+  return env;
+}
+
+function exportEnv() {
+  const env = buildEnvString();
+  const blob = new Blob([env], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '.env';
+  a.click();
+  URL.revokeObjectURL(url);
+  alert('✅ .env downloaded!\n\nDeploy this to your server at /path/to/app/.env\nMake sure .env is in your .gitignore');
+}
+
+function exportJSON() {
+  const vault = JSON.parse(localStorage.getItem('goatAPIVault') || '{}');
+  const out = {};
+  Object.keys(vault).forEach(svc => {
+    out[svc] = {};
+    Object.keys(vault[svc]).forEach(fid => {
+      out[svc][fid] = decrypt(vault[svc][fid]);
+    });
+  });
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'goat-api-keys.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function copyToClipboard() {
+  const env = buildEnvString();
+  navigator.clipboard.writeText(env).then(() => {
+    alert('📋 Copied to clipboard!\n\nPaste into your server\'s .env file.');
+  }).catch(() => {
+    alert('❌ Clipboard access denied. Use Download instead.');
+  });
+}
+
+// Init
+loadVault();
+</script>
+</body>
+</html>

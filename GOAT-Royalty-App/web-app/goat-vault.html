@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗄️ GOAT Vault | GOAT Royalty</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <style>
+        :root {
+            --bg: #040608; --panel: #0d1117; --panel2: #161b22;
+            --gold: #d4a03c; --gold2: #f0c040; --gold3: #ffd700;
+            --red: #c1121f; --green: #3fb950; --blue: #58a6ff;
+            --ink: #f0ece4; --dim: #8b949e; --line: #21262d;
+            --glow: rgba(212,160,60,.25);
+        }
+        body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .vault-dashboard { max-width: 1400px; margin: 0 auto; padding: 80px 20px 40px; width: 100%; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .dashboard-title h1 { font-size: 28px; font-weight: 700; color: var(--gold); margin: 0; display: flex; align-items: center; gap: 12px; }
+        .dashboard-title span { font-size: 14px; color: var(--dim); font-weight: 400; }
+        
+        .vault-locked { max-width: 600px; margin: 100px auto; text-align: center; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 48px; }
+        .vault-icon { font-size: 80px; margin-bottom: 24px; }
+        .locked-title { font-size: 28px; font-weight: 700; color: var(--gold3); margin-bottom: 12px; }
+        .locked-desc { font-size: 15px; color: var(--dim); margin-bottom: 32px; }
+        
+        .pin-inputs { display: flex; gap: 12px; justify-content: center; margin-bottom: 32px; }
+        .pin-input { width: 60px; height: 80px; padding: 0; border: 2px solid var(--line); background: var(--panel2); color: var(--ink); border-radius: 12px; font-size: 36px; font-weight: 700; text-align: center; transition: all .2s; }
+        .pin-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 4px rgba(212,160,60,.15); }
+        
+        .unlock-btn { padding: 16px 48px; border: none; background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #040608; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all .2s; }
+        .unlock-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(212,160,60,.3); }
+        
+        .vault-content { display: none; }
+        .vault-content.unlocked { display: block; }
+        
+        /* Vault Stats */
+        .vault-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+        .stat-icon { font-size: 28px; margin-bottom: 8px; }
+        .stat-value { font-size: 24px; font-weight: 700; color: var(--gold3); margin-bottom: 4px; }
+        .stat-label { font-size: 13px; color: var(--dim); }
+        
+        /* Category Grid */
+        .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .category-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden; }
+        .category-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .category-card.crypto::before { background: #f7931a; }
+        .category-card.wallets::before { background: #627eea; }
+        .category-card.keys::before { background: #8b5cf6; }
+        .category-card.secrets::before { background: #ec4899; }
+        .category-card.documents::before { background: #10b981; }
+        .category-card.backup::before { background: #f59e0b; }
+        
+        .category-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+        
+        .category-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .category-icon { font-size: 32px; }
+        .category-title { font-size: 18px; font-weight: 600; color: var(--ink); }
+        .category-count { font-size: 12px; color: var(--dim); margin-top: 4px; }
+        
+        /* Items Grid */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .section-title { font-size: 18px; font-weight: 600; color: var(--gold3); display: flex; align-items: center; gap: 8px; }
+        
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 24px; }
+        .item-card { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 16px; cursor: pointer; transition: all .2s; }
+        .item-card:hover { border-color: var(--gold); }
+        
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .item-icon { font-size: 24px; }
+        .item-type { font-size: 11px; color: var(--dim); background: var(--panel); padding: 2px 8px; border-radius: 10px; }
+        
+        .item-name { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+        .item-value { font-size: 12px; color: var(--dim); font-family: monospace; margin-bottom: 8px; word-break: break-all; }
+        .item-meta { font-size: 11px; color: var(--dim); display: flex; align-items: center; gap: 8px; }
+        
+        /* Action Buttons */
+        .action-bar { display: flex; gap: 12px; margin-bottom: 24px; }
+        .action-btn { padding: 12px 20px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 8px; }
+        .action-btn:hover { border-color: var(--gold); }
+        .action-btn.primary { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #040608; border-color: var(--gold); }
+        
+        /* Encryption Status */
+        .encryption-status { background: rgba(63,185,80,.1); border: 1px solid rgba(63,185,80,.3); border-radius: 10px; padding: 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+        .encryption-icon { font-size: 24px; }
+        .encryption-details { flex: 1; }
+        .encryption-title { font-size: 14px; font-weight: 600; color: var(--green); }
+        .encryption-desc { font-size: 12px; color: var(--dim); }
+        .encryption-action { font-size: 12px; color: var(--gold); cursor: pointer; }
+        
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 18px; font-weight: 600; color: var(--gold3); }
+        .modal-close { background: none; border: none; color: var(--dim); font-size: 24px; cursor: pointer; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 6px; }
+        .form-input { width: 100%; padding: 12px 16px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); border-radius: 8px; font-size: 14px; transition: all .2s; }
+        .form-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,160,60,.1); }
+        .form-input::placeholder { color: var(--dim); }
+        
+        .password-toggle { position: relative; }
+        .password-toggle .toggle-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--dim); cursor: pointer; font-size: 18px; }
+        
+        .modal-actions { display: flex; gap: 12px; }
+        .modal-btn { flex: 1; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; }
+        .modal-btn.cancel { border: 1px solid var(--line); background: var(--panel2); color: var(--ink); }
+        .modal-btn.confirm { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #040608; border: none; }
+        
+        @media (max-width: 768px) {
+            .vault-stats { grid-template-columns: repeat(2, 1fr); }
+            .pin-input { width: 50px; height: 70px; font-size: 30px; }
+            .action-bar { flex-wrap: wrap; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-emoji">🐐</span>
+            <span class="brand-name">GOAT Royalty</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="goat-security.html" class="nav-link">Security</a>
+            <a href="goat-auth.html" class="nav-link">Auth</a>
+            <a href="goat-vault.html" class="nav-link active">Vault</a>
+            <a href="settings.html" class="nav-link">Settings</a>
+        </div>
+    </nav>
+
+    <div class="vault-dashboard">
+        <!-- Vault Locked -->
+        <div class="vault-locked" id="vault-locked">
+            <div class="vault-icon">🗄️</div>
+            <h1 class="locked-title">Vault is Locked</h1>
+            <p class="locked-desc">Enter your 6-digit PIN to unlock your secure vault</p>
+            
+            <div class="pin-inputs">
+                <input type="password" class="pin-input" maxlength="1" oninput="movePinFocus(this)">
+                <input type="password" class="pin-input" maxlength="1" oninput="movePinFocus(this)">
+                <input type="password" class="pin-input" maxlength="1" oninput="movePinFocus(this)">
+                <input type="password" class="pin-input" maxlength="1" oninput="movePinFocus(this)">
+                <input type="password" class="pin-input" maxlength="1" oninput="movePinFocus(this)">
+                <input type="password" class="pin-input" maxlength="1" oninput="movePinFocus(this)">
+            </div>
+            
+            <button class="unlock-btn" onclick="unlockVault()">Unlock Vault 🔓</button>
+            
+            <p style="margin-top: 24px; font-size: 13px; color: var(--dim);">
+                <a href="#" style="color: var(--gold);">Forgot PIN?</a>
+            </p>
+        </div>
+
+        <!-- Vault Content -->
+        <div class="vault-content" id="vault-content">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <div class="dashboard-title">
+                    <h1>🗄️ Secure Vault</h1>
+                    <span>Encrypted storage for sensitive data</span>
+                </div>
+                <div>
+                    <button class="action-btn" onclick="lockVault()">🔒 Lock Vault</button>
+                </div>
+            </div>
+
+            <!-- Encryption Status -->
+            <div class="encryption-status">
+                <div class="encryption-icon">🔐</div>
+                <div class="encryption-details">
+                    <div class="encryption-title">AES-256 Encryption Active</div>
+                    <div class="encryption-desc">All stored data is encrypted with military-grade encryption</div>
+                </div>
+                <div class="encryption-action">View Details</div>
+            </div>
+
+            <!-- Vault Stats -->
+            <div class="vault-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Crypto Wallets</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔑</div>
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">API Keys</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-value">24</div>
+                    <div class="stat-label">Passwords</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📄</div>
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">Documents</div>
+                </div>
+            </div>
+
+            <!-- Category Grid -->
+            <div class="section-header">
+                <div class="section-title">
+                    <span>📂</span> Categories
+                </div>
+            </div>
+
+            <div class="category-grid">
+                <div class="category-card crypto" onclick="showCategory('crypto')">
+                    <div class="category-header">
+                        <div class="category-icon">₿</div>
+                        <div>
+                            <div class="category-title">Crypto Wallets</div>
+                            <div class="category-count">12 items</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category-card wallets" onclick="showCategory('wallets')">
+                    <div class="category-header">
+                        <div class="category-icon">💳</div>
+                        <div>
+                            <div class="category-title">Debit/Credit Cards</div>
+                            <div class="category-count">4 items</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category-card keys" onclick="showCategory('keys')">
+                    <div class="category-header">
+                        <div class="category-icon">🔑</div>
+                        <div>
+                            <div class="category-title">API Keys & Secrets</div>
+                            <div class="category-count">8 items</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category-card secrets" onclick="showCategory('secrets')">
+                    <div class="category-header">
+                        <div class="category-icon">🔒</div>
+                        <div>
+                            <div class="category-title">Passwords</div>
+                            <div class="category-count">24 items</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category-card documents" onclick="showCategory('documents')">
+                    <div class="category-header">
+                        <div class="category-icon">📄</div>
+                        <div>
+                            <div class="category-title">Documents</div>
+                            <div class="category-count">5 items</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category-card backup" onclick="showCategory('backup')">
+                    <div class="category-header">
+                        <div class="category-icon">💾</div>
+                        <div>
+                            <div class="category-title">Backup Codes</div>
+                            <div class="category-count">2 items</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="action-bar">
+                <button class="action-btn primary" onclick="openAddItemModal()">➕ Add New Item</button>
+                <button class="action-btn" onclick="exportVault()">📤 Export Vault</button>
+                <button class="action-btn" onclick="importVault()">📥 Import Vault</button>
+                <button class="action-btn" onclick="generateBackup()">Generate Backup</button>
+            </div>
+
+            <!-- Recent Items -->
+            <div class="section-header">
+                <div class="section-title">
+                    <span>🕐</span> Recently Added
+                </div>
+                <button class="action-btn" style="padding: 8px 16px;">View All</button>
+            </div>
+
+            <div class="items-grid" id="items-grid">
+                <div class="item-card" onclick="viewItem('bitcoin-wallet')">
+                    <div class="item-header">
+                        <div class="item-icon">₿</div>
+                        <span class="item-type">Crypto Wallet</span>
+                    </div>
+                    <div class="item-name">Bitcoin Main Wallet</div>
+                    <div class="item-value">bc1qxy2k...8k9j2n</div>
+                    <div class="item-meta">Added 2 hours ago</div>
+                </div>
+
+                <div class="item-card" onclick="viewItem('spotify-api')">
+                    <div class="item-header">
+                        <div class="item-icon">🎵</div>
+                        <span class="item-type">API Key</span>
+                    </div>
+                    <div class="item-name">Spotify API Key</div>
+                    <div class="item-value">••••••••••••••••••••</div>
+                    <div class="item-meta">Added 5 hours ago</div>
+                </div>
+
+                <div class="item-card" onclick="viewItem('apple-music')">
+                    <div class="item-header">
+                        <div class="item-icon">🍎</div>
+                        <span class="item-type">Password</span>
+                    </div>
+                    <div class="item-name">Apple Music</div>
+                    <div class="item-value">••••••••••••</div>
+                    <div class="item-meta">Added 1 day ago</div>
+                </div>
+
+                <div class="item-card" onclick="viewItem('ascap-doc')">
+                    <div class="item-header">
+                        <div class="item-icon">📄</div>
+                        <span class="item-type">Document</span>
+                    </div>
+                    <div class="item-name">ASCAP Certificate</div>
+                    <div class="item-value">PDF • 2.4 MB</div>
+                    <div class="item-meta">Added 2 days ago</div>
+                </div>
+
+                <div class="item-card" onclick="viewItem('eth-wallet')">
+                    <div class="item-header">
+                        <div class="item-icon">Ξ</div>
+                        <span class="item-type">Crypto Wallet</span>
+                    </div>
+                    <div class="item-name">Ethereum Wallet</div>
+                    <div class="item-value">0x742d...9a2b</div>
+                    <div class="item-meta">Added 3 days ago</div>
+                </div>
+
+                <div class="item-card" onclick="viewItem('bank-card')">
+                    <div class="item-header">
+                        <div class="item-icon">💳</div>
+                        <span class="item-type">Debit Card</span>
+                    </div>
+                    <div class="item-name">Chase Business</div>
+                    <div class="item-value">•••• 4582</div>
+                    <div class="item-meta">Added 4 days ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div class="modal-overlay" id="add-item-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Add New Item to Vault</div>
+                <button class="modal-close" onclick="closeAddItemModal()">✕</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Item Type</label>
+                <select class="form-input" id="item-type">
+                    <option value="crypto">Crypto Wallet</option>
+                    <option value="card">Debit/Credit Card</option>
+                    <option value="api">API Key</option>
+                    <option value="password">Password</option>
+                    <option value="document">Document</option>
+                    <option value="backup">Backup Code</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-input" placeholder="e.g., Bitcoin Main Wallet">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Value / Secret</label>
+                <div class="password-toggle">
+                    <input type="password" class="form-input" placeholder="Enter the value" id="item-value">
+                    <button class="toggle-btn" onclick="togglePassword('item-value')">👁️</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Notes (optional)</label>
+                <input type="text" class="form-input" placeholder="Additional notes...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-input">
+                    <option>Crypto Wallets</option>
+                    <option>Debit/Credit Cards</option>
+                    <option>API Keys & Secrets</option>
+                    <option>Passwords</option>
+                    <option>Documents</option>
+                    <option>Backup Codes</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeAddItemModal()">Cancel</button>
+                <button class="modal-btn confirm" onclick="addItem()">Add to Vault</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function movePinFocus(input) {
+            if (input.value.length === 1) {
+                const next = input.nextElementSibling;
+                if (next && next.classList.contains('pin-input')) {
+                    next.focus();
+                }
+            }
+        }
+
+        function unlockVault() {
+            document.getElementById('vault-locked').style.display = 'none';
+            document.getElementById('vault-content').classList.add('unlocked');
+        }
+
+        function lockVault() {
+            document.getElementById('vault-content').classList.remove('unlocked');
+            document.getElementById('vault-locked').style.display = 'block';
+            // Clear PIN inputs
+            document.querySelectorAll('.pin-input').forEach(input => input.value = '');
+        }
+
+        function showCategory(category) {
+            alert(`Showing ${category} category items...`);
+        }
+
+        function viewItem(itemId) {
+            alert(`Viewing item: ${itemId}`);
+        }
+
+        function openAddItemModal() {
+            document.getElementById('add-item-modal').classList.add('active');
+        }
+
+        function closeAddItemModal() {
+            document.getElementById('add-item-modal').classList.remove('active');
+        }
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function addItem() {
+            alert('Item added to vault securely! 🗄️');
+            closeAddItemModal();
+        }
+
+        function exportVault() {
+            alert('Exporting encrypted vault backup...');
+        }
+
+        function importVault() {
+            alert('Importing vault from backup file...');
+        }
+
+        function generateBackup() {
+            alert('Generating new backup codes...');
+        }
+
+        // Auto-focus first PIN input
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstInput = document.querySelector('.pin-input');
+            if (firstInput) firstInput.focus();
+        });
+    </script>
+</body>
+</html>

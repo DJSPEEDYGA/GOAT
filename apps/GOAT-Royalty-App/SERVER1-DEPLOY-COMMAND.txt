@@ -1,0 +1,22 @@
+# ============================================================
+# DEPLOY GOAT ROYALTY APP TO SERVER 1 (93.127.214.171)
+# Copy and paste this ENTIRE block into your Hostinger
+# browser terminal for Server 1
+# ============================================================
+
+apt-get update -qq && apt-get install -y -qq nginx && mkdir -p /var/www/goat && cd /var/www/goat && wget -q "https://raw.githubusercontent.com/DJSPEEDYGA/GOAT-Royalty-App/main/web-app/goat-royalty/index.html" -O index.html && echo "Downloaded OK: $(wc -c < index.html) bytes" && cat > /etc/nginx/sites-available/goat << 'EOF'
+server {
+    listen 80 default_server;
+    listen [::]:80;
+    root /var/www/goat;
+    index index.html;
+    server_name _;
+    gzip on;
+    gzip_types text/html text/css application/javascript;
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache";
+    }
+}
+EOF
+ln -sf /etc/nginx/sites-available/goat /etc/nginx/sites-enabled/goat && rm -f /etc/nginx/sites-enabled/default && nginx -t && systemctl enable nginx && systemctl restart nginx && ufw allow 80/tcp && ufw allow 443/tcp && echo "GOAT App DEPLOYED on port 80!"

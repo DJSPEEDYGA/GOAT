@@ -1,0 +1,32 @@
+[package]
+name = "goat-royalty"
+version = "4.0.0"
+description = "GOAT Royalty - The Ultimate Platform for Fashion, Entertainment, Music & Celebrity Tools"
+authors = ["GOAT Royalty Team"]
+license = "MIT"
+repository = "https://github.com/goatroyalty/goat-app"
+edition = "2021"
+rust-version = "1.70"
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+tauri = { version = "1.6", features = ["api-all", "updater", "system-tray"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.35", features = ["full"] }
+reqwest = { version = "0.11", features = ["json"] }
+keyring = "2.0"
+directories = "5.0"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "z"
+strip = true

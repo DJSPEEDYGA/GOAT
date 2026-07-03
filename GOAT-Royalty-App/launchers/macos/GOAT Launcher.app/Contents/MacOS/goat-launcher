@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# ============================================================
+#  GOAT ROYALTY — Click Launcher (macOS .app)
+#  DJ Speedy (Harvey L. Miller Jr.)
+# ============================================================
+set -u
+APP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"          # GOAT Launcher.app
+BASE_DIR="$(cd "$APP_DIR/.." && pwd)"                    # folder holding the .app
+if [ -f "$APP_DIR/Contents/Resources/web-app/launcher.html" ]; then
+  WEBAPP="$APP_DIR/Contents/Resources/web-app"
+elif [ -f "$BASE_DIR/web-app/launcher.html" ]; then
+  WEBAPP="$BASE_DIR/web-app"
+else
+  osascript -e 'display alert "GOAT" message "web-app folder not found next to GOAT Launcher.app"' 2>/dev/null
+  exit 1
+fi
+
+CONF_DIR="$HOME/.goat"
+CONF="$CONF_DIR/models-drive.txt"
+[ -f "$BASE_DIR/models-drive.txt" ] && CONF="$BASE_DIR/models-drive.txt"
+
+# ---------- Models Drive (set once, never re-download) ----------
+MODELSDRIVE=""
+[ -f "$CONF" ] && MODELSDRIVE="$(head -n1 "$CONF" | tr -d '\r')"
+if [ -z "$MODELSDRIVE" ]; then
+  MODELSDRIVE="$(osascript -e 'try
+    set d to POSIX path of (choose folder with prompt "Link your big Models Drive (AI models live here, never re-downloaded). Cancel to skip.")
+    return d
+  on error
+    return ""
+  end try' 2>/dev/null)"
+  if [ -n "$MODELSDRIVE" ]; then
+    mkdir -p "$CONF_DIR"
+    echo "$MODELSDRIVE" > "$CONF_DIR/models-drive.txt"
+  fi
+fi
+if [ -n "$MODELSDRIVE" ]; then
+  mkdir -p "$MODELSDRIVE/ollama" 2>/dev/null || true
+  export OLLAMA_MODELS="$MODELSDRIVE/ollama"
+  export GOAT_MODELS_DIR="$MODELSDRIVE"
+fi
+
+# ---------- Serve + open ----------
+PORT=8090
+if ! curl -s -o /dev/null "http://localhost:$PORT/launcher.html"; then
+  (cd "$WEBAPP" && nohup python3 -m http.server "$PORT" >/tmp/goat-web.log 2>&1 &)
+  sleep 1
+fi
+open "http://localhost:$PORT/launcher.html"

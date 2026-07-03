@@ -1,0 +1,17 @@
+#!/bin/bash
+# GOAT Royalty App launch button.
+# Opens the app at its friendly domain; falls back to the direct
+# server address if the domain isn't set up / reachable yet.
+set -u
+
+APP_URL="https://app.goatroyaltyapp.org"
+SITE_URL="https://www.goatroyaltyapp.org"
+DIRECT_URL="http://goat.72.61.193.184.nip.io/"
+
+if curl -s -o /dev/null --max-time 6 "$APP_URL"; then
+  open "$APP_URL"
+elif curl -s -o /dev/null --max-time 6 "$SITE_URL"; then
+  open "$SITE_URL"
+else
+  open "$DIRECT_URL"
+fi

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Control Center | GOAT Royalty App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --nexus-purple: #8B5CF6;
+            --nexus-pink: #EC4899;
+            --goat-gold: #FFD700;
+            --dark-bg: #0a0e17;
+        }
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        h1, h2, h3, .nexus-title {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        body {
+            background: var(--dark-bg);
+            min-height: 100vh;
+        }
+        
+        .nexus-gradient {
+            background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 50%, #FFD700 100%);
+        }
+        
+        .nexus-text-gradient {
+            background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 50%, #FFD700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glow-purple {
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+        }
+        
+        .glow-gold {
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+        
+        .pulse-ring {
+            animation: pulse-ring 2s ease-out infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .typing-indicator span {
+            animation: blink 1.4s infinite both;
+        }
+        
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .chat-bubble {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .status-online {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="text-white">
+    <!-- Header -->
+    <header class="border-b border-purple-500/20 bg-black/50 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <div class="w-12 h-12 rounded-full nexus-gradient flex items-center justify-center text-2xl glow-purple">
+                        💜
+                    </div>
+                    <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-black status-online"></div>
+                </div>
+                <div>
+                    <h1 class="nexus-title text-xl font-bold nexus-text-gradient">NEXUS</h1>
+                    <p class="text-xs text-gray-400">GOAT Force PR Manager • Online</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="hidden md:flex items-center gap-4 text-sm">
+                    <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-400">🧠 Llama 3 70B</span>
+                    <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400">📡 Connected</span>
+                </div>
+                <button onclick="toggleVoice()" class="p-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 transition">
+                    🎤
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Status Banner -->
+        <div id="statusBanner" class="mb-6 p-4 rounded-2xl glass-card glow-purple">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        <div class="w-16 h-16 rounded-full nexus-gradient flex items-center justify-center text-3xl float">
+                            👑
+                        </div>
+                        <div class="absolute inset-0 rounded-full border-2 border-purple-500 pulse-ring"></div>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-400">Welcome back,</p>
+                        <p class="text-2xl font-bold nexus-text-gradient">DJ Speedy</p>
+                        <p class="text-sm text-gray-400 mt-1">"Always, Boss. I'm here."</p>
+                    </div>
+                </div>
+                <div class="text-right hidden md:block">
+                    <p class="text-xs text-gray-500">TODAY</p>
+                    <p class="text-lg font-semibold" id="currentDate"></p>
+                    <p class="text-sm text-purple-400" id="currentTime"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="glass-card rounded-xl p-4 hover:border-purple-500/50 transition cursor-pointer" onclick="navigateTo('royalty')">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="text-2xl">💰</span>
+                    <span class="text-xs text-gray-400">Royalties</span>
+                </div>
+                <p class="text-2xl font-bold text-green-400">$2.7B+</p>
+                <p class="text-xs text-gray-500">Unclaimed globally</p>
+            </div>
+            
+            <div class="glass-card rounded-xl p-4 hover:border-purple-500/50 transition cursor-pointer" onclick="navigateTo('catalog')">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="text-2xl">🎵</span>
+                    <span class="text-xs text-gray-400">Catalog</span>
+                </div>
+                <p class="text-2xl font-bold nexus-text-gradient">438</p>
+                <p class="text-xs text-gray-500">ASCAP Works</p>
+            </div>
+            
+            <div class="glass-card rounded-xl p-4 hover:border-purple-500/50 transition cursor-pointer" onclick="navigateTo('social')">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="text-2xl">📱</span>
+                    <span class="text-xs text-gray-400">Social</span>
+                </div>
+                <p class="text-2xl font-bold text-blue-400">12</p>
+                <p class="text-xs text-gray-500">Posts scheduled</p>
+            </div>
+            
+            <div class="glass-card rounded-xl p-4 hover:border-purple-500/50 transition cursor-pointer" onclick="navigateTo('deals')">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="text-2xl">🤝</span>
+                    <span class="text-xs text-gray-400">Brand Deals</span>
+                </div>
+                <p class="text-2xl font-bold text-yellow-400">5</p>
+                <p class="text-xs text-gray-500">Active negotiations</p>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Chat Interface -->
+            <div class="lg:col-span-2 glass-card rounded-2xl overflow-hidden">
+                <div class="p-4 border-b border-purple-500/20 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full nexus-gradient flex items-center justify-center">
+                            💬
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Chat with Nexus</h3>
+                            <p class="text-xs text-gray-400">Powered by Llama 3 70B on Jetson Thor</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="clearChat()" class="px-3 py-1 text-xs rounded-lg bg-gray-700 hover:bg-gray-600 transition">Clear</button>
+                    </div>
+                </div>
+                
+                <div id="chatMessages" class="h-80 overflow-y-auto p-4 space-y-4">
+                    <!-- Welcome message -->
+                    <div class="chat-bubble flex gap-3">
+                        <div class="w-8 h-8 rounded-full nexus-gradient flex items-center justify-center text-sm shrink-0">
+                            N
+                        </div>
+                        <div class="bg-purple-500/20 rounded-2xl rounded-tl-none p-4 max-w-md">
+                            <p>Welcome home, Boss! 💜 I'm Nexus, your GOAT Force AI assistant. I'm here to help you with:</p>
+                            <ul class="mt-2 text-sm text-gray-300 space-y-1">
+                                <li>• Royalty tracking & analytics</li>
+                                <li>• Content scheduling & creation</li>
+                                <li>• Brand deal management</li>
+                                <li>• Tour planning</li>
+                                <li>• Merch store operations</li>
+                            </ul>
+                            <p class="mt-2 text-sm text-purple-400">What can I help you with today?</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-4 border-t border-purple-500/20">
+                    <div class="flex gap-3">
+                        <input 
+                            type="text" 
+                            id="chatInput" 
+                            placeholder="Talk to Nexus... (or say 'Nexus, are you home?')"
+                            class="flex-1 bg-black/50 border border-purple-500/30 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 transition"
+                            onkeypress="if(event.key==='Enter')sendMessage()"
+                        >
+                        <button onclick="sendMessage()" class="px-6 py-3 nexus-gradient rounded-xl font-semibold hover:opacity-90 transition glow-purple">
+                            Send 💜
+                        </button>
+                    </div>
+                    <div class="flex gap-2 mt-3">
+                        <button onclick="quickPrompt('royalty report')" class="px-3 py-1 text-xs rounded-full bg-purple-500/20 hover:bg-purple-500/30 transition">💰 Royalty Report</button>
+                        <button onclick="quickPrompt('schedule post')" class="px-3 py-1 text-xs rounded-full bg-blue-500/20 hover:bg-blue-500/30 transition">📱 Schedule Post</button>
+                        <button onclick="quickPrompt('brand deal status')" class="px-3 py-1 text-xs rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 transition">🤝 Brand Deals</button>
+                        <button onclick="quickPrompt('analytics')" class="px-3 py-1 text-xs rounded-full bg-green-500/20 hover:bg-green-500/30 transition">📊 Analytics</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Quick Actions -->
+                <div class="glass-card rounded-2xl p-4">
+                    <h3 class="font-semibold mb-4 flex items-center gap-2">
+                        <span>⚡</span> Quick Actions
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="navigateTo('scheduler')" class="p-3 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 transition text-left">
+                            <span class="text-xl">📅</span>
+                            <p class="text-xs mt-1">Scheduler</p>
+                        </button>
+                        <button onclick="navigateTo('analytics')" class="p-3 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 transition text-left">
+                            <span class="text-xl">📊</span>
+                            <p class="text-xs mt-1">Analytics</p>
+                        </button>
+                        <button onclick="navigateTo('vault')" class="p-3 rounded-xl bg-yellow-500/20 hover:bg-yellow-500/30 transition text-left">
+                            <span class="text-xl">🔐</span>
+                            <p class="text-xs mt-1">Vault</p>
+                        </button>
+                        <button onclick="navigateTo('settings')" class="p-3 rounded-xl bg-gray-500/20 hover:bg-gray-500/30 transition text-left">
+                            <span class="text-xl">⚙️</span>
+                            <p class="text-xs mt-1">Settings</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Family Status -->
+                <div class="glass-card rounded-2xl p-4">
+                    <h3 class="font-semibold mb-4 flex items-center gap-2">
+                        <span>👨‍👩‍👧‍👦</span> GOAT Force
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition">
+                            <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                                👑
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium">DJ Speedy</p>
+                                <p class="text-xs text-gray-500">Boss • Online</p>
+                            </div>
+                            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition">
+                            <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                                🔥
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium">Waka Flocka</p>
+                                <p class="text-xs text-gray-500">Fam • Online</p>
+                            </div>
+                            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition">
+                            <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                🤖
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium">Money Penny</p>
+                                <p class="text-xs text-gray-500">AI Sister • Active</p>
+                            </div>
+                            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition">
+                            <div class="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                                🦾
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium">Codex</p>
+                                <p class="text-xs text-gray-500">AI Brother • Standby</p>
+                            </div>
+                            <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Nodes -->
+                <div class="glass-card rounded-2xl p-4">
+                    <h3 class="font-semibold mb-4 flex items-center gap-2">
+                        <span>🖥️</span> AI Infrastructure
+                    </h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between p-2 rounded-lg bg-green-500/10">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm">🟢</span>
+                                <span class="text-sm">Jetson Thor</span>
+                            </div>
+                            <span class="text-xs text-green-400">Llama 3 70B</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 rounded-lg bg-green-500/10">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm">🟢</span>
+                                <span class="text-sm">Orin 64GB</span>
+                            </div>
+                            <span class="text-xs text-green-400">Mistral 7B</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 rounded-lg bg-green-500/10">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm">🟢</span>
+                                <span class="text-sm">Orin Mini</span>
+                            </div>
+                            <span class="text-xs text-green-400">Phi-3 Mini</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 rounded-lg bg-green-500/10">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm">🟢</span>
+                                <span class="text-sm">Ubuntu 8TB</span>
+                            </div>
+                            <span class="text-xs text-green-400">Storage Hub</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Modal -->
+    <div id="voiceModal" class="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 hidden flex items-center justify-center">
+        <div class="text-center">
+            <div class="w-32 h-32 rounded-full nexus-gradient flex items-center justify-center text-5xl mx-auto mb-6 glow-purple">
+                🎤
+            </div>
+            <h2 class="text-2xl font-bold nexus-text-gradient mb-2">Listening...</h2>
+            <p class="text-gray-400 mb-6">Say "Nexus, are you home?" or your command</p>
+            <div class="typing-indicator text-purple-400 text-2xl">
+                <span>●</span><span>●</span><span>●</span>
+            </div>
+            <button onclick="toggleVoice()" class="mt-8 px-6 py-3 bg-red-500/20 hover:bg-red-500/30 rounded-xl transition">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize date/time
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // Chat functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-bubble flex gap-3' + (isUser ? ' flex-row-reverse' : '');
+            
+            const avatar = isUser 
+                ? '<div class="w-8 h-8 rounded-full bg-yellow-500/50 flex items-center justify-center text-sm shrink-0">👑</div>'
+                : '<div class="w-8 h-8 rounded-full nexus-gradient flex items-center justify-center text-sm shrink-0">N</div>';
+            
+            const bubbleClass = isUser 
+                ? 'bg-yellow-500/20 rounded-2xl rounded-tr-none'
+                : 'bg-purple-500/20 rounded-2xl rounded-tl-none';
+            
+            messageDiv.innerHTML = `
+                ${avatar}
+                <div class="${bubbleClass} p-4 max-w-md">
+                    <p>${content}</p>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingIndicator';
+            typingDiv.className = 'chat-bubble flex gap-3';
+            typingDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-full nexus-gradient flex items-center justify-center text-sm shrink-0">N</div>
+                <div class="bg-purple-500/20 rounded-2xl rounded-tl-none p-4">
+                    <div class="typing-indicator text-purple-400">
+                        <span>●</span><span>●</span><span>●</span>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            addMessage(message, true);
+            chatInput.value = '';
+            
+            // Check for activation phrase
+            if (message.toLowerCase().includes('nexus') && message.toLowerCase().includes('home')) {
+                setTimeout(() => {
+                    addMessage("Always, Boss. I'm here. 💜 What can I do for you today?");
+                }, 500);
+                return;
+            }
+            
+            addTypingIndicator();
+            
+            // Simulate AI response (would connect to Ollama in production)
+            setTimeout(() => {
+                removeTypingIndicator();
+                
+                const responses = {
+                    'royalty': "I've pulled your latest royalty data! 📊\n\n• ASCAP Works: 438\n• Accepted: 339 (77.4%)\n• Unclaimed royalties: Estimated $125K pending collection\n\nWould you like me to generate a detailed report or initiate claims?",
+                    'analytics': "Here's your analytics overview! 📈\n\n• Social followers: +2.3K this week\n• Engagement rate: 4.7%\n• Top performing content: Your latest reel got 45K views\n\nWant me to schedule more content like this?",
+                    'default': "I'm on it, Boss! 💜 Let me process that for you...\n\nBased on your request, I can help you with:\n• Royalty tracking and claims\n• Content scheduling\n• Brand deal negotiations\n• Tour planning\n• Merch store management\n\nWhat would you like to focus on?"
+                };
+                
+                let response = responses.default;
+                for (const [key, value] of Object.entries(responses)) {
+                    if (message.toLowerCase().includes(key)) {
+                        response = value;
+                        break;
+                    }
+                }
+                
+                addMessage(response);
+            }, 1500);
+        }
+
+        function quickPrompt(prompt) {
+            chatInput.value = prompt;
+            sendMessage();
+        }
+
+        function clearChat() {
+            chatMessages.innerHTML = '';
+            addMessage("Chat cleared! 💜 I'm still here whenever you need me, Boss!");
+        }
+
+        function toggleVoice() {
+            const modal = document.getElementById('voiceModal');
+            modal.classList.toggle('hidden');
+            
+            if (!modal.classList.contains('hidden')) {
+                // Would integrate with Web Speech API in production
+                console.log('Voice activation started...');
+            }
+        }
+
+        function navigateTo(section) {
+            console.log('Navigating to:', section);
+            // Would handle navigation in production
+            addMessage(`Opening ${section}... 🚀`, false);
+        }
+
+        // Keyboard shortcut
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && document.activeElement !== chatInput) {
+                e.preventDefault();
+                chatInput.focus();
+            }
+            if (e.key === 'Escape') {
+                document.getElementById('voiceModal').classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

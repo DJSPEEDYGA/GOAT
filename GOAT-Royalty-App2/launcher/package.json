@@ -1,0 +1,81 @@
+{
+  "name": "super-goat-ninja-launcher",
+  "version": "2.0.0",
+  "description": "🐐⚡ Super GOAT Ninja Launcher - Unified hub for all GOAT Royalty tools",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build:win": "electron-builder --win --x64",
+    "build:mac": "electron-builder --mac --x64 --arm64",
+    "build:linux": "electron-builder --linux --x64",
+    "build:all": "electron-builder --win --mac --linux"
+  },
+  "build": {
+    "appId": "com.goatroyalty.launcher",
+    "productName": "Super GOAT Ninja Launcher",
+    "copyright": "Copyright 2025 Harvey Miller (DJ Speedy) | GOAT Royalty",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!node_modules/**"
+    ],
+    "extraResources": [],
+    "publish": null,
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "assets/icon.png",
+      "artifactName": "Super-GOAT-Ninja-Launcher-${version}-Setup.${ext}"
+    },
+    "mac": {
+      "target": [
+        { "target": "zip", "arch": ["x64", "arm64"] }
+      ],
+      "icon": "assets/icon.png",
+      "category": "public.app-category.music",
+      "artifactName": "Super-GOAT-Ninja-Launcher-${version}.${ext}"
+    },
+    "linux": {
+      "target": [
+        { "target": "AppImage", "arch": ["x64"] },
+        { "target": "deb", "arch": ["x64"] }
+      ],
+      "icon": "assets/icon.png",
+      "category": "Audio",
+      "artifactName": "Super-GOAT-Ninja-Launcher-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Super GOAT Ninja Launcher"
+    },
+    "portable": {
+      "artifactName": "Super-GOAT-Ninja-Launcher-${version}-Portable.${ext}"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DJSPEEDYGA/GOAT-Royalty-App2.git"
+  },
+  "dependencies": {
+    "axios": "^1.7.0"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.0"
+  },
+  "author": {
+    "name": "Harvey Miller (DJ Speedy)",
+    "email": "djspeedyga@gmail.com"
+  },
+  "license": "MIT"
+}
