@@ -18,7 +18,8 @@
 set -e
 
 MODE="${1:-all}"
-export NGC_API_KEY="${NGC_API_KEY:-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}"
+: "${NVIDIA_NGC_API_KEY:?Set NVIDIA_NGC_API_KEY}"
+export NGC_API_KEY="${NVIDIA_NGC_API_KEY}"
 
 echo "╔════════════════════════════════════════════════════╗"
 echo "║  🚀 NVIDIA SMART DOWNLOAD v3.0                     ║"

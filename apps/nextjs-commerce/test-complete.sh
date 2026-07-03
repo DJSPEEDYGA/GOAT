@@ -211,7 +211,7 @@ else
 fi
 
 # Test Hostinger API
-if grep -q 'u4WIezhO6K1Zv0ZXor4VMDHZNFzpKb3h0iNgdUpda243813a' /var/www/GOAT-Royalty-App/.env; then
+if grep -q '^HOSTINGER_API_TOKEN=' /var/www/GOAT-Royalty-App/.env; then
     print_status "Hostinger API key is configured"
 else
     print_warning "Hostinger API key not found"

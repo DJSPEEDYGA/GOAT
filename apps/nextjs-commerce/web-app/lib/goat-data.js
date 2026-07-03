@@ -204,7 +204,7 @@ const API_CONFIG = {
     superninja: 'CUTSsX7.UBvzlbTUCFb8zQJm6j-8_X-5zy8p5QEsuYRENK1ONKE',
     hostinger: 'VK2DgV31mpN5c6e8gJK50LJR1QgPwcyMYKthc7Gl8f14e176',
     supabase: 'sbp_073f78daede405731dc30abb4eab334429203c2c',
-    googleAI: 'AIzaSyBNrZ-P8-n5NxzsceYDZUwrrkPSd3LtEks',
+    googleAI: process.env.GOOGLE_API_KEY,
     fashionApp: 'D7Vqj4g.t6ljK678nBb5z90vd8-thJf3A5BCCQ8kg-Shz2D5g5c'
 };
 

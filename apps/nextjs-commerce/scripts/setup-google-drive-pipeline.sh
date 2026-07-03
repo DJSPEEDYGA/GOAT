@@ -27,7 +27,6 @@ echo -e "${BLUE}📁 Creating directory structure...${NC}"
 mkdir -p "$PIPELINE_DIR"/{input,output,processing,cache,logs,metadata,ai-access}
 mkdir -p "$CONFIG_DIR"
 mkdir -p "$LOGS_DIR"
-mkdir -p ./docs ./src/routes ./scripts
 
 echo -e "${GREEN}✅ Directories created${NC}"
 echo ""

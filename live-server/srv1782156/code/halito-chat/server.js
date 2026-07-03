@@ -212,10 +212,7 @@ const server = createServer((request, response) => {
     return;
   }
 
-  let _reqUrl = request.url;
-  const _legal = parsedUrl.pathname.match(/^\/legal(?:\/(terms|privacy|cookies))?\/?$/);
-  if (_legal) _reqUrl = _legal[1] ? `/legal/${_legal[1]}.html` : "/legal/index.html";
-  const filePath = getPath(_reqUrl);
+  const filePath = getPath(request.url);
   if (!filePath.startsWith(root) || !existsSync(filePath) || !statSync(filePath).isFile()) {
     response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
     response.end('Not found');

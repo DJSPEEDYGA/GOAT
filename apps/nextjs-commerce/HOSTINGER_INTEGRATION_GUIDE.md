@@ -57,7 +57,7 @@ The GOAT Royalty App now includes comprehensive Hostinger API integration, allow
 1. Log in to your Hostinger account
 2. Navigate to API settings
 3. Generate a new API token
-4. Copy the token (it will look like: `u4WIezhO6K1Zv0ZXor4VMDHZNFzpKb3h0iNgdUpda243813a`)
+4. Copy the token (it will look like: `<HOSTINGER_API_TOKEN>`)
 
 ### Step 2: Configure Environment Variables
 
