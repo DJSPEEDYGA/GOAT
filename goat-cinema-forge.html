@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GOAT Cinema Forge | Hollywood Studio Router</title>
+  <meta name="description" content="GOAT Cinema Forge routes movie, 3D, AI video, music sync, RAG, LoRA, render, and rights workflows into one local-first studio surface.">
+  <style>
+    :root {
+      --bg: #05070a;
+      --deck: #0b1015;
+      --panel: #111821;
+      --panel2: #182333;
+      --line: #2c3b4c;
+      --ink: #fbf1d8;
+      --muted: #b8c2c8;
+      --quiet: #72808c;
+      --gold: #ffbd43;
+      --green: #62e79b;
+      --cyan: #42d6ff;
+      --red: #ff606a;
+      --orange: #ff9b52;
+      --blue: #82a9ff;
+      --shadow: 0 18px 52px rgba(0,0,0,.45);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top left, rgba(66,214,255,.10), transparent 28rem), var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+    a { color: inherit; text-decoration: none; }
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 22px;
+      background: rgba(5,7,10,.92);
+      border-bottom: 1px solid rgba(255,189,67,.22);
+      backdrop-filter: blur(14px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 260px;
+    }
+    .badge {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(255,189,67,.55);
+      border-radius: 50%;
+      background: #070b10;
+      color: var(--gold);
+      font-weight: 900;
+      box-shadow: inset 0 0 18px rgba(255,189,67,.16);
+    }
+    .brand b { display: block; font-size: 15px; }
+    .brand span { display: block; margin-top: 2px; color: var(--quiet); font-size: 12px; }
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .nav a, .nav button, .control button {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #17212c, #0a0f14);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .nav a.active, .nav button.primary, .control button.primary {
+      color: #0a0a0a;
+      background: linear-gradient(180deg, #ffd37a, #ffae2e);
+      border-color: rgba(255,189,67,.9);
+    }
+    .wrap {
+      width: min(1500px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 24px 0 56px;
+    }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 380px;
+      border: 1px solid rgba(255,189,67,.22);
+      background:
+        linear-gradient(90deg, rgba(5,7,10,.98), rgba(5,7,10,.76) 52%, rgba(5,7,10,.35)),
+        url("assets/goat-force-media/images/royalty-recovery-data.jpg") center / cover;
+      box-shadow: var(--shadow);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 38px 38px;
+      pointer-events: none;
+      opacity: .42;
+    }
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 780px;
+      padding: 54px 58px;
+    }
+    .kicker {
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .18em;
+    }
+    h1 {
+      margin: 18px 0 18px;
+      font-size: clamp(48px, 7vw, 92px);
+      line-height: .92;
+      letter-spacing: 0;
+    }
+    .sub {
+      max-width: 700px;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1.45;
+    }
+    .meter-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 12px;
+      margin-top: 32px;
+    }
+    .meter {
+      min-height: 92px;
+      border: 1px solid var(--line);
+      background: rgba(12,18,24,.86);
+      padding: 16px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+    .meter strong {
+      display: block;
+      color: var(--gold);
+      font-size: 28px;
+      line-height: 1;
+    }
+    .meter span {
+      display: block;
+      margin-top: 10px;
+      color: var(--quiet);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .section {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(18,27,37,.96), rgba(8,12,17,.98));
+      box-shadow: var(--shadow);
+    }
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .section-head h2 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .section-head span { color: var(--quiet); font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      padding: 16px;
+    }
+    .lane {
+      min-height: 168px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #14202c, #080d12);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .lane-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .lane b { font-size: 17px; }
+    .status {
+      color: var(--green);
+      border: 1px solid rgba(98,231,155,.4);
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .lane p { margin: 14px 0 0; color: var(--muted); line-height: 1.35; font-size: 14px; }
+    .lane a {
+      display: inline-flex;
+      width: fit-content;
+      margin-top: 14px;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(255,189,67,.55);
+    }
+    .console {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 16px;
+      padding: 16px;
+    }
+    .desk, .rack {
+      border: 1px solid var(--line);
+      background: #070b10;
+      padding: 16px;
+    }
+    .control {
+      display: grid;
+      grid-template-columns: 160px 1fr 148px;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .control input, .control select, .control textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #0c1218;
+      color: var(--ink);
+      border-radius: 4px;
+      padding: 12px 12px;
+      font: inherit;
+      text-transform: none;
+    }
+    .control textarea { min-height: 132px; resize: vertical; }
+    .control.full {
+      grid-template-columns: 160px 1fr;
+      align-items: start;
+    }
+    .rack-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .rack-chip {
+      min-height: 46px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .output {
+      min-height: 170px;
+      border: 1px solid rgba(66,214,255,.25);
+      background: #04070a;
+      color: var(--green);
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      padding: 14px;
+      white-space: pre-wrap;
+      overflow: auto;
+    }
+    .gates {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      padding: 16px;
+    }
+    .gate {
+      border: 1px solid rgba(255,96,106,.35);
+      background: rgba(255,96,106,.06);
+      padding: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .gate b {
+      display: block;
+      color: var(--red);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+    @media (max-width: 980px) {
+      .top { align-items: flex-start; flex-direction: column; }
+      .hero-inner { padding: 38px 24px; }
+      .meter-row, .grid, .gates { grid-template-columns: 1fr 1fr; }
+      .console { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .meter-row, .grid, .gates { grid-template-columns: 1fr; }
+      .control, .control.full { grid-template-columns: 1fr; }
+      h1 { font-size: 46px; }
+    }
+  </style>
+  <link rel="stylesheet" href="css/goat-theme.css">
+  <link rel="stylesheet" href="css/goat-brand.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="index.html">
+      <span class="badge">G</span>
+      <span><b>GOAT Cinema Forge</b><span>Ms Money Penny Studio Command</span></span>
+    </a>
+    <nav class="nav" aria-label="GOAT studio navigation">
+      <a class="active" href="goat-cinema-forge.html">Cinema Forge</a>
+      <a href="goat-ai-video.html">AI Video</a>
+      <a href="movie-studio.html">Movie Studio</a>
+      <a href="goat-3d-studio.html">3D Studio</a>
+      <a href="unreal-copilot.html">Unreal</a>
+      <a href="ssl-mixer.html">SSL Mixer</a>
+      <a href="super-goat-royalties.html">Rights</a>
+      <a href="agents-brain.html">Agents</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="kicker">Original local-first Hollywood command surface</div>
+        <h1>GOAT Cinema Forge</h1>
+        <p class="sub">One studio layer for movie direction, AI video, 3D, Unreal, MetaHuman, Daz, Twinmotion, Blender, Final Cut, music sync, RAG, LoRA, render routing, rights, and export proof.</p>
+        <div class="meter-row">
+          <div class="meter"><strong data-meter="lanes">8</strong><span>Studio lanes</span></div>
+          <div class="meter"><strong>53</strong><span>Curated local models</span></div>
+          <div class="meter"><strong>56</strong><span>Visible Ollama tags</span></div>
+          <div class="meter"><strong>0</strong><span>Required API keys for core</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Studio Lanes</h2>
+        <span data-source-label>Loading manifest</span>
+      </div>
+      <div class="grid" data-lanes></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Scene Lock Desk</h2>
+        <span>Owned brief to render package</span>
+      </div>
+      <div class="console">
+        <div class="desk">
+          <label class="control"><span>Project</span><input id="projectTitle" value="GOAT Royalty Force cinematic"></label>
+          <label class="control"><span>Format</span><select id="format"><option>Music video</option><option>Series trailer</option><option>Commercial</option><option>Short film</option><option>Game cinematic</option></select></label>
+          <label class="control"><span>Route</span><select id="route"><option>GOAT Router + Movie Studio</option><option>Unreal + MetaHuman</option><option>Daz + Twinmotion + Blender</option><option>Local Comfy / WAN / LTX</option><option>Private Render Cloud</option></select></label>
+          <label class="control full"><span>Scene brief</span><textarea id="brief">DJ Speedy and the GOAT Royalty Force protect the catalog, recover missing money, and turn a studio session into a cinematic proof package.</textarea></label>
+          <div class="control"><span>Build</span><button class="primary" id="buildPlan" type="button">Create Scene Lock</button><button id="downloadPlan" type="button">Download JSON</button></div>
+        </div>
+        <div class="rack">
+          <div class="kicker">Toolchain</div>
+          <div class="rack-list" data-toolchain></div>
+          <div class="output" id="sceneOutput">Waiting for scene lock...</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>RAG, LoRA, And Rights Gates</h2>
+        <span>Local-first proof rail</span>
+      </div>
+      <div class="gates" data-gates></div>
+    </section>
+  </main>
+
+  <script>
+    const state = { manifest: null, scene: null };
+    const esc = (value) => String(value || "").replace(/[&<>"']/g, (ch) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+    }[ch]));
+
+    function renderManifest(data) {
+      state.manifest = data;
+      document.querySelector("[data-source-label]").textContent = data.classification || data.name || "Manifest loaded";
+      document.querySelector("[data-meter='lanes']").textContent = String((data.studioLanes || []).length);
+      document.querySelector("[data-lanes]").innerHTML = (data.studioLanes || []).map((lane) => `
+        <article class="lane">
+          <div>
+            <div class="lane-top"><b>${esc(lane.lane)}</b><span class="status">${esc(lane.status)}</span></div>
+            <p>${esc(lane.role)}</p>
+          </div>
+          <a href="${esc(lane.href)}">Open lane</a>
+        </article>
+      `).join("");
+      document.querySelector("[data-toolchain]").innerHTML = (data.proToolchain || []).map((item) => (
+        `<div class="rack-chip">${esc(item)}</div>`
+      )).join("");
+      const gates = [
+        ...(data.ragAndModelLanes || []).map((item) => ({ title: item.name, body: item.rule })),
+        ...(data.gates || []).slice(0, 6).map((item) => ({ title: "Gate", body: item }))
+      ];
+      document.querySelector("[data-gates]").innerHTML = gates.map((item) => (
+        `<div class="gate"><b>${esc(item.title)}</b>${esc(item.body)}</div>`
+      )).join("");
+    }
+
+    function buildSceneLock() {
+      const data = state.manifest || {};
+      const scene = {
+        project: document.getElementById("projectTitle").value.trim(),
+        format: document.getElementById("format").value,
+        route: document.getElementById("route").value,
+        brief: document.getElementById("brief").value.trim(),
+        sourceManifests: data.sourceManifests || [],
+        requiredGates: data.gates || [],
+        exportPackage: [
+          "scene-lock brief",
+          "rights notes",
+          "source file paths",
+          "music sync notes",
+          "model and render route",
+          "owner approval log"
+        ],
+        createdAt: new Date().toISOString()
+      };
+      state.scene = scene;
+      document.getElementById("sceneOutput").textContent = JSON.stringify(scene, null, 2);
+    }
+
+    function downloadSceneLock() {
+      if (!state.scene) buildSceneLock();
+      const blob = new Blob([JSON.stringify(state.scene, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "goat-cinema-forge-scene-lock.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    fetch("data/goat-cinema-forge.json", { cache: "no-store" })
+      .then((res) => res.json())
+      .then(renderManifest)
+      .catch((error) => {
+        document.querySelector("[data-source-label]").textContent = "Manifest unavailable";
+        document.getElementById("sceneOutput").textContent = String(error);
+      });
+
+    document.getElementById("buildPlan").addEventListener("click", buildSceneLock);
+    document.getElementById("downloadPlan").addEventListener("click", downloadSceneLock);
+  </script>
+</body>
+</html>
