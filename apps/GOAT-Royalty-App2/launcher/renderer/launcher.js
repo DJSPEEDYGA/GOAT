@@ -32,11 +32,80 @@ const launcher = window.goatLauncher || {
   quit: () => {},
   openExternal: (url) => window.open(url, '_blank'),
   openToolWindow: (opts) => window.open(opts.url, '_blank'),
+  launchApp: async (id) => {
+    // Browser fallback (no Electron): open the app's website/download page.
+    const app = APP_CATALOG.find(a => a.id === id);
+    if (app && app.url) window.open(app.url, '_blank');
+    return { ok: false, reason: 'no-electron' };
+  },
   checkServer: async () => ({ status: 'unknown' }),
   getConfig: async () => ({}),
   notify: (t, b) => console.log(t, b),
   on: () => {},
 };
+
+// ============================================================
+// CREATIVE / DEV APP CATALOG
+// ------------------------------------------------------------
+// "The best parts" of Lexi's toolbox, surfaced as launcher buttons.
+// `id` maps to the allowlist in main.js (native launch + download fallback).
+// ============================================================
+const APP_CATALOG = [
+  // --- Creative Studio ---
+  { id:'facegen',    group:'creative', icon:'🧑‍🎨', name:'FaceGen Studio',     desc:'3D face & avatar generator', best:'Photoreal 3D faces from a single photo', color:'pink',   url:'https://facegen.com/artist.htm' },
+  { id:'photoshop',  group:'creative', icon:'🎨',   name:'Photo Studio',       desc:'Adobe Photoshop CS6',        best:'Layers, masks & pro photo retouching', color:'cyan',   url:'https://www.adobe.com/products/photoshop.html' },
+  { id:'twinmotion', group:'creative', icon:'🏙️',   name:'Twinmotion 3D',      desc:'Real-time archviz & render', best:'Real-time cinematic 3D environments',  color:'green',  url:'https://www.twinmotion.com/en-US/download' },
+  { id:'epic',       group:'creative', icon:'🎮',   name:'Unreal / Epic',      desc:'Epic Games Launcher',        best:'Unreal Engine + MetaHuman pipeline',   color:'purple', url:'https://store.epicgames.com/en-US/download' },
+  // --- Dev Apps ---
+  { id:'vscode',     group:'dev', icon:'🔵', name:'VS Code',       desc:'Visual Studio Code',   best:'Full IDE with extensions & debugging', color:'cyan',   url:'https://code.visualstudio.com/download' },
+  { id:'node',       group:'dev', icon:'🟩', name:'Node.js',       desc:'JS runtime & npm',     best:'Run servers, tools & npm packages',    color:'green',  url:'https://nodejs.org/en/download' },
+  { id:'codex',      group:'dev', icon:'⚡', name:'Codex',         desc:'OpenAI coding agent',  best:'AI pair-programmer in the terminal',   color:'gold',   url:'https://github.com/openai/codex' },
+  // --- AI Apps ---
+  { id:'claude',     group:'ai', icon:'🎭', name:'Claude Desktop', desc:'Anthropic Claude',    best:'Long-context reasoning & writing',     color:'red',    url:'https://claude.ai/download' },
+  { id:'anythingllm',group:'ai', icon:'🧠', name:'AnythingLLM',    desc:'Local RAG workspace', best:'Private local LLM + document RAG',      color:'purple', url:'https://anythingllm.com/desktop' },
+];
+
+function appsByGroup(group) {
+  return APP_CATALOG.filter(a => a.group === group);
+}
+
+// Launch a whitelisted native app (with download fallback handled in main.js)
+async function launchApp(id) {
+  const app = APP_CATALOG.find(a => a.id === id);
+  showToast(`🚀 Launching ${app ? app.name : id}…`);
+  try {
+    await launcher.launchApp(id);
+  } catch {
+    if (app && app.url) openExternal(app.url);
+  }
+}
+
+function renderAppCard(a) {
+  return `
+    <div class="tool-card ${a.color}" onclick="launchApp('${a.id}')" title="${a.best}">
+      <span class="tool-status ai">LAUNCH</span>
+      <span class="tool-icon">${a.icon}</span>
+      <div class="tool-name">${a.name}</div>
+      <div class="tool-desc">${a.desc}</div>
+    </div>`;
+}
+
+// Lightweight toast (no dependency on native notifications)
+function showToast(text) {
+  let host = document.getElementById('goatToast');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'goatToast';
+    host.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:2000;display:flex;flex-direction:column;gap:8px;';
+    document.body.appendChild(host);
+  }
+  const el = document.createElement('div');
+  el.style.cssText = 'background:var(--card);border:1px solid var(--purple);box-shadow:var(--glow);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--text);animation:fadeIn 0.3s ease;';
+  el.textContent = text;
+  host.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.4s'; }, 2200);
+  setTimeout(() => el.remove(), 2800);
+}
 
 // ============================================================
 // SERVER STATUS
@@ -81,6 +150,8 @@ const VIEW_TITLES = {
   'terminal': '💻 Terminal',
   'code-editor': '📝 Code Editor',
   'file-manager': '📁 File Manager',
+  'creative-studio': '🎨 Creative Studio',
+  'dev-apps': '🧰 Dev & AI Apps',
   'nvidia': '🟢 NVIDIA DGX Cloud',
   'cinema': '🎬 Cinema Camera Suite',
   'fashion': '👗 Fashion Forge Studio',
@@ -123,6 +194,8 @@ function showView(view) {
     case 'terminal': content.innerHTML = renderTerminal(); setupTerminal(); break;
     case 'code-editor': content.innerHTML = renderCodeEditor(); break;
     case 'file-manager': content.innerHTML = renderFileManager(); break;
+    case 'creative-studio': content.innerHTML = renderCreativeStudio(); break;
+    case 'dev-apps': content.innerHTML = renderDevApps(); break;
     case 'nvidia': renderIframe(`${state.serverUrl}/nvidia-dgx`, content); break;
     case 'cinema': renderIframe(`${state.serverUrl}/cinema-camera`, content); break;
     case 'fashion': renderIframe(`${state.serverUrl}/fashion-store`, content); break;
@@ -222,6 +295,8 @@ function renderHome() {
           { icon:'🎬', name:'Cinema Camera', desc:'Video production', color:'red', view:'cinema', status:'live' },
           { icon:'👗', name:'Fashion Store', desc:'FashionForge Studio', color:'pink', view:'fashion', status:'live' },
           { icon:'🎭', name:'Sora AI Studio', desc:'AI video creation', color:'purple', view:'sora', status:'ai' },
+          { icon:'🎨', name:'Creative Studio', desc:'FaceGen · Photoshop · 3D', color:'pink', view:'creative-studio', status:'new' },
+          { icon:'🧰', name:'Dev & AI Apps', desc:'VS Code · Claude · Codex', color:'cyan', view:'dev-apps', status:'new' },
         ].map(t => `
           <div class="tool-card ${t.color}" onclick="showView('${t.view}')">
             <span class="tool-status ${t.status}">${t.status.toUpperCase()}</span>
@@ -286,7 +361,13 @@ function renderTools() {
     ]},
   ];
 
-  return allTools.map(cat => `
+  const launchCats = [
+    { cat: '🎨 Creative Studio', apps: appsByGroup('creative') },
+    { cat: '🧰 Dev Apps', apps: appsByGroup('dev') },
+    { cat: '🤖 AI Apps', apps: appsByGroup('ai') },
+  ];
+
+  const viewSection = allTools.map(cat => `
     <div class="card mb-6">
       <div class="card-header">
         <div class="card-title">${cat.cat}</div>
@@ -302,6 +383,71 @@ function renderTools() {
       </div>
     </div>
   `).join('');
+
+  const launchSection = launchCats.map(cat => `
+    <div class="card mb-6">
+      <div class="card-header">
+        <div class="card-title">${cat.cat}</div>
+        <span class="tag purple">Launch apps</span>
+      </div>
+      <div class="tool-grid">
+        ${cat.apps.map(renderAppCard).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  return viewSection + launchSection;
+}
+
+// ============================================================
+// CREATIVE STUDIO  (FaceGen, Photoshop, Twinmotion, Unreal)
+// ============================================================
+function renderCreativeStudio() {
+  const apps = appsByGroup('creative');
+  return `
+    <div style="background:linear-gradient(135deg,rgba(255,107,157,0.15),rgba(0,210,255,0.1));border:1px solid rgba(255,107,157,0.3);border-radius:16px;padding:24px;margin-bottom:24px;">
+      <h1 style="font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--pink),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🎨 Creative Studio</h1>
+      <p style="color:var(--muted);font-size:13px;margin-top:6px;">The best of Lexi's creative toolbox — one click launches the app, or grabs it if it's not installed yet.</p>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🚀 Launch Creative Apps</div></div>
+      <div class="tool-grid">
+        ${apps.map(renderAppCard).join('')}
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <div class="card-header"><div class="card-title">✨ What each one brings</div></div>
+      ${apps.map(a => `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(42,42,58,0.5);">
+          <span style="font-size:22px;">${a.icon}</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;">${a.name}</div>
+            <div style="font-size:12px;color:var(--muted);">${a.best}</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="launchApp('${a.id}')">Launch</button>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+// ============================================================
+// DEV & AI APPS  (VS Code, Node, Codex, Claude, AnythingLLM)
+// ============================================================
+function renderDevApps() {
+  const dev = appsByGroup('dev');
+  const ai = appsByGroup('ai');
+  const section = (title, apps) => `
+    <div class="card mb-6">
+      <div class="card-header"><div class="card-title">${title}</div></div>
+      <div class="tool-grid">${apps.map(renderAppCard).join('')}</div>
+    </div>`;
+  return `
+    <div style="background:linear-gradient(135deg,rgba(0,210,255,0.12),rgba(108,92,231,0.12));border:1px solid rgba(0,210,255,0.3);border-radius:16px;padding:24px;margin-bottom:24px;">
+      <h1 style="font-size:22px;font-weight:900;background:var(--grad-ninja);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🧰 Dev & AI Apps</h1>
+      <p style="color:var(--muted);font-size:13px;margin-top:6px;">Lexi's dev powerhouse — editors, runtimes and AI copilots, ready to launch.</p>
+    </div>
+    ${section('💻 Dev Tools', dev)}
+    ${section('🧠 AI Assistants', ai)}`;
 }
 
 // ============================================================

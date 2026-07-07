@@ -154,6 +154,72 @@ ipcMain.on('open-tool-window', (_, { url, title, width = 1200, height = 800 }) =
   toolWindow.setMenu(null);
 });
 
+// ============================================================
+// CREATIVE / DEV APP LAUNCHER
+// ------------------------------------------------------------
+// "The best parts" of Lexi's toolbox — launch native creative &
+// dev apps when installed, otherwise fall back to the download URL.
+// Only apps in this allowlist can be launched (no arbitrary exec).
+// ============================================================
+const APP_REGISTRY = {
+  // Creative
+  facegen:    { name: 'FaceGen Artist Pro', mac: 'FaceGen Artist Pro 3.12', win: 'FaceGen Artist Pro', url: 'https://facegen.com/artist.htm' },
+  photoshop:  { name: 'Adobe Photoshop CS6', mac: 'Adobe Photoshop CS6', win: 'Adobe Photoshop CS6', url: 'https://www.adobe.com/products/photoshop.html' },
+  twinmotion: { name: 'Twinmotion', mac: 'Twinmotion 2026.1', win: 'Twinmotion 2026.1', url: 'https://www.twinmotion.com/en-US/download' },
+  epic:       { name: 'Epic Games Launcher', mac: 'Epic Games Launcher', win: 'Epic Games Launcher', url: 'https://store.epicgames.com/en-US/download' },
+  // AI
+  claude:     { name: 'Claude', mac: 'Claude', win: 'Claude', url: 'https://claude.ai/download' },
+  anythingllm:{ name: 'AnythingLLM', mac: 'AnythingLLM', win: 'AnythingLLM', url: 'https://anythingllm.com/desktop' },
+  codex:      { name: 'Codex', cmd: 'codex', url: 'https://github.com/openai/codex' },
+  // Dev
+  vscode:     { name: 'Visual Studio Code', mac: 'Visual Studio Code', win: 'Visual Studio Code', cmd: 'code', url: 'https://code.visualstudio.com/download' },
+  node:       { name: 'Node.js', cmd: 'node', url: 'https://nodejs.org/en/download' },
+};
+
+function launchNativeApp(id) {
+  const appDef = APP_REGISTRY[id];
+  if (!appDef) return { ok: false, reason: 'unknown-app' };
+
+  const done = (ok, opened) => {
+    if (!ok) {
+      // Fall back to the download / website URL so the button always does something useful.
+      if (appDef.url) shell.openExternal(appDef.url);
+      mainWindow?.webContents.send('notification', {
+        title: `${appDef.name} not installed`,
+        body: 'Opening download page…',
+      });
+    } else {
+      mainWindow?.webContents.send('notification', {
+        title: `🚀 Launching ${appDef.name}`,
+        body: opened || 'Opening app…',
+      });
+    }
+  };
+
+  try {
+    if (process.platform === 'darwin' && appDef.mac) {
+      exec(`open -a ${JSON.stringify(appDef.mac)}`, (err) => done(!err, appDef.mac));
+      return { ok: true };
+    }
+    if (process.platform === 'win32' && appDef.win) {
+      exec(`start "" ${JSON.stringify(appDef.win)}`, (err) => done(!err, appDef.win));
+      return { ok: true };
+    }
+    if (appDef.cmd) {
+      // CLI tools (node, code, codex): resolve via PATH.
+      exec(`${appDef.cmd} --version`, (err) => done(!err, appDef.cmd));
+      return { ok: true };
+    }
+  } catch (e) {
+    // fall through
+  }
+  done(false);
+  return { ok: false, reason: 'launch-failed' };
+}
+
+// Launch a whitelisted creative/dev app (with download fallback)
+ipcMain.handle('launch-app', (_, id) => launchNativeApp(id));
+
 // Server status check
 ipcMain.handle('check-server', async () => {
   return new Promise((resolve) => {
