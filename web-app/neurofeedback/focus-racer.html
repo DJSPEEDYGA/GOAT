@@ -22,6 +22,7 @@
 <canvas id="game"></canvas>
 <div id="hud"></div>
 <a id="back" href="index.html">← Game Hub</a>
+<div id="vehicleBtn" style="position:fixed;top:60px;right:14px;z-index:10;color:#ffd700;cursor:pointer;background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:700;">🏍️ Switch to R6 Bike</div>
 <div id="speedo">🏎️ <span id="mph">0</span> MPH</div>
 <div id="msg">Sustained focus builds speed. Spike into stress and the police get on your tail!</div>
 
@@ -39,6 +40,16 @@ engine.on(s=>{focus=s.focus; spike=s.spike;});
 let mph=0, roadScroll=0, heat=0; // heat: 0..1 police pressure
 const mphEl=document.getElementById('mph'), msg=document.getElementById('msg');
 
+const IMG={};
+[['bg','assets/bg-city-night.jpg?v=2'],['car','assets/supercar.png?v=2'],['police','assets/police.png?v=2'],['bike','assets/motorcycle.png?v=2']]
+  .forEach(([k,src])=>{const im=new Image(); im.src=src; IMG[k]=im;});
+
+let vehicle='car';
+document.getElementById('vehicleBtn').onclick=function(){
+  vehicle = vehicle==='car' ? 'bike' : 'car';
+  this.textContent = vehicle==='car' ? '🏍️ Switch to R6 Bike' : '🏎️ Switch to Supercar';
+};
+
 function update(dt){
   const targetSpeed = focus*2.4;                    // focus 100 -> 240 mph
   mph += (targetSpeed - mph) * dt * (mph<targetSpeed?0.5:1.2);
@@ -55,39 +66,23 @@ function update(dt){
     : 'Drifting off… the engine bogs down. Refocus.';
 }
 
-function drawCar(x,y,scale,body,accent,isPolice,t){
-  cx.save(); cx.translate(x,y); cx.scale(scale,scale);
-  // Low wide supercar silhouette
-  cx.fillStyle=body;
-  cx.beginPath();
-  cx.moveTo(-70,10); cx.lineTo(-62,-8); cx.lineTo(-30,-16); cx.lineTo(-8,-26);
-  cx.lineTo(34,-26); cx.lineTo(58,-12); cx.lineTo(70,8); cx.lineTo(70,14);
-  cx.lineTo(-70,14); cx.closePath(); cx.fill();
-  cx.fillStyle=accent;                                    // canopy
-  cx.beginPath(); cx.moveTo(-6,-25); cx.lineTo(30,-25); cx.lineTo(40,-13); cx.lineTo(-16,-13); cx.closePath(); cx.fill();
-  cx.fillStyle='#111';                                    // wheels
-  cx.beginPath(); cx.arc(-40,14,13,0,7); cx.arc(42,14,13,0,7); cx.fill();
-  cx.fillStyle='#444';
-  cx.beginPath(); cx.arc(-40,14,6,0,7); cx.arc(42,14,6,0,7); cx.fill();
-  if (isPolice){
-    const flash=Math.sin(t/80)>0;
-    cx.fillStyle=flash?'#ff3040':'#2060ff';
-    cx.fillRect(-2,-34,18,7);
-  }
-  cx.restore();
+function drawSprite(img,x,y,w,flash,t){
+  if (!img.complete || !img.naturalWidth) return;
+  const h=w*img.naturalHeight/img.naturalWidth;
+  cx.drawImage(img, x-w/2, y-h, w, h);
+  if (flash){ const on=Math.sin(t/80)>0;
+    cx.fillStyle=on?'rgba(255,40,60,0.8)':'rgba(40,90,255,0.8)';
+    cx.beginPath(); cx.arc(x, y-h*0.98, 9, 0, 7); cx.fill(); }
 }
 
 function draw(t){
   const W=cv.width,H=cv.height;
-  // Night city sky
-  const g=cx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'#0a0a18'); g.addColorStop(1,'#16162a');
-  cx.fillStyle=g; cx.fillRect(0,0,W,H*0.6);
-  // City skyline
-  cx.fillStyle='#0e0e20';
-  for(let i=0;i<14;i++){ const bx=(i*137)%W, bh=60+((i*89)%140); cx.fillRect(bx,H*0.6-bh,70,bh); }
-  cx.fillStyle='rgba(255,220,120,0.5)';
-  for(let i=0;i<40;i++){ cx.fillRect(((i*97)%W)+8, H*0.6-30-((i*53)%120), 4,4); }
+  // Night city backdrop (cover fit, upper 60%)
+  if (IMG.bg.complete && IMG.bg.naturalWidth){
+    const bw=IMG.bg.naturalWidth, bh=IMG.bg.naturalHeight;
+    const sc=Math.max(W/bw, H*0.62/bh);
+    cx.drawImage(IMG.bg, (W-bw*sc)/2, H*0.62-bh*sc, bw*sc, bh*sc);
+  } else { cx.fillStyle='#0a0a18'; cx.fillRect(0,0,W,H*0.62); }
 
   // Road
   cx.fillStyle='#1c1c22'; cx.fillRect(0,H*0.6,W,H*0.4);
@@ -101,14 +96,14 @@ function draw(t){
       cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+60+mph*0.4,y); cx.stroke(); } }
 
   // Police behind (left), pulls closer with heat
-  if (heat>0.05){ drawCar(W*0.42 - (0.35-heat*0.28)*W, H*0.75, 1.0, '#0d1b3d', '#dfe9ff', true, t); }
+  if (heat>0.05){ drawSprite(IMG.police, W*0.42 - (0.35-heat*0.28)*W, H*0.78+14, 300, true, t); }
 
-  // Player exotic
+  // Player vehicle
   const shake = spike ? Math.sin(t/30)*3 : 0;
-  drawCar(W*0.55, H*0.75+shake, 1.25, '#c8102e', '#1a1a1a', false, t);
+  drawSprite(IMG[vehicle], W*0.55, H*0.78+14+shake, vehicle==='car'?340:230, false, t);
   // Exhaust flame at high focus
   if (mph>180){ cx.fillStyle=`rgba(80,160,255,${0.5+Math.sin(t/40)*0.3})`;
-    cx.beginPath(); cx.moveTo(W*0.55-88,H*0.75+8); cx.lineTo(W*0.55-120-Math.random()*25,H*0.75+11); cx.lineTo(W*0.55-88,H*0.75+16); cx.closePath(); cx.fill(); }
+    cx.beginPath(); cx.moveTo(W*0.55-165,H*0.78-18); cx.lineTo(W*0.55-210-Math.random()*30,H*0.78-14); cx.lineTo(W*0.55-165,H*0.78-8); cx.closePath(); cx.fill(); }
 
   // Red/blue wash when heat is high
   if (heat>0.4){ const flash=Math.sin(t/90)>0;

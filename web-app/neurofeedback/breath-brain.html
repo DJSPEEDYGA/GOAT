@@ -43,6 +43,7 @@ engine.on(s=>{calm=s.calm; spike=s.spike;});
 const CYCLE=[['BREATHE IN',4],['HOLD',2],['BREATHE OUT',6]];
 let cycleT=0, coherence=0;
 const phaseEl=document.getElementById('phase'), cohEl=document.getElementById('coh'), msg=document.getElementById('msg');
+const nebula=new Image(); nebula.src='assets/bg-nebula.jpg?v=2';
 
 function phaseAt(t){
   let acc=0;
@@ -74,11 +75,18 @@ function update(dt){
 const stars=[]; for(let i=0;i<80;i++) stars.push({x:Math.random(),y:Math.random(),tw:Math.random()*6});
 function draw(t){
   const W=cv.width,H=cv.height;
-  const g=cx.createRadialGradient(W/2,H/2,50,W/2,H/2,Math.max(W,H)*0.7);
   const coh=coherence/100;
-  g.addColorStop(0,`rgb(${25+coh*30},${25+coh*20},${60+coh*80})`);
-  g.addColorStop(1,'#05060f');
-  cx.fillStyle=g; cx.fillRect(0,0,W,H);
+  if (nebula.complete && nebula.naturalWidth){
+    const bw=nebula.naturalWidth, bh=nebula.naturalHeight;
+    const sc=Math.max(W/bw,H/bh);
+    cx.drawImage(nebula,(W-bw*sc)/2,(H-bh*sc)/2,bw*sc,bh*sc);
+    cx.fillStyle=`rgba(4,6,20,${0.35-0.18*coh})`; cx.fillRect(0,0,W,H);
+  } else {
+    const g=cx.createRadialGradient(W/2,H/2,50,W/2,H/2,Math.max(W,H)*0.7);
+    g.addColorStop(0,`rgb(${25+coh*30},${25+coh*20},${60+coh*80})`);
+    g.addColorStop(1,'#05060f');
+    cx.fillStyle=g; cx.fillRect(0,0,W,H);
+  }
 
   // Stars twinkle more with coherence
   stars.forEach(s=>{ cx.fillStyle=`rgba(255,255,255,${0.3+0.5*Math.abs(Math.sin(t/1000+s.tw))*(0.4+coh)})`;

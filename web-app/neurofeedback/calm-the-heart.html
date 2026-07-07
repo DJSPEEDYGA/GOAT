@@ -43,6 +43,10 @@ let won = false, wonAt = 0;
 const bpmEl = document.getElementById('bpm');
 const storyEl = document.getElementById('story');
 
+const IMG={};
+[['bg','assets/bg-city-sunset.jpg?v=2'],['man','assets/man.png?v=2'],['woman','assets/woman.png?v=2']]
+  .forEach(([k,src])=>{const im=new Image(); im.src=src; IMG[k]=im;});
+
 function update(dt){
   // calm>60 lowers BPM; low calm or spikes raise it
   const target = 120 - calm * 0.62;             // calm 100 -> 58bpm
@@ -68,36 +72,40 @@ function update(dt){
 let beatPhase = 0;
 function draw(t, dt){
   const W=cv.width, H=cv.height;
-  // Evening park scene: sky warms with calm
   const warmth = calm/100;
-  const g = cx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0, `rgb(${20+warmth*60},${8+warmth*20},${40+warmth*30})`);
-  g.addColorStop(1, `rgb(${60+warmth*120},${25+warmth*55},${70+warmth*40})`);
-  cx.fillStyle = g; cx.fillRect(0,0,W,H);
+  // Golden-hour city skyline backdrop
+  if (IMG.bg.complete && IMG.bg.naturalWidth){
+    const bw=IMG.bg.naturalWidth, bh=IMG.bg.naturalHeight;
+    const sc=Math.max(W/bw, H*0.8/bh);
+    cx.drawImage(IMG.bg, (W-bw*sc)/2, H*0.8-bh*sc, bw*sc, bh*sc);
+    // Cool anxious tint fades away as calm rises
+    cx.fillStyle=`rgba(20,8,50,${0.45*(1-warmth)})`; cx.fillRect(0,0,W,H);
+  } else {
+    const g = cx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0, `rgb(${20+warmth*60},${8+warmth*20},${40+warmth*30})`);
+    g.addColorStop(1, `rgb(${60+warmth*120},${25+warmth*55},${70+warmth*40})`);
+    cx.fillStyle = g; cx.fillRect(0,0,W,H);
+  }
 
-  // Moon
-  cx.fillStyle = `rgba(255,244,214,${0.6+warmth*0.4})`;
-  cx.beginPath(); cx.arc(W*0.82, H*0.18, 40, 0, 7); cx.fill();
+  // Boardwalk ground
+  cx.fillStyle = '#140a1e'; cx.fillRect(0, H*0.78, W, H*0.22);
 
-  // Ground
-  cx.fillStyle = '#140a1e'; cx.fillRect(0, H*0.75, W, H*0.25);
+  // Warm glow scales with calm
+  cx.fillStyle = `rgba(255,200,120,${0.06+warmth*0.16})`;
+  cx.beginPath(); cx.arc(W/2, H*0.5, 220+warmth*90, 0, 7); cx.fill();
 
-  // Lamp post glow scales with calm
-  cx.fillStyle = `rgba(255,200,120,${0.10+warmth*0.25})`;
-  cx.beginPath(); cx.arc(W/2, H*0.45, 190+warmth*80, 0, 7); cx.fill();
-
-  const groundY = H*0.78;
+  const groundY = H*0.85;
   // Her (right)
   const herX = W*0.62;
-  drawFigure(herX, groundY, '#ff9ecb', true);
+  drawPerson(IMG.woman, herX, groundY, '#ff9ecb', true);
   // Him (left, walks toward her with approach)
-  const himX = W*0.18 + (herX - 90 - W*0.18) * approach;
-  drawFigure(himX, groundY, '#7ec8ff', false);
+  const himX = W*0.18 + (herX - 150 - W*0.18) * approach;
+  drawPerson(IMG.man, himX, groundY, '#7ec8ff', false);
 
   // Her heart above her head, beats at her BPM
   beatPhase += dt * (bpm/60) * Math.PI * 2;
   const beat = 1 + Math.sin(beatPhase) * 0.12 * (bpm/70);
-  drawHeart(herX, groundY-150, 16*beat, bpm>100 ? '#ff4757' : bpm>78 ? '#ff7eb6' : '#ff9ecb');
+  drawHeart(herX, groundY-360, 16*beat, bpm>100 ? '#ff4757' : bpm>78 ? '#ff7eb6' : '#ff9ecb');
 
   if (won){
     const k = Math.min(1,(performance.now()-wonAt)/1500);
@@ -107,7 +115,12 @@ function draw(t, dt){
   }
 }
 
-function drawFigure(x, y, color, dress){
+function drawPerson(img, x, y, color, dress){
+  if (img.complete && img.naturalWidth){
+    const h=340, w=h*img.naturalWidth/img.naturalHeight;
+    cx.drawImage(img, x-w/2, y-h, w, h);
+    return;
+  }
   cx.strokeStyle = color; cx.fillStyle = color; cx.lineWidth = 5; cx.lineCap='round';
   cx.beginPath(); cx.arc(x, y-115, 16, 0, 7); cx.fill();          // head
   cx.beginPath(); cx.moveTo(x, y-98); cx.lineTo(x, y-45); cx.stroke(); // body
