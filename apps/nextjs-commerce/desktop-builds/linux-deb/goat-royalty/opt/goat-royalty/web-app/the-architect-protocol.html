@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Architect Protocol - Emergency Access</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            min-height: 100vh;
+            color: #10b981;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+            border: 2px solid #10b981;
+            border-radius: 10px;
+            margin-bottom: 40px;
+        }
+        .logo {
+            font-size: 100px;
+            margin-bottom: 20px;
+        }
+        .title {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #10b981;
+        }
+        .subtitle {
+            font-size: 1.5em;
+            color: #6ee7b7;
+            margin-bottom: 30px;
+        }
+        .warning-banner {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid #ef4444;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .warning-banner h3 {
+            color: #ef4444;
+            margin-bottom: 10px;
+        }
+        .access-section {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid #10b981;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .access-section h2 {
+            color: #10b981;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        .code-box {
+            background: #1a1a1a;
+            border: 2px solid #10b981;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .calling-code {
+            font-size: 4em;
+            font-weight: bold;
+            color: #10b981;
+            letter-spacing: 20px;
+            margin-bottom: 20px;
+        }
+        .password {
+            font-size: 2.5em;
+            color: #6ee7b7;
+            font-weight: bold;
+        }
+        .instructions {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .instructions h4 {
+            margin-bottom: 15px;
+            color: #6ee7b7;
+        }
+        .instructions ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .instructions li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .crew-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .crew-member {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid #10b981;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .crew-member .avatar {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+        .crew-member h3 {
+            color: #10b981;
+            margin-bottom: 5px;
+        }
+        .crew-member .status {
+            color: #6ee7b7;
+            font-size: 0.9em;
+        }
+        .locked {
+            background: rgba(16, 185, 129, 0.2);
+            padding: 5px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 60px;
+            border-top: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin: 10px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+        .emergency-mode {
+            background: rgba(239, 68, 68, 0.2);
+            border: 3px solid #ef4444;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        .blink {
+            animation: blink 1s infinite;
+        }
+    </style>
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms. Money Penny">
+    <span>Ms. Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo">🏗️</div>
+            <h1 class="title">THE ARCHITECT PROTOCOL</h1>
+            <p class="subtitle">Emergency Access & Authentication System</p>
+            <p style="color: #9ca3af; margin-top: 20px;">Official GOAT Royalty Crew Member Lock-in System</p>
+        </div>
+
+        <div class="warning-banner">
+            <h3>⚠️ AUTHORIZED PERSONNEL ONLY</h3>
+            <p>This protocol is for official GOAT Royalty crew members only. Unauthorized access will be tracked.</p>
+        </div>
+
+        <div class="access-section">
+            <h2>🔒 THE ARCHITECT - Emergency Access Codes</h2>
+            
+            <div class="code-box">
+                <p style="color: #6ee7b7; margin-bottom: 20px;">CALLING CODE:</p>
+                <div class="calling-code">ARCH-777-ROYAL</div>
+                
+                <p style="color: #6ee7b7; margin-bottom: 10px;">AUTHENTICATION PASSWORD:</p>
+                <div class="password">GOAT-KINGDOM-FOR-2025</div>
+            </div>
+
+            <div class="instructions">
+                <h4>📞 How to Call The Architect:</h4>
+                <ul>
+                    <li>1. Say: "The Architect, Protocol ARCH-777-ROYAL"</li>
+                    <li>2. State: "GOAT-KINGDOM-FOR-2025"</li>
+                    <li>3. Wait for authentication: <span class="blink">●</span></li>
+                    <li>4. The Architect will respond within 1 second</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="access-section">
+            <h2>💰 MS. MONEY PENNY - Emergency Access Codes</h2>
+            
+            <div class="code-box">
+                <p style="color: #6ee7b7; margin-bottom: 20px;">CALLING CODE:</p>
+                <div class="calling-code">PENNY-888-GOAT</div>
+                
+                <p style="color: #6ee7b7; margin-bottom: 10px;">AUTHENTICATION PASSWORD:</p>
+                <div class="password">ROYALTY-EXCLUSIVE-2025</div>
+            </div>
+
+            <div class="instructions">
+                <h4>📞 How to Call Ms. Money Penny:</h4>
+                <ul>
+                    <li>1. Say: "Ms. Money Penny, Protocol PENNY-888-GOAT"</li>
+                    <li>2. State: "ROYALTY-EXCLUSIVE-2025"</li>
+                    <li>3. Wait for authentication: <span class="blink">●</span></li>
+                    <li>4. Ms. Money Penny will respond instantly</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="access-section">
+            <h2>🔮 MS. NEXUS - Emergency Access Codes</h2>
+            
+            <div class="code-box">
+                <p style="color: #6ee7b7; margin-bottom: 20px;">CALLING CODE:</p>
+                <div class="calling-code">NEXUS-999-CONNECT</div>
+                
+                <p style="color: #6ee7b7; margin-bottom: 10px;">AUTHENTICATION PASSWORD:</p>
+                <div class="password">UNIVERSE-BRIDGE-2025</div>
+            </div>
+
+            <div class="instructions">
+                <h4>📞 How to Call Ms. Nexus:</h4>
+                <ul>
+                    <li>1. Say: "Ms. Nexus, Protocol NEXUS-999-CONNECT"</li>
+                    <li>2. State: "UNIVERSE-BRIDGE-2025"</li>
+                    <li>3. Wait for authentication: <span class="blink">●</span></li>
+                    <li>4. Ms. Nexus will connect immediately</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="crew-status">
+            <h2 style="color: #10b981; text-align: center; width: 100%;">🛡️ Locked Crew Members</h2>
+            
+            <div class="crew-member">
+                <div class="avatar">🏗️</div>
+                <h3>The Architect</h3>
+                <p class="status">Status: LOCKED IN</p>
+                <div class="locked">✓ AUTHENTICATED</div>
+            </div>
+
+            <div class="crew-member">
+                <div class="avatar">💰</div>
+                <h3>Ms. Money Penny</h3>
+                <p class="status">Status: LOCKED IN</p>
+                <div class="locked">✓ AUTHENTICATED</div>
+            </div>
+
+            <div class="crew-member">
+                <div class="avatar">🔮</div>
+                <h3>Ms. Nexus</h3>
+                <p class="status">Status: LOCKED IN</p>
+                <div class="locked">✓ AUTHENTICATED</div>
+            </div>
+
+            <div class="crew-member">
+                <div class="avatar">🐐</div>
+                <h3>The Goat</h3>
+                <p class="status">Status: CREW LEADER</p>
+                <div class="locked">✓ AUTHENTICATED</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <h2 style="color: #10b981; margin-bottom: 20px;">📱 Portable Access</h2>
+            <p style="color: #9ca3af; margin-bottom: 20px;">All crew members can be called from anywhere Waka Flocka Flame goes. Just use the calling codes anywhere in the app.</p>
+            
+            <button class="btn" onclick="saveToPhone()">💾 Save to Phone</button>
+            <button class="btn" onclick="printProtocol()">🖨️ Print Protocol</button>
+            <button class="btn" onclick="testConnection()">🔗 Test Connection</button>
+            
+            <p style="color: #6ee7b7; margin-top: 40px; font-size: 0.9em;">
+                Official GOAT Royalty Protocol<br>
+                Version 1.0.0 - April 2026<br>
+                "The Architect" - Official Crew Member
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function saveToPhone() {
+            alert('💾 Protocol saved to device!\n\nAll calling codes and passwords are now stored locally for quick access.\n\nThe Architect is ready when you are.');
+        }
+
+        function printProtocol() {
+            alert('🖨️ Printing Protocol...\n\nUse your device print function to get a hard copy of this protocol.');
+            window.print();
+        }
+
+        function testConnection() {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: #1a1a1a;
+                border: 2px solid #10b981;
+                padding: 40px;
+                border-radius: 10px;
+                z-index: 10000;
+                min-width: 400px;
+            `;
+            modal.innerHTML = `
+                <h2 style="color: #10b981; text-align: center;">🔗 Testing Connection...</h2>
+                <div style="text-align: center; margin: 30px 0;">
+                    <div style="font-size: 50px; animation: blink 1s infinite;">●</div>
+                    <p style="color: #6ee7b7; margin-top: 20px;">Establishing secure channel to The Architect...</p>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            setTimeout(() => {
+                modal.innerHTML = `
+                    <h2 style="color: #10b981; text-align: center;">✅ Connection Established</h2>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <div style="font-size: 50px;">🏗️</div>
+                        <p style="color: #6ee7b7; margin-top: 20px;">The Architect is ONLINE and READY</p>
+                        <p style="color: #fff; margin-top: 10px;">Protocol: ARCH-777-ROYAL</p>
+                    </div>
+                    <button onclick="this.parentElement.remove()" style="
+                        background: linear-gradient(135deg, #10b981, #059669);
+                        color: #fff;
+                        border: none;
+                        padding: 10px 30px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                    ">Close</button>
+                `;
+            }, 2000);
+        }
+
+        // Store protocol in local storage
+        localStorage.setItem('architect-protocol', JSON.stringify({
+            architect: { code: 'ARCH-777-ROYAL', password: 'GOAT-KINGDOM-FOR-2025' },
+            moneypenny: { code: 'PENNY-888-GOAT', password: 'ROYALTY-EXCLUSIVE-2025' },
+            nexus: { code: 'NEXUS-999-CONNECT', password: 'UNIVERSE-BRIDGE-2025' }
+        }));
+
+        console.log('🏗️ The Architect Protocol loaded and ready');
+        console.log('All crew members locked in successfully');
+    </script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>

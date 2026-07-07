@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚀 GOAT Release — Distribute Music & Video Worldwide</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<link rel="icon" type="image/png" href="img/goat-hero-icon.png">
+<style>
+  .rel-wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
+  .type-switcher {
+    display: flex; gap: 10px; margin-bottom: 20px;
+    background: rgba(20,20,20,0.9);
+    padding: 10px;
+    border-radius: 12px;
+  }
+  .type-btn {
+    flex: 1;
+    padding: 16px;
+    border-radius: 10px;
+    background: var(--goat-gray);
+    color: var(--goat-cream);
+    border: 2px solid transparent;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 15px;
+    text-align: center;
+  }
+  .type-btn.active {
+    background: var(--gradient-power);
+    color: white;
+    border-color: var(--goat-red-bright);
+    box-shadow: var(--shadow-glow-red);
+  }
+  .type-btn:hover:not(.active) { background: rgba(193,18,31,0.2); }
+  .form-section {
+    background: rgba(20,20,20,0.9);
+    border: 1px solid rgba(193,18,31,0.3);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .form-section h2 {
+    margin: 0 0 16px;
+    color: var(--goat-gold);
+    font-size: 18px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(193,18,31,0.2);
+    padding-bottom: 10px;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .form-field label {
+    font-size: 11px;
+    color: var(--goat-gold);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+  }
+  .form-field input, .form-field select, .form-field textarea {
+    padding: 12px 14px;
+    background: var(--goat-black);
+    color: var(--goat-cream);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+    outline: none;
+    border-color: var(--goat-red-bright);
+    box-shadow: 0 0 0 2px rgba(255,45,61,0.2);
+  }
+  .form-field textarea { min-height: 80px; resize: vertical; }
+  .file-upload {
+    border: 2px dashed rgba(193,18,31,0.5);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(15,15,15,0.5);
+  }
+  .file-upload:hover, .file-upload.over {
+    border-color: var(--goat-red-bright);
+    background: rgba(193,18,31,0.1);
+  }
+  .dsp-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    background: var(--goat-black);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+  }
+  .dsp-chk {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--goat-gray);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+  .dsp-chk:hover { background: rgba(193,18,31,0.2); }
+  .dsp-chk input { accent-color: var(--goat-red-bright); }
+  .dsp-chk.selected { background: rgba(193,18,31,0.3); border-left: 3px solid var(--goat-red-bright); }
+  .select-tools {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .rights-block {
+    background: linear-gradient(135deg, rgba(240,192,112,0.1), rgba(193,18,31,0.1));
+    border: 2px solid var(--goat-gold);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .rights-block h3 {
+    margin: 0 0 12px;
+    color: var(--goat-gold);
+  }
+  .chk-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .chk-row:last-child { border-bottom: none; }
+  .chk-row input[type=checkbox] { accent-color: var(--goat-red-bright); width:18px; height:18px; }
+  .chk-row label { color: var(--goat-cream); font-size: 14px; cursor: pointer; flex: 1; }
+  .big-submit {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    background: var(--gradient-power);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(193,18,31,0.4);
+    transition: all 0.2s;
+  }
+  .big-submit:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(193,18,31,0.6); }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-icon">
+
+<nav class="goat-nav">
+  <a href="index.html" class="goat-nav-brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT">
+    <span>RELEASE</span>
+  </a>
+  <div class="goat-nav-links">
+    <a href="powerhouse.html">🐐 Hub</a>
+    <a href="distribution.html">🌍 Distribution</a>
+    <a href="sync-catalog.html">🎬 Sync</a>
+    <a href="release.html" class="active">🚀 Release</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="studio.html">🎛️ Studio</a>
+    <a href="plugins.html">🔌 Plugins</a>
+  </div>
+</nav>
+
+<div class="rel-wrap">
+  <section class="goat-hero" style="padding: 30px 0;">
+    <h1 style="font-size: 44px; margin: 0 0 8px;">🚀 RELEASE YOUR MUSIC</h1>
+    <p class="subtitle">Distribute to 282 platforms worldwide · Full master ownership · No labels · No middlemen</p>
+  </section>
+
+  <!-- TYPE SWITCHER -->
+  <div class="type-switcher">
+    <button class="type-btn active" data-type="music">🎵 MUSIC RELEASE</button>
+    <button class="type-btn" data-type="video">🎬 MUSIC VIDEO</button>
+    <button class="type-btn" data-type="film">🎥 FILM / TV</button>
+    <button class="type-btn" data-type="podcast">🎙️ PODCAST</button>
+  </div>
+
+  <!-- RELEASE DETAILS -->
+  <div class="form-section">
+    <h2>📀 Release Details</h2>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Track / Album Title *</label>
+        <input type="text" id="fTitle" placeholder="e.g. Flocka Mode" required>
+      </div>
+      <div class="form-field">
+        <label>Primary Artist *</label>
+        <input type="text" id="fArtist" value="Waka Flocka Flame" required>
+      </div>
+      <div class="form-field">
+        <label>Featured Artists</label>
+        <input type="text" id="fFeat" placeholder="e.g. DJ Speedy, Gucci Mane">
+      </div>
+      <div class="form-field">
+        <label>Label / Imprint</label>
+        <input type="text" id="fLabel" value="BrickSquad / Speedy Productions, Inc.">
+      </div>
+      <div class="form-field">
+        <label>Release Type</label>
+        <select id="fType">
+          <option>Single</option>
+          <option>EP</option>
+          <option>Album</option>
+          <option>Mixtape</option>
+          <option>Compilation</option>
+          <option>Remix</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Genre *</label>
+        <select id="fGenre">
+          <option>Hip-Hop / Rap</option>
+          <option>Trap</option>
+          <option>R&B / Soul</option>
+          <option>Pop</option>
+          <option>Electronic / EDM</option>
+          <option>Reggae / Dancehall</option>
+          <option>Rock</option>
+          <option>Country</option>
+          <option>Jazz</option>
+          <option>Classical</option>
+          <option>Latin</option>
+          <option>World</option>
+          <option>Gospel / Christian</option>
+          <option>Soundtrack</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Release Date *</label>
+        <input type="date" id="fDate">
+      </div>
+      <div class="form-field">
+        <label>Original Release Date (if re-release)</label>
+        <input type="date" id="fOrigDate">
+      </div>
+      <div class="form-field">
+        <label>UPC / EAN (auto if blank)</label>
+        <input type="text" id="fUPC" placeholder="Auto-assigned">
+      </div>
+      <div class="form-field">
+        <label>ISRC (auto if blank)</label>
+        <input type="text" id="fISRC" placeholder="Auto-assigned">
+      </div>
+      <div class="form-field">
+        <label>Language</label>
+        <select id="fLang">
+          <option>English</option>
+          <option>Spanish</option>
+          <option>French</option>
+          <option>Portuguese</option>
+          <option>Japanese</option>
+          <option>Korean</option>
+          <option>Chinese (Simplified)</option>
+          <option>Arabic</option>
+          <option>Instrumental</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Explicit Content</label>
+        <select id="fExplicit">
+          <option>Explicit</option>
+          <option>Clean</option>
+          <option>Not Explicit</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUDIO UPLOAD -->
+  <div class="form-section">
+    <h2>🎵 Audio Files</h2>
+    <div class="file-upload" id="audioDrop">
+      <div style="font-size:48px; margin-bottom:10px;">🎧</div>
+      <h3 style="margin:0 0 6px; color: var(--goat-cream);">Drop master audio files</h3>
+      <p class="muted" style="margin:0;">WAV, FLAC, or AIFF — 16/24-bit, 44.1/48kHz or higher</p>
+      <input type="file" id="audioInput" accept="audio/*" multiple style="display:none;">
+      <p class="text-gold mt-2" id="audioLabel"></p>
+    </div>
+    <div class="form-grid mt-2">
+      <div class="form-field">
+        <label>Songwriter(s) *</label>
+        <input type="text" id="fWriter" value="Harvey L. Miller Jr. (DJ Speedy)">
+      </div>
+      <div class="form-field">
+        <label>Producer(s) *</label>
+        <input type="text" id="fProducer" value="DJ Speedy / Speedy Productions, Inc.">
+      </div>
+      <div class="form-field">
+        <label>Publisher</label>
+        <input type="text" id="fPublisher" value="FastAssMan Publishing Inc (ASCAP)">
+      </div>
+      <div class="form-field">
+        <label>Publishing Rights %</label>
+        <input type="number" id="fPubPct" value="100" min="0" max="100" step="0.01">
+      </div>
+    </div>
+  </div>
+
+  <!-- ARTWORK -->
+  <div class="form-section">
+    <h2>🎨 Cover Art</h2>
+    <div class="file-upload" id="artDrop">
+      <div style="font-size:48px; margin-bottom:10px;">🖼️</div>
+      <h3 style="margin:0 0 6px;">Drop cover artwork</h3>
+      <p class="muted" style="margin:0;">JPG or PNG — minimum 3000x3000px, RGB, under 10MB</p>
+      <input type="file" id="artInput" accept="image/*" style="display:none;">
+      <p class="text-gold mt-2" id="artLabel"></p>
+    </div>
+  </div>
+
+  <!-- VIDEO SECTION (hidden for music-only) -->
+  <div class="form-section" id="videoSection" style="display:none;">
+    <h2>🎬 Video Files</h2>
+    <div class="file-upload" id="videoDrop">
+      <div style="font-size:48px; margin-bottom:10px;">🎥</div>
+      <h3 style="margin:0 0 6px;">Drop video master</h3>
+      <p class="muted" style="margin:0;">MP4 or MOV — 1080p minimum, 4K preferred, H.264/H.265</p>
+      <input type="file" id="videoInput" accept="video/*" style="display:none;">
+      <p class="text-gold mt-2" id="videoLabel"></p>
+    </div>
+    <div class="form-grid mt-2">
+      <div class="form-field">
+        <label>Director</label>
+        <input type="text" id="fDirector">
+      </div>
+      <div class="form-field">
+        <label>Duration</label>
+        <input type="text" id="fDuration" placeholder="HH:MM:SS">
+      </div>
+      <div class="form-field">
+        <label>Synopsis / Description</label>
+        <textarea id="fSynopsis"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- OWNERSHIP / RIGHTS -->
+  <div class="form-section">
+    <h2>👑 Master Ownership & Rights</h2>
+    <div class="rights-block">
+      <h3>Rights Declaration</h3>
+      <div class="chk-row">
+        <input type="checkbox" id="chk1" checked>
+        <label for="chk1">I (DJ Speedy / Harvey L. Miller Jr.) confirm <strong>100% master ownership</strong> of this work. No third-party label agreements apply.</label>
+      </div>
+      <div class="chk-row">
+        <input type="checkbox" id="chk2" checked>
+        <label for="chk2">I have obtained all necessary clearances for featured artists (including Waka Flocka Flame) and any samples used.</label>
+      </div>
+      <div class="chk-row">
+        <input type="checkbox" id="chk3" checked>
+        <label for="chk3">I am authorized to distribute this work worldwide across all digital service providers and retain 100% of master royalties.</label>
+      </div>
+      <div class="chk-row">
+        <input type="checkbox" id="chk4" checked>
+        <label for="chk4">Publishing rights are handled via FastAssMan Publishing Inc (ASCAP) and administered separately.</label>
+      </div>
+      <div class="chk-row">
+        <input type="checkbox" id="chk5" checked>
+        <label for="chk5">Sync licensing rights are retained exclusively by DJ Speedy / Speedy Productions, Inc.</label>
+      </div>
+      <div class="chk-row">
+        <input type="checkbox" id="chk6" checked>
+        <label for="chk6">This release is <strong>cleared for all media</strong>: streaming, download, sync, film, TV, commercial, gaming, and NFT/Web3.</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- DSP SELECTION -->
+  <div class="form-section">
+    <h2>🌍 Distribute To (Select Platforms)</h2>
+    <p class="muted" style="margin: 0 0 12px;">Choose the DSPs to distribute to. Default: all major + regional leaders worldwide.</p>
+    <div class="select-tools">
+      <button class="goat-btn ghost" style="padding:8px 14px; font-size:12px;" onclick="selectMajors()">🏆 Select Top 20</button>
+      <button class="goat-btn ghost" style="padding:8px 14px; font-size:12px;" onclick="selectAll()">🌍 Select All 282</button>
+      <button class="goat-btn ghost" style="padding:8px 14px; font-size:12px;" onclick="selectWorldwide()">🔵 Worldwide Only</button>
+      <button class="goat-btn ghost" style="padding:8px 14px; font-size:12px;" onclick="selectNone()">❌ Clear All</button>
+      <span class="muted" style="align-self:center; font-size:13px;">Selected: <strong id="selCount" class="text-gold">0</strong></span>
+    </div>
+    <div class="dsp-selector" id="dspSelector"></div>
+  </div>
+
+  <!-- PRICING & MONETIZATION -->
+  <div class="form-section">
+    <h2>💰 Pricing & Monetization</h2>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Wholesale Price Tier</label>
+        <select id="fPrice">
+          <option>Front-Line ($0.99/track, $9.99/album)</option>
+          <option>Premium ($1.29/track, $11.99/album)</option>
+          <option>Mid-Line ($0.69/track, $6.99/album)</option>
+          <option>Back-Catalog ($0.49/track, $4.99/album)</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>YouTube Content ID</label>
+        <select id="fYTCID">
+          <option>Monetize (keep all ad revenue)</option>
+          <option>Track only</option>
+          <option>Block unauthorized uploads</option>
+          <option>Opt out</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>TikTok / Reels Clips</label>
+        <select id="fTikTok">
+          <option>Allow (recommended)</option>
+          <option>Monetize only</option>
+          <option>Block</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Meta / Facebook Music Library</label>
+        <select id="fMeta">
+          <option>Include + Monetize</option>
+          <option>Include (no monetization)</option>
+          <option>Exclude</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="form-section">
+    <button class="big-submit" onclick="submitRelease()">🚀 SUBMIT RELEASE</button>
+    <p class="muted mt-2" style="text-align:center; font-size:12px;">
+      By clicking submit, you authorize GOAT Royalty App to distribute this work through your selected DSPs.
+      Estimated go-live: <strong class="text-gold">2-5 business days</strong> from submission.
+    </p>
+  </div>
+</div>
+
+<footer class="goat-footer">
+  <p>🚀 <strong>GOAT RELEASE</strong> — Owned by DJ Speedy · Distributed Worldwide · Retained 100% Masters</p>
+</footer>
+
+<script>
+// ==================== TYPE SWITCHER ====================
+document.querySelectorAll('.type-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.type-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    const videoSec = document.getElementById('videoSection');
+    videoSec.style.display = ['video','film','podcast'].includes(b.dataset.type) ? 'block' : 'none';
+  });
+});
+
+// ==================== FILE UPLOADS ====================
+function setupUpload(dropId, inputId, labelId) {
+  const drop = document.getElementById(dropId);
+  const input = document.getElementById(inputId);
+  const label = document.getElementById(labelId);
+  drop.addEventListener('click', () => input.click());
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('over');
+    handle(e.dataTransfer.files);
+  });
+  input.addEventListener('change', e => handle(e.target.files));
+  function handle(files) {
+    const names = Array.from(files).map(f => f.name + ' (' + (f.size/1024/1024).toFixed(1) + ' MB)');
+    label.textContent = '✓ ' + names.join(' · ');
+  }
+}
+setupUpload('audioDrop', 'audioInput', 'audioLabel');
+setupUpload('artDrop', 'artInput', 'artLabel');
+setupUpload('videoDrop', 'videoInput', 'videoLabel');
+
+// ==================== DSP SELECTOR ====================
+let ALL_DSPS = [];
+const TOP_20 = ['Apple Music','Spotify','Amazon Music','YouTube Music','Tidal','Deezer','Pandora','iHeartRadio','SoundCloud','Bandcamp','Anghami','NetEase Cloud Music','QQ Music','JioSaavn','Gaana','Melon','LINE Music','AWA','Qobuz','Napster'];
+
+async function loadDSPs() {
+  try {
+    const r = await fetch('data/distribution-network.json');
+    const data = await r.json();
+    ALL_DSPS = data.dsps.filter(d => !d.discontinued && (d.stream || d.download));
+    renderDSPSelector();
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function renderDSPSelector() {
+  const container = document.getElementById('dspSelector');
+  container.innerHTML = ALL_DSPS.map(d => {
+    const isTop = TOP_20.includes(d.name);
+    return `
+      <label class="dsp-chk ${isTop ? 'selected' : ''}" data-name="${d.name}">
+        <input type="checkbox" ${isTop ? 'checked' : ''} onchange="updateSelCount()">
+        <span>${isTop ? '⭐ ' : ''}${d.name}</span>
+      </label>
+    `;
+  }).join('');
+  updateSelCount();
+}
+
+function updateSelCount() {
+  const count = document.querySelectorAll('#dspSelector input[type=checkbox]:checked').length;
+  document.getElementById('selCount').textContent = count;
+  // Update selected class
+  document.querySelectorAll('.dsp-chk').forEach(el => {
+    const chk = el.querySelector('input');
+    el.classList.toggle('selected', chk.checked);
+  });
+}
+
+function selectMajors() {
+  document.querySelectorAll('.dsp-chk').forEach(el => {
+    const name = el.dataset.name;
+    const chk = el.querySelector('input');
+    chk.checked = TOP_20.includes(name);
+  });
+  updateSelCount();
+}
+function selectAll() {
+  document.querySelectorAll('.dsp-chk input').forEach(c => c.checked = true);
+  updateSelCount();
+}
+function selectWorldwide() {
+  document.querySelectorAll('.dsp-chk').forEach(el => {
+    const name = el.dataset.name;
+    const dsp = ALL_DSPS.find(d => d.name === name);
+    el.querySelector('input').checked = dsp && dsp.market === 'Worldwide';
+  });
+  updateSelCount();
+}
+function selectNone() {
+  document.querySelectorAll('.dsp-chk input').forEach(c => c.checked = false);
+  updateSelCount();
+}
+
+// ==================== SUBMIT ====================
+function submitRelease() {
+  const title = document.getElementById('fTitle').value;
+  const artist = document.getElementById('fArtist').value;
+  if (!title || !artist) { alert('⚠️ Please fill in Title and Artist'); return; }
+
+  const selected = [];
+  document.querySelectorAll('#dspSelector input[type=checkbox]:checked').forEach(c => {
+    selected.push(c.closest('.dsp-chk').dataset.name);
+  });
+
+  if (selected.length === 0) { alert('⚠️ Please select at least one DSP'); return; }
+
+  const release = {
+    id: 'REL-' + Date.now(),
+    title,
+    artist,
+    featured: document.getElementById('fFeat').value,
+    label: document.getElementById('fLabel').value,
+    type: document.getElementById('fType').value,
+    genre: document.getElementById('fGenre').value,
+    releaseDate: document.getElementById('fDate').value,
+    writer: document.getElementById('fWriter').value,
+    producer: document.getElementById('fProducer').value,
+    publisher: document.getElementById('fPublisher').value,
+    dsps: selected,
+    submittedAt: new Date().toISOString(),
+    status: 'Pending Review'
+  };
+
+  // Save to localStorage for tracking
+  const releases = JSON.parse(localStorage.getItem('goatReleases') || '[]');
+  releases.push(release);
+  localStorage.setItem('goatReleases', JSON.stringify(releases));
+
+  alert(
+    `🚀 RELEASE SUBMITTED!\n\n` +
+    `ID: ${release.id}\n` +
+    `Title: ${title} — ${artist}\n` +
+    `Distributing to: ${selected.length} DSPs\n\n` +
+    `✅ 100% master ownership retained\n` +
+    `⏱️ Estimated go-live: 2-5 business days\n\n` +
+    `You'll receive a confirmation email at [email protected]`
+  );
+
+  // Send email (mailto fallback)
+  const subject = encodeURIComponent('New Release Submission: ' + title);
+  const body = encodeURIComponent(
+    `Release Submission\n\n` +
+    JSON.stringify(release, null, 2) +
+    `\n\nPlease process and distribute. Owner: DJ Speedy / Harvey L. Miller Jr.`
+  );
+  window.location.href = `mailto:[email protected]?subject=${subject}&body=${body}`;
+}
+
+// Init
+loadDSPs();
+// Set default release date to today + 14 days
+const today = new Date();
+today.setDate(today.getDate() + 14);
+document.getElementById('fDate').value = today.toISOString().split('T')[0];
+</script>
+</body>
+</html>

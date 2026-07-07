@@ -1,0 +1,122 @@
+name: Build Super GOAT Royalty Desktop App
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        working-directory: super-ninja-app
+        run: npm install
+      - name: Build Windows
+        working-directory: super-ninja-app
+        run: npm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            super-ninja-app/dist/*.exe
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        working-directory: super-ninja-app
+        run: npm install
+      - name: Build macOS
+        working-directory: super-ninja-app
+        run: npm run build:mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: |
+            super-ninja-app/dist/*.zip
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        working-directory: super-ninja-app
+        run: npm install
+      - name: Build Linux
+        working-directory: super-ninja-app
+        run: npm run build:linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: |
+            super-ninja-app/dist/*.AppImage
+            super-ninja-app/dist/*.deb
+
+  create-release:
+    needs: [build-windows, build-mac, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      - name: List artifacts
+        run: find . -type f -name "*.exe" -o -name "*.zip" -o -name "*.AppImage" -o -name "*.deb" | head -20
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Super GOAT Royalty ${{ github.ref_name }}
+          body: |
+            ## 🐐⚡ Super GOAT Royalty Desktop App ${{ github.ref_name }}
+            
+            The ultimate fusion of GOAT Royalty + SuperNinja AI — one unified command center for music production, royalty management, and AI-powered tools.
+            
+            ### 📥 Downloads
+            - **Windows**: Super-GOAT-Royalty-Setup.exe (Installer) or Portable.exe
+            - **macOS**: Super-GOAT-Royalty.zip (x64 + arm64)
+            - **Linux**: Super-GOAT-Royalty.AppImage or .deb
+            
+            ### 🚀 Features
+            - **AI Command Center** — Multi-LLM Chat (GPT-4o, Gemini, Claude, Ollama)
+            - **Music Dashboard** — 346 tracks, 1.2B+ streams, $865K+ royalties
+            - **Royalty Calculator** — Real-time earnings across 6 platforms
+            - **Browser Automation** — Axiom-powered bots for data collection
+            - **Music Production** — AI-assisted beat making, mixing, mastering
+            - **Dev Tools** — Terminal, Code Editor, File Manager
+            - **Streaming Analytics** — Spotify, Apple Music, YouTube, Tidal, Amazon, Deezer
+            - **Security Vault** — IP protection & copyright management
+            - **NVIDIA DGX Cloud** — GPU-accelerated AI processing
+            - Dark/Light themes with keyboard shortcuts
+            - Global hotkey (Ctrl+Shift+G)
+            - 100% offline mode with Ollama
+            
+            Built by Harvey Miller (DJ Speedy) | GOAT Royalty © 2025
+          files: |
+            windows-build/*
+            macos-build/*
+            linux-build/*
+          draft: false
+          prerelease: false

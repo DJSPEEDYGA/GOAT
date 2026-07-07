@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💕 My Matches | GOAT Royalty</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <style>
+        :root {
+            --bg: #040608; --panel: #0d1117; --panel2: #161b22;
+            --gold: #d4a03c; --gold2: #f0c040; --gold3: #ffd700;
+            --pink: #ec4899; --pink2: #f472b6; --pink3: #fbcfe8;
+            --red: #c1121f; --green: #3fb950; --blue: #58a6ff;
+            --ink: #f0ece4; --dim: #8b949e; --line: #21262d;
+            --glow: rgba(212,160,60,.25);
+        }
+        body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .match-dashboard { max-width: 1200px; margin: 0 auto; padding: 80px 20px 40px; width: 100%; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .dashboard-title h1 { font-size: 28px; font-weight: 700; color: var(--pink); margin: 0 0 4px; }
+        .dashboard-title span { font-size: 14px; color: var(--dim); }
+        
+        /* Tabs */
+        .match-tabs { display: flex; gap: 12px; margin-bottom: 24px; }
+        .match-tab { padding: 12px 24px; border: 1px solid var(--line); background: var(--panel2); color: var(--dim); border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; }
+        .match-tab:hover { border-color: var(--pink); }
+        .match-tab.active { border-color: var(--pink); background: rgba(236,72,153,.15); color: var(--pink3); }
+        
+        /* New Matches Banner */
+        .new-matches-banner { background: linear-gradient(135deg, var(--pink), var(--pink2)); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+        .banner-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .banner-title { font-size: 20px; font-weight: 700; color: #fff; }
+        .banner-count { background: rgba(255,255,255,.2); padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; color: #fff; }
+        
+        .new-matches-row { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 12px; }
+        .new-match-card { flex-shrink: 0; width: 140px; text-align: center; cursor: pointer; transition: all .2s; }
+        .new-match-card:hover { transform: scale(1.05); }
+        .new-match-avatar { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #ec4899, #f472b6); margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-size: 48px; border: 4px solid var(--pink3); }
+        .new-match-name { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 2px; }
+        .new-match-percent { font-size: 12px; color: rgba(255,255,255,.9); }
+        
+        /* Matches Grid */
+        .matches-section { margin-bottom: 24px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .section-title { font-size: 18px; font-weight: 600; color: var(--gold3); }
+        
+        .matches-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 16px; }
+        .match-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; gap: 16px; cursor: pointer; transition: all .2s; }
+        .match-card:hover { border-color: var(--pink); transform: translateY(-2px); }
+        
+        .match-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #ec4899, #f472b6); display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; position: relative; }
+        .online-dot { position: absolute; bottom: 2px; right: 2px; width: 16px; height: 16px; background: var(--green); border-radius: 50%; border: 3px solid var(--panel); }
+        
+        .match-info { flex: 1; }
+        .match-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+        .match-name { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+        .match-location { font-size: 13px; color: var(--dim); margin-bottom: 8px; }
+        
+        .match-meta { display: flex; gap: 8px; margin-bottom: 8px; }
+        .meta-tag { padding: 2px 8px; background: var(--panel2); border-radius: 10px; font-size: 11px; color: var(--dim); }
+        .meta-tag.online { background: rgba(63,185,80,.15); color: var(--green); }
+        .meta-tag.verified { background: rgba(212,160,60,.15); color: var(--gold3); }
+        
+        .match-message { font-size: 13px; color: var(--dim); margin-bottom: 8px; line-height: 1.4; }
+        .match-message.unread { color: var(--ink); font-weight: 500; }
+        
+        .match-footer { display: flex; justify-content: space-between; align-items: center; }
+        .match-time { font-size: 11px; color: var(--dim); }
+        .unread-badge { background: var(--pink); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; color: #fff; }
+        
+        /* Empty State */
+        .empty-state { text-align: center; padding: 60px 20px; }
+        .empty-icon { font-size: 80px; margin-bottom: 16px; }
+        .empty-title { font-size: 20px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+        .empty-desc { font-size: 14px; color: var(--dim); margin-bottom: 24px; }
+        .empty-btn { padding: 14px 32px; background: linear-gradient(135deg, var(--pink), var(--pink2)); color: #fff; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s; }
+        .empty-btn:hover { transform: scale(1.05); }
+        
+        /* Match Preview */
+        .match-preview { background: var(--panel2); border-radius: 10px; padding: 16px; margin-top: 12px; border: 1px solid var(--line); }
+        .preview-header { display: flex; gap: 12px; margin-bottom: 12px; }
+        .preview-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #ec4899, #f472b6); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .preview-info h4 { font-size: 14px; font-weight: 600; color: var(--ink); margin: 0 0 2px; }
+        .preview-info p { font-size: 12px; color: var(--dim); margin: 0; }
+        
+        .compatibility-bars { display: flex; gap: 8px; }
+        .comp-item { flex: 1; }
+        .comp-label { font-size: 10px; color: var(--dim); margin-bottom: 4px; }
+        .comp-bar { height: 6px; background: var(--panel); border-radius: 3px; overflow: hidden; }
+        .comp-fill { height: 100%; background: linear-gradient(90deg, var(--pink), var(--pink3)); }
+        
+        @media (max-width: 768px) {
+            .matches-grid { grid-template-columns: 1fr; }
+            .new-matches-row { padding-bottom: 8px; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-emoji">🐐</span>
+            <span class="brand-name">GOAT Royalty</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="goat-dating.html" class="nav-link">Dating</a>
+            <a href="goat-match.html" class="nav-link active">Matches</a>
+            <a href="goat-dating-chat.html" class="nav-link">Chat</a>
+            <a href="settings.html" class="nav-link">Settings</a>
+        </div>
+    </nav>
+
+    <div class="match-dashboard">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>💕 My Matches</h1>
+                <span>Your connections and conversations</span>
+            </div>
+            <button class="search-btn" style="padding: 12px 24px;">🔍 Find More Matches</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="match-tabs">
+            <div class="match-tab active" data-tab="all">All Matches (47)</div>
+            <div class="match-tab" data-tab="new">New Matches</div>
+            <div class="match-tab" data-tab="active">Active Conversations</div>
+            <div class="match-tab" data-tab="archived">Archived</div>
+        </div>
+
+        <!-- New Matches Banner -->
+        <div class="new-matches-banner" id="new-matches-banner">
+            <div class="banner-header">
+                <div class="banner-title">🎉 You have 5 New Matches!</div>
+                <div class="banner-count">5 NEW</div>
+            </div>
+            <div class="new-matches-row">
+                <div class="new-match-card" onclick="startChat('sarah')">
+                    <div class="new-match-avatar">👩</div>
+                    <div class="new-match-name">Sarah</div>
+                    <div class="new-match-percent">95% Match</div>
+                </div>
+                <div class="new-match-card" onclick="startChat('michael')">
+                    <div class="new-match-avatar">👨</div>
+                    <div class="new-match-name">Michael</div>
+                    <div class="new-match-percent">92% Match</div>
+                </div>
+                <div class="new-match-card" onclick="startChat('emma')">
+                    <div class="new-match-avatar">👩</div>
+                    <div class="new-match-name">Emma</div>
+                    <div class="new-match-percent">89% Match</div>
+                </div>
+                <div class="new-match-card" onclick="startChat('james')">
+                    <div class="new-match-avatar">👨</div>
+                    <div class="new-match-name">James</div>
+                    <div class="new-match-percent">87% Match</div>
+                </div>
+                <div class="new-match-card" onclick="startChat('olivia')">
+                    <div class="new-match-avatar">👩</div>
+                    <div class="new-match-name">Olivia</div>
+                    <div class="new-match-percent">85% Match</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Conversations -->
+        <div class="matches-section">
+            <div class="section-header">
+                <div class="section-title">💬 Active Conversations</div>
+                <span style="color: var(--dim); font-size: 13px;">12 conversations with unread messages</span>
+            </div>
+
+            <div class="matches-grid">
+                <!-- Match 1 - Active, Unread -->
+                <div class="match-card" onclick="openChat('ariadne')">
+                    <div class="match-avatar" style="background: linear-gradient(135deg, #ec4899, #f472b6);">
+                        <span class="online-dot"></span>
+                    </div>
+                    <div class="match-info">
+                        <div class="match-header">
+                            <div>
+                                <div class="match-name">Ariadne</div>
+                                <div class="match-location">Los Angeles, CA</div>
+                            </div>
+                            <span class="unread-badge">3</span>
+                        </div>
+                        <div class="match-meta">
+                            <span class="meta-tag online">Online</span>
+                            <span class="meta-tag verified">✓ Verified</span>
+                            <span class="meta-tag">Music Industry</span>
+                        </div>
+                        <div class="match-message unread">Hey! I saw your profile and I love your music. Would love to collab sometime! 🎵</div>
+                        <div class="match-footer">
+                            <span class="match-time">2 min ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match 2 - Active, Unread -->
+                <div class="match-card" onclick="openChat('drake')">
+                    <div class="match-avatar" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
+                        👨
+                    </div>
+                    <div class="match-info">
+                        <div class="match-header">
+                            <div>
+                                <div class="match-name">Drake</div>
+                                <div class="match-location">Toronto, Canada</div>
+                            </div>
+                            <span class="unread-badge">1</span>
+                        </div>
+                        <div class="match-meta">
+                            <span class="meta-tag verified">✓ Verified Artist</span>
+                            <span class="meta-tag">Professional</span>
+                        </div>
+                        <div class="match-message unread">That beat you sent is fire! Let's work on it together.</div>
+                        <div class="match-footer">
+                            <span class="match-time">15 min ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match 3 - Active, Unread -->
+                <div class="match-card" onclick="openChat('taylor')">
+                    <div class="match-avatar" style="background: linear-gradient(135deg, #06b6d4, #22d3ee);">
+                        👩
+                    </div>
+                    <div class="match-info">
+                        <div class="match-header">
+                            <div>
+                                <div class="match-name">Taylor</div>
+                                <div class="match-location">Nashville, TN</div>
+                            </div>
+                            <span class="unread-badge">2</span>
+                        </div>
+                        <div class="match-meta">
+                            <span class="meta-tag verified">✓ Grammy Winner</span>
+                            <span class="meta-tag">Songwriter</span>
+                        </div>
+                        <div class="match-message unread">I'm free this weekend if you want to meet up at the studio!</div>
+                        <div class="match-footer">
+                            <span class="match-time">1 hour ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match 4 - Active, Read -->
+                <div class="match-card" onclick="openChat('kendrick')">
+                    <div class="match-avatar" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);">
+                        👨
+                    </div>
+                    <div class="match-info">
+                        <div class="match-header">
+                            <div>
+                                <div class="match-name">Kendrick</div>
+                                <div class="match-location">Compton, CA</div>
+                            </div>
+                        </div>
+                        <div class="match-meta">
+                            <span class="meta-tag verified">✓ Verified Artist</span>
+                            <span class="meta-tag">Rapper</span>
+                        </div>
+                        <div class="match-message">Thanks for the session yesterday, it went great!</div>
+                        <div class="match-footer">
+                            <span class="match-time">3 hours ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match 5 - Active, Online -->
+                <div class="match-card" onclick="openChat('adele')">
+                    <div class="match-avatar" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                        <span class="online-dot"></span>
+                        👩
+                    </div>
+                    <div class="match-info">
+                        <div class="match-header">
+                            <div>
+                                <div class="match-name">Adele</div>
+                                <div class="match-location">London, UK</div>
+                            </div>
+                        </div>
+                        <div class="match-meta">
+                            <span class="meta-tag online">Online</span>
+                            <span class="meta-tag verified">✓ Verified Artist</span>
+                        </div>
+                        <div class="match-message">I'll send over the vocals tonight!</div>
+                        <div class="match-footer">
+                            <span class="match-time">5 hours ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match 6 - Active -->
+                <div class="match-card" onclick="openChat('post-malone')">
+                    <div class="match-avatar" style="background: linear-gradient(135deg, #6366f1, #818cf8);">
+                        👨
+                    </div>
+                    <div class="match-info">
+                        <div class="match-header">
+                            <div>
+                                <div class="match-name">Post Malone</div>
+                                <div class="match-location">Los Angeles, CA</div>
+                            </div>
+                        </div>
+                        <div class="match-meta">
+                            <span class="meta-tag verified">✓ Verified Artist</span>
+                            <span class="meta-tag">Rap</span>
+                        </div>
+                        <div class="match-message">Check out this new track I'm working on, let me know what you think!</div>
+                        <div class="match-footer">
+                            <span class="match-time">Yesterday</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Connections -->
+        <div class="matches-section">
+            <div class="section-header">
+                <div class="section-title">🔗 Recent Connections</div>
+                <a href="#" style="color: var(--pink3); font-size: 13px; font-weight: 600; text-decoration: none;">View All →</a>
+            </div>
+
+            <div class="matches-grid">
+                <div class="match-card" onclick="viewProfile('beyonce')">
+                    <div class="match-avatar" style="background: linear-gradient(135deg, #ec4899, #f472b6);">👩</div>
+                    <div class="match-info">
+                        <div class="match-header">
+                            <div>
+                                <div class="match-name">Beyoncé</div>
+                                <div class="match-location">Houston, TX</div>
+                            </div>
+                            <div class="match-score" style="background: linear-gradient(135deg, var(--pink), var(--pink2)); padding: 4px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; color: #fff;">98%</div>
+                        </div>
+                        <div class="match-meta">
+                            <span class="meta-tag verified">✓ Verified Artist</span>
+                            <span class="meta-tag">Pop</span>
+                        </div>
+                        <div class="match-preview">
+                            <div class="preview-header">
+                                <div class="preview-avatar">🎵</div>
+                                <div class="preview-info">
+                                    <h4>Music Compatibility</h4>
+                                    <p>Epic: 98% • Vibe: 95%</p>
+                                </div>
+                            </div>
+                            <div class="compatibility-bars">
+                                <div class="comp-item">
+                                    <div class="comp-label">Music</div>
+                                    <div class="comp-bar"><div class="comp-fill" style="width: 98%"></div></div>
+                                </div>
+                                <div class="comp-item">
+                                    <div class="comp-label">Vibe</div>
+                                    <div class="comp-bar"><div class="comp-fill" style="width: 95%"></div></div>
+                                </div>
+                                <div class="comp-item">
+                                    <div class="comp-label">Style</div>
+                                    <div class="comp-bar"><div class="comp-fill" style="width: 92%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="match-card" onclick="viewProfile('weeknd')">
+                    <div class="match-avatar" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">👨</div>
+                    <div class="match-info">
+                        <div class="match-header">
+                            <div>
+                                <div class="match-name">The Weeknd</div>
+                                <div class="match-location">Toronto, Canada</div>
+                            </div>
+                            <div class="match-score" style="background: linear-gradient(135deg, var(--pink), var(--pink2)); padding: 4px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; color: #fff;">95%</div>
+                        </div>
+                        <div class="match-meta">
+                            <span class="meta-tag verified">✓ Verified Artist</span>
+                            <span class="meta-tag">R&B</span>
+                        </div>
+                        <div class="match-preview">
+                            <div class="preview-header">
+                                <div class="preview-avatar">🎵</div>
+                                <div class="preview-info">
+                                    <h4>Music Compatibility</h4>
+                                    <p>Epic: 95% • Vibe: 93%</p>
+                                </div>
+                            </div>
+                            <div class="compatibility-bars">
+                                <div class="comp-item">
+                                    <div class="comp-label">Music</div>
+                                    <div class="comp-bar"><div class="comp-fill" style="width: 95%"></div></div>
+                                </div>
+                                <div class="comp-item">
+                                    <div class="comp-label">Vibe</div>
+                                    <div class="comp-bar"><div class="comp-fill" style="width: 93%"></div></div>
+                                </div>
+                                <div class="comp-item">
+                                    <div class="comp-label">Style</div>
+                                    <div class="comp-bar"><div class="comp-fill" style="width: 90%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startChat(matchId) {
+            alert(`Starting chat with ${matchId}...`);
+            // In production, would navigate to chat page
+        }
+
+        function openChat(matchId) {
+            alert(`Opening chat with ${matchId}...`);
+            // In production, would navigate to chat page
+        }
+
+        function viewProfile(matchId) {
+            alert(`Viewing profile: ${matchId}`);
+        }
+
+        // Tab functionality
+        const tabs = document.querySelectorAll('.match-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

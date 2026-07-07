@@ -1,0 +1,18 @@
+[Unit]
+Description=GOAT Oscar chat :3333
+After=network.target goat-intel.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/goat/oscar
+Environment=OSCAR_SHARED_DIR=/opt/goat/oscar
+Environment=OSCAR_PROJECT_ROOT=/opt/goat/oscar
+Environment=OSCAR_HIDE_GROK=0
+Environment=OSCAR_FORCE_LOCAL_ONLY=0
+ExecStart=/usr/bin/python3 chat_server.py --no-browser
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

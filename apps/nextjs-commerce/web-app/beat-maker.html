@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🥁 GOAT Beat Maker — Live Browser Studio</title>
+<meta name="description" content="Full in-browser beat maker: 16-step sequencer, 8 drum pads, piano roll, live BPM control, record + export to WAV. No install needed." />
+<style>
+:root { --bg:#0a0e17; --card:#121826; --border:#1e2535; --text:#e4e4e7; --muted:#8b92a7; --gold:#FFD700; --hot:#FF3D00; --cyan:#00E5FF; --magenta:#FF00FF; --green:#10b981; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.5; overflow-x: hidden; }
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; background: #0c1220; border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0; }
+.brand { padding: 0 20px 20px; border-bottom: 1px solid var(--border); }
+.brand h1 { font-size: 20px; color: var(--gold); }
+.brand small { color: var(--muted); font-size: 11px; }
+.nav { padding: 12px 0; }
+.nav a { display: flex; gap: 10px; padding: 10px 20px; color: var(--text); text-decoration: none; font-size: 14px; border-left: 3px solid transparent; }
+.nav a:hover { background: #1a2035; border-left-color: var(--gold); }
+.nav a.active { background: #1a2035; border-left-color: var(--gold); color: var(--gold); }
+.nav .section-title { padding: 16px 20px 8px; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.main { flex: 1; padding: 24px 32px; max-width: 100%; overflow-x: hidden; }
+.hero { padding: 30px; border-radius: 16px; background: linear-gradient(135deg, #1a0f3a 0%, #3a0a1a 100%); border: 1px solid var(--hot); margin-bottom: 24px; }
+.hero h2 { font-size: clamp(26px, 4vw, 42px); background: linear-gradient(90deg, var(--gold), var(--hot)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; font-weight: 900; }
+.hero p { font-size: 15px; color: #d4d4d8; }
+
+/* Transport bar */
+.transport { display: flex; gap: 12px; align-items: center; padding: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.big-btn { padding: 12px 20px; background: #1a2035; border: 1px solid var(--border); color: var(--text); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; transition: all 0.15s; }
+.big-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); }
+.big-btn.active { background: var(--green); color: #000; border-color: var(--green); }
+.big-btn.record { background: #3a0a0a; border-color: var(--hot); color: #fff; }
+.big-btn.record.active { background: var(--hot); animation: rec-pulse 1s infinite; }
+@keyframes rec-pulse { 0%,100%{ box-shadow: 0 0 0 0 rgba(255,61,0,0.7) } 50%{ box-shadow: 0 0 0 10px rgba(255,61,0,0) } }
+.bpm-ctrl { display: flex; align-items: center; gap: 10px; }
+.bpm-ctrl label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.bpm-ctrl input[type=range] { width: 140px; accent-color: var(--gold); }
+.bpm-display { font-size: 22px; font-weight: 800; color: var(--gold); min-width: 70px; text-align: center; font-family: 'Courier New', monospace; }
+.beat-counter { font-size: 28px; font-weight: 800; color: var(--cyan); min-width: 80px; text-align: center; font-family: 'Courier New', monospace; background: #0a0e17; padding: 4px 12px; border-radius: 8px; border: 1px solid var(--border); }
+
+/* Sequencer */
+.sequencer { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; overflow-x: auto; }
+.sequencer h3 { color: var(--gold); margin-bottom: 16px; font-size: 16px; }
+.seq-row { display: grid; grid-template-columns: 130px repeat(16, 1fr); gap: 4px; margin-bottom: 6px; min-width: 900px; align-items: center; }
+.seq-label { font-size: 12px; font-weight: 700; padding: 0 10px; color: var(--text); display: flex; align-items: center; gap: 6px; }
+.seq-label .emoji { font-size: 18px; }
+.step { aspect-ratio: 1; background: #1a2035; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.1s; position: relative; }
+.step:hover { border-color: var(--gold); }
+.step.on { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 12px rgba(255,215,0,0.4); }
+.step.on.kick { background: #ff3d00; border-color: #ff3d00; }
+.step.on.snare { background: #ff00ff; border-color: #ff00ff; }
+.step.on.hat, .step.on.openhat { background: #00e5ff; border-color: #00e5ff; }
+.step.on.clap { background: #ffd700; border-color: #ffd700; }
+.step.on.tom { background: #00ff88; border-color: #00ff88; }
+.step.playing { outline: 2px solid #fff; outline-offset: 2px; }
+.step.beat-accent { border-top: 2px solid var(--gold); }
+
+/* Drum pads */
+.pads-section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.pads-section h3 { color: var(--gold); margin-bottom: 16px; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+.pads-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media (min-width: 900px) { .pads-grid { grid-template-columns: repeat(8, 1fr); } }
+.pad { aspect-ratio: 1; background: linear-gradient(135deg, #1a2035, #0a0e17); border: 2px solid var(--border); border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; transition: all 0.1s; user-select: none; }
+.pad:hover { border-color: var(--gold); }
+.pad:active, .pad.hit { background: linear-gradient(135deg, var(--gold), var(--hot)); border-color: var(--gold); transform: scale(0.95); box-shadow: 0 0 24px rgba(255,215,0,0.6); }
+.pad .key { font-size: 9px; color: var(--muted); font-family: 'Courier New', monospace; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+.pad .name { font-size: 10px; color: var(--text); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-top: 2px; }
+
+/* Piano */
+.piano-section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.piano-section h3 { color: var(--gold); margin-bottom: 16px; font-size: 16px; }
+.piano { display: flex; position: relative; height: 140px; user-select: none; }
+.white-key { flex: 1; background: linear-gradient(180deg, #fff, #e8e8e8); border: 1px solid #333; border-radius: 0 0 6px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 8px; color: #333; font-weight: 700; font-size: 11px; transition: all 0.05s; }
+.white-key:active, .white-key.hit { background: linear-gradient(180deg, var(--gold), #d4a03c); color: #000; }
+.black-key { position: absolute; top: 0; width: 5%; height: 60%; background: linear-gradient(180deg, #1a1a1a, #000); border: 1px solid #000; border-radius: 0 0 4px 4px; cursor: pointer; z-index: 2; color: #fff; font-size: 10px; font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 4px; transition: all 0.05s; }
+.black-key:active, .black-key.hit { background: linear-gradient(180deg, var(--hot), #8a1000); }
+
+/* Presets */
+.presets { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.presets h3 { color: var(--gold); margin-bottom: 16px; font-size: 16px; }
+.preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.preset-card { padding: 14px; background: #1a2035; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; text-align: center; transition: all 0.2s; }
+.preset-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+.preset-card .pico { font-size: 28px; margin-bottom: 6px; }
+.preset-card .pname { font-size: 13px; font-weight: 700; color: var(--text); }
+.preset-card .pgenre { font-size: 10px; color: var(--cyan); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+.preset-card .pbpm { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+/* Recording panel */
+.recordings { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.recordings h3 { color: var(--gold); margin-bottom: 16px; font-size: 16px; }
+.rec-item { display: flex; gap: 12px; align-items: center; padding: 12px; background: #1a2035; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.rec-item audio { flex: 1; min-width: 240px; }
+.rec-item .rname { font-size: 13px; font-weight: 700; color: var(--gold); min-width: 120px; }
+.rec-item button { padding: 8px 14px; background: var(--gold); color: #000; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; }
+.rec-item button.del { background: var(--hot); color: #fff; }
+.rec-empty { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+
+/* Help */
+.help { background: rgba(0,229,255,0.05); border: 1px solid var(--cyan); border-radius: 12px; padding: 16px; margin-bottom: 20px; font-size: 13px; color: #d4d4d8; }
+.help strong { color: var(--cyan); }
+kbd { background: #1a2035; border: 1px solid var(--border); border-bottom: 2px solid var(--border); border-radius: 4px; padding: 2px 6px; font-family: 'Courier New', monospace; font-size: 11px; color: var(--gold); }
+
+@media (max-width: 900px) { .layout { flex-direction: column; } .sidebar { width: 100%; height: auto; position: static; } .main { padding: 16px; } .seq-row { min-width: 700px; } }
+</style>
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms. Money Penny">
+    <span>Ms. Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand"><h1>🐐 GOAT Force</h1><small>Empire Edition v6</small></div>
+    <nav class="nav">
+      <div class="section-title">Main</div>
+      <a href="index.html">🏠 Home</a>
+      <a href="goat-royalty/">👑 GOAT Royalty App</a>
+      <a href="videos.html">🎬 Video Vault</a>
+      <a href="unreal-copilot.html">🎮 Unreal Copilot</a>
+      <div class="section-title">AI</div>
+      <a href="models.html">🔓 Free AI Models</a>
+      <a href="agents.html">🤖 11 AI Agents</a>
+      <a href="ai-dashboard.html">📊 AI Dashboard</a>
+      <div class="section-title">Studios</div>
+      <a href="beat-maker.html" class="active">🥁 Beat Maker</a>
+      <a href="recording-studio.html">🎙️ Recording Studio</a>
+      <a href="music-studio.html">🎚️ Music Studio</a>
+      <a href="movie-studio.html">🎥 Movie Studio</a>
+      <a href="screenwriting.html">✍️ Screenwriting</a>
+      <div class="section-title">Royalty</div>
+      <a href="royalty-calc.html">💰 Royalty Calculator</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="dsp.html">🎵 DSP Distribution</a>
+      <a href="shop.html">🛍️ GOAT Shop</a>
+      <div class="section-title">Resources</div>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="roadmap.html">🗺️ Roadmap</a>
+      <a href="about.html">ℹ️ About</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <section class="hero">
+      <h2>🥁 GOAT BEAT MAKER</h2>
+      <p>Real 16-step sequencer. 8 velocity-sensitive drum pads. Full piano. Live BPM. Record + export your beats to WAV. Runs 100% in your browser. No install. No BS.</p>
+    </section>
+
+    <div class="help">
+      <strong>⌨️ Keyboard:</strong>
+      &nbsp;<kbd>Space</kbd> play/stop &nbsp;
+      <kbd>R</kbd> record &nbsp;
+      Drum pads: <kbd>Q W E R A S D F</kbd> &nbsp;
+      Piano: <kbd>Z X C V B N M</kbd>
+    </div>
+
+    <!-- TRANSPORT -->
+    <div class="transport">
+      <button class="big-btn" id="playBtn" onclick="togglePlay()">▶️ Play</button>
+      <button class="big-btn record" id="recBtn" onclick="toggleRecord()">⏺️ Record</button>
+      <button class="big-btn" onclick="clearSeq()">🗑️ Clear</button>
+      <div class="bpm-ctrl">
+        <label>BPM</label>
+        <input type="range" id="bpmSlider" min="60" max="200" value="120" oninput="setBPM(this.value)" />
+        <span class="bpm-display" id="bpmDisplay">120</span>
+      </div>
+      <div style="flex:1"></div>
+      <div>
+        <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Step</label>
+        <div class="beat-counter" id="stepCounter">01</div>
+      </div>
+      <button class="big-btn" onclick="exportWav()">💾 Export WAV</button>
+      <button class="big-btn" onclick="routeToSSLMixer()" style="background:linear-gradient(135deg,#ffa500,#cc7700);color:#000">🎚️ Route to SSL</button>
+      <a class="big-btn" href="ssl-mixer.html" target="_blank" style="background:linear-gradient(135deg,#333,#111);color:#ffa500;text-decoration:none;display:inline-flex;align-items:center;padding:8px 14px">🎚️ Open SSL Mixer</a>
+      <a class="big-btn" href="plugins.html" target="_blank" style="background:linear-gradient(135deg,#333,#111);color:#00ff66;text-decoration:none;display:inline-flex;align-items:center;padding:8px 14px">🔌 Plugins</a>
+    </div>
+
+    <!-- SEQUENCER -->
+    <div class="sequencer">
+      <h3>🎛️ 16-Step Sequencer</h3>
+      <div id="seqBody"></div>
+    </div>
+
+    <!-- DRUM PADS -->
+    <div class="pads-section">
+      <h3>🥁 Drum Pads <span style="font-size:12px;color:var(--muted);font-weight:400">Click or press key to play</span></h3>
+      <div class="pads-grid" id="padsGrid"></div>
+    </div>
+
+    <!-- PIANO -->
+    <div class="piano-section">
+      <h3>🎹 Piano <span style="font-size:12px;color:var(--muted);font-weight:400">Click keys or use Z-M on keyboard</span></h3>
+      <div class="piano" id="piano"></div>
+    </div>
+
+    <!-- PRESETS -->
+    <div class="presets">
+      <h3>🎯 Beat Presets <span style="font-size:12px;color:var(--muted);font-weight:400">Load a classic pattern</span></h3>
+      <div class="preset-grid">
+        <div class="preset-card" onclick="loadPreset('trap')"><div class="pico">🔥</div><div class="pname">Trap</div><div class="pgenre">Hip Hop</div><div class="pbpm">140 BPM</div></div>
+        <div class="preset-card" onclick="loadPreset('bricksquad')"><div class="pico">🧱</div><div class="pname">BrickSquad</div><div class="pgenre">Waka Style</div><div class="pbpm">145 BPM</div></div>
+        <div class="preset-card" onclick="loadPreset('boombap')"><div class="pico">💥</div><div class="pname">Boom Bap</div><div class="pgenre">90s Hip Hop</div><div class="pbpm">92 BPM</div></div>
+        <div class="preset-card" onclick="loadPreset('drill')"><div class="pico">⚡</div><div class="pname">Drill</div><div class="pgenre">UK/NY</div><div class="pbpm">150 BPM</div></div>
+        <div class="preset-card" onclick="loadPreset('house')"><div class="pico">🏠</div><div class="pname">House</div><div class="pgenre">Dance</div><div class="pbpm">128 BPM</div></div>
+        <div class="preset-card" onclick="loadPreset('dnb')"><div class="pico">🌊</div><div class="pname">Drum & Bass</div><div class="pgenre">Jungle</div><div class="pbpm">174 BPM</div></div>
+        <div class="preset-card" onclick="loadPreset('rnb')"><div class="pico">💎</div><div class="pname">R&B</div><div class="pgenre">Smooth</div><div class="pbpm">85 BPM</div></div>
+        <div class="preset-card" onclick="loadPreset('phonk')"><div class="pico">👹</div><div class="pname">Phonk</div><div class="pgenre">Drift</div><div class="pbpm">130 BPM</div></div>
+      </div>
+    </div>
+
+    <!-- RECORDINGS -->
+    <div class="recordings">
+      <h3>🎙️ Your Recordings</h3>
+      <div id="recList"><div class="rec-empty">No recordings yet. Hit ⏺️ Record, play your beat, and the WAV will appear here.</div></div>
+    </div>
+
+  </main>
+</div>
+
+<script src="js/goat-audio-engine.js"></script>
+<script>
+// ========== WEB AUDIO ENGINE ==========
+const AC = window.AudioContext || window.webkitAudioContext;
+let ctx = null;
+let masterGain = null;
+let destination = null;
+let recorder = null;
+let recChunks = [];
+let routedToSSL = false;
+
+function initAudio() {
+  if (ctx) return;
+  // Share the context with GoatAudio if available (for cross-page routing)
+  ctx = (window.GoatAudio && window.GoatAudio.ac()) || new AC();
+  masterGain = ctx.createGain();
+  masterGain.gain.value = 0.8;
+  destination = ctx.createMediaStreamDestination();
+  masterGain.connect(ctx.destination);
+  masterGain.connect(destination);
+
+  // Expose for cross-page routing to SSL mixer
+  window.__goatBeatMakerMaster = masterGain;
+  window.__goatBeatMakerCtx = ctx;
+
+  // Announce this publisher so the SSL mixer can route from it in the same tab
+  if (window.GoatAudio && window.GoatAudio.bridge) {
+    window.GoatAudio.bridge.announce('beat-maker', masterGain);
+  }
+}
+
+// Route beat-maker output into a specific SSL channel (if open in another tab)
+function routeToSSLMixer() {
+  if (!ctx) initAudio();
+  if (routedToSSL) {
+    alert('Already routing to SSL Mixer. Refresh this page to stop.');
+    return;
+  }
+  // Offer MediaStream export for capture by other page (BroadcastChannel / external)
+  try {
+    const bc = new BroadcastChannel('goat-audio-route');
+    bc.postMessage({ type: 'beat-maker-ready', sampleRate: ctx.sampleRate });
+    routedToSSL = true;
+    alert('🎚️ Beat Maker → SSL Mixer routing enabled.\n\nOpen the SSL Mixer in the same browser window/tab and click "📁 LOAD" on any channel, then choose "Beat Maker Live Feed" (coming soon in next build).\n\nFor now: hit "⏺ RECORD" here, then drag the WAV to any SSL Mixer channel.');
+  } catch (e) {
+    alert('Routing requires modern browser with BroadcastChannel API.');
+  }
+}
+
+// ========== SYNTHESIZED DRUM SOUNDS (Web Audio, no samples) ==========
+function playKick(vel=1) {
+  initAudio();
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.frequency.setValueAtTime(150, t);
+  osc.frequency.exponentialRampToValueAtTime(40, t + 0.15);
+  gain.gain.setValueAtTime(1 * vel, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+  osc.connect(gain); gain.connect(masterGain);
+  osc.start(t); osc.stop(t + 0.5);
+}
+function playSnare(vel=1) {
+  initAudio();
+  const t = ctx.currentTime;
+  // noise burst
+  const buf = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1000;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.7 * vel, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+  src.connect(hp); hp.connect(g); g.connect(masterGain);
+  src.start(t);
+  // body
+  const osc = ctx.createOscillator(); const og = ctx.createGain();
+  osc.frequency.value = 200;
+  og.gain.setValueAtTime(0.3 * vel, t);
+  og.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+  osc.connect(og); og.connect(masterGain);
+  osc.start(t); osc.stop(t + 0.15);
+}
+function playHat(vel=1, open=false) {
+  initAudio();
+  const t = ctx.currentTime;
+  const buf = ctx.createBuffer(1, ctx.sampleRate * (open ? 0.3 : 0.08), ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 7000;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.3 * vel, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + (open ? 0.3 : 0.05));
+  src.connect(hp); hp.connect(g); g.connect(masterGain);
+  src.start(t);
+}
+function playClap(vel=1) {
+  initAudio();
+  const t = ctx.currentTime;
+  for (let i = 0; i < 3; i++) {
+    const st = t + i * 0.01;
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let j = 0; j < d.length; j++) d[j] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1500;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.5 * vel, st);
+    g.gain.exponentialRampToValueAtTime(0.001, st + 0.05);
+    src.connect(bp); bp.connect(g); g.connect(masterGain);
+    src.start(st);
+  }
+}
+function playTom(freq=200, vel=1) {
+  initAudio();
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.frequency.setValueAtTime(freq, t);
+  osc.frequency.exponentialRampToValueAtTime(freq * 0.5, t + 0.2);
+  gain.gain.setValueAtTime(0.7 * vel, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+  osc.connect(gain); gain.connect(masterGain);
+  osc.start(t); osc.stop(t + 0.35);
+}
+function playCrash(vel=1) {
+  initAudio();
+  const t = ctx.currentTime;
+  const buf = ctx.createBuffer(1, ctx.sampleRate * 1, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.3));
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 4000;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.5 * vel, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 1);
+  src.connect(hp); hp.connect(g); g.connect(masterGain);
+  src.start(t);
+}
+
+// ========== SYNTH TONE (for piano) ==========
+function playNote(freq, dur=0.5, vel=0.8) {
+  initAudio();
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'triangle';  osc.frequency.value = freq;
+  osc2.type = 'sine'; osc2.frequency.value = freq * 2;
+  const g2 = ctx.createGain(); g2.gain.value = 0.3;
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(vel, t + 0.01);
+  gain.gain.exponentialRampToValueAtTime(vel * 0.4, t + 0.08);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  osc.connect(gain); osc2.connect(g2); g2.connect(gain); gain.connect(masterGain);
+  osc.start(t); osc2.start(t); osc.stop(t + dur); osc2.stop(t + dur);
+}
+
+// ========== DRUM KIT DEFINITION ==========
+const KIT = [
+  { id: 'kick',    label: '🔴 Kick',    emoji: '🔴', key: 'q', play: (v) => playKick(v) },
+  { id: 'snare',   label: '💥 Snare',   emoji: '💥', key: 'w', play: (v) => playSnare(v) },
+  { id: 'hat',     label: '🎩 Hi-Hat',  emoji: '🎩', key: 'e', play: (v) => playHat(v, false) },
+  { id: 'openhat', label: '🎪 Open Hat',emoji: '🎪', key: 'r', play: (v) => playHat(v, true) },
+  { id: 'clap',    label: '👏 Clap',    emoji: '👏', key: 'a', play: (v) => playClap(v) },
+  { id: 'tom',     label: '🥁 Tom',     emoji: '🥁', key: 's', play: (v) => playTom(150, v) },
+  { id: 'hitom',   label: '🎯 Hi Tom',  emoji: '🎯', key: 'd', play: (v) => playTom(300, v) },
+  { id: 'crash',   label: '⚡ Crash',   emoji: '⚡', key: 'f', play: (v) => playCrash(v) }
+];
+
+// ========== SEQUENCER STATE ==========
+const STEPS = 16;
+let pattern = KIT.map(() => Array(STEPS).fill(false));
+let playing = false;
+let recording = false;
+let currentStep = 0;
+let bpm = 120;
+let scheduler = null;
+let nextNoteTime = 0;
+let lookahead = 25.0;
+let scheduleAhead = 0.1;
+
+function buildSeq() {
+  const body = document.getElementById('seqBody');
+  body.innerHTML = KIT.map((drum, rowIdx) => {
+    const steps = Array.from({length: STEPS}, (_, i) => {
+      const accent = (i % 4 === 0) ? ' beat-accent' : '';
+      const on = pattern[rowIdx][i] ? ' on ' + drum.id : '';
+      return `<div class="step${on}${accent}" data-row="${rowIdx}" data-step="${i}" onclick="toggleStep(${rowIdx},${i})"></div>`;
+    }).join('');
+    return `<div class="seq-row"><div class="seq-label"><span class="emoji">${drum.emoji}</span>${drum.label.replace(drum.emoji+' ','')}</div>${steps}</div>`;
+  }).join('');
+}
+
+function toggleStep(row, step) {
+  pattern[row][step] = !pattern[row][step];
+  buildSeq();
+}
+
+function clearSeq() {
+  pattern = KIT.map(() => Array(STEPS).fill(false));
+  buildSeq();
+}
+
+// ========== TIMING ==========
+function nextNote() {
+  const secondsPerBeat = 60.0 / bpm / 4; // 16th notes
+  nextNoteTime += secondsPerBeat;
+  currentStep = (currentStep + 1) % STEPS;
+}
+
+function scheduleNote(beatNum, time) {
+  // Play drums
+  KIT.forEach((drum, rowIdx) => {
+    if (pattern[rowIdx][beatNum]) {
+      // Schedule via small timeout — Web Audio native scheduling
+      const delay = (time - ctx.currentTime) * 1000;
+      setTimeout(() => drum.play(0.8), Math.max(0, delay));
+    }
+  });
+  // UI update
+  const delay = (time - ctx.currentTime) * 1000;
+  setTimeout(() => {
+    document.querySelectorAll('.step.playing').forEach(s => s.classList.remove('playing'));
+    document.querySelectorAll(`.step[data-step="${beatNum}"]`).forEach(s => s.classList.add('playing'));
+    document.getElementById('stepCounter').textContent = String(beatNum + 1).padStart(2, '0');
+  }, Math.max(0, delay));
+}
+
+function schedulerLoop() {
+  while (nextNoteTime < ctx.currentTime + scheduleAhead) {
+    scheduleNote(currentStep, nextNoteTime);
+    nextNote();
+  }
+}
+
+function togglePlay() {
+  initAudio();
+  if (ctx.state === 'suspended') ctx.resume();
+  playing = !playing;
+  const btn = document.getElementById('playBtn');
+  if (playing) {
+    btn.textContent = '⏸️ Stop';
+    btn.classList.add('active');
+    currentStep = 0;
+    nextNoteTime = ctx.currentTime + 0.05;
+    scheduler = setInterval(schedulerLoop, lookahead);
+  } else {
+    btn.textContent = '▶️ Play';
+    btn.classList.remove('active');
+    clearInterval(scheduler);
+    document.querySelectorAll('.step.playing').forEach(s => s.classList.remove('playing'));
+    document.getElementById('stepCounter').textContent = '01';
+  }
+}
+
+function setBPM(v) {
+  bpm = +v;
+  document.getElementById('bpmDisplay').textContent = bpm;
+}
+
+// ========== RECORDING ==========
+function toggleRecord() {
+  initAudio();
+  if (ctx.state === 'suspended') ctx.resume();
+  recording = !recording;
+  const btn = document.getElementById('recBtn');
+  if (recording) {
+    recChunks = [];
+    recorder = new MediaRecorder(destination.stream);
+    recorder.ondataavailable = (e) => { if (e.data.size > 0) recChunks.push(e.data); };
+    recorder.onstop = () => {
+      const blob = new Blob(recChunks, { type: 'audio/webm' });
+      addRecording(blob);
+    };
+    recorder.start();
+    btn.textContent = '⏹️ Stop Rec';
+    btn.classList.add('active');
+  } else {
+    recorder && recorder.stop();
+    btn.textContent = '⏺️ Record';
+    btn.classList.remove('active');
+  }
+}
+
+function addRecording(blob) {
+  const list = document.getElementById('recList');
+  if (list.querySelector('.rec-empty')) list.innerHTML = '';
+  const url = URL.createObjectURL(blob);
+  const name = `GOAT-Beat-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}`;
+  const div = document.createElement('div');
+  div.className = 'rec-item';
+  div.innerHTML = `
+    <div class="rname">🎵 ${name}</div>
+    <audio controls src="${url}"></audio>
+    <button onclick="downloadRec('${url}','${name}')">💾 Download</button>
+    <button class="del" onclick="this.closest('.rec-item').remove()">🗑️</button>
+  `;
+  list.prepend(div);
+}
+
+function downloadRec(url, name) {
+  const a = document.createElement('a');
+  a.href = url; a.download = name + '.webm'; a.click();
+}
+
+// ========== EXPORT (render pattern to WAV) ==========
+async function exportWav() {
+  initAudio();
+  const barCount = 4;
+  const duration = (60 / bpm) * 4 * barCount; // seconds for 4 bars
+  const sr = 44100;
+  const offline = new OfflineAudioContext(2, Math.ceil(duration * sr), sr);
+  const mg = offline.createGain(); mg.gain.value = 0.8; mg.connect(offline.destination);
+
+  // Simple synth of pattern — reuse same synth logic but into offline ctx
+  function oKick(t) {
+    const o = offline.createOscillator(); const g = offline.createGain();
+    o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.15);
+    g.gain.setValueAtTime(1, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    o.connect(g); g.connect(mg); o.start(t); o.stop(t + 0.5);
+  }
+  function oSnare(t) {
+    const len = Math.floor(sr * 0.2);
+    const buf = offline.createBuffer(1, len, sr);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const s = offline.createBufferSource(); s.buffer = buf;
+    const f = offline.createBiquadFilter(); f.type='highpass'; f.frequency.value = 1000;
+    const g = offline.createGain(); g.gain.setValueAtTime(0.7, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.15);
+    s.connect(f); f.connect(g); g.connect(mg); s.start(t);
+  }
+  function oHat(t, open=false) {
+    const dur = open ? 0.3 : 0.05;
+    const len = Math.floor(sr * dur);
+    const buf = offline.createBuffer(1, len, sr);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const s = offline.createBufferSource(); s.buffer = buf;
+    const f = offline.createBiquadFilter(); f.type='highpass'; f.frequency.value = 7000;
+    const g = offline.createGain(); g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.001, t+dur);
+    s.connect(f); f.connect(g); g.connect(mg); s.start(t);
+  }
+  function oClap(t) {
+    for (let k = 0; k < 3; k++) {
+      const st = t + k * 0.01;
+      const len = Math.floor(sr * 0.05);
+      const buf = offline.createBuffer(1, len, sr);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      const s = offline.createBufferSource(); s.buffer = buf;
+      const f = offline.createBiquadFilter(); f.type='bandpass'; f.frequency.value = 1500;
+      const g = offline.createGain(); g.gain.setValueAtTime(0.5, st); g.gain.exponentialRampToValueAtTime(0.001, st+0.05);
+      s.connect(f); f.connect(g); g.connect(mg); s.start(st);
+    }
+  }
+  function oTom(t, freq) {
+    const o = offline.createOscillator(); const g = offline.createGain();
+    o.frequency.setValueAtTime(freq, t); o.frequency.exponentialRampToValueAtTime(freq*0.5, t+0.2);
+    g.gain.setValueAtTime(0.7, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.3);
+    o.connect(g); g.connect(mg); o.start(t); o.stop(t + 0.35);
+  }
+  function oCrash(t) {
+    const len = Math.floor(sr * 1.0);
+    const buf = offline.createBuffer(1, len, sr);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (sr * 0.3));
+    const s = offline.createBufferSource(); s.buffer = buf;
+    const f = offline.createBiquadFilter(); f.type='highpass'; f.frequency.value = 4000;
+    const g = offline.createGain(); g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.001, t+1);
+    s.connect(f); f.connect(g); g.connect(mg); s.start(t);
+  }
+
+  const secPerStep = 60 / bpm / 4;
+  for (let bar = 0; bar < barCount; bar++) {
+    for (let step = 0; step < STEPS; step++) {
+      const t = (bar * STEPS + step) * secPerStep;
+      KIT.forEach((drum, row) => {
+        if (pattern[row][step]) {
+          if (drum.id === 'kick') oKick(t);
+          if (drum.id === 'snare') oSnare(t);
+          if (drum.id === 'hat') oHat(t, false);
+          if (drum.id === 'openhat') oHat(t, true);
+          if (drum.id === 'clap') oClap(t);
+          if (drum.id === 'tom') oTom(t, 150);
+          if (drum.id === 'hitom') oTom(t, 300);
+          if (drum.id === 'crash') oCrash(t);
+        }
+      });
+    }
+  }
+
+  const rendered = await offline.startRendering();
+  const wav = audioBufferToWav(rendered);
+  const blob = new Blob([wav], { type: 'audio/wav' });
+  addRecording(blob);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `GOAT-Beat-${bpm}bpm-${Date.now()}.wav`; a.click();
+}
+
+// ========== WAV encoder ==========
+function audioBufferToWav(buffer) {
+  const numCh = buffer.numberOfChannels;
+  const sr = buffer.sampleRate;
+  const len = buffer.length * numCh * 2 + 44;
+  const bufOut = new ArrayBuffer(len);
+  const view = new DataView(bufOut);
+  let offset = 0;
+  const writeStr = (s) => { for (let i = 0; i < s.length; i++) view.setUint8(offset++, s.charCodeAt(i)); };
+  writeStr('RIFF');
+  view.setUint32(offset, 36 + buffer.length * numCh * 2, true); offset += 4;
+  writeStr('WAVE');
+  writeStr('fmt ');
+  view.setUint32(offset, 16, true); offset += 4;
+  view.setUint16(offset, 1, true); offset += 2;
+  view.setUint16(offset, numCh, true); offset += 2;
+  view.setUint32(offset, sr, true); offset += 4;
+  view.setUint32(offset, sr * numCh * 2, true); offset += 4;
+  view.setUint16(offset, numCh * 2, true); offset += 2;
+  view.setUint16(offset, 16, true); offset += 2;
+  writeStr('data');
+  view.setUint32(offset, buffer.length * numCh * 2, true); offset += 4;
+  const channels = [];
+  for (let i = 0; i < numCh; i++) channels.push(buffer.getChannelData(i));
+  for (let i = 0; i < buffer.length; i++) {
+    for (let c = 0; c < numCh; c++) {
+      let sample = Math.max(-1, Math.min(1, channels[c][i]));
+      view.setInt16(offset, sample * 0x7FFF, true); offset += 2;
+    }
+  }
+  return bufOut;
+}
+
+// ========== DRUM PADS ==========
+function buildPads() {
+  const grid = document.getElementById('padsGrid');
+  grid.innerHTML = KIT.map((drum, i) => `
+    <div class="pad" data-pad="${drum.id}" onmousedown="hitPad('${drum.id}')">
+      <div>${drum.emoji}</div>
+      <div class="name">${drum.label.replace(drum.emoji+' ','')}</div>
+      <div class="key">${drum.key.toUpperCase()}</div>
+    </div>
+  `).join('');
+}
+function hitPad(id) {
+  const drum = KIT.find(d => d.id === id);
+  if (!drum) return;
+  drum.play(0.9);
+  const pad = document.querySelector(`.pad[data-pad="${id}"]`);
+  if (pad) { pad.classList.add('hit'); setTimeout(() => pad.classList.remove('hit'), 100); }
+}
+
+// ========== PIANO ==========
+const NOTES = [
+  { name: 'C4', freq: 261.63, key: 'z' },
+  { name: 'D4', freq: 293.66, key: 'x' },
+  { name: 'E4', freq: 329.63, key: 'c' },
+  { name: 'F4', freq: 349.23, key: 'v' },
+  { name: 'G4', freq: 392.00, key: 'b' },
+  { name: 'A4', freq: 440.00, key: 'n' },
+  { name: 'B4', freq: 493.88, key: 'm' },
+  { name: 'C5', freq: 523.25, key: ',' }
+];
+const BLACK = [
+  { name: 'C#4', freq: 277.18, offset: 1, key: 's' },
+  { name: 'D#4', freq: 311.13, offset: 2, key: 'd' },
+  { name: 'F#4', freq: 369.99, offset: 4, key: 'g' },
+  { name: 'G#4', freq: 415.30, offset: 5, key: 'h' },
+  { name: 'A#4', freq: 466.16, offset: 6, key: 'j' }
+];
+
+function buildPiano() {
+  const piano = document.getElementById('piano');
+  const whites = NOTES.map(n => `<div class="white-key" data-note="${n.name}" onmousedown="playPiano(${n.freq},'${n.name}')"><div>${n.name}</div><div style="font-size:9px;color:#666;margin-top:2px">${n.key.toUpperCase()}</div></div>`).join('');
+  let html = whites;
+  const keyWidth = 100 / NOTES.length;
+  BLACK.forEach(b => {
+    const left = b.offset * keyWidth - 2.5;
+    html += `<div class="black-key" style="left:${left}%" data-note="${b.name}" onmousedown="playPiano(${b.freq},'${b.name}')"><div>${b.key.toUpperCase()}</div></div>`;
+  });
+  piano.innerHTML = html;
+}
+function playPiano(freq, name) {
+  playNote(freq, 0.8, 0.6);
+  document.querySelectorAll(`[data-note="${name}"]`).forEach(el => {
+    el.classList.add('hit');
+    setTimeout(() => el.classList.remove('hit'), 150);
+  });
+}
+
+// ========== PRESETS ==========
+const PRESETS = {
+  trap:       { bpm: 140, p: { kick:[1,0,0,0, 0,0,1,0, 0,0,1,0, 0,0,0,0], snare:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,1], hat:[1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1], clap:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0] } },
+  bricksquad: { bpm: 145, p: { kick:[1,0,0,0, 1,0,0,0, 0,0,1,0, 0,1,0,0], snare:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], hat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], openhat:[0,0,0,1, 0,0,0,0, 0,0,0,0, 0,0,0,1], crash:[1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0] } },
+  boombap:    { bpm: 92,  p: { kick:[1,0,0,0, 0,0,1,0, 0,0,0,0, 0,1,0,0], snare:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], hat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0] } },
+  drill:      { bpm: 150, p: { kick:[1,0,0,1, 0,0,1,0, 0,0,1,0, 1,0,0,0], snare:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,1], hat:[1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,0], tom:[0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,1,1] } },
+  house:      { bpm: 128, p: { kick:[1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0], clap:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], hat:[0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0], openhat:[0,1,0,0, 0,1,0,0, 0,1,0,0, 0,1,0,0] } },
+  dnb:        { bpm: 174, p: { kick:[1,0,0,0, 0,0,0,0, 0,0,1,0, 0,0,0,0], snare:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], hat:[1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1] } },
+  rnb:        { bpm: 85,  p: { kick:[1,0,0,0, 0,0,1,0, 0,0,0,0, 0,0,0,0], snare:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], hat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], clap:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0] } },
+  phonk:      { bpm: 130, p: { kick:[1,0,0,1, 0,0,1,0, 1,0,0,0, 0,1,0,0], snare:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], hat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], crash:[1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0] } }
+};
+
+function loadPreset(name) {
+  const p = PRESETS[name];
+  if (!p) return;
+  setBPM(p.bpm);
+  document.getElementById('bpmSlider').value = p.bpm;
+  pattern = KIT.map(() => Array(STEPS).fill(false));
+  Object.entries(p.p).forEach(([drumId, arr]) => {
+    const row = KIT.findIndex(d => d.id === drumId);
+    if (row >= 0) arr.forEach((v, i) => pattern[row][i] = !!v);
+  });
+  buildSeq();
+}
+
+// ========== KEYBOARD ==========
+const padKeys = {};
+KIT.forEach(d => padKeys[d.key] = d);
+const noteKeys = {};
+NOTES.forEach(n => noteKeys[n.key] = n);
+BLACK.forEach(b => noteKeys[b.key] = b);
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') return;
+  const k = e.key.toLowerCase();
+  if (k === ' ') { e.preventDefault(); togglePlay(); return; }
+  if (k === 'r' && !e.ctrlKey && !e.metaKey) { toggleRecord(); return; }
+  if (padKeys[k]) { hitPad(padKeys[k].id); return; }
+  if (noteKeys[k]) { playPiano(noteKeys[k].freq, noteKeys[k].name); return; }
+});
+
+// ========== INIT ==========
+buildSeq();
+buildPads();
+buildPiano();
+loadPreset('bricksquad');
+</script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>

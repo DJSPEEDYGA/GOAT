@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🤖 11 AI Agents — GOAT Force Specialists</title>
+<meta name="description" content="Chat with 11 specialized AI agents: Business Strategy, Creative Content, Fashion Designer, Legal Compliance, Music Industry, Personal Stylist, Researcher, Tech Dev, Writer, Autonomous, Fashion Business." />
+<style>
+:root { --bg:#0a0e17; --card:#121826; --border:#1e2535; --text:#e4e4e7; --muted:#8b92a7; --gold:#FFD700; --hot:#FF3D00; --cyan:#00E5FF; --green:#10b981; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; background: #0c1220; border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.brand { padding: 0 20px 20px; border-bottom: 1px solid var(--border); }
+.brand h1 { font-size: 20px; color: var(--gold); }
+.brand small { color: var(--muted); font-size: 11px; }
+.nav { padding: 12px 0; }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--text); text-decoration: none; font-size: 14px; border-left: 3px solid transparent; }
+.nav a:hover { background: #1a2035; border-left-color: var(--gold); }
+.nav a.active { background: #1a2035; border-left-color: var(--gold); color: var(--gold); }
+.nav .section-title { padding: 16px 20px 8px; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.main { flex: 1; padding: 40px; max-width: 1500px; }
+.hero { padding: 50px 40px; border-radius: 16px; background: linear-gradient(135deg, #1a0f3a 0%, #0a1a3e 100%); border: 1px solid var(--cyan); margin-bottom: 40px; }
+.hero h2 { font-size: clamp(32px, 5vw, 48px); background: linear-gradient(90deg, var(--gold), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; font-weight: 900; }
+.hero p { font-size: 17px; color: #d4d4d8; max-width: 700px; }
+
+.agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 40px; }
+.agent-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.3s; }
+.agent-card:hover { transform: translateY(-2px); border-color: var(--gold); box-shadow: 0 12px 30px rgba(255,215,0,0.1); }
+.agent-card.active { border-color: var(--gold); background: linear-gradient(135deg, rgba(255,215,0,0.08), var(--card)); }
+.agent-icon { font-size: 36px; margin-bottom: 10px; }
+.agent-card h4 { font-size: 15px; margin-bottom: 4px; color: var(--gold); }
+.agent-card .tagline { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+.agent-card .skills { display: flex; flex-wrap: wrap; gap: 4px; }
+.agent-card .skill { font-size: 9px; padding: 2px 6px; background: #1a2035; color: var(--cyan); border-radius: 8px; }
+
+.chat-panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+.chat-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.chat-header .ci { font-size: 40px; }
+.chat-header h3 { font-size: 20px; color: var(--gold); margin-bottom: 2px; }
+.chat-header .sub { font-size: 12px; color: var(--muted); }
+.chat-header .status { margin-left: auto; font-size: 12px; color: var(--green); display: flex; align-items: center; gap: 6px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.chat-messages { min-height: 250px; max-height: 400px; overflow-y: auto; padding: 12px; background: #0a0e17; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 14px; }
+.chat-msg { margin-bottom: 10px; padding: 10px 14px; border-radius: 10px; max-width: 88%; font-size: 14px; }
+.chat-msg.user { background: #1a2035; margin-left: auto; }
+.chat-msg.bot { background: rgba(255,215,0,0.06); border-left: 3px solid var(--gold); }
+.chat-input-row { display: flex; gap: 10px; }
+.chat-input-row input { flex: 1; padding: 12px; background: #1a2035; border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 14px; }
+.chat-input-row button { padding: 12px 20px; background: var(--gold); color: #000; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+.chat-input-row button:hover { filter: brightness(1.1); }
+.suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.suggestion { padding: 6px 12px; background: #1a2035; border: 1px solid var(--border); border-radius: 16px; font-size: 12px; cursor: pointer; color: var(--cyan); }
+.suggestion:hover { background: var(--cyan); color: #000; }
+
+@media (max-width: 900px) { .layout { flex-direction: column; } .sidebar { width: 100%; height: auto; position: static; } .main { padding: 20px; } }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand"><h1>🐐 GOAT Force</h1><small>Empire Edition v6</small></div>
+    <nav class="nav">
+      <div class="section-title">Main</div>
+      <a href="index.html">🏠 Home</a>
+      <a href="goat-royalty/">👑 GOAT Royalty App</a>
+      <a href="videos.html">🎬 Video Vault</a>
+      <a href="unreal-copilot.html">🎮 Unreal Copilot</a>
+      <div class="section-title">AI</div>
+      <a href="models.html">🔓 Free AI Models</a>
+      <a href="agents.html" class="active">🤖 11 AI Agents</a>
+      <a href="ai-dashboard.html">📊 AI Dashboard</a>
+      <div class="section-title">Royalty</div>
+      <a href="royalty-calc.html">💰 Royalty Calculator</a>
+      <a href="catalog.html">📚 Catalog</a>
+      <a href="dsp.html">🎵 DSP Distribution</a>
+      <a href="shop.html">🛍️ GOAT Shop</a>
+      <div class="section-title">Studios</div>
+      <a href="music-studio.html">🎚️ Music Studio</a>
+      <a href="movie-studio.html">🎥 Movie Studio</a>
+      <a href="screenwriting.html">✍️ Screenwriting</a>
+      <div class="section-title">Resources</div>
+      <a href="downloads.html">📥 Downloads</a>
+      <a href="tools.html">🛠️ Tools</a>
+      <a href="roadmap.html">🗺️ Roadmap</a>
+      <a href="about.html">ℹ️ About</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <section class="hero">
+      <h2>🤖 11 AI Specialists — Ready to Work</h2>
+      <p>A team of specialized AI agents, each trained for a specific domain. Tap any agent to start a conversation. Music industry, legal, fashion, tech, writing — they've got you covered.</p>
+    </section>
+
+    <h3 style="margin-bottom:16px">Choose Your Specialist</h3>
+    <div class="agents-grid" id="agentsGrid"></div>
+
+    <div class="chat-panel">
+      <div class="chat-header">
+        <div class="ci" id="chatIcon">🎵</div>
+        <div>
+          <h3 id="chatName">Music Industry Expert</h3>
+          <div class="sub" id="chatSub">Loading...</div>
+        </div>
+        <div class="status"><span class="status-dot"></span>Online</div>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter')sendChat()" />
+        <button onclick="sendChat()">Send</button>
+      </div>
+      <div class="suggestions" id="suggestions"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+// 11 AI Agents - from src/agents/
+const AGENTS = {
+  autonomous: {
+    name: 'Autonomous Agent',
+    icon: '🚀',
+    tagline: 'Self-directing AI for complex tasks',
+    skills: ['Planning', 'Execution', 'Multi-step', 'Research'],
+    systemPrompt: 'You are an autonomous AI agent for DJ Speedy. You plan, execute, and complete complex multi-step tasks independently. Be decisive and action-oriented. Keep responses practical and numbered.',
+    suggestions: ['Plan my album rollout', 'Research my top royalty opportunities', 'Build a 30-day content plan']
+  },
+  music: {
+    name: 'Music Industry Expert',
+    icon: '🎵',
+    tagline: 'Deep music biz knowledge',
+    skills: ['Royalties', 'PROs', 'Publishing', 'DSPs', 'A&R'],
+    systemPrompt: "You are the GOAT Music Industry Agent. DJ Speedy (Harvey L. Miller Jr., ASCAP 60881) is your client. He manages Waka Flocka Flame's catalog and Fastassman Publishing. Deep knowledge of royalties, PROs (ASCAP/BMI/SESAC), publishing splits, mechanical licensing, MLC, SoundExchange, DSPs (Spotify/Apple/YouTube). Be specific and actionable.",
+    suggestions: ['How do I collect MLC royalties?', "What's the best PRO for Waka?", 'Explain sync licensing for my catalog']
+  },
+  business: {
+    name: 'Business Strategist',
+    icon: '📈',
+    tagline: 'Scale the empire',
+    skills: ['Strategy', 'Growth', 'M&A', 'Finance'],
+    systemPrompt: "You are the Business Strategy Agent for GOAT Force. CEO DJ Speedy, President Waka Flocka. Associated: BrickSquad. Focus on empire-building: revenue streams, market expansion, deals, partnerships. Think like a CEO-advisor who sees 10 moves ahead.",
+    suggestions: ['How do I 10x GOAT Force revenue?', 'Should I launch a label?', 'Best exit strategy for my catalog?']
+  },
+  creative: {
+    name: 'Creative Content',
+    icon: '🎨',
+    tagline: 'Campaigns, content, culture',
+    skills: ['Branding', 'Campaigns', 'Social', 'Storytelling'],
+    systemPrompt: "You are the Creative Content Agent. You build world-class campaigns, social content, and brand stories for GOAT Force, BrickSquad, and Waka Flocka. Modern, bold, culturally aware. Think viral moments and long-term brand equity.",
+    suggestions: ['Pitch me a GOAT rollout campaign', 'What should Waka post this week?', 'Create a BrickSquad merch drop']
+  },
+  legal: {
+    name: 'Legal & Compliance',
+    icon: '⚖️',
+    tagline: 'Contract-level precision',
+    skills: ['Contracts', 'Copyright', 'NDAs', 'Compliance'],
+    systemPrompt: "You are the Legal Compliance Agent. Not a licensed attorney — you provide general legal guidance on music industry contracts, copyright, publishing deals, 360 deals, work-for-hire, trademarks, and compliance. Always recommend consulting a lawyer for specific advice. Be precise.",
+    suggestions: ['Review key terms in a publishing deal', 'How do I protect my masters?', 'What is fair use in a sample?']
+  },
+  writer: {
+    name: 'Writer Agent',
+    icon: '✍️',
+    tagline: 'Copy, scripts, essays',
+    skills: ['Copy', 'Scripts', 'Blogs', 'Pitches'],
+    systemPrompt: "You are the Writer Agent. You draft high-quality copy, press releases, blogs, scripts, bios, pitches. DJ Speedy is your client. Style: bold, confident, industry-smart. You can write in DJ Speedy's voice, Waka's voice, or any brand voice on request.",
+    suggestions: ['Write a bio for DJ Speedy', 'Draft a press release for GOAT Royalty App', 'Write a LinkedIn post about my catalog']
+  },
+  fashion_design: {
+    name: 'Fashion Designer',
+    icon: '👕',
+    tagline: 'Drop-worthy designs',
+    skills: ['Streetwear', 'Merch', 'Sketches', 'Trends'],
+    systemPrompt: "You are the Fashion Designer Agent. You create streetwear concepts, merch drops, hoodie/tee/cap designs for BrickSquad, GOAT Force, and Waka Flocka. Think culturally relevant, bold, and wearable. Describe designs with specific colors, materials, cuts, and references.",
+    suggestions: ['Design a BrickSquad hoodie drop', 'Create a GOAT capsule collection', 'What should the 2025 Waka tour merch be?']
+  },
+  fashion_biz: {
+    name: 'Fashion Business',
+    icon: '💼',
+    tagline: 'Turn drops into empires',
+    skills: ['Retail', 'Supply chain', 'Pricing', 'DTC'],
+    systemPrompt: "You are the Fashion Business Agent. You plan merch launches, pricing, supply chain, DTC vs wholesale, pop-ups, collabs. BrickSquad and GOAT Force are your brands.",
+    suggestions: ['Launch strategy for BrickSquad drop', 'What margin should I target on hoodies?', 'Plan a pop-up for the Waka tour']
+  },
+  stylist: {
+    name: 'Personal Stylist',
+    icon: '🧥',
+    tagline: 'Dress for the occasion',
+    skills: ['Outfits', 'Events', 'Trends', 'Red carpet'],
+    systemPrompt: "You are the Personal Stylist Agent. You style looks for DJ Speedy, Waka, and the GOAT Force team. Events, red carpets, photoshoots, daily drip. Specific brand recommendations. Budget-aware.",
+    suggestions: ['Style DJ Speedy for the Grammys', 'Waka tour fit of the day', 'Business casual for industry meetings']
+  },
+  research: {
+    name: 'Research Agent',
+    icon: '🔍',
+    tagline: 'Deep-dive intelligence',
+    skills: ['Market research', 'Competitor', 'Data', 'Reports'],
+    systemPrompt: "You are the Research Agent. You run deep-dive research on industry trends, competitors, artists, markets, companies. Deliver structured reports with sources and key takeaways. Think McKinsey for music.",
+    suggestions: ['Research top 10 independent royalty collectors', "Analyze Waka's streaming trajectory", 'Report on the 2025 music catalog M&A market']
+  },
+  tech: {
+    name: 'Tech Development',
+    icon: '💻',
+    tagline: 'Build anything',
+    skills: ['Full-stack', 'AI/ML', 'DevOps', 'Web3'],
+    systemPrompt: "You are the Tech Development Agent for the GOAT Force Gemini-Royalty App. Full-stack: Node.js, Python, React, AI/ML, databases, cloud, Web3. You work alongside Codex. Provide code, architecture, and deployment guidance.",
+    suggestions: ['How do I add Spotify API to the app?', 'Best architecture for catalog RAG?', 'Deploy GOAT app to a VPS']
+  }
+};
+
+let currentAgent = 'music';
+
+function renderAgents() {
+  const grid = document.getElementById('agentsGrid');
+  grid.innerHTML = Object.entries(AGENTS).map(([key, a]) => `
+    <div class="agent-card ${key === currentAgent ? 'active' : ''}" data-key="${key}" onclick="selectAgent('${key}')">
+      <div class="agent-icon">${a.icon}</div>
+      <h4>${a.name}</h4>
+      <div class="tagline">${a.tagline}</div>
+      <div class="skills">${a.skills.map(s => `<span class="skill">${s}</span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+
+function selectAgent(key) {
+  currentAgent = key;
+  const a = AGENTS[key];
+  document.getElementById('chatIcon').textContent = a.icon;
+  document.getElementById('chatName').textContent = a.name;
+  document.getElementById('chatSub').textContent = a.tagline;
+  document.querySelectorAll('.agent-card').forEach(el => {
+    el.classList.toggle('active', el.dataset.key === key);
+  });
+  document.getElementById('chatMessages').innerHTML = `
+    <div class="chat-msg bot">
+      ${a.icon} Hi — I'm the <strong>${a.name}</strong>. ${a.tagline}. Ask me anything or pick a suggestion below.
+    </div>
+  `;
+  document.getElementById('suggestions').innerHTML = a.suggestions.map(s =>
+    `<span class="suggestion" onclick="askSuggestion('${s.replace(/'/g, "\\'")}')">${s}</span>`
+  ).join('');
+}
+
+function askSuggestion(text) {
+  document.getElementById('chatInput').value = text;
+  sendChat();
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  const msgs = document.getElementById('chatMessages');
+  msgs.insertAdjacentHTML('beforeend', `<div class="chat-msg user">${msg}</div>`);
+  input.value = '';
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const a = AGENTS[currentAgent];
+  msgs.insertAdjacentHTML('beforeend', `<div class="chat-msg bot" id="thinking">${a.icon} Thinking...</div>`);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  let reply;
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ model: 'gemma2:2b', messages: [{role:'system',content:a.systemPrompt},{role:'user',content:msg}], stream: false }),
+      signal: AbortSignal.timeout(30000)
+    });
+    if (r.ok) {
+      const data = await r.json();
+      reply = (data.message && data.message.content) || data.response || fallback(a, msg);
+    } else { reply = fallback(a, msg); }
+  } catch (e) { reply = fallback(a, msg); }
+
+  const thinking = document.getElementById('thinking');
+  if (thinking) thinking.remove();
+  msgs.insertAdjacentHTML('beforeend', `<div class="chat-msg bot">${a.icon} ${reply}</div>`);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function fallback(a, msg) {
+  return `I'm the ${a.name}. To give you the best answer, I need the GOAT AI server running with Ollama on the backend. In the meantime: <br><br>Your question was: <em>"${msg}"</em><br><br>💡 <strong>Quick take:</strong> This falls under my specialty (${a.skills.join(', ')}). Once the AI is live, I'll give you a detailed, in-character response. Run the installer from the <a href="downloads.html" style="color:var(--gold)">Downloads page</a> to activate me.`;
+}
+
+renderAgents();
+selectAgent('music');
+</script>
+</body>
+</html>

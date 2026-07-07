@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0a">
+<title>🎛️ GOAT Macro Deck</title>
+<link rel="stylesheet" href="css/goat-touch.css">
+<script src="js/goat-touch.js" defer></script>
+<style>
+  .deck-page {
+    padding: calc(64px + env(safe-area-inset-top) + 10px) 8px calc(84px + env(safe-area-inset-bottom)) 8px;
+    min-height: 100vh;
+  }
+  .page-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 8px 4px;
+    overflow-x: auto;
+  }
+  .page-tab {
+    flex-shrink: 0;
+    padding: 10px 16px;
+    background: var(--goat-charcoal);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--goat-cream);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .page-tab.active { background: var(--gradient-gold); color: var(--goat-black); border-color: var(--goat-gold); }
+  .toast {
+    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+    background: var(--gradient-dark);
+    border: 2px solid var(--goat-gold);
+    color: var(--goat-gold);
+    padding: 14px 22px;
+    border-radius: 30px;
+    font-weight: 800;
+    box-shadow: var(--shadow-glow-gold);
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="touch-mode">
+
+<header class="t-topbar">
+  <button class="t-btn" onclick="history.back()" style="min-width:auto;min-height:44px;padding:8px 12px;">←</button>
+  <div class="brand"><span class="emoji">🎛️</span><span>MACRO DECK</span></div>
+  <span class="spacer"></span>
+  <span class="chip" id="pageLabel">MAIN</span>
+</header>
+
+<main class="deck-page">
+  <div class="page-tabs" id="pageTabs"></div>
+  <div class="deck-grid" id="deckGrid"></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<nav class="t-tabbar">
+  <a class="t-tab" href="touch-hub.html"><span class="ic">🏠</span><span class="lb">Hub</span></a>
+  <a class="t-tab" href="touch-brain.html"><span class="ic">🧠</span><span class="lb">AI</span></a>
+  <a class="t-tab" href="touch-pads.html"><span class="ic">🎹</span><span class="lb">Pads</span></a>
+  <a class="t-tab" href="touch-mixer.html"><span class="ic">🎚️</span><span class="lb">Mix</span></a>
+  <a class="t-tab active" href="touch-deck.html"><span class="ic">🎛️</span><span class="lb">Deck</span></a>
+  <a class="t-tab" href="touch-transport.html"><span class="ic">⏯️</span><span class="lb">Trans</span></a>
+</nav>
+
+<script>
+const PAGES = {
+  main: {
+    label: 'MAIN',
+    buttons: [
+      { e:'🏠', t:'Hub', c:'gold', a:()=>location.href='touch-hub.html' },
+      { e:'🧠', t:'Brain', c:'red', a:()=>location.href='touch-brain.html' },
+      { e:'🎹', t:'Pads', c:'orange', a:()=>location.href='touch-pads.html' },
+      { e:'🎚️', t:'Mixer', c:'green', a:()=>location.href='touch-mixer.html' },
+      { e:'🎼', t:'Keys', c:'cyan', a:()=>location.href='touch-keys.html' },
+      { e:'🎯', t:'XY Pads', c:'purple', a:()=>location.href='touch-xy.html' },
+      { e:'⏯️', t:'Transport', c:'red', a:()=>location.href='touch-transport.html' },
+      { e:'🎙️', t:'Studio', c:'gold', a:()=>location.href='studio.html' },
+      { e:'🎛️', t:'SSL Pro', c:'green', a:()=>location.href='ssl-mixer.html' },
+      { e:'🥁', t:'Beat Mkr', c:'orange', a:()=>location.href='beat-maker.html' },
+      { e:'💎', t:'Master', c:'purple', a:()=>location.href='mastering.html' },
+      { e:'🎤', t:'Vocals', c:'red', a:()=>location.href='vocal-studio.html' },
+      { e:'🚀', t:'Autopilot', c:'gold', a:()=>location.href='autopilot.html' },
+      { e:'💰', t:'Net Worth', c:'green', a:()=>location.href='networth.html' },
+      { e:'👥', t:'Fans', c:'cyan', a:()=>location.href='fans.html' },
+      { e:'🔗', t:'Smart Links', c:'purple', a:()=>location.href='smart-links.html' },
+      { e:'📧', t:'Campaigns', c:'orange', a:()=>location.href='campaigns.html' },
+      { e:'📊', t:'Command', c:'red', a:()=>location.href='command-center.html' },
+      { e:'🔌', t:'Plugins', c:'gold', a:()=>location.href='plugins.html' },
+      { e:'📦', t:'Samples', c:'cyan', a:()=>location.href='sample-library.html' },
+      { e:'⚙️', t:'Settings', c:'', a:()=>location.href='settings.html' },
+      { e:'⬇️', t:'Download', c:'gold', a:()=>location.href='download.html' },
+      { e:'📱', t:'Full Screen', c:'green', a:()=>GoatTouch.toggleFullscreen() },
+      { e:'🎬', t:'Movie', c:'purple', a:()=>location.href='movie-studio.html' },
+    ],
+  },
+  ai: {
+    label: 'AI AGENTS',
+    buttons: [
+      { e:'👑', t:'Moneypenny', c:'gold', a:()=>openAgent('moneypenny','Write a fire tweet for today\'s release') },
+      { e:'💻', t:'Codex', c:'cyan', a:()=>openAgent('codex','Give me a Python tip') },
+      { e:'⚖️', t:'Legal', c:'', a:()=>openAgent('legal','Explain producer agreements') },
+      { e:'🎹', t:'Producer', c:'orange', a:()=>openAgent('producer','Suggest a trap chord progression') },
+      { e:'🎯', t:'A&R', c:'red', a:()=>openAgent('ar','What\'s trending on TikTok?') },
+      { e:'📊', t:'CFO', c:'green', a:()=>openAgent('business','Explain royalty splits') },
+      { e:'👗', t:'Stylist', c:'purple', a:()=>openAgent('fashion','Album cover direction ideas') },
+      { e:'🔬', t:'Research', c:'cyan', a:()=>openAgent('researcher','Deep dive my audience') },
+      { e:'✍️', t:'Lyricist', c:'gold', a:()=>openAgent('writer','Write a hook about loyalty') },
+      { e:'🚀', t:'Autopilot', c:'red', a:()=>location.href='autopilot.html' },
+      { e:'🔐', t:'Vault', c:'', a:()=>openAgent('private','Personal strategy session') },
+      { e:'🎤', t:'Voice Mode', c:'green', a:()=>{location.href='touch-brain.html';} },
+    ],
+  },
+  quick: {
+    label: 'QUICK ACTIONS',
+    buttons: [
+      { e:'💰', t:'Royalty Tip', c:'gold', a:()=>quickBrain('moneypenny','Give me a 30-second royalty boost tip for today') },
+      { e:'📝', t:'Tweet Now', c:'red', a:()=>quickBrain('moneypenny','Write a fire launch tweet for Speedy x Waka') },
+      { e:'📸', t:'IG Caption', c:'purple', a:()=>quickBrain('moneypenny','Write a 3-line Instagram caption with hashtags') },
+      { e:'🎵', t:'TikTok Hook', c:'orange', a:()=>quickBrain('writer','Write a 15-second TikTok-ready hook') },
+      { e:'🔍', t:'Trend Scout', c:'cyan', a:()=>quickBrain('ar','What\'s trending in trap this week?') },
+      { e:'💎', t:'Master Tip', c:'green', a:()=>quickBrain('producer','One pro mastering tip for today') },
+      { e:'📧', t:'Email Blast', c:'red', a:()=>location.href='campaigns.html' },
+      { e:'🔗', t:'New Link', c:'gold', a:()=>location.href='smart-links.html' },
+      { e:'➕', t:'Add Fan', c:'green', a:()=>location.href='fans.html' },
+      { e:'📊', t:'Stats Now', c:'cyan', a:()=>location.href='command-center.html' },
+      { e:'🎬', t:'Record Idea', c:'purple', a:()=>GoatTouch.listen({onResult: t => toast('🎤 Recorded: ' + t)}) },
+      { e:'🔊', t:'Say Hi', c:'orange', a:()=>GoatTouch.speak('GOAT Brain online. Ready to run the game, Speedy.') },
+    ],
+  },
+  music: {
+    label: 'MUSIC CONTROL',
+    buttons: [
+      { e:'🥁', t:'Kick', c:'red', a:()=>GoatTouch.playDrum('kick',1) },
+      { e:'🥁', t:'Snare', c:'gold', a:()=>GoatTouch.playDrum('snare',0.9) },
+      { e:'🎩', t:'Hat', c:'cyan', a:()=>GoatTouch.playDrum('hat',0.8) },
+      { e:'👏', t:'Clap', c:'orange', a:()=>GoatTouch.playDrum('clap',0.9) },
+      { e:'🔊', t:'808', c:'purple', a:()=>GoatTouch.playDrum('808',1) },
+      { e:'🎵', t:'C Major', c:'green', a:()=>playChord([262,330,392]) },
+      { e:'🎵', t:'A Minor', c:'', a:()=>playChord([220,262,330]) },
+      { e:'🎵', t:'F Major', c:'gold', a:()=>playChord([349,440,523]) },
+      { e:'🎵', t:'G Major', c:'cyan', a:()=>playChord([392,494,587]) },
+      { e:'📻', t:'Loop 90', c:'red', a:()=>startLoop(90) },
+      { e:'📻', t:'Loop 140', c:'gold', a:()=>startLoop(140) },
+      { e:'⏹', t:'Stop Loop', c:'', a:()=>stopLoop() },
+    ],
+  },
+};
+
+const pageTabs = document.getElementById('pageTabs');
+const deckGrid = document.getElementById('deckGrid');
+let currentPage = 'main';
+
+function renderTabs() {
+  pageTabs.innerHTML = '';
+  Object.entries(PAGES).forEach(([id, p]) => {
+    const t = document.createElement('div');
+    t.className = 'page-tab' + (id === currentPage ? ' active' : '');
+    t.textContent = p.label;
+    t.addEventListener('click', () => switchPage(id));
+    pageTabs.appendChild(t);
+  });
+}
+function renderGrid() {
+  deckGrid.innerHTML = '';
+  PAGES[currentPage].buttons.forEach(b => {
+    const el = document.createElement('div');
+    el.className = 'deck-btn ' + (b.c || '');
+    el.innerHTML = `<div class="emoji">${b.e}</div><div>${b.t}</div>`;
+    el.addEventListener('click', () => {
+      GoatTouch.haptic('medium');
+      if (b.a) b.a();
+    });
+    deckGrid.appendChild(el);
+  });
+}
+function switchPage(id) {
+  currentPage = id;
+  document.getElementById('pageLabel').textContent = PAGES[id].label;
+  renderTabs(); renderGrid();
+  GoatTouch.haptic('medium');
+}
+renderTabs(); renderGrid();
+
+// ============== HELPERS ==============
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+async function openAgent(id, prompt) {
+  sessionStorage.setItem('goat.agent', id);
+  sessionStorage.setItem('goat.prompt', prompt);
+  location.href = 'touch-brain.html';
+}
+async function quickBrain(agent, prompt) {
+  toast('⏳ Asking ' + agent + '…');
+  const res = await GoatTouch.brainChat(prompt, agent);
+  const reply = res.reply || res.error || '';
+  if (reply) {
+    GoatTouch.speak(reply.slice(0,200));
+    toast('✅ ' + reply.slice(0,80) + '…');
+  }
+}
+function playChord(freqs) {
+  freqs.forEach(f => GoatTouch.playTone(f, 1.2, 'triangle', 0.15));
+}
+let loopInt = null;
+function startLoop(bpm) {
+  stopLoop();
+  const step = (60/bpm)*1000/4;
+  let s = 0;
+  loopInt = setInterval(() => {
+    if (s % 4 === 0) GoatTouch.playDrum('kick',0.9);
+    if (s % 4 === 2) GoatTouch.playDrum('snare',0.8);
+    GoatTouch.playDrum('hat',0.4);
+    s++;
+  }, step);
+  toast('▶ Loop @ ' + bpm + ' BPM');
+}
+function stopLoop() { if (loopInt) { clearInterval(loopInt); loopInt=null; toast('⏹ Stopped'); } }
+</script>
+</body>
+</html>

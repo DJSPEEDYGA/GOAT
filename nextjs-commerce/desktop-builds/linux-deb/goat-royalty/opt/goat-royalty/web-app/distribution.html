@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌍 GOAT Distribution Network — 282 DSPs Worldwide</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+    <link rel="stylesheet" href="css/goat-theme.css">
+<link rel="icon" type="image/png" href="img/goat-hero-icon.png">
+<style>
+  .dist-wrap { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  .hero-stats {
+    display: flex; gap: 30px; flex-wrap: wrap;
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(193,18,31,0.2), rgba(139,0,0,0.2));
+    border-radius: 16px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(193,18,31,0.3);
+  }
+  .hero-stat { flex: 1; min-width: 140px; text-align: center; }
+  .hero-stat .num {
+    font-size: 40px; font-weight: 900;
+    background: linear-gradient(135deg, var(--goat-gold), var(--goat-red-bright));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-stat .label {
+    font-size: 11px; color: var(--goat-silver);
+    text-transform: uppercase; letter-spacing: 2px;
+  }
+  .ownership-banner {
+    background: linear-gradient(135deg, var(--goat-red), var(--goat-red-dark));
+    border: 2px solid var(--goat-gold);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .ownership-banner h2 {
+    margin: 0 0 8px;
+    color: white;
+    font-size: 22px;
+  }
+  .ownership-banner p {
+    margin: 0;
+    color: var(--goat-cream);
+    font-size: 14px;
+  }
+  .filter-bar {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    padding: 16px;
+    background: rgba(20,20,20,0.9);
+    border-radius: 12px;
+    border: 1px solid rgba(193,18,31,0.3);
+    margin-bottom: 20px;
+    align-items: center;
+  }
+  .filter-bar input, .filter-bar select {
+    padding: 10px 14px;
+    background: var(--goat-gray);
+    color: var(--goat-cream);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  .filter-bar input { min-width: 240px; flex: 1; }
+  .dsp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .dsp-card {
+    background: rgba(20,20,20,0.9);
+    border: 1px solid rgba(193,18,31,0.2);
+    border-radius: 10px;
+    padding: 14px;
+    transition: all 0.2s;
+  }
+  .dsp-card:hover {
+    border-color: var(--goat-red-bright);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(193,18,31,0.2);
+  }
+  .dsp-card.major {
+    background: linear-gradient(145deg, rgba(40,20,20,0.95), rgba(20,10,10,0.95));
+    border-color: var(--goat-gold);
+    box-shadow: 0 0 20px rgba(240,192,112,0.15);
+  }
+  .dsp-name {
+    font-weight: 800;
+    color: var(--goat-cream);
+    font-size: 15px;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .dsp-market {
+    color: var(--goat-gold);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .dsp-services {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .svc-tag {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .svc-tag.stream { background: rgba(0,229,255,0.25); color: var(--goat-cyan); }
+  .svc-tag.download { background: rgba(0,255,136,0.25); color: var(--goat-green); }
+  .svc-tag.other { background: rgba(178,75,243,0.25); color: var(--goat-purple); }
+  .dsp-notes {
+    font-size: 11px;
+    color: var(--goat-silver);
+    margin-top: 6px;
+    opacity: 0.8;
+  }
+  .dsp-users {
+    color: var(--goat-gold);
+    font-size: 11px;
+    font-family: monospace;
+    margin-top: 4px;
+  }
+  .region-header {
+    grid-column: 1 / -1;
+    padding: 16px 0 8px;
+    color: var(--goat-gold);
+    font-size: 18px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 2px solid rgba(193,18,31,0.3);
+    margin-top: 20px;
+  }
+  .tier-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+  }
+  .tier-badge.major { background: var(--gradient-gold); color: black; }
+  .tier-badge.mid { background: rgba(255,45,61,0.3); color: var(--goat-red-bright); }
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-icon">
+
+<nav class="goat-nav">
+  <a href="index.html" class="goat-nav-brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT">
+    <span>DISTRIBUTION</span>
+  </a>
+  <div class="goat-nav-links">
+    <a href="powerhouse.html">🐐 Hub</a>
+    <a href="distribution.html" class="active">🌍 Distribution</a>
+    <a href="sync-catalog.html">🎬 Sync</a>
+    <a href="release.html">🚀 Release</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="studio.html">🎛️ Studio</a>
+    <a href="plugins.html">🔌 Plugins</a>
+  </div>
+</nav>
+
+<div class="dist-wrap">
+  <section class="goat-hero" style="padding: 30px 0;">
+    <h1 style="font-size: 44px; margin: 0 0 8px;">🌍 GLOBAL DISTRIBUTION NETWORK</h1>
+    <p class="subtitle">282 Digital Service Providers · 112 Countries · All Major Streaming Platforms</p>
+  </section>
+
+  <!-- OWNERSHIP BANNER -->
+  <div class="ownership-banner">
+    <h2>👑 100% MASTER OWNERSHIP</h2>
+    <p>All music and video content distributed through this network is <strong>owned 100% by DJ Speedy (Harvey L. Miller Jr.)</strong> and featured artist <strong>Waka Flocka Flame</strong>. No labels. No middlemen. Full rights retained.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num" id="statTotal">282</div><div class="label">Active DSPs</div></div>
+    <div class="hero-stat"><div class="num">112</div><div class="label">Countries</div></div>
+    <div class="hero-stat"><div class="num">2.5B+</div><div class="label">Total Users</div></div>
+    <div class="hero-stat"><div class="num">155M+</div><div class="label">Paid Subscribers</div></div>
+    <div class="hero-stat"><div class="num">100%</div><div class="label">Master Rights</div></div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="🔍 Search by name, market, or notes (e.g. Spotify, Japan, radio)">
+    <select id="regionFilter">
+      <option value="">All Regions</option>
+      <option>Worldwide</option>
+      <option>US</option>
+      <option>UK</option>
+      <option>Europe</option>
+      <option>Asia</option>
+      <option>Japan</option>
+      <option>Korea</option>
+      <option>China</option>
+      <option>India</option>
+      <option>Latin America</option>
+      <option>Middle East</option>
+      <option>Africa</option>
+    </select>
+    <select id="serviceFilter">
+      <option value="">All Services</option>
+      <option value="stream">🎵 Streaming</option>
+      <option value="download">⬇️ Download</option>
+      <option value="other">📻 Other</option>
+    </select>
+    <select id="tierFilter">
+      <option value="">All Tiers</option>
+      <option value="major">🏆 Major (Spotify, Apple, etc.)</option>
+      <option value="regional">🌏 Regional Leaders</option>
+      <option value="niche">🎯 Niche / Specialty</option>
+    </select>
+    <button class="goat-btn" onclick="exportAllDSPs()">💾 Export List</button>
+  </div>
+
+  <!-- DSP LIST -->
+  <div id="dspList" class="dsp-grid"></div>
+</div>
+
+<footer class="goat-footer">
+  <p>🌍 <strong>GOAT DISTRIBUTION</strong> — Source: Digital Service Provider Master List · Updated 2025</p>
+  <p class="muted" style="font-size:12px;">Distribution handled through partnered aggregators (DistroKid, TuneCore, CD Baby, Too Lost, Stem, The Orchard, ONErpm, UnitedMasters).</p>
+</footer>
+
+<script>
+// Top 20 Major DSPs
+const MAJOR_DSPS = new Set([
+  'Apple Music', 'Spotify', 'Amazon Music', 'YouTube Music', 'Tidal',
+  'Deezer', 'Pandora', 'iHeartRadio', 'SoundCloud', 'Bandcamp',
+  'Anghami', 'NetEase Cloud Music', 'Tencent Music', 'QQ Music', 'KuGou',
+  'JioSaavn', 'Gaana', 'Melon', 'LINE Music', 'AWA',
+  'Napster', 'Qobuz', 'Boomplay', 'YouTube', 'Facebook'
+]);
+
+let DSPS = [];
+let dataLoaded = false;
+
+async function loadData() {
+  try {
+    const r = await fetch('data/distribution-network.json');
+    const data = await r.json();
+    DSPS = data.dsps.filter(d => !d.discontinued);
+    dataLoaded = true;
+    render();
+  } catch(e) {
+    document.getElementById('dspList').innerHTML = '<p style="color:var(--goat-red-bright); grid-column:1/-1;">⚠️ Could not load distribution data. Please refresh.</p>';
+    console.error(e);
+  }
+}
+
+function tier(name) {
+  if (MAJOR_DSPS.has(name)) return 'major';
+  const n = name.toLowerCase();
+  if (n.match(/radio|tv|telecom|music store|music service/)) return 'niche';
+  return 'mid';
+}
+
+function render() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const reg = document.getElementById('regionFilter').value;
+  const svc = document.getElementById('serviceFilter').value;
+  const t = document.getElementById('tierFilter').value;
+
+  const filtered = DSPS.filter(d => {
+    if (reg && !d.market.includes(reg)) return false;
+    if (svc === 'stream' && !d.stream) return false;
+    if (svc === 'download' && !d.download) return false;
+    if (svc === 'other' && !d.other) return false;
+    if (t === 'major' && !MAJOR_DSPS.has(d.name)) return false;
+    if (t === 'regional' && (MAJOR_DSPS.has(d.name) || tier(d.name) === 'niche')) return false;
+    if (t === 'niche' && tier(d.name) !== 'niche') return false;
+    if (q) {
+      const blob = (d.name + ' ' + d.market + ' ' + d.notes).toLowerCase();
+      if (!blob.includes(q)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('statTotal').textContent = filtered.length;
+
+  const container = document.getElementById('dspList');
+  if (filtered.length === 0) {
+    container.innerHTML = '<p style="color:var(--goat-silver); grid-column:1/-1; text-align:center; padding: 40px;">No DSPs match your filters.</p>';
+    return;
+  }
+
+  // Group by region (Worldwide first, then regions, then countries)
+  const worldwide = filtered.filter(d => d.market === 'Worldwide');
+  const regional = filtered.filter(d => d.market !== 'Worldwide');
+
+  let html = '';
+
+  if (worldwide.length > 0) {
+    html += '<div class="region-header">🌍 Worldwide (' + worldwide.length + ')</div>';
+    html += worldwide.map(renderCard).join('');
+  }
+
+  if (regional.length > 0) {
+    // Group by market
+    const byMarket = {};
+    regional.forEach(d => {
+      const m = d.market || 'Unknown';
+      if (!byMarket[m]) byMarket[m] = [];
+      byMarket[m].push(d);
+    });
+    const sortedMarkets = Object.keys(byMarket).sort((a, b) => byMarket[b].length - byMarket[a].length);
+    for (const m of sortedMarkets) {
+      html += '<div class="region-header">📍 ' + m + ' (' + byMarket[m].length + ')</div>';
+      html += byMarket[m].map(renderCard).join('');
+    }
+  }
+
+  container.innerHTML = html;
+}
+
+function renderCard(d) {
+  const isMajor = MAJOR_DSPS.has(d.name);
+  const tags = [];
+  if (d.stream) tags.push('<span class="svc-tag stream">🎵 STREAM</span>');
+  if (d.download) tags.push('<span class="svc-tag download">⬇ DOWNLOAD</span>');
+  if (d.other) tags.push('<span class="svc-tag other">📻 OTHER</span>');
+
+  let users = '';
+  if (d.totalUsers) users += '👥 ' + d.totalUsers + ' users';
+  if (d.paidUsers) users += (users ? ' · ' : '') + '💰 ' + d.paidUsers + ' paid';
+
+  return `
+    <div class="dsp-card ${isMajor ? 'major' : ''}">
+      <div class="dsp-name">
+        ${d.name}
+        ${isMajor ? '<span class="tier-badge major">MAJOR</span>' : ''}
+      </div>
+      <div class="dsp-market">${d.market || '—'}</div>
+      <div class="dsp-services">${tags.join('')}</div>
+      ${users ? `<div class="dsp-users">${users}</div>` : ''}
+      ${d.notes ? `<div class="dsp-notes">${d.notes}</div>` : ''}
+    </div>
+  `;
+}
+
+['searchInput','regionFilter','serviceFilter','tierFilter'].forEach(id => {
+  document.getElementById(id).addEventListener('input', render);
+  document.getElementById(id).addEventListener('change', render);
+});
+
+function exportAllDSPs() {
+  const csv = 'Name,Market,Stream,Download,Other,Total Users,Paid Users,Notes\n' +
+    DSPS.map(d => `"${d.name}","${d.market}","${d.stream?'Y':''}","${d.download?'Y':''}","${d.other?'Y':''}","${d.totalUsers}","${d.paidUsers}","${d.notes.replace(/"/g,'""')}"`).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'GOAT_DSP_Network_' + Date.now() + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+loadData();
+</script>
+</body>
+</html>

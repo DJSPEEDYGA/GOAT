@@ -1,0 +1,121 @@
+name: Build GOAT Royalty Launcher
+
+on:
+  push:
+    tags:
+      - 'goat-v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        working-directory: goat-launcher
+        run: npm install
+      - name: Build Windows (EXE + Portable)
+        working-directory: goat-launcher
+        run: npm run build:win
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            goat-launcher/dist/*.exe
+          retention-days: 30
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        working-directory: goat-launcher
+        run: npm install
+      - name: Build macOS (ZIP x64 + arm64)
+        working-directory: goat-launcher
+        run: npm run build:mac
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-build
+          path: |
+            goat-launcher/dist/*.zip
+          retention-days: 30
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        working-directory: goat-launcher
+        run: npm install
+      - name: Build Linux (AppImage + DEB)
+        working-directory: goat-launcher
+        run: npm run build:linux
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: |
+            goat-launcher/dist/*.AppImage
+            goat-launcher/dist/*.deb
+          retention-days: 30
+
+  create-release:
+    needs: [build-windows, build-mac, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f | sort
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "GOAT Royalty Launcher ${{ github.ref_name }}"
+          body: |
+            ## 🐐 GOAT Royalty Ultimate Launcher ${{ github.ref_name }}
+
+            The ultimate desktop app for music producers — all tools in one place.
+
+            ### Downloads
+            | Platform | File | Description |
+            |----------|------|-------------|
+            | 🪟 Windows | `GOAT-Royalty-*-Setup.exe` | Installer (recommended) |
+            | 🪟 Windows | `GOAT-Royalty-*-Portable.exe` | Portable (no install) |
+            | 🍎 macOS | `GOAT-Royalty-*-mac-x64.zip` | Intel Mac |
+            | 🍎 macOS | `GOAT-Royalty-*-mac-arm64.zip` | Apple Silicon (M1/M2/M3) |
+            | 🐧 Linux | `GOAT-Royalty-*.AppImage` | Universal Linux |
+            | 🐧 Linux | `GOAT-Royalty-*.deb` | Debian/Ubuntu |
+
+            ### Features
+            - 🐐 29 built-in GOAT Royalty pages
+            - 🤖 AI tools (Adobe Firefly, Sora AI, Ms. Vanessa, Atlas AI)
+            - 🎵 Music catalog (3,650+ tracks)
+            - 💼 Business tools (analytics, copyright, publishing)
+            - 🌐 External tools (ChatGPT, Spotify, YouTube, GitHub, etc.)
+            - 🎛️ Production tools (Splice, LANDR, Waves, etc.)
+            - 📱 Social media (Instagram, TikTok, YouTube Studio)
+
+            Built by SuperNinja AI for Harvey Miller (DJ Speedy)
+          files: |
+            artifacts/**/*
+          draft: false
+          prerelease: false

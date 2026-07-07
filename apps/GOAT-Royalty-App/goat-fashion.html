@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOAT Royalty - Fashion</title>
+    <link rel="stylesheet" href="goat-theme.css">
+    <style>
+        .fashion-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fashion-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,0 100,50 50,100 0,50" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: 50px 50px;
+            animation: patternScroll 20s linear infinite;
+        }
+
+        @keyframes patternScroll {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .fashion-header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .fashion-header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .fashion-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item .number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--text-light);
+        }
+
+        .stat-item .label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .fashion-nav {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .fashion-nav-item {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .fashion-nav-item:hover,
+        .fashion-nav-item.active {
+            background: var(--primary-color);
+            color: var(--text-light);
+        }
+
+        .fashion-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .view-all {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .trending-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .fashion-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .fashion-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-image {
+            position: relative;
+            height: 350px;
+            background: linear-gradient(135deg, var(--primary-color-light) 0%, var(--secondary-color-light) 100%);
+            overflow: hidden;
+        }
+
+        .card-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(168, 85, 247, 0.3) 0%, 
+                rgba(236, 72, 153, 0.3) 100%);
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: var(--accent-color);
+            color: var(--text-light);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .card-like {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .card-like:hover {
+            transform: scale(1.1);
+            background: var(--primary-color);
+            color: var(--text-light);
+        }
+
+        .card-info {
+            padding: 1.5rem;
+        }
+
+        .card-brand {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .card-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .price-current {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .price-original {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-left: 0.5rem;
+        }
+
+        .card-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-top: 0.5rem;
+        }
+
+        .stars {
+            color: #fbbf24;
+            font-size: 0.9rem;
+        }
+
+        .rating-count {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .collections-carousel {
+            display: flex;
+            gap: 2rem;
+            overflow-x: auto;
+            padding: 1rem 0 2rem;
+            scroll-behavior: smooth;
+        }
+
+        .collections-carousel::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .collections-carousel::-webkit-scrollbar-track {
+            background: var(--bg-color);
+            border-radius: 3px;
+        }
+
+        .collections-carousel::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .collection-card {
+            flex: 0 0 400px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .collection-card:hover {
+            transform: scale(1.02);
+        }
+
+        .collection-header {
+            height: 250px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            position: relative;
+        }
+
+        .collection-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(168, 85, 247, 0.4) 0%, 
+                rgba(236, 72, 153, 0.4) 100%);
+        }
+
+        .collection-brand {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border: 3px solid var(--card-bg);
+            z-index: 2;
+        }
+
+        .collection-info {
+            padding: 2.5rem 1.5rem 1.5rem;
+            text-align: center;
+        }
+
+        .collection-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .collection-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .collection-meta {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .meta-label {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .category-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(168, 85, 247, 0.05) 0%, 
+                rgba(236, 72, 153, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .category-card:hover::before {
+            opacity: 1;
+        }
+
+        .category-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .category-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .category-count {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .premium-banner {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .premium-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: 100px 100px;
+            opacity: 0.3;
+        }
+
+        .premium-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .premium-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text-light);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .premium-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .premium-description {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            max-width: 500px;
+        }
+
+        .premium-btn {
+            background: var(--text-light);
+            color: var(--primary-color);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+
+        .premium-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .shopping-cart {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-color);
+            color: var(--text-light);
+            border: none;
+            border-radius: 50px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(168, 85, 247, 0.4);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .shopping-cart:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.5);
+        }
+
+        .cart-count {
+            background: var(--accent-color);
+            color: var(--text-light);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .filter-bar {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .filter-btn {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: var(--text-light);
+            border-color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .fashion-header h1 {
+                font-size: 2rem;
+            }
+
+            .fashion-stats {
+                gap: 1.5rem;
+                flex-wrap: wrap;
+            }
+
+            .fashion-nav {
+                gap: 1rem;
+                overflow-x: auto;
+                padding: 1rem;
+            }
+
+            .trending-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+
+            .categories-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .premium-banner {
+                flex-direction: column;
+                text-align: center;
+                gap: 1.5rem;
+            }
+
+            .collections-carousel {
+                padding: 1rem;
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <nav class="fashion-nav">
+        <a href="#" class="fashion-nav-item active">Discover</a>
+        <a href="#" class="fashion-nav-item">Collections</a>
+        <a href="#" class="fashion-nav-item">Designers</a>
+        <a href="#" class="fashion-nav-item">Brands</a>
+        <a href="#" class="fashion-nav-item">Wardrobe</a>
+        <a href="#" class="fashion-nav-item">AI Stylist</a>
+    </nav>
+
+    <header class="fashion-header">
+        <h1>GOAT Fashion</h1>
+        <p>Discover the latest trends and elevate your style</p>
+        <div class="fashion-stats">
+            <div class="stat-item">
+                <div class="number">12,500+</div>
+                <div class="label">Items</div>
+            </div>
+            <div class="stat-item">
+                <div class="number">250+</div>
+                <div class="label">Designers</div>
+            </div>
+            <div class="stat-item">
+                <div class="number">50K+</div>
+                <div class="label">Community</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="fashion-content">
+        <div class="filter-bar">
+            <button class="filter-btn active">All</button>
+            <button class="filter-btn">Streetwear</button>
+            <button class="filter-btn">Luxury</button>
+            <button class="filter-btn">Casual</button>
+            <button class="filter-btn">Designer</button>
+            <button class="filter-btn">Accessories</button>
+            <button class="filter-btn">Shoes</button>
+            <button class="filter-btn">Watches</button>
+        </div>
+
+        <div class="section-header">
+            <h2>Trending Now</h2>
+            <a href="#" class="view-all">View All →</a>
+        </div>
+
+        <div class="trending-grid" id="trendingGrid">
+            <!-- Fashion cards will be dynamically inserted -->
+        </div>
+
+        <div class="premium-banner">
+            <div class="premium-content">
+                <span class="premium-badge">PREMIUM</span>
+                <h3 class="premium-title">Exclusive Designer Collections</h3>
+                <p class="premium-description">Get early access to limited edition pieces and exclusive collaborations from top designers worldwide.</p>
+            </div>
+            <button class="premium-btn">Upgrade Now</button>
+        </div>
+
+        <div class="section-header">
+            <h2>Featured Collections</h2>
+            <a href="#" class="view-all">View All →</a>
+        </div>
+
+        <div class="collections-carousel" id="collectionsCarousel">
+            <!-- Collection cards will be dynamically inserted -->
+        </div>
+
+        <div class="section-header">
+            <h2>Browse by Category</h2>
+        </div>
+
+        <div class="categories-grid">
+            <div class="category-card">
+                <span class="category-icon">👕</span>
+                <h3 class="category-name">Apparel</h3>
+                <p class="category-count">3,245 items</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">👟</span>
+                <h3 class="category-name">Footwear</h3>
+                <p class="category-count">2,876 items</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">⌚</span>
+                <h3 class="category-name">Accessories</h3>
+                <p class="category-count">1,543 items</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">👜</span>
+                <h3 class="category-name">Bags</h3>
+                <p class="category-count">987 items</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">👔</span>
+                <h3 class="category-name">Formal Wear</h3>
+                <p class="category-count">1,234 items</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">🧢</span>
+                <h3 class="category-name">Headwear</h3>
+                <p class="category-count">654 items</p>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2>Just For You</h2>
+            <a href="#" class="view-all">View All →</a>
+        </div>
+
+        <div class="trending-grid" id="recommendedGrid">
+            <!-- Recommended items will be dynamically inserted -->
+        </div>
+    </div>
+
+    <button class="shopping-cart">
+        🛒 <span class="cart-count">3</span>
+    </button>
+
+    <script>
+        // Fashion data
+        const trendingItems = [
+            { id: 1, brand: "BALMAIN", title: "Embellished Leather Jacket", price: "$4,890", original: "$5,500", rating: 4.8, reviews: 124, badge: "TRENDING" },
+            { id: 2, brand: "GUCCI", title: "GG Monogram Sneakers", price: "$1,250", original: "$1,400", rating: 4.9, reviews: 89, badge: "NEW" },
+            { id: 3, brand: "OFF-WHITE", title: "Arrows Hoodie", price: "$680", original: "$790", rating: 4.7, reviews: 156, badge: "POPULAR" },
+            { id: 4, brand: "VERSACE", title: "Medusa Pendant", price: "$1,450", original: "$1,600", rating: 4.9, reviews: 67, badge: "LUXURY" },
+            { id: 5, brand: "STONE ISLAND", title: "Compass Patch Jacket", price: "$890", original: "$995", rating: 4.6, reviews: 203, badge: "STREETWEAR" },
+            { id: 6, brand: "PRADA", title: "Leather Crossbody Bag", price: "$2,340", original: "$2,600", rating: 4.8, reviews: 45, badge: "CLASSIC" },
+            { id: 7, brand: "SUPREME", title: "Box Logo Tee White", price: "$350", original: "$400", rating: 4.5, reviews: 312, badge: "HYPE" },
+            { id: 8, brand: "BALENCIAGA", title: "Triple S Sneakers", price: "$1,050", original: "$1,150", rating: 4.7, reviews: 98, badge: "TRENDING" }
+        ];
+
+        const collections = [
+            { id: 1, title: "Summer Essentials", description: "Lightweight fabrics and bold colors for the season", items: 156, brands: 24, icon: "🌴" },
+            { id: 2, title: "Streetwear Culture", description: "Urban styles from the hottest streetwear brands", items: 234, brands: 18, icon: "🔥" },
+            { id: 3, title: "Luxury Timepieces", description: "Premium watches from renowned watchmakers", items: 89, brands: 12, icon: "⌚" },
+            { id: 4, title: "Designer Accessories", description: "Statement pieces that elevate any outfit", items: 167, brands: 31, icon: "✨" }
+        ];
+
+        const recommendedItems = [
+            { id: 9, brand: "FENDI", title: "FF Logo Wallet", price: "$520", original: "$580", rating: 4.6, reviews: 78, badge: "RECOMMENDED" },
+            { id: 10, brand: "AMIRI", title: "Distressed Skinny Jeans", price: "$780", original: "$890", rating: 4.5, reviews: 134, badge: "TRENDING" },
+            { id: 11, brand: "RICK OWENS", title: "Geobasket Sneakers", price: "$1,180", original: "$1,300", rating: 4.8, reviews: 56, badge: "DESIGNER" },
+            { id: 12, brand: "DOLCE & GABBANA", title: "Sicily Tote Bag", price: "$2,890", original: "$3,200", rating: 4.9, reviews: 34, badge: "LUXURY" }
+        ];
+
+        // Render fashion cards
+        function renderFashionCard(item) {
+            const stars = '⭐'.repeat(Math.floor(item.rating));
+            return `
+                <div class="fashion-card">
+                    <div class="card-image">
+                        <span class="card-badge">${item.badge}</span>
+                        <button class="card-like">❤️</button>
+                    </div>
+                    <div class="card-info">
+                        <p class="card-brand">${item.brand}</p>
+                        <h3 class="card-title">${item.title}</h3>
+                        <div class="card-rating">
+                            <span class="stars">${stars}</span>
+                            <span class="rating-count">(${item.reviews})</span>
+                        </div>
+                        <div class="card-price">
+                            <span class="price-current">${item.price}</span>
+                            <span class="price-original">${item.original}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render collection cards
+        function renderCollectionCard(collection) {
+            return `
+                <div class="collection-card">
+                    <div class="collection-header">
+                        <div class="collection-brand">${collection.icon}</div>
+                    </div>
+                    <div class="collection-info">
+                        <h3 class="collection-title">${collection.title}</h3>
+                        <p class="collection-description">${collection.description}</p>
+                        <div class="collection-meta">
+                            <div class="meta-item">
+                                <div class="meta-value">${collection.items}</div>
+                                <div class="meta-label">Items</div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-value">${collection.brands}</div>
+                                <div class="meta-label">Brands</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize grids
+        document.getElementById('trendingGrid').innerHTML = trendingItems.map(renderFashionCard).join('');
+        document.getElementById('collectionsCarousel').innerHTML = collections.map(renderCollectionCard).join('');
+        document.getElementById('recommendedGrid').innerHTML = recommendedItems.map(renderFashionCard).join('');
+
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Like button functionality
+        document.querySelectorAll('.card-like').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.innerHTML = this.innerHTML === '❤️' ? '❤️‍🔥' : '❤️';
+            });
+        });
+
+        // Nav functionality
+        document.querySelectorAll('.fashion-nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.fashion-nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

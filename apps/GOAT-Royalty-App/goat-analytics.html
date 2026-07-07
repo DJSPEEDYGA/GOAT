@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Analytics | GOAT Royalty</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-light: #F4E4BA;
+            --bg-primary: #040608;
+            --bg-secondary: #0A0D12;
+            --bg-tertiary: #141A24;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0AEC0;
+            --accent-green: #00FF88;
+            --accent-blue: #3B82F6;
+            --accent-purple: #8B5CF6;
+            --accent-pink: #EC4899;
+            --accent-orange: #F59E0B;
+            --accent-red: #EF4444;
+            --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #F4E4BA 50%, #D4AF37 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(10, 13, 18, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient-gold);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .nav-links a:hover { color: var(--gold); }
+
+        /* Main Content */
+        .main-content { padding-top: 100px; min-height: 100vh; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 0 40px; }
+
+        /* Header */
+        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .header-section h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .date-filter {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-gold);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .stat-icon.followers { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+        .stat-icon.revenue { background: rgba(0, 255, 136, 0.15); color: var(--accent-green); }
+        .stat-icon.engagement { background: rgba(236, 72, 153, 0.15); color: var(--accent-pink); }
+        .stat-icon.reach { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .stat-change.up {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--accent-green);
+        }
+
+        .stat-change.down {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        /* Chart Section */
+        .chart-section {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i { color: var(--gold); }
+
+        .chart-tabs {
+            display: flex;
+            gap: 15px;
+        }
+
+        .chart-tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .chart-tab.active {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        .chart-placeholder {
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 20px 0;
+            gap: 10px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--gold), rgba(212, 175, 55, 0.3));
+            border-radius: 8px 8px 0 0;
+            min-height: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .chart-bar:hover {
+            background: linear-gradient(to top, var(--gold), rgba(212, 175, 55, 0.5));
+            transform: scaleY(1.05);
+        }
+
+        .chart-bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .chart-bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: var(--gold);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .chart-bar:hover .chart-bar-value {
+            opacity: 1;
+        }
+
+        /* Platform Breakdown */
+        .platform-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .platform-item {
+            background: var(--bg-tertiary);
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .platform-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .platform-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .platform-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .platform-icon.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .platform-icon.twitter { background: #1DA1F2; }
+        .platform-icon.youtube { background: #FF0000; }
+        .platform-icon.tiktok { background: #000; }
+        .platform-icon.spotify { background: #1DB954; }
+
+        .platform-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .platform-stat {
+            text-align: right;
+        }
+
+        .platform-stat-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .platform-stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .platform-progress {
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .platform-progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .platform-progress-fill.instagram { background: linear-gradient(90deg, #f09433, #bc1888); }
+        .platform-progress-fill.twitter { background: #1DA1F2; }
+        .platform-progress-fill.youtube { background: #FF0000; }
+        .platform-progress-fill.tiktok { background: var(--text-primary); }
+        .platform-progress-fill.spotify { background: #1DB954; }
+
+        /* Secondary Grid */
+        .secondary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .widget-card {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+        }
+
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .widget-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .widget-link {
+            font-size: 0.85rem;
+            color: var(--gold);
+            text-decoration: none;
+        }
+
+        /* Top Content */
+        .content-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .content-item {
+            display: flex;
+            gap: 15px;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .content-item:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .content-rank {
+            width: 30px;
+            height: 30px;
+            background: var(--gradient-gold);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--bg-primary);
+            font-size: 0.9rem;
+        }
+
+        .content-info {
+            flex: 1;
+        }
+
+        .content-title {
+            font-weight: 500;
+            font-size: 0.95rem;
+            margin-bottom: 3px;
+        }
+
+        .content-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .content-stats {
+            text-align: right;
+        }
+
+        .content-views {
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .content-change {
+            font-size: 0.75rem;
+            color: var(--accent-green);
+        }
+
+        /* Demographics */
+        .demo-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .demo-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .demo-label {
+            width: 80px;
+            font-size: 0.9rem;
+        }
+
+        .demo-bar {
+            flex: 1;
+            height: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .demo-fill {
+            height: 100%;
+            border-radius: 6px;
+        }
+
+        .demo-fill.male { background: var(--accent-blue); }
+        .demo-fill.female { background: var(--accent-pink); }
+        .demo-fill.other { background: var(--accent-purple); }
+
+        .demo-value {
+            width: 50px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Revenue Breakdown */
+        .revenue-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .revenue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+        }
+
+        .revenue-source {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .revenue-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .revenue-icon.streaming { background: rgba(29, 185, 84, 0.15); color: #1DB954; }
+        .revenue-icon.merch { background: rgba(236, 72, 153, 0.15); color: var(--accent-pink); }
+        .revenue-icon.tours { background: rgba(245, 158, 11, 0.15); color: var(--accent-orange); }
+        .revenue-icon.brand { background: rgba(212, 175, 55, 0.15); color: var(--gold); }
+
+        .revenue-name {
+            font-weight: 500;
+        }
+
+        .revenue-amount {
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        /* AI Insights */
+        .insights-section {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .insight-card {
+            background: var(--bg-tertiary);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .insight-card:hover {
+            border-color: var(--gold);
+        }
+
+        .insight-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .insight-icon.trend { background: rgba(0, 255, 136, 0.15); color: var(--accent-green); }
+        .insight-icon.alert { background: rgba(245, 158, 11, 0.15); color: var(--accent-orange); }
+        .insight-icon.idea { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+
+        .insight-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .insight-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .insight-action {
+            margin-top: 15px;
+            padding: 10px 18px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .insight-action:hover {
+            background: var(--gold);
+            color: var(--bg-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .secondary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-section {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">🐐</div>
+            GOAT Royalty
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="goat-social-scheduler.html">Scheduler</a>
+            <a href="goat-brand-deals.html">Deals</a>
+            <a href="goat-tour-manager.html">Tour</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Header -->
+            <div class="header-section">
+                <h1>📊 Analytics Dashboard</h1>
+                <div class="date-filter">
+                    <button class="filter-btn">7 Days</button>
+                    <button class="filter-btn active">30 Days</button>
+                    <button class="filter-btn">90 Days</button>
+                    <button class="filter-btn">1 Year</button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon followers"><i class="fas fa-users"></i></div>
+                        <div class="stat-change up"><i class="fas fa-arrow-up"></i> +12.5%</div>
+                    </div>
+                    <div class="stat-value">24.8M</div>
+                    <div class="stat-label">Total Followers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon revenue"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-change up"><i class="fas fa-arrow-up"></i> +28.3%</div>
+                    </div>
+                    <div class="stat-value">$4.2M</div>
+                    <div class="stat-label">Monthly Revenue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon engagement"><i class="fas fa-heart"></i></div>
+                        <div class="stat-change up"><i class="fas fa-arrow-up"></i> +8.7%</div>
+                    </div>
+                    <div class="stat-value">8.4%</div>
+                    <div class="stat-label">Engagement Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon reach"><i class="fas fa-eye"></i></div>
+                        <div class="stat-change down"><i class="fas fa-arrow-down"></i> -2.1%</div>
+                    </div>
+                    <div class="stat-value">156M</div>
+                    <div class="stat-label">Total Reach</div>
+                </div>
+            </div>
+
+            <!-- Main Grid -->
+            <div class="main-grid">
+                <!-- Chart Section -->
+                <div class="chart-section">
+                    <div class="section-header">
+                        <h2 class="section-title"><i class="fas fa-chart-line"></i> Performance Overview</h2>
+                        <div class="chart-tabs">
+                            <button class="chart-tab active">Followers</button>
+                            <button class="chart-tab">Revenue</button>
+                            <button class="chart-tab">Engagement</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-placeholder">
+                            <div class="chart-bar" style="height: 45%;"><span class="chart-bar-label">Jan 1</span><span class="chart-bar-value">1.2M</span></div>
+                            <div class="chart-bar" style="height: 52%;"><span class="chart-bar-label">Jan 5</span><span class="chart-bar-value">1.4M</span></div>
+                            <div class="chart-bar" style="height: 48%;"><span class="chart-bar-label">Jan 9</span><span class="chart-bar-value">1.3M</span></div>
+                            <div class="chart-bar" style="height: 65%;"><span class="chart-bar-label">Jan 13</span><span class="chart-bar-value">1.8M</span></div>
+                            <div class="chart-bar" style="height: 58%;"><span class="chart-bar-label">Jan 17</span><span class="chart-bar-value">1.6M</span></div>
+                            <div class="chart-bar" style="height: 72%;"><span class="chart-bar-label">Jan 21</span><span class="chart-bar-value">1.9M</span></div>
+                            <div class="chart-bar" style="height: 85%;"><span class="chart-bar-label">Jan 25</span><span class="chart-bar-value">2.3M</span></div>
+                            <div class="chart-bar" style="height: 78%;"><span class="chart-bar-label">Jan 29</span><span class="chart-bar-value">2.1M</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Platform Breakdown -->
+                <div class="chart-section">
+                    <div class="section-header">
+                        <h2 class="section-title"><i class="fas fa-th-large"></i> Platforms</h2>
+                    </div>
+                    <div class="platform-grid">
+                        <div class="platform-item">
+                            <div class="platform-header">
+                                <div class="platform-name">
+                                    <div class="platform-icon instagram"><i class="fab fa-instagram"></i></div>
+                                    <span>Instagram</span>
+                                </div>
+                                <div class="platform-stats">
+                                    <div class="platform-stat">
+                                        <div class="platform-stat-value">12.4M</div>
+                                        <div class="platform-stat-label">Followers</div>
+                                    </div>
+                                    <div class="platform-stat">
+                                        <div class="platform-stat-value" style="color: var(--accent-green);">+15%</div>
+                                        <div class="platform-stat-label">Growth</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="platform-progress">
+                                <div class="platform-progress-fill instagram" style="width: 85%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="platform-item">
+                            <div class="platform-header">
+                                <div class="platform-name">
+                                    <div class="platform-icon twitter"><i class="fab fa-x-twitter"></i></div>
+                                    <span>Twitter/X</span>
+                                </div>
+                                <div class="platform-stats">
+                                    <div class="platform-stat">
+                                        <div class="platform-stat-value">5.2M</div>
+                                        <div class="platform-stat-label">Followers</div>
+                                    </div>
+                                    <div class="platform-stat">
+                                        <div class="platform-stat-value" style="color: var(--accent-green);">+8%</div>
+                                        <div class="platform-stat-label">Growth</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="platform-progress">
+                                <div class="platform-progress-fill twitter" style="width: 65%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="platform-item">
+                            <div class="platform-header">
+                                <div class="platform-name">
+                                    <div class="platform-icon youtube"><i class="fab fa-youtube"></i></div>
+                                    <span>YouTube</span>
+                                </div>
+                                <div class="platform-stats">
+                                    <div class="platform-stat">
+                                        <div class="platform-stat-value">4.8M</div>
+                                        <div class="platform-stat-label">Subscribers</div>
+                                    </div>
+                                    <div class="platform-stat">
+                                        <div class="platform-stat-value" style="color: var(--accent-green);">+22%</div>
+                                        <div class="platform-stat-label">Growth</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="platform-progress">
+                                <div class="platform-progress-fill youtube" style="width: 60%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="platform-item">
+                            <div class="platform-header">
+                                <div class="platform-name">
+                                    <div class="platform-icon tiktok"><i class="fab fa-tiktok"></i></div>
+                                    <span>TikTok</span>
+                                </div>
+                                <div class="platform-stats">
+                                    <div class="platform-stat">
+                                        <div class="platform-stat-value">2.4M</div>
+                                        <div class="platform-stat-label">Followers</div>
+                                    </div>
+                                    <div class="platform-stat">
+                                        <div class="platform-stat-value" style="color: var(--accent-green);">+45%</div>
+                                        <div class="platform-stat-label">Growth</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="platform-progress">
+                                <div class="platform-progress-fill tiktok" style="width: 40%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secondary Grid -->
+            <div class="secondary-grid">
+                <!-- Top Content -->
+                <div class="widget-card">
+                    <div class="widget-header">
+                        <h3 class="widget-title">🔥 Top Content</h3>
+                        <a href="#" class="widget-link">View All</a>
+                    </div>
+                    <div class="content-list">
+                        <div class="content-item">
+                            <div class="content-rank">1</div>
+                            <div class="content-info">
+                                <div class="content-title">Studio Session BTS</div>
+                                <div class="content-meta">Instagram Reel • 2 days ago</div>
+                            </div>
+                            <div class="content-stats">
+                                <div class="content-views">4.2M</div>
+                                <div class="content-change">+180K</div>
+                            </div>
+                        </div>
+                        <div class="content-item">
+                            <div class="content-rank">2</div>
+                            <div class="content-info">
+                                <div class="content-title">New Track Preview</div>
+                                <div class="content-meta">TikTok • 5 days ago</div>
+                            </div>
+                            <div class="content-stats">
+                                <div class="content-views">2.8M</div>
+                                <div class="content-change">+95K</div>
+                            </div>
+                        </div>
+                        <div class="content-item">
+                            <div class="content-rank">3</div>
+                            <div class="content-info">
+                                <div class="content-title">Tour Announcement</div>
+                                <div class="content-meta">YouTube • 1 week ago</div>
+                            </div>
+                            <div class="content-stats">
+                                <div class="content-views">1.5M</div>
+                                <div class="content-change">+42K</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demographics -->
+                <div class="widget-card">
+                    <div class="widget-header">
+                        <h3 class="widget-title">👥 Demographics</h3>
+                        <a href="#" class="widget-link">Details</a>
+                    </div>
+                    <div class="demo-chart">
+                        <div class="demo-item">
+                            <span class="demo-label">Male</span>
+                            <div class="demo-bar">
+                                <div class="demo-fill male" style="width: 52%;"></div>
+                            </div>
+                            <span class="demo-value">52%</span>
+                        </div>
+                        <div class="demo-item">
+                            <span class="demo-label">Female</span>
+                            <div class="demo-bar">
+                                <div class="demo-fill female" style="width: 45%;"></div>
+                            </div>
+                            <span class="demo-value">45%</span>
+                        </div>
+                        <div class="demo-item">
+                            <span class="demo-label">Other</span>
+                            <div class="demo-bar">
+                                <div class="demo-fill other" style="width: 3%;"></div>
+                            </div>
+                            <span class="demo-value">3%</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px;">Top Age Groups</div>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <span style="background: var(--bg-tertiary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem;">18-24: 35%</span>
+                            <span style="background: var(--bg-tertiary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem;">25-34: 40%</span>
+                            <span style="background: var(--bg-tertiary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem;">35-44: 18%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue Breakdown -->
+                <div class="widget-card">
+                    <div class="widget-header">
+                        <h3 class="widget-title">💰 Revenue Sources</h3>
+                        <a href="#" class="widget-link">Report</a>
+                    </div>
+                    <div class="revenue-list">
+                        <div class="revenue-item">
+                            <div class="revenue-source">
+                                <div class="revenue-icon streaming"><i class="fas fa-music"></i></div>
+                                <span class="revenue-name">Streaming</span>
+                            </div>
+                            <span class="revenue-amount">$1.8M</span>
+                        </div>
+                        <div class="revenue-item">
+                            <div class="revenue-source">
+                                <div class="revenue-icon merch"><i class="fas fa-tshirt"></i></div>
+                                <span class="revenue-name">Merchandise</span>
+                            </div>
+                            <span class="revenue-amount">$1.2M</span>
+                        </div>
+                        <div class="revenue-item">
+                            <div class="revenue-source">
+                                <div class="revenue-icon tours"><i class="fas fa-ticket-alt"></i></div>
+                                <span class="revenue-name">Tours</span>
+                            </div>
+                            <span class="revenue-amount">$800K</span>
+                        </div>
+                        <div class="revenue-item">
+                            <div class="revenue-source">
+                                <div class="revenue-icon brand"><i class="fas fa-handshake"></i></div>
+                                <span class="revenue-name">Brand Deals</span>
+                            </div>
+                            <span class="revenue-amount">$400K</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Insights -->
+            <div class="insights-section">
+                <div class="ai-badge">
+                    <i class="fas fa-robot"></i> AI-Powered Insights
+                </div>
+                <div class="insights-grid">
+                    <div class="insight-card">
+                        <div class="insight-icon trend"><i class="fas fa-arrow-trend-up"></i></div>
+                        <div class="insight-title">Peak Performance Window</div>
+                        <div class="insight-desc">Your content performs 47% better when posted between 6-8 PM EST. Consider scheduling more posts during this window.</div>
+                        <button class="insight-action">Apply Schedule</button>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon alert"><i class="fas fa-lightbulb"></i></div>
+                        <div class="insight-title">Content Opportunity</div>
+                        <div class="insight-desc">TikTok engagement is up 45% but posting frequency is down. You could capture 2.1M more views with 3 additional weekly posts.</div>
+                        <button class="insight-action">View Strategy</button>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon idea"><i class="fas fa-chart-pie"></i></div>
+                        <div class="insight-title">Revenue Optimization</div>
+                        <div class="insight-desc">Your YouTube subscriber growth suggests potential for 35% more ad revenue. Consider longer-form content to maximize earnings.</div>
+                        <button class="insight-action">Learn More</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        document.querySelectorAll('.chart-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

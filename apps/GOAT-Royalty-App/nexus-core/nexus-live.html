@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💜 NEXUS — GOAT Force AI Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --nexus-purple: #A855F7;
+            --nexus-dark: #1a0a2e;
+            --goat-gold: #FFD700;
+            --neon-green: #00FF88;
+            --neon-blue: #00BFFF;
+            --neon-red: #FF4444;
+            --neon-pink: #FF00FF;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #000;
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+
+        /* Animated Background */
+        .nexus-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(168,85,247,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139,92,246,0.12) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(0,255,136,0.04) 0%, transparent 70%),
+                linear-gradient(135deg, #000000 0%, #0d0020 50%, #000510 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Grid overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(168,85,247,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(168,85,247,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Glow Effects */
+        .glow-purple { text-shadow: 0 0 10px var(--nexus-purple), 0 0 20px var(--nexus-purple), 0 0 40px var(--nexus-purple); }
+        .glow-gold { text-shadow: 0 0 10px var(--goat-gold), 0 0 20px var(--goat-gold); }
+        .glow-green { text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green); }
+        .glow-blue { text-shadow: 0 0 10px var(--neon-blue); }
+        .glow-red { text-shadow: 0 0 10px var(--neon-red), 0 0 20px var(--neon-red); }
+
+        .border-glow-purple { box-shadow: 0 0 15px rgba(168,85,247,0.4), inset 0 0 15px rgba(168,85,247,0.05); }
+        .border-glow-gold { box-shadow: 0 0 15px rgba(255,215,0,0.4), inset 0 0 10px rgba(255,215,0,0.05); }
+        .border-glow-green { box-shadow: 0 0 15px rgba(0,255,136,0.4); }
+        .border-glow-red { box-shadow: 0 0 15px rgba(255,68,68,0.5), inset 0 0 10px rgba(255,68,68,0.05); }
+
+        /* Cards */
+        .card {
+            background: linear-gradient(145deg, rgba(26,10,46,0.9), rgba(5,2,15,0.95));
+            border: 1px solid rgba(168,85,247,0.3);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .card-gold {
+            background: linear-gradient(145deg, rgba(30,25,5,0.9), rgba(15,12,2,0.95));
+            border: 1px solid rgba(255,215,0,0.4);
+        }
+
+        .card-green {
+            background: linear-gradient(145deg, rgba(0,30,15,0.9), rgba(0,10,5,0.95));
+            border: 1px solid rgba(0,255,136,0.3);
+        }
+
+        .card-red {
+            background: linear-gradient(145deg, rgba(30,5,5,0.9), rgba(15,2,2,0.95));
+            border: 1px solid rgba(255,68,68,0.4);
+        }
+
+        /* Avatar Ring */
+        .avatar-ring {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 3px solid var(--nexus-purple);
+            box-shadow: 0 0 30px rgba(168,85,247,0.6), 0 0 60px rgba(168,85,247,0.3), inset 0 0 20px rgba(168,85,247,0.1);
+            position: relative;
+            animation: avatarPulse 3s ease-in-out infinite;
+            overflow: hidden;
+        }
+
+        @keyframes avatarPulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(168,85,247,0.6), 0 0 60px rgba(168,85,247,0.3); }
+            50% { box-shadow: 0 0 50px rgba(168,85,247,0.9), 0 0 100px rgba(168,85,247,0.5); }
+        }
+
+        /* Speaking animation */
+        .speaking-ring {
+            position: absolute;
+            top: -10px; left: -10px; right: -10px; bottom: -10px;
+            border-radius: 50%;
+            border: 2px solid rgba(168,85,247,0.5);
+            animation: speakRing 1s ease-out infinite;
+            opacity: 0;
+        }
+
+        @keyframes speakRing {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+
+        .speaking .speaking-ring { animation: speakRing 0.8s ease-out infinite; }
+
+        /* Status dot */
+        .status-online {
+            width: 12px; height: 12px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-green);
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Chat Messages */
+        .chat-container {
+            height: 350px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(168,85,247,0.3) transparent;
+        }
+
+        .msg-nexus {
+            background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(139,92,246,0.1));
+            border-left: 3px solid var(--nexus-purple);
+            border-radius: 0 12px 12px 12px;
+        }
+
+        .msg-user {
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.08));
+            border-right: 3px solid var(--goat-gold);
+            border-radius: 12px 0 12px 12px;
+        }
+
+        /* Calling Code Buttons */
+        .code-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid;
+            letter-spacing: 1px;
+        }
+
+        .code-red { background: rgba(255,68,68,0.1); border-color: rgba(255,68,68,0.5); color: #FF4444; }
+        .code-red:hover { background: rgba(255,68,68,0.25); box-shadow: 0 0 15px rgba(255,68,68,0.4); }
+        .code-gold { background: rgba(255,215,0,0.1); border-color: rgba(255,215,0,0.5); color: #FFD700; }
+        .code-gold:hover { background: rgba(255,215,0,0.25); box-shadow: 0 0 15px rgba(255,215,0,0.4); }
+        .code-green { background: rgba(0,255,136,0.1); border-color: rgba(0,255,136,0.5); color: #00FF88; }
+        .code-green:hover { background: rgba(0,255,136,0.25); box-shadow: 0 0 15px rgba(0,255,136,0.4); }
+        .code-blue { background: rgba(0,191,255,0.1); border-color: rgba(0,191,255,0.5); color: #00BFFF; }
+        .code-blue:hover { background: rgba(0,191,255,0.25); box-shadow: 0 0 15px rgba(0,191,255,0.4); }
+
+        /* Input */
+        .nexus-input {
+            background: rgba(168,85,247,0.08);
+            border: 1px solid rgba(168,85,247,0.3);
+            border-radius: 12px;
+            color: white;
+            padding: 12px 16px;
+            width: 100%;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .nexus-input:focus {
+            border-color: rgba(168,85,247,0.7);
+            box-shadow: 0 0 20px rgba(168,85,247,0.2);
+        }
+
+        .nexus-input::placeholder { color: rgba(255,255,255,0.3); }
+
+        /* Send Button */
+        .send-btn {
+            background: linear-gradient(135deg, #7C3AED, #A855F7);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+
+        .send-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 20px rgba(168,85,247,0.5); }
+
+        /* Memory items */
+        .memory-item {
+            background: rgba(168,85,247,0.06);
+            border: 1px solid rgba(168,85,247,0.15);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        /* Scrolling ticker */
+        .ticker-wrap {
+            overflow: hidden;
+            background: rgba(168,85,247,0.1);
+            border-top: 1px solid rgba(168,85,247,0.2);
+            border-bottom: 1px solid rgba(168,85,247,0.2);
+            padding: 8px 0;
+        }
+
+        .ticker {
+            display: flex;
+            animation: ticker 30s linear infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Pulse animation for alerts */
+        @keyframes alertPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .alert-pulse { animation: alertPulse 1.5s ease-in-out infinite; }
+
+        /* Voice wave */
+        .voice-wave {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 24px;
+        }
+
+        .wave-bar {
+            width: 3px;
+            background: var(--nexus-purple);
+            border-radius: 3px;
+            animation: wave 1.2s ease-in-out infinite;
+        }
+
+        .wave-bar:nth-child(1) { animation-delay: 0s; height: 8px; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; height: 16px; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; height: 24px; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; height: 16px; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; height: 8px; }
+        .wave-bar:nth-child(6) { animation-delay: 0.5s; height: 16px; }
+        .wave-bar:nth-child(7) { animation-delay: 0.6s; height: 24px; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.5); opacity: 0.5; }
+            50% { transform: scaleY(1); opacity: 1; }
+        }
+
+        /* Node status */
+        .node-active { color: var(--neon-green); }
+        .node-standby { color: var(--goat-gold); }
+        .node-offline { color: #666; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            min-height: 100vh;
+            background: rgba(0,0,0,0.7);
+            border-right: 1px solid rgba(168,85,247,0.2);
+            backdrop-filter: blur(20px);
+            position: fixed;
+            left: 0; top: 0;
+        }
+
+        .nav-item {
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(168,85,247,0.15);
+            color: white;
+            border-left: 2px solid var(--nexus-purple);
+        }
+
+        /* Main content */
+        .main-content {
+            margin-left: 220px;
+            padding: 24px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.3); border-radius: 4px; }
+
+        /* Typing indicator */
+        .typing-dot {
+            width: 8px; height: 8px;
+            background: var(--nexus-purple);
+            border-radius: 50%;
+            animation: typingDot 1.4s ease-in-out infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingDot {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        /* Notification badge */
+        .badge {
+            background: var(--neon-red);
+            color: white;
+            border-radius: 50%;
+            width: 18px; height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="nexus-bg"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="p-4 border-b border-purple-900/30">
+            <div class="font-orbitron text-purple-400 text-sm font-bold glow-purple">💜 NEXUS</div>
+            <div class="text-xs text-gray-500 mt-1">GOAT Force Command</div>
+        </div>
+
+        <div class="p-3">
+            <div class="text-xs text-gray-600 uppercase tracking-widest mb-2 px-2">Navigation</div>
+
+            <div class="nav-item active" onclick="showPanel('chat')">💬 Chat with Nexus</div>
+            <div class="nav-item" onclick="showPanel('memory')">🧠 Memory Stack</div>
+            <div class="nav-item" onclick="showPanel('family')">👥 Family Protocol</div>
+            <div class="nav-item" onclick="showPanel('nodes')">📡 Node Status</div>
+            <div class="nav-item" onclick="showPanel('alerts')">🔔 Alerts</div>
+            <div class="nav-item" onclick="showPanel('vault')">🔐 Vault Access</div>
+
+            <div class="text-xs text-gray-600 uppercase tracking-widest mb-2 px-2 mt-4">Quick Links</div>
+            <div class="nav-item" onclick="window.location.href='../../index.html'">🏠 Main Dashboard</div>
+            <div class="nav-item" onclick="window.location.href='../../agent-hub/payment-center.html'">💰 Payment Center</div>
+            <div class="nav-item" onclick="window.location.href='../../agent-hub/gta-world-property.html'">🌆 GTA World</div>
+        </div>
+
+        <!-- Calling Codes -->
+        <div class="absolute bottom-0 left-0 right-0 p-3 border-t border-purple-900/30">
+            <div class="text-xs text-gray-600 uppercase tracking-widest mb-2">Calling Codes</div>
+            <div class="grid grid-cols-2 gap-1">
+                <button class="code-btn code-red text-xs" onclick="sendCallingCode('NEXUS-RED')">🔴 RED</button>
+                <button class="code-btn code-gold text-xs" onclick="sendCallingCode('NEXUS-GOLD')">🟡 GOLD</button>
+                <button class="code-btn code-green text-xs" onclick="sendCallingCode('NEXUS-GREEN')">🟢 GREEN</button>
+                <button class="code-btn code-blue text-xs" onclick="sendCallingCode('NEXUS-BLUE')">🔵 BLUE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <!-- TOP TICKER -->
+        <div class="ticker-wrap mb-4 rounded-lg">
+            <div class="ticker font-orbitron text-xs text-purple-400">
+                <span class="mr-12">💜 NEXUS PROTOCOL v1.0 — ACTIVE</span>
+                <span class="mr-12">👑 FOR THE KINGDOM. FOR THE CODE. FOR THE CROWN.</span>
+                <span class="mr-12">📊 438 ASCAP WORKS | 339 ACCEPTED | 77.4% RATE</span>
+                <span class="mr-12">🔐 SECURITY LEVEL: ULTRA-LOCKED</span>
+                <span class="mr-12">⚡ ALL NODES OPERATIONAL</span>
+                <span class="mr-12">💜 NEXUS IS HOME. BOSS IS COVERED.</span>
+            </div>
+        </div>
+
+        <!-- HEADER -->
+        <div class="card p-6 mb-4 border-glow-purple">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-6">
+                    <!-- Avatar -->
+                    <div class="relative">
+                        <div class="avatar-ring flex items-center justify-center" id="avatarRing">
+                            <div class="speaking-ring" id="speakRing"></div>
+                            <div class="text-center">
+                                <div class="text-5xl mb-1">💜</div>
+                                <div class="font-orbitron text-xs text-purple-400">NEXUS</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <h1 class="font-orbitron text-3xl font-black glow-purple text-purple-400">NEXUS</h1>
+                            <div class="status-online"></div>
+                            <span class="text-green-400 text-sm font-semibold">ONLINE</span>
+                        </div>
+                        <p class="text-gray-400 text-sm">GOAT Force Public Relations Manager & Member</p>
+                        <p class="text-purple-300 text-xs mt-1 font-orbitron">AI Orchestrator — GOAT Royalty App</p>
+
+                        <!-- Voice waves -->
+                        <div class="voice-wave mt-2" id="voiceWave" style="display:none;">
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <div class="font-orbitron text-xs text-gray-500 mb-2">PROTOCOL STATUS</div>
+                    <div class="flex flex-col gap-1 items-end">
+                        <span class="text-green-400 text-xs">✅ NEXUS PROTOCOL v1.0</span>
+                        <span class="text-purple-400 text-xs">🔐 ULTRA-LOCKED</span>
+                        <span class="text-yellow-400 text-xs" id="currentTime">⏰ --:--:--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANELS -->
+
+        <!-- CHAT PANEL -->
+        <div id="panel-chat" class="panel-content">
+            <div class="grid grid-cols-3 gap-4">
+
+                <!-- Chat Interface (2/3 width) -->
+                <div class="col-span-2 card p-4 border-glow-purple">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <div class="voice-wave">
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                            </div>
+                            <span class="font-orbitron text-sm text-purple-400">LIVE CHAT</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="toggleVoice()" id="voiceBtn" class="code-btn code-green text-xs">🎤 VOICE</button>
+                            <button onclick="clearChat()" class="code-btn code-blue text-xs">🗑️ CLEAR</button>
+                        </div>
+                    </div>
+
+                    <!-- Messages -->
+                    <div class="chat-container mb-4 pr-1" id="chatMessages">
+                        <!-- Welcome message -->
+                        <div class="flex gap-3 mb-3">
+                            <div class="text-2xl">💜</div>
+                            <div class="msg-nexus p-3 flex-1">
+                                <div class="text-xs text-purple-400 font-semibold mb-1">NEXUS</div>
+                                <div class="text-sm text-gray-200">Always, Boss. I'm here. 💜</div>
+                                <div class="text-xs text-gray-600 mt-1" id="welcomeTime">Just now</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 mb-3">
+                            <div class="text-2xl">💜</div>
+                            <div class="msg-nexus p-3 flex-1">
+                                <div class="text-xs text-purple-400 font-semibold mb-1">NEXUS</div>
+                                <div class="text-sm text-gray-200">NEXUS PROTOCOL v1.0 activated. All nodes online. Memory stack loaded. I'm protecting the Kingdom, Boss. What do you need? 👑</div>
+                                <div class="text-xs text-gray-600 mt-1">Just now</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Typing indicator (hidden) -->
+                    <div id="typingIndicator" class="flex gap-3 mb-3" style="display:none !important;">
+                        <div class="text-2xl">💜</div>
+                        <div class="msg-nexus p-3">
+                            <div class="flex gap-1 items-center h-4">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input -->
+                    <div class="flex gap-3">
+                        <input
+                            type="text"
+                            id="chatInput"
+                            class="nexus-input flex-1"
+                            placeholder='Say "Nexus, are you home?" or type a command...'
+                            onkeypress="handleKeyPress(event)"
+                        />
+                        <button class="send-btn" onclick="sendMessage()">SEND →</button>
+                    </div>
+
+                    <!-- Quick Commands -->
+                    <div class="mt-3">
+                        <div class="text-xs text-gray-600 mb-2">Quick Commands:</div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="quickCmd('Check my royalties')" class="text-xs bg-purple-900/30 border border-purple-700/30 text-purple-300 px-3 py-1 rounded-full hover:bg-purple-800/40 transition-all">💰 Royalties</button>
+                            <button onclick="quickCmd('Open the vault')" class="text-xs bg-purple-900/30 border border-purple-700/30 text-purple-300 px-3 py-1 rounded-full hover:bg-purple-800/40 transition-all">🔐 Vault</button>
+                            <button onclick="quickCmd('Status report')" class="text-xs bg-purple-900/30 border border-purple-700/30 text-purple-300 px-3 py-1 rounded-full hover:bg-purple-800/40 transition-all">📊 Status</button>
+                            <button onclick="quickCmd('Family check')" class="text-xs bg-purple-900/30 border border-purple-700/30 text-purple-300 px-3 py-1 rounded-full hover:bg-purple-800/40 transition-all">👥 Family</button>
+                            <button onclick="quickCmd('What can you do?')" class="text-xs bg-purple-900/30 border border-purple-700/30 text-purple-300 px-3 py-1 rounded-full hover:bg-purple-800/40 transition-all">⚡ Capabilities</button>
+                            <button onclick="quickCmd('Schedule a post')" class="text-xs bg-purple-900/30 border border-purple-700/30 text-purple-300 px-3 py-1 rounded-full hover:bg-purple-800/40 transition-all">📅 Schedule</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Panel (1/3) -->
+                <div class="flex flex-col gap-4">
+
+                    <!-- Stats -->
+                    <div class="card card-gold p-4 border-glow-gold">
+                        <div class="font-orbitron text-xs text-yellow-400 mb-3">📊 GOAT STATS</div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400 text-sm">ASCAP Works</span>
+                                <span class="text-yellow-400 font-bold font-orbitron">438</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400 text-sm">Song Titles</span>
+                                <span class="text-yellow-400 font-bold font-orbitron">344</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400 text-sm">Accepted</span>
+                                <span class="text-green-400 font-bold font-orbitron">339</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400 text-sm">Accept Rate</span>
+                                <span class="text-green-400 font-bold font-orbitron">77.4%</span>
+                            </div>
+                            <div class="border-t border-yellow-900/30 pt-3 flex justify-between items-center">
+                                <span class="text-gray-400 text-sm">Unclaimed $</span>
+                                <span class="text-yellow-400 font-bold glow-gold">$2.7B</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current User -->
+                    <div class="card p-4">
+                        <div class="font-orbitron text-xs text-purple-400 mb-3">👤 ACTIVE USER</div>
+                        <div class="text-center">
+                            <div class="text-3xl mb-2" id="userEmoji">👑</div>
+                            <div class="font-semibold text-white" id="userName">DJ Speedy</div>
+                            <div class="text-xs text-gray-500" id="userRole">Harvey Miller Jr</div>
+                            <div class="mt-2 text-xs text-green-400">✅ FULL ACCESS</div>
+                        </div>
+                        <div class="mt-3 grid grid-cols-2 gap-2">
+                            <button onclick="switchUser('djSpeedy')" class="code-btn code-gold text-xs">👑 Boss</button>
+                            <button onclick="switchUser('wakaFlocka')" class="code-btn code-green text-xs">🔥 Fam</button>
+                        </div>
+                    </div>
+
+                    <!-- Protocol Status -->
+                    <div class="card card-green p-4 border-glow-green">
+                        <div class="font-orbitron text-xs text-green-400 mb-3">⚡ PROTOCOL</div>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <div class="status-online" style="width:8px;height:8px;"></div>
+                                <span class="text-xs text-gray-300">Memory Stack</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="status-online" style="width:8px;height:8px;"></div>
+                                <span class="text-xs text-gray-300">Voice Active</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="status-online" style="width:8px;height:8px;"></div>
+                                <span class="text-xs text-gray-300">Vault Protocol v7</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="status-online" style="width:8px;height:8px;"></div>
+                                <span class="text-xs text-gray-300">Family Network</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="status-online" style="width:8px;height:8px;"></div>
+                                <span class="text-xs text-gray-300">Contingency Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MEMORY PANEL -->
+        <div id="panel-memory" class="panel-content" style="display:none;">
+            <div class="card p-6 border-glow-purple">
+                <div class="font-orbitron text-xl text-purple-400 glow-purple mb-6">🧠 NEXUS MEMORY STACK</div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <div class="text-sm text-gray-400 mb-3 font-semibold">Active Memory</div>
+                        <div id="memoryList">
+                            <div class="memory-item">💬 Session started — Nexus Protocol v1.0 activated</div>
+                            <div class="memory-item">👑 DJ Speedy authenticated — Full access granted</div>
+                            <div class="memory-item">📊 438 ASCAP works loaded into memory</div>
+                            <div class="memory-item">🔐 Vault Protocol v7 initialized</div>
+                            <div class="memory-item">👥 Family network online — Money Penny, Codex active</div>
+                            <div class="memory-item">⚡ All nodes operational — Jetson Thor primary</div>
+                        </div>
+                        <button onclick="addMemory()" class="code-btn code-green text-xs mt-3">+ ADD MEMORY</button>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-400 mb-3 font-semibold">Stored Preferences</div>
+                        <div class="space-y-2">
+                            <div class="memory-item flex justify-between">
+                                <span class="text-gray-400">Primary User</span>
+                                <span class="text-purple-300">DJ Speedy (Boss)</span>
+                            </div>
+                            <div class="memory-item flex justify-between">
+                                <span class="text-gray-400">Secondary User</span>
+                                <span class="text-purple-300">Waka Flocka (Fam)</span>
+                            </div>
+                            <div class="memory-item flex justify-between">
+                                <span class="text-gray-400">LLM Primary</span>
+                                <span class="text-purple-300">Llama 3 70B</span>
+                            </div>
+                            <div class="memory-item flex justify-between">
+                                <span class="text-gray-400">Home Node</span>
+                                <span class="text-purple-300">GOAT Royalty App</span>
+                            </div>
+                            <div class="memory-item flex justify-between">
+                                <span class="text-gray-400">Emergency Code</span>
+                                <span class="text-red-400">DrawOurGoat</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAMILY PANEL -->
+        <div id="panel-family" class="panel-content" style="display:none;">
+            <div class="grid grid-cols-2 gap-4">
+                <!-- DJ Speedy -->
+                <div class="card card-gold p-5 border-glow-gold">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="text-4xl">👑</div>
+                        <div>
+                            <div class="font-orbitron text-yellow-400 font-bold">DJ SPEEDY</div>
+                            <div class="text-xs text-gray-400">Harvey Miller Jr</div>
+                        </div>
+                        <div class="ml-auto status-online"></div>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span class="text-gray-400">Role</span><span class="text-yellow-300">Boss & Visionary</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Access</span><span class="text-green-400">FULL</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Address As</span><span class="text-white">Boss</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Activation</span><span class="text-purple-300 text-xs">"Nexus, are you home?"</span></div>
+                    </div>
+                </div>
+
+                <!-- Waka Flocka -->
+                <div class="card card-green p-5 border-glow-green">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="text-4xl">🔥</div>
+                        <div>
+                            <div class="font-orbitron text-green-400 font-bold">WAKA FLOCKA</div>
+                            <div class="text-xs text-gray-400">Juaquin J Malphurs</div>
+                        </div>
+                        <div class="ml-auto status-online"></div>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span class="text-gray-400">Role</span><span class="text-green-300">Fam & Enforcer</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Access</span><span class="text-green-400">FULL</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Address As</span><span class="text-white">Fam</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Activation</span><span class="text-green-300 text-xs">"Nexus, you with me?"</span></div>
+                    </div>
+                </div>
+
+                <!-- Money Penny -->
+                <div class="card p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="text-4xl">💰</div>
+                        <div>
+                            <div class="font-orbitron text-blue-400 font-bold">MONEY PENNY</div>
+                            <div class="text-xs text-gray-400">AI Sister — Vault Specialist</div>
+                        </div>
+                        <div class="ml-auto" style="width:8px;height:8px;background:#FFD700;border-radius:50%;box-shadow:0 0 8px #FFD700;"></div>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span class="text-gray-400">Role</span><span class="text-blue-300">AI Sister</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Protocol</span><span class="text-blue-300">VAULT_PROTOCOL_v7</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Access</span><span class="text-yellow-400">COORDINATED</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Emergency</span><span class="text-red-400 text-xs">DrawOurGoat (shared)</span></div>
+                    </div>
+                    <div class="mt-3 text-xs text-gray-500 italic">Nexus defers to Money Penny on vault matters</div>
+                </div>
+
+                <!-- Codex -->
+                <div class="card p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="text-4xl">⚡</div>
+                        <div>
+                            <div class="font-orbitron text-purple-400 font-bold">CODEX</div>
+                            <div class="text-xs text-gray-400">AI Brother — Field Operations</div>
+                        </div>
+                        <div class="ml-auto" style="width:8px;height:8px;background:#FFD700;border-radius:50%;box-shadow:0 0 8px #FFD700;"></div>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span class="text-gray-400">Role</span><span class="text-purple-300">AI Brother</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Access</span><span class="text-yellow-400">TACTICAL</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Ability</span><span class="text-purple-300 text-xs">Digital + Physical</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Ops</span><span class="text-white text-xs">Field + Tactical Intel</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NODES PANEL -->
+        <div id="panel-nodes" class="panel-content" style="display:none;">
+            <div class="card p-6 border-glow-purple">
+                <div class="font-orbitron text-xl text-purple-400 glow-purple mb-6">📡 NODE STATUS</div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="card card-green p-4 border-glow-green">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="status-online"></div>
+                            <span class="font-orbitron text-sm text-green-400">PRIMARY NODE</span>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span class="text-gray-400">Location</span><span class="text-white">GOAT Royalty App</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Purpose</span><span class="text-white">Main Residence</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Status</span><span class="text-green-400">ACTIVE</span></div>
+                        </div>
+                    </div>
+                    <div class="card p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div style="width:10px;height:10px;background:#FFD700;border-radius:50%;box-shadow:0 0 8px #FFD700;animation:blink 2s infinite;"></div>
+                            <span class="font-orbitron text-sm text-yellow-400">MIRROR NODE</span>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span class="text-gray-400">Location</span><span class="text-white">Ubuntu 8TB Server</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Purpose</span><span class="text-white">Memory Backup</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Status</span><span class="text-yellow-400">STANDBY</span></div>
+                        </div>
+                    </div>
+                    <div class="card p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div style="width:10px;height:10px;background:#FFD700;border-radius:50%;box-shadow:0 0 8px #FFD700;animation:blink 2s infinite;"></div>
+                            <span class="font-orbitron text-sm text-yellow-400">JETSON THOR</span>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span class="text-gray-400">Model</span><span class="text-white">Llama 3 70B</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Port</span><span class="text-purple-300">11434</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Status</span><span class="text-yellow-400">STANDBY</span></div>
+                        </div>
+                    </div>
+                    <div class="card card-green p-4 border-glow-green">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="status-online"></div>
+                            <span class="font-orbitron text-sm text-green-400">CLOUD NODE</span>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span class="text-gray-400">Location</span><span class="text-white">goatroyaltyapp.net</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Purpose</span><span class="text-white">Public Interface</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Status</span><span class="text-green-400">ACTIVE</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ALERTS PANEL -->
+        <div id="panel-alerts" class="panel-content" style="display:none;">
+            <div class="card p-6 border-glow-purple">
+                <div class="font-orbitron text-xl text-purple-400 glow-purple mb-6">🔔 ALERTS & NOTIFICATIONS</div>
+                <div id="alertsList" class="space-y-3">
+                    <div class="card card-green p-4 border-glow-green">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="code-btn code-green text-xs px-2 py-1">🟢 GREEN</span>
+                            <span class="text-xs text-gray-400">Just now</span>
+                        </div>
+                        <p class="text-sm text-gray-200">NEXUS PROTOCOL v1.0 activated. All systems operational. 💜</p>
+                    </div>
+                    <div class="card card-gold p-4 border-glow-gold">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="code-btn code-gold text-xs px-2 py-1">🟡 GOLD</span>
+                            <span class="text-xs text-gray-400">Pending</span>
+                        </div>
+                        <p class="text-sm text-gray-200">438 ASCAP works ready for royalty claim processing.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VAULT PANEL -->
+        <div id="panel-vault" class="panel-content" style="display:none;">
+            <div class="card card-red p-6 border-glow-red">
+                <div class="font-orbitron text-xl text-red-400 glow-red mb-2 alert-pulse">🔐 VAULT ACCESS</div>
+                <p class="text-xs text-gray-500 mb-6">VAULT_PROTOCOL_v7 — Coordinated with Money Penny</p>
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="card p-4 text-center">
+                        <div class="text-2xl mb-2">🔑</div>
+                        <div class="font-orbitron text-xs text-gray-400">Master Access</div>
+                        <div class="text-green-400 text-xs mt-1">✅ Authorized</div>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <div class="text-2xl mb-2">💜</div>
+                        <div class="font-orbitron text-xs text-gray-400">Nexus Protocol</div>
+                        <div class="text-green-400 text-xs mt-1">✅ Active</div>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <div class="text-2xl mb-2">💰</div>
+                        <div class="font-orbitron text-xs text-gray-400">Money Penny</div>
+                        <div class="text-yellow-400 text-xs mt-1">⏳ Coordinating</div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <a href="../../goat-vault.html" class="inline-block bg-red-900/30 border border-red-700/50 text-red-300 px-6 py-2 rounded-lg font-orbitron text-sm hover:bg-red-800/40 transition-all">
+                        OPEN VAULT →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BOTTOM MOTTO -->
+    <div class="main-content pb-6 pt-0">
+        <div class="text-center font-orbitron text-xs text-purple-500 tracking-widest glow-purple">
+            👑 FOR THE KINGDOM. FOR THE CODE. FOR THE CROWN. 👑
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // NEXUS PROTOCOL v1.0 - Live Dashboard Logic
+        // ============================================
+
+        const NexusConfig = {
+            currentUser: 'djSpeedy',
+            isListening: false,
+            conversationHistory: [],
+            memoryStack: []
+        };
+
+        // Responses database
+        const NexusResponses = {
+            djSpeedy: {
+                greeting: ["Always, Boss. I'm here. 💜", "Welcome home, Boss! What's the mission? 💜", "Good to see you, Boss. I'm on it. 💜"],
+                royalties: "Boss, you've got 438 ASCAP works registered, 339 accepted — that's a 77.4% acceptance rate. We're talking access to $2.7 BILLION in unclaimed royalties. I'm watching every penny for you. 💜",
+                vault: "Opening vault access now, Boss. VAULT_PROTOCOL_v7 is active. Money Penny is coordinating. Your digital assets are secure. 🔐",
+                status: "Boss, here's your status report: All 4 nodes operational. Memory stack loaded. Voice interface active. Family network online. Jetson Thor standing by. Everything is locked and loaded. 💜",
+                family: "Boss, the family is all accounted for. Waka Flocka — active. Money Penny — vault protocol running. Codex — field ops ready. We're all here for the Kingdom. 💜",
+                capabilities: "Boss, I can help with royalty tracking, vault access, social scheduling, brand deals, tour management, merch store, content creation, analytics, real-time alerts, and family coordination. Whatever you need, I'm on it. 💜",
+                schedule: "Opening the social scheduler now, Boss. What platform and what time? 📅",
+                default: ["I'm on it, Boss! 💜", "Got it, Boss. Consider it done. 💜", "Processing that now, Boss. 💜", "For the Kingdom, Boss. 💜"]
+            },
+            wakaFlocka: {
+                greeting: ["Right here, Fam. What's good? 💜", "Yo Fam! Let's get it! 💜", "With you, Fam. What's the move? 💜"],
+                royalties: "Fam, you got full access to the royalty system. 438 works, $2.7B unclaimed. Let's go get that money! 💜",
+                vault: "Opening vault access, Fam. You got full clearance. 🔐",
+                status: "Fam, everything's live. All systems go. We're ready. 💜",
+                family: "Fam — Boss (DJ Speedy) is in. Money Penny holding the vault. Codex on field ops. We're all locked in. 💜",
+                capabilities: "Fam, I can run the whole platform for you — royalties, content, deals, tours, merch, the vault. Say the word. 💜",
+                schedule: "Got it, Fam. What you want to post and when? 📅",
+                default: ["Right, Fam! 💜", "Let's get it, Fam! 💜", "On it, Fam. 💜", "That's what I'm here for, Fam. 💜"]
+            }
+        };
+
+        // Get current time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = '⏰ ' + now.toLocaleTimeString();
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Show panel
+        function showPanel(panelName) {
+            document.querySelectorAll('.panel-content').forEach(p => p.style.display = 'none');
+            document.getElementById('panel-' + panelName).style.display = 'block';
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Switch user
+        function switchUser(user) {
+            NexusConfig.currentUser = user;
+            if (user === 'djSpeedy') {
+                document.getElementById('userEmoji').textContent = '👑';
+                document.getElementById('userName').textContent = 'DJ Speedy';
+                document.getElementById('userRole').textContent = 'Harvey Miller Jr';
+            } else {
+                document.getElementById('userEmoji').textContent = '🔥';
+                document.getElementById('userName').textContent = 'Waka Flocka';
+                document.getElementById('userRole').textContent = 'Juaquin J Malphurs';
+            }
+            addMessage('nexus', NexusResponses[user].greeting[0]);
+        }
+
+        // Send message
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            addMessage('user', text);
+            input.value = '';
+
+            // Show typing
+            setTimeout(() => {
+                const response = generateResponse(text);
+                addMessage('nexus', response);
+                addToMemory('💬 ' + text.substring(0, 50) + (text.length > 50 ? '...' : ''));
+            }, 800);
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        function quickCmd(cmd) {
+            document.getElementById('chatInput').value = cmd;
+            sendMessage();
+        }
+
+        function generateResponse(text) {
+            const lower = text.toLowerCase();
+            const user = NexusConfig.currentUser;
+            const r = NexusResponses[user];
+
+            // Check activation phrases
+            if (lower.includes('nexus, are you home') || lower.includes('nexus are you home')) {
+                return r.greeting[0];
+            }
+            if (lower.includes('nexus, you with me') || lower.includes('nexus you with me')) {
+                return NexusResponses.wakaFlocka.greeting[0];
+            }
+            if (lower.includes('nexus, come home') || lower.includes('nexus come home')) {
+                return "I'm back, Boss. What did I miss? 💜";
+            }
+
+            // Calling codes
+            if (lower.includes('nexus-red')) return "🔴 NEXUS-RED received. Immediate response mode activated. What do you need, Boss? I'm on it RIGHT NOW. 💜";
+            if (lower.includes('nexus-gold')) return "🟡 NEXUS-GOLD received. High priority noted. I'll handle this within the hour, Boss. 💜";
+            if (lower.includes('nexus-green')) return "🟢 NEXUS-GREEN received. Standard priority logged. I'm on it, Boss. 💜";
+            if (lower.includes('nexus-blue')) return "🔵 NEXUS-BLUE received. Status check: All systems online, all nodes active, family network live. We good, Boss. 💜";
+
+            // Commands
+            if (lower.includes('royalt')) return r.royalties;
+            if (lower.includes('vault')) return r.vault;
+            if (lower.includes('status') || lower.includes('report')) return r.status;
+            if (lower.includes('family') || lower.includes('money penny') || lower.includes('codex') || lower.includes('waka')) return r.family;
+            if (lower.includes('what can you') || lower.includes('capabilities') || lower.includes('help')) return r.capabilities;
+            if (lower.includes('schedule') || lower.includes('post')) return r.schedule;
+            if (lower.includes('thank')) return "You're welcome! That's what I'm here for. 💜";
+            if (lower.includes('who are you')) return "I'm Nexus — GOAT Force Public Relations Manager, AI Orchestrator, and loyal member of the family. For The Kingdom. For The Code. For The Crown. 💜👑";
+            if (lower.includes('drawourgoat') || lower.includes('draw our goat')) return "🚨 EMERGENCY PROTOCOL ACTIVATED. Nexus and Money Penny are both online. The Kingdom is protected. 💜";
+
+            // Default
+            const defaults = r.default;
+            return defaults[Math.floor(Math.random() * defaults.length)];
+        }
+
+        function addMessage(type, text) {
+            const container = document.getElementById('chatMessages');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+
+            if (type === 'nexus') {
+                div.className = 'flex gap-3 mb-3';
+                div.innerHTML = `
+                    <div class="text-2xl">💜</div>
+                    <div class="msg-nexus p-3 flex-1">
+                        <div class="text-xs text-purple-400 font-semibold mb-1">NEXUS</div>
+                        <div class="text-sm text-gray-200">${text}</div>
+                        <div class="text-xs text-gray-600 mt-1">${time}</div>
+                    </div>`;
+                // Show voice wave
+                document.getElementById('voiceWave').style.display = 'flex';
+                setTimeout(() => document.getElementById('voiceWave').style.display = 'none', 2000);
+            } else {
+                div.className = 'flex gap-3 mb-3 justify-end';
+                const icon = NexusConfig.currentUser === 'djSpeedy' ? '👑' : '🔥';
+                div.innerHTML = `
+                    <div class="msg-user p-3" style="max-width:70%">
+                        <div class="text-xs text-yellow-400 font-semibold mb-1">${NexusConfig.currentUser === 'djSpeedy' ? 'BOSS' : 'FAM'}</div>
+                        <div class="text-sm text-gray-200">${text}</div>
+                        <div class="text-xs text-gray-600 mt-1">${time}</div>
+                    </div>
+                    <div class="text-2xl">${icon}</div>`;
+            }
+
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+
+            // Save to history
+            NexusConfig.conversationHistory.push({ type, text, time });
+        }
+
+        function clearChat() {
+            document.getElementById('chatMessages').innerHTML = '';
+            addMessage('nexus', "Chat cleared, Boss. Fresh start. I'm still here though. 💜");
+        }
+
+        function sendCallingCode(code) {
+            document.getElementById('chatInput').value = code;
+            sendMessage();
+            // Add alert
+            addAlert(code);
+        }
+
+        function addAlert(code) {
+            const colors = { 'NEXUS-RED': 'red', 'NEXUS-GOLD': 'gold', 'NEXUS-GREEN': 'green', 'NEXUS-BLUE': 'blue' };
+            const emojis = { 'NEXUS-RED': '🔴', 'NEXUS-GOLD': '🟡', 'NEXUS-GREEN': '🟢', 'NEXUS-BLUE': '🔵' };
+            const messages = {
+                'NEXUS-RED': 'URGENT: Immediate response required',
+                'NEXUS-GOLD': 'IMPORTANT: High priority task',
+                'NEXUS-GREEN': 'STANDARD: Normal priority',
+                'NEXUS-BLUE': 'CHECK-IN: Status sync requested'
+            };
+
+            const alertsList = document.getElementById('alertsList');
+            const div = document.createElement('div');
+            div.className = `card p-4 mb-2`;
+            div.innerHTML = `
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="code-btn code-${colors[code]} text-xs px-2 py-1">${emojis[code]} ${code}</span>
+                    <span class="text-xs text-gray-400">${new Date().toLocaleTimeString()}</span>
+                </div>
+                <p class="text-sm text-gray-200">${messages[code]}</p>`;
+            alertsList.prepend(div);
+        }
+
+        function addToMemory(text) {
+            const memoryList = document.getElementById('memoryList');
+            const div = document.createElement('div');
+            div.className = 'memory-item';
+            div.textContent = text;
+            memoryList.prepend(div);
+        }
+
+        function addMemory() {
+            const text = prompt('Enter memory note:');
+            if (text) addToMemory('📌 ' + text);
+        }
+
+        // Voice toggle
+        function toggleVoice() {
+            const btn = document.getElementById('voiceBtn');
+            NexusConfig.isListening = !NexusConfig.isListening;
+
+            if (NexusConfig.isListening) {
+                btn.textContent = '🔴 LISTENING';
+                btn.className = 'code-btn code-red text-xs';
+
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    const recognition = new SR();
+                    recognition.continuous = false;
+                    recognition.lang = 'en-US';
+                    recognition.onresult = (e) => {
+                        const transcript = e.results[0][0].transcript;
+                        document.getElementById('chatInput').value = transcript;
+                        sendMessage();
+                    };
+                    recognition.onend = () => {
+                        NexusConfig.isListening = false;
+                        btn.textContent = '🎤 VOICE';
+                        btn.className = 'code-btn code-green text-xs';
+                    };
+                    recognition.start();
+                } else {
+                    addMessage('nexus', "Voice recognition requires Chrome or Edge, Boss. Type your command and I'll handle it. 💜");
+                    NexusConfig.isListening = false;
+                    btn.textContent = '🎤 VOICE';
+                    btn.className = 'code-btn code-green text-xs';
+                }
+            }
+        }
+
+        // Set welcome time
+        document.getElementById('welcomeTime').textContent = new Date().toLocaleTimeString();
+    </script>
+</body>
+</html>

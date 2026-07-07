@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOAT Royalty - Wardrobe</title>
+    <link rel="stylesheet" href="goat-theme.css">
+    <style>
+        .wardrobe-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: 2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wardrobe-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="0" y="0" width="50" height="50" fill="rgba(255,255,255,0.05)"/><rect x="50" y="50" width="50" height="50" fill="rgba(255,255,255,0.05)"/></svg>');
+            background-size: 50px 50px;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .wardrobe-header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .wardrobe-header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+        }
+
+        .add-item-btn {
+            background: var(--text-light);
+            color: var(--primary-color);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+
+        .add-item-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .wardrobe-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--bg-color);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .wardrobe-content {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .sidebar {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            height: fit-content;
+            position: sticky;
+            top: 6rem;
+        }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .category-item:hover,
+        .category-item.active {
+            background: var(--primary-color-light);
+        }
+
+        .category-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .category-count {
+            background: var(--primary-color);
+            color: var(--text-light);
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .wardrobe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .item-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .item-image {
+            height: 280px;
+            background: linear-gradient(135deg, var(--primary-color-light) 0%, var(--secondary-color-light) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(168, 85, 247, 0.2) 0%, 
+                rgba(236, 72, 153, 0.2) 100%);
+        }
+
+        .item-actions {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 2;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-color);
+            color: var(--text-light);
+            transform: scale(1.1);
+        }
+
+        .item-info {
+            padding: 1.2rem;
+        }
+
+        .item-brand {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+
+        .item-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .item-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.8rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .item-price {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .item-tags {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .tag {
+            background: var(--bg-color);
+            color: var(--text-secondary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+
+        .wear-count {
+            background: var(--secondary-color-light);
+            color: var(--secondary-color);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .outfit-creator {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .outfit-creator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="15" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="15" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: 100px 100px;
+        }
+
+        .outfit-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .outfit-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .outfit-description {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            max-width: 600px;
+        }
+
+        .outfit-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .outfit-btn {
+            background: var(--text-light);
+            color: var(--primary-color);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .outfit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .outfit-btn.secondary {
+            background: transparent;
+            color: var(--text-light);
+            border: 2px solid var(--text-light);
+        }
+
+        .outfit-preview {
+            position: absolute;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1;
+        }
+
+        .preview-item {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-bar {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .search-input {
+            flex: 1;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .filter-dropdown {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .organize-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .organize-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .organize-row {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .organize-item {
+            flex: 1;
+            background: var(--bg-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .organize-item:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .organize-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .organize-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .organize-count {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 1024px) {
+            .wardrobe-content {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+            }
+
+            .wardrobe-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .wardrobe-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .wardrobe-stats {
+                grid-template-columns: repeat(2, 1fr);
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .outfit-creator {
+                padding: 1.5rem;
+            }
+
+            .outfit-preview {
+                display: none;
+            }
+
+            .wardrobe-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <header class="wardrobe-header">
+        <div class="header-content">
+            <h1>My Wardrobe</h1>
+            <p>Organize and manage your fashion collection</p>
+        </div>
+        <button class="add-item-btn">
+            <span>+</span> Add Item
+        </button>
+    </header>
+
+    <div class="wardrobe-stats">
+        <div class="stat-card">
+            <span class="stat-icon">👔</span>
+            <div class="stat-number">247</div>
+            <div class="stat-label">Total Items</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">💰</span>
+            <div class="stat-number">$58.4K</div>
+            <div class="stat-label">Total Value</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">📊</span>
+            <div class="stat-number">89.2%</div>
+            <div class="stat-label">Utilization Rate</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">🎯</span>
+            <div class="stat-number">32</div>
+            <div class="stat-label">Outfits Created</div>
+        </div>
+    </div>
+
+    <div class="wardrobe-content">
+        <aside class="sidebar">
+            <h3 class="sidebar-title">Categories</h3>
+            <div class="category-list">
+                <div class="category-item active">
+                    <div class="category-name">
+                        <span>👕</span> All Items
+                    </div>
+                    <span class="category-count">247</span>
+                </div>
+                <div class="category-item">
+                    <div class="category-name">
+                        <span>👔</span> Tops
+                    </div>
+                    <span class="category-count">68</span>
+                </div>
+                <div class="category-item">
+                    <div class="category-name">
+                        <span>👖</span> Bottoms
+                    </div>
+                    <span class="category-count">45</span>
+                </div>
+                <div class="category-item">
+                    <div class="category-name">
+                        <span>👗</span> Dresses
+                    </div>
+                    <span class="category-count">23</span>
+                </div>
+                <div class="category-item">
+                    <div class="category-name">
+                        <span>👟</span> Footwear
+                    </div>
+                    <span class="category-count">52</span>
+                </div>
+                <div class="category-item">
+                    <div class="category-name">
+                        <span>👜</span> Bags
+                    </div>
+                    <span class="category-count">18</span>
+                </div>
+                <div class="category-item">
+                    <div class="category-name">
+                        <span>⌚</span> Accessories
+                    </div>
+                    <span class="category-count">34</span>
+                </div>
+                <div class="category-item">
+                    <div class="category-name">
+                        <span>🧥</span> Outerwear
+                    </div>
+                    <span class="category-count">7</span>
+                </div>
+            </div>
+        </aside>
+
+        <main>
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="Search your wardrobe...">
+                <select class="filter-dropdown">
+                    <option>Sort by: Recently Added</option>
+                    <option>Sort by: Price: High to Low</option>
+                    <option>Sort by: Price: Low to High</option>
+                    <option>Sort by: Most Worn</option>
+                    <option>Sort by: Brand A-Z</option>
+                </select>
+            </div>
+
+            <div class="wardrobe-grid" id="wardrobeGrid">
+                <!-- Wardrobe items will be dynamically inserted -->
+            </div>
+        </main>
+    </div>
+
+    <div class="outfit-creator">
+        <div class="outfit-content">
+            <h2 class="outfit-title">Create Outfit with AI</h2>
+            <p class="outfit-description">Let AI suggest outfit combinations based on your wardrobe, weather, and upcoming events.</p>
+            <div class="outfit-actions">
+                <button class="outfit-btn">Generate Outfit</button>
+                <button class="outfit-btn secondary">View Saved Outfits</button>
+            </div>
+        </div>
+        <div class="outfit-preview">
+            <div class="preview-item">👕</div>
+            <div class="preview-item">👖</div>
+            <div class="preview-item">👟</div>
+            <div class="preview-item">👜</div>
+        </div>
+    </div>
+
+    <div class="organize-section">
+        <div class="organize-header">
+            <h2>Smart Organization</h2>
+        </div>
+        <div class="organize-row">
+            <div class="organize-item">
+                <span class="organize-icon">🏷️</span>
+                <h3 class="organize-label">Tags</h3>
+                <p class="organize-count">156 tags applied</p>
+            </div>
+            <div class="organize-item">
+                <span class="organize-icon">📅</span>
+                <h3 class="organize-label">Seasonal</h3>
+                <p class="organize-count">4 seasons organized</p>
+            </div>
+            <div class="organize-item">
+                <span class="organize-icon">🎨</span>
+                <h3 class="organize-label">Colors</h3>
+                <p class="organize-count">23 color categories</p>
+            </div>
+            <div class="organize-item">
+                <span class="organize-icon">⭐</span>
+                <h3 class="organize-label">Favorites</h3>
+                <p class="organize-count">34 favorite items</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wardrobe items data
+        const wardrobeItems = [
+            { id: 1, brand: "GUCCI", name: "GG Monogram Shirt", price: "$1,450", category: "Tops", wears: 12, tags: ["Casual", "Designer"], favorite: true },
+            { id: 2, brand: "BALMAIN", name: "Leather Biker Jacket", price: "$4,890", category: "Outerwear", wears: 8, tags: ["Luxury", "Statement"], favorite: true },
+            { id: 3, brand: "NIKE", name: "Air Jordan 1 Retro", price: "$520", category: "Footwear", wears: 24, tags: ["Sneakers", "Streetwear"], favorite: false },
+            { id: 4, brand: "PRADA", name: "Pleated Trousers", price: "$1,280", category: "Bottoms", wears: 15, tags: ["Formal", "Designer"], favorite: true },
+            { id: 5, brand: "HERMÈS", name: "Birkin Bag 25", price: "$28,900", category: "Bags", wears: 5, tags: ["Luxury", "Classic"], favorite: true },
+            { id: 6, brand: "OFF-WHITE", name: "Arrows Hoodie", price: "$680", category: "Tops", wears: 18, tags: ["Streetwear", "Casual"], favorite: false },
+            { id: 7, brand: "LOUIS VUITTON", name: "Damier Belt", price: "$580", category: "Accessories", wears: 32, tags: ["Accessories", "Luxury"], favorite: false },
+            { id: 8, brand: "VERSACE", name: "Medusa Necklace", price: "$2,340", category: "Accessories", wears: 7, tags: ["Jewelry", "Statement"], favorite: true },
+            { id: 9, brand: "STONE ISLAND", name: "Compass Patch Crewneck", price: "$420", category: "Tops", wears: 21, tags: ["Casual", "Streetwear"], favorite: false },
+            { id: 10, brand: "BALENCIAGA", name: "Track Pants", price: "$890", category: "Bottoms", wears: 14, tags: ["Athleisure", "Designer"], favorite: false },
+            { id: 11, brand: "CHANEL", name: "Classic Flap Bag", price: "$8,900", category: "Bags", wears: 6, tags: ["Luxury", "Classic"], favorite: true },
+            { id: 12, brand: "ALEXANDER MCQUEEN", name: "Oversized Sneakers", price: "$650", category: "Footwear", wears: 16, tags: ["Sneakers", "Statement"], favorite: false }
+        ];
+
+        // Render wardrobe item
+        function renderWardrobeItem(item) {
+            const tagsHtml = item.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+            return `
+                <div class="item-card">
+                    <div class="item-image">
+                        <div class="item-actions">
+                            <button class="action-btn">✏️</button>
+                            <button class="action-btn">❤️</button>
+                            <button class="action-btn">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="item-info">
+                        <p class="item-brand">${item.brand}</p>
+                        <h3 class="item-name">${item.name}</h3>
+                        <div class="item-tags">${tagsHtml}</div>
+                        <div class="item-meta">
+                            <span class="wear-count">🔄 ${item.wears} wears</span>
+                            <span class="item-price">${item.price}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize wardrobe grid
+        document.getElementById('wardrobeGrid').innerHTML = wardrobeItems.map(renderWardrobeItem).join('');
+
+        // Category functionality
+        document.querySelectorAll('.category-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Action button functionality
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // Handle edit, favorite, delete actions
+            });
+        });
+
+        // Add item button
+        document.querySelector('.add-item-btn').addEventListener('click', function() {
+            // Open add item modal
+        });
+
+        // Search functionality
+        document.querySelector('.search-input').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredItems = wardrobeItems.filter(item => 
+                item.name.toLowerCase().includes(searchTerm) || 
+                item.brand.toLowerCase().includes(searchTerm)
+            );
+            document.getElementById('wardrobeGrid').innerHTML = filteredItems.map(renderWardrobeItem).join('');
+        });
+
+        // Filter dropdown
+        document.querySelector('.filter-dropdown').addEventListener('change', function() {
+            // Handle sorting
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GOAT Movie Studio — Video Editor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c14;--bg2:#0d1420;--bg3:#111928;--bg4:#1a2336;
+  --border:rgba(212,160,60,0.18);--gold:#d4a03c;--gold2:#f0c040;
+  --red:#e74c3c;--green:#2ecc71;--blue:#3498db;--purple:#9b59b6;
+  --cyan:#00d4ff;--orange:#f39c12;--pink:#e91e8c;
+  --text:#f0ece4;--sub:#7a7060;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px}
+#app{display:flex;flex-direction:column;height:100vh}
+/* TOPBAR */
+#topbar{height:44px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 12px;flex-shrink:0}
+.logo{font-size:15px;font-weight:800;color:var(--gold)}
+.tb-btn{padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s}
+.tb-btn:hover,.tb-btn.act{background:var(--bg4);color:var(--text);border-color:var(--gold)}
+.spacer{flex:1}
+/* TOOLBAR */
+#toolbar{height:38px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:4px;padding:0 10px;flex-shrink:0}
+.tool-btn{width:30px;height:26px;border-radius:4px;border:1px solid transparent;background:transparent;color:var(--sub);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.tool-btn:hover,.tool-btn.act{background:var(--bg4);color:var(--text);border-color:var(--border)}
+.tool-sep{width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0}
+/* MAIN */
+#main{display:flex;flex:1;overflow:hidden;min-height:0}
+/* LEFT PANEL */
+#left{width:200px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.panel-title{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;padding:8px 10px 4px}
+.media-item{padding:6px 10px;display:flex;align-items:center;gap:6px;cursor:pointer;transition:all .2s;border-radius:4px;margin:2px 6px}
+.media-item:hover{background:var(--bg4)}
+.media-thumb{width:36px;height:24px;border-radius:3px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;border:1px solid var(--border)}
+.media-name{font-size:10px;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.media-dur{font-size:9px;color:var(--sub)}
+/* CENTER */
+#center{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+/* PREVIEW */
+#preview-area{flex:0 0 200px;background:#000;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--border);position:relative}
+#preview-canvas{display:block}
+#preview-overlay{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;background:rgba(0,0,0,0.7);border-radius:20px;padding:4px 12px}
+/* TRANSPORT */
+#transport{height:44px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 12px;flex-shrink:0}
+.t-btn{width:30px;height:28px;border-radius:5px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;flex-shrink:0}
+.t-btn:hover{background:var(--bg4);border-color:var(--gold)}
+.t-btn.act{background:rgba(46,204,113,0.2);border-color:var(--green);color:var(--green)}
+.tc-display{font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--cyan);background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 10px;min-width:130px;text-align:center}
+.fps-display{font-size:10px;color:var(--sub);background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 8px}
+/* TIMELINE */
+#timeline-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+#ruler-area{display:flex;flex-shrink:0;height:22px;background:var(--bg3);border-bottom:1px solid var(--border)}
+#ruler-spacer{width:140px;flex-shrink:0;border-right:1px solid var(--border)}
+#ruler-canvas{flex:1;display:block}
+#tl-body{flex:1;display:flex;overflow:auto}
+#tl-labels{width:140px;flex-shrink:0;border-right:1px solid var(--border);overflow:hidden}
+#tl-canvas-wrap{flex:1;position:relative;overflow:auto}
+#tl-canvas{display:block;cursor:crosshair}
+/* RIGHT PANEL */
+#right{width:210px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;padding:10px}
+.rp-title{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;margin-top:10px}
+.fx-item{padding:5px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;margin-bottom:4px;display:flex;align-items:center;gap:6px;cursor:pointer;transition:all .2s;font-size:10px}
+.fx-item:hover{border-color:var(--gold)}
+.fx-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* EXPORT MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:999}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;min-width:360px;max-width:440px}
+.modal h3{color:var(--gold);margin-bottom:16px;font-size:16px}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+<div id="app">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <span class="logo">🐐 MOVIE STUDIO</span>
+    <div class="spacer"></div>
+    <button class="tb-btn" onclick="newProject()">📁 New Project</button>
+    <button class="tb-btn" onclick="openImport()">📥 Import</button>
+    <button class="tb-btn" onclick="openExport()">📤 Export</button>
+    <div class="spacer"></div>
+    <a href="film-score.html"><button class="tb-btn">🎼 Film Score</button></a>
+    <a href="powerhouse.html"><button class="tb-btn">⬅ Home</button></a>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div id="toolbar">
+    <button class="tool-btn act" title="Select">↖</button>
+    <button class="tool-btn" title="Cut">✂</button>
+    <button class="tool-btn" title="Razor">🔪</button>
+    <button class="tool-btn" title="Hand">✋</button>
+    <button class="tool-btn" title="Zoom">🔍</button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn" title="Undo">↩</button>
+    <button class="tool-btn" title="Redo">↪</button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn" title="Link/Unlink">🔗</button>
+    <button class="tool-btn" title="Magnet Snap">🧲</button>
+    <div class="tool-sep"></div>
+    <span style="font-size:10px;color:var(--sub)">Zoom:</span>
+    <input type="range" min="1" max="10" value="3" id="zoomSlider" onchange="setZoom(this.value)" style="width:80px;accent-color:var(--gold)">
+    <span style="font-size:10px;color:var(--sub)" id="zoomLbl">3x</span>
+    <div class="tool-sep"></div>
+    <span style="font-size:10px;color:var(--sub)">FPS:</span>
+    <select id="fpsSelect" onchange="setFps(this.value)" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;font-family:inherit;font-size:10px">
+      <option value="24">24</option><option value="25">25</option><option value="30" selected>30</option><option value="60">60</option>
+    </select>
+    <div class="spacer"></div>
+    <span style="font-size:10px;color:var(--sub)" id="proj-dur">Duration: 00:02:30:00</span>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <!-- LEFT - MEDIA BIN -->
+    <div id="left">
+      <div class="panel-title">📁 Media Bin</div>
+      <div id="media-bin"></div>
+      <div class="panel-title" style="margin-top:8px">🎵 Audio</div>
+      <div id="audio-bin"></div>
+      <div class="panel-title" style="margin-top:8px">🖼 Assets</div>
+      <div id="assets-bin"></div>
+    </div>
+
+    <!-- CENTER -->
+    <div id="center">
+      <!-- PREVIEW -->
+      <div id="preview-area">
+        <canvas id="preview-canvas" width="320" height="180"></canvas>
+        <div id="preview-overlay">
+          <span id="prev-tc" style="font-size:11px;font-family:monospace;color:var(--cyan)">00:00:00:00</span>
+          <span style="font-size:9px;color:var(--sub)" id="prev-res">1920×1080</span>
+        </div>
+      </div>
+
+      <!-- TRANSPORT -->
+      <div id="transport">
+        <button class="t-btn" onclick="gotoStart()">⏮</button>
+        <button class="t-btn" onclick="stepBack()">⏪</button>
+        <button class="t-btn act" id="btnPlay" onclick="togglePlay()">▶</button>
+        <button class="t-btn" onclick="stepFwd()">⏩</button>
+        <button class="t-btn" onclick="gotoEnd()">⏭</button>
+        <div class="spacer"></div>
+        <span class="tc-display" id="tcDisplay">00:00:00:00</span>
+        <span class="fps-display" id="fpsDisplay">30fps</span>
+        <div class="spacer"></div>
+        <span style="font-size:10px;color:var(--sub)">IN</span>
+        <span class="fps-display" id="inPoint">—</span>
+        <span style="font-size:10px;color:var(--sub)">OUT</span>
+        <span class="fps-display" id="outPoint">—</span>
+        <button class="t-btn" title="Set In" onclick="setIn()">I</button>
+        <button class="t-btn" title="Set Out" onclick="setOut()">O</button>
+      </div>
+
+      <!-- TIMELINE -->
+      <div id="timeline-wrap">
+        <div id="ruler-area">
+          <div id="ruler-spacer"></div>
+          <canvas id="ruler-canvas" height="22"></canvas>
+        </div>
+        <div id="tl-body">
+          <div id="tl-labels"></div>
+          <div id="tl-canvas-wrap">
+            <canvas id="tl-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div id="right">
+      <div class="rp-title">🎬 Clip Info</div>
+      <div id="clip-info" style="font-size:10px;line-height:2;color:var(--sub)">
+        Select a clip to view info
+      </div>
+      <div class="rp-title">⚡ Effects</div>
+      <div id="fx-list"></div>
+      <div class="rp-title">🎨 Color</div>
+      <div id="color-panel"></div>
+      <div class="rp-title">🔊 Audio Mix</div>
+      <div id="audio-panel"></div>
+      <div class="rp-title">⚙ Export Settings</div>
+      <div style="font-size:10px;color:var(--sub);line-height:2">
+        Format: <span style="color:var(--text)">H.264</span><br>
+        Resolution: <span style="color:var(--text)">1920×1080</span><br>
+        Bitrate: <span style="color:var(--text)">20 Mbps</span><br>
+        Audio: <span style="color:var(--text)">AAC 320k</span><br>
+        Color: <span style="color:var(--text)">Rec.709</span>
+      </div>
+      <button class="tb-btn" style="width:100%;margin-top:8px;text-align:center" onclick="openExport()">📤 Export</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+const FPS_DEFAULT = 30;
+let fps = FPS_DEFAULT, zoom = 3, playing = false, currentFrame = 0;
+let totalFrames = FPS_DEFAULT * 150; // 2m30s
+let inPoint = -1, outPoint = -1;
+let rafId = null;
+
+const TRACK_H = 44;
+const TRACK_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6'];
+
+// timeline tracks
+const tlTracks = [
+  {name:'Video 1',  type:'video', color:'#3498db',
+    clips:[{start:0,len:90,label:'Intro Shot'},{start:95,len:120,label:'Main Scene'},{start:220,len:80,label:'Chorus'},{start:310,len:60,label:'Bridge'},{start:380,len:90,label:'Outro'}]},
+  {name:'Video 2',  type:'video', color:'#9b59b6',
+    clips:[{start:0,len:45,label:'Logo Sting'},{start:160,len:60,label:'B-Roll 1'},{start:280,len:50,label:'B-Roll 2'},{start:350,len:40,label:'Cutaway'}]},
+  {name:'GFX',      type:'video', color:'#e91e8c',
+    clips:[{start:0,len:150,label:'Lower Third'},{start:200,len:60,label:'Title Card'},{start:380,len:70,label:'End Cards'}]},
+  {name:'Music',    type:'audio', color:'#d4a03c',
+    clips:[{start:0,len:450,label:'GOAT Season – Full Track'}]},
+  {name:'VO Track', type:'audio', color:'#f39c12',
+    clips:[{start:10,len:80,label:'Verse Vocal'},{start:95,len:80,label:'Hook Vocal'},{start:200,len:70,label:'Bridge VO'},{start:310,len:60,label:'Outro VO'}]},
+  {name:'SFX',      type:'audio', color:'#1abc9c',
+    clips:[{start:0,len:5,label:'Whoosh'},{start:88,len:3,label:'Hit'},{start:218,len:4,label:'Riser'},{start:308,len:3,label:'Drop'},{start:378,len:6,label:'Fade'}]},
+  {name:'Ambient',  type:'audio', color:'#2ecc71',
+    clips:[{start:0,len:450,label:'Room Tone'}]},
+];
+
+// MEDIA BIN
+const MEDIA = [
+  {name:'intro_shot.mp4',dur:'0:45',icon:'🎬'},
+  {name:'main_scene.mp4',dur:'2:00',icon:'🎬'},
+  {name:'broll_1.mp4',   dur:'1:00',icon:'🎬'},
+  {name:'broll_2.mp4',   dur:'0:50',icon:'🎬'},
+  {name:'logo_sting.mp4',dur:'0:05',icon:'🎞'},
+  {name:'title_card.ae', dur:'0:10',icon:'✨'},
+];
+const AUDIO_MEDIA=[
+  {name:'GOAT Season.wav',dur:'3:30',icon:'🎵'},
+  {name:'verse_vocal.wav',dur:'1:20',icon:'🎤'},
+  {name:'sfx_pack.wav',   dur:'0:30',icon:'🔊'},
+];
+
+// ── INIT ──
+function init(){
+  buildMediaBin();
+  buildTLLabels();
+  buildRuler();
+  buildFxList();
+  buildColorPanel();
+  buildAudioPanel();
+  drawPreview();
+  loop();
+}
+
+function buildMediaBin(){
+  const bin=document.getElementById('media-bin');
+  bin.innerHTML=MEDIA.map(m=>`
+    <div class="media-item" draggable="true">
+      <div class="media-thumb">${m.icon}</div>
+      <div><div class="media-name">${m.name}</div><div class="media-dur">${m.dur}</div></div>
+    </div>
+  `).join('');
+  const abin=document.getElementById('audio-bin');
+  abin.innerHTML=AUDIO_MEDIA.map(m=>`
+    <div class="media-item">
+      <div class="media-thumb">${m.icon}</div>
+      <div><div class="media-name">${m.name}</div><div class="media-dur">${m.dur}</div></div>
+    </div>
+  `).join('');
+  const assets=document.getElementById('assets-bin');
+  assets.innerHTML=['🖼 Thumbnail.png','🎨 Lower3rd.png','🏆 Watermark.svg','📷 Backdrop.jpg'].map(a=>`
+    <div class="media-item"><div class="media-thumb" style="font-size:14px">${a[0]}</div><div class="media-name">${a.slice(2)}</div></div>
+  `).join('');
+}
+
+// ── RULER ──
+function buildRuler(){
+  const rw=document.getElementById('tl-canvas-wrap');
+  const cv=document.getElementById('ruler-canvas');
+  const w=Math.max(rw.clientWidth||600, totalFrames/fps*zoom*20);
+  cv.width=w;
+  const ctx=cv.getContext('2d');const h=22;
+  ctx.fillStyle='#111928';ctx.fillRect(0,0,w,h);
+  const PPF=zoom*20/fps; // pixels per frame * fps = pixels per second; zoom*20 px/sec
+  const secInterval=zoom>=5?1:zoom>=2?5:10;
+  for(let s=0;s<=totalFrames/fps;s+=secInterval){
+    const x=s*PPF*fps;
+    if(x>w)break;
+    ctx.strokeStyle='rgba(212,160,60,0.3)';ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();
+    ctx.fillStyle='#f0ece4';ctx.font='8px monospace';
+    const m=Math.floor(s/60),sec=s%60;
+    ctx.fillText(String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'),x+3,14);
+  }
+}
+
+// ── TL LABELS ──
+function buildTLLabels(){
+  const el=document.getElementById('tl-labels');
+  el.innerHTML=tlTracks.map((t,i)=>`
+    <div style="height:${TRACK_H}px;display:flex;align-items:center;gap:6px;padding:0 8px;border-bottom:1px solid rgba(255,255,255,0.05);background:${i%2===0?'var(--bg2)':'var(--bg3)'};cursor:pointer" onclick="selectTrack(${i})">
+      <div style="width:4px;height:30px;background:${t.color};border-radius:2px;flex-shrink:0"></div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text)">${t.name}</div>
+        <div style="font-size:8px;color:var(--sub)">${t.type==='video'?'V':'A'}</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:2px">
+        <button style="width:14px;height:14px;border-radius:2px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:8px;font-weight:700;font-family:inherit" title="Mute">M</button>
+        <button style="width:14px;height:14px;border-radius:2px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:8px;font-weight:700;font-family:inherit" title="Lock">🔒</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── TL CANVAS ──
+function buildTL(){
+  const wrap=document.getElementById('tl-canvas-wrap');
+  const cv=document.getElementById('tl-canvas');
+  const PPF=zoom*20/fps;
+  const w=Math.max(wrap.clientWidth||600, totalFrames*PPF+60);
+  const h=tlTracks.length*TRACK_H;
+  cv.width=w;cv.height=h;
+  const ctx=cv.getContext('2d');
+  // bg
+  ctx.fillStyle='#080c14';ctx.fillRect(0,0,w,h);
+  // track rows
+  tlTracks.forEach((_,i)=>{
+    ctx.fillStyle=i%2===0?'rgba(255,255,255,0.01)':'rgba(0,0,0,0.01)';
+    ctx.fillRect(0,i*TRACK_H,w,TRACK_H);
+    ctx.strokeStyle='rgba(255,255,255,0.05)';
+    ctx.beginPath();ctx.moveTo(0,(i+1)*TRACK_H-1);ctx.lineTo(w,(i+1)*TRACK_H-1);ctx.stroke();
+  });
+  // second grid
+  const secInt=zoom>=5?1:5;
+  for(let s=0;s<=totalFrames/fps;s+=secInt){
+    const x=s*fps*PPF;if(x>w)break;
+    ctx.strokeStyle=s%30===0?'rgba(212,160,60,0.12)':'rgba(255,255,255,0.03)';
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();
+  }
+  // clips
+  tlTracks.forEach((t,ti)=>{
+    t.clips.forEach(c=>{
+      const cx=c.start*PPF, cw=c.len*PPF;
+      const cy=ti*TRACK_H+4, ch=TRACK_H-8;
+      // clip body
+      const grad=ctx.createLinearGradient(cx,cy,cx,cy+ch);
+      grad.addColorStop(0,hexA(t.color,0.55));grad.addColorStop(1,hexA(t.color,0.25));
+      ctx.fillStyle=grad;roundRect(ctx,cx+1,cy,Math.max(2,cw-2),ch,4);ctx.fill();
+      // clip border
+      ctx.strokeStyle=hexA(t.color,0.85);ctx.lineWidth=1;
+      roundRect(ctx,cx+1,cy,Math.max(2,cw-2),ch,4);ctx.stroke();ctx.lineWidth=1;
+      // content squiggles
+      if(t.type==='video'){
+        // film strip lines
+        const stripeW=8;
+        for(let sx=cx+4;sx<cx+cw-4;sx+=stripeW){
+          ctx.strokeStyle=hexA(t.color,0.4);ctx.lineWidth=1;
+          ctx.strokeRect(sx,cy+4,stripeW-2,ch-8);
+          ctx.fillStyle=hexA(t.color,0.3);
+          ctx.fillRect(sx+1,cy+5,stripeW-3,(ch-8)/3);
+        }
+      } else {
+        // audio waveform
+        ctx.strokeStyle=hexA(t.color,0.7);ctx.lineWidth=1;
+        ctx.beginPath();
+        for(let px=cx+2;px<cx+cw-2;px++){
+          const amp=(ch/2-6)*Math.sin(px*0.4)*Math.sin(px*0.07)*0.6;
+          const py=cy+ch/2-amp;
+          px===cx+2?ctx.moveTo(px,py):ctx.lineTo(px,py);
+        }
+        ctx.stroke();ctx.lineWidth=1;
+      }
+      // label
+      if(cw>30){
+        ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font='bold 9px monospace';
+        ctx.fillText(c.label.slice(0,Math.floor(cw/7)),cx+5,cy+14);
+      }
+    });
+  });
+  // playhead
+  const phX=currentFrame*PPF;
+  ctx.strokeStyle='#e74c3c';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(phX,0);ctx.lineTo(phX,h);ctx.stroke();
+  ctx.fillStyle='#e74c3c';
+  ctx.beginPath();ctx.moveTo(phX-6,0);ctx.lineTo(phX+6,0);ctx.lineTo(phX,10);ctx.closePath();ctx.fill();
+  ctx.lineWidth=1;
+  // in/out markers
+  if(inPoint>=0){
+    ctx.fillStyle='rgba(46,204,113,0.4)';ctx.fillRect(inPoint*PPF,0,3,h);
+  }
+  if(outPoint>=0){
+    ctx.fillStyle='rgba(231,76,60,0.4)';ctx.fillRect(outPoint*PPF,0,3,h);
+  }
+}
+
+function hexA(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+
+// ── PREVIEW ──
+let prevPhase=0;
+function drawPreview(){
+  const cv=document.getElementById('preview-canvas');
+  if(!cv)return;
+  const ctx=cv.getContext('2d');const w=320,h=180;
+  // black bg
+  ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);
+  // animated gradient bg representing video content
+  const t=currentFrame/fps;
+  const grad=ctx.createLinearGradient(0,0,w,h);
+  grad.addColorStop(0,`hsl(${220+t*2},60%,15%)`);
+  grad.addColorStop(0.5,`hsl(${240+t*3},50%,8%)`);
+  grad.addColorStop(1,`hsl(${200+t*2},70%,12%)`);
+  ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+  // glow orb
+  const gx=80+40*Math.sin(t*0.3), gy=60+20*Math.cos(t*0.2);
+  const grd=ctx.createRadialGradient(gx,gy,0,gx,gy,80);
+  grd.addColorStop(0,'rgba(212,160,60,0.35)');grd.addColorStop(1,'rgba(212,160,60,0)');
+  ctx.fillStyle=grd;ctx.fillRect(0,0,w,h);
+  // film grain
+  for(let i=0;i<200;i++){
+    ctx.fillStyle=`rgba(255,255,255,${0.01+Math.random()*0.03})`;
+    ctx.fillRect(Math.random()*w,Math.random()*h,1,1);
+  }
+  // letterbox bars
+  ctx.fillStyle='rgba(0,0,0,0.85)';
+  ctx.fillRect(0,0,w,16);ctx.fillRect(0,h-16,w,16);
+  // GOAT watermark
+  ctx.fillStyle='rgba(212,160,60,0.25)';ctx.font='bold 11px monospace';ctx.textAlign='center';
+  ctx.fillText('🐐 GOAT ROYALTY',w/2,h/2);
+  ctx.font='8px monospace';ctx.fillStyle='rgba(255,255,255,0.2)';
+  ctx.fillText('CONFIDENTIAL — LIFE IMITATES ART INC.',w/2,h/2+14);
+  ctx.textAlign='left';
+  // timecode
+  const tc=fmtFrame(currentFrame);
+  ctx.fillStyle='rgba(0,212,255,0.8)';ctx.font='bold 10px monospace';
+  ctx.fillText(tc,6,h-4);
+  document.getElementById('prev-tc').textContent=tc;
+  prevPhase+=0.04;
+}
+
+// ── TIMECODE ──
+function fmtFrame(f){
+  const totalSec=Math.floor(f/fps);
+  const fr=f%fps;
+  const hh=Math.floor(totalSec/3600), mm=Math.floor((totalSec%3600)/60), ss=totalSec%60;
+  return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0')+':'+String(fr).padStart(2,'0');
+}
+function updateTC(){
+  const tc=fmtFrame(currentFrame);
+  document.getElementById('tcDisplay').textContent=tc;
+  document.getElementById('prev-tc').textContent=tc;
+}
+
+// ── TRANSPORT ──
+let lastTime=null;
+function togglePlay(){
+  playing=!playing;
+  const btn=document.getElementById('btnPlay');
+  btn.classList.toggle('act',playing);
+  btn.textContent=playing?'⏸':'▶';
+}
+function gotoStart(){playing=false;currentFrame=0;document.getElementById('btnPlay').textContent='▶';document.getElementById('btnPlay').classList.remove('act');}
+function gotoEnd(){playing=false;currentFrame=totalFrames;document.getElementById('btnPlay').textContent='▶';}
+function stepBack(){currentFrame=Math.max(0,currentFrame-1);}
+function stepFwd(){currentFrame=Math.min(totalFrames,currentFrame+1);}
+function setIn(){inPoint=currentFrame;}
+function setOut(){outPoint=currentFrame;if(inPoint>=0&&outPoint>inPoint){document.getElementById('inPoint').textContent=fmtFrame(inPoint);document.getElementById('outPoint').textContent=fmtFrame(outPoint);}}
+function setZoom(v){zoom=parseInt(v);document.getElementById('zoomLbl').textContent=v+'x';buildRuler();buildTL();}
+function setFps(v){fps=parseInt(v);document.getElementById('fpsDisplay').textContent=v+'fps';totalFrames=fps*150;}
+function selectTrack(i){
+  const t=tlTracks[i];
+  document.getElementById('clip-info').innerHTML=`Track: <span style="color:${t.color}">${t.name}</span><br>Type: ${t.type}<br>Clips: ${t.clips.length}<br>Duration: ${fmtFrame(Math.max(...t.clips.map(c=>c.start+c.len)))}`;
+}
+
+// ── FX LIST ──
+function buildFxList(){
+  const el=document.getElementById('fx-list');
+  const effects=[
+    {n:'Color Grade',c:'#d4a03c',on:true},{n:'Lens Flare',c:'#f39c12',on:true},
+    {n:'Film Grain',c:'#9b59b6',on:true},{n:'Vignette',c:'#3498db',on:false},
+    {n:'Stabilizer',c:'#2ecc71',on:false},{n:'Noise Reduce',c:'#1abc9c',on:false},
+  ];
+  el.innerHTML=effects.map(f=>`
+    <div class="fx-item">
+      <div class="fx-dot" style="background:${f.on?f.c:'var(--sub)'}"></div>
+      <span style="flex:1">${f.n}</span>
+      <span style="font-size:9px;color:${f.on?'var(--green)':'var(--sub)'}">${f.on?'ON':'OFF'}</span>
+    </div>
+  `).join('');
+}
+
+// ── COLOR PANEL ──
+function buildColorPanel(){
+  const el=document.getElementById('color-panel');
+  const presets=['Cinematic','Warm Glow','Cool Tone','B&W','Kodak','Golden Hour'];
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px">
+      ${presets.map(p=>`
+        <div style="padding:4px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:9px;text-align:center;transition:all .2s" onmouseenter="this.style.borderColor='var(--gold)'" onmouseleave="this.style.borderColor='var(--border)'">${p}</div>
+      `).join('')}
+    </div>
+    <div style="font-size:9px;color:var(--sub);margin-bottom:4px">Exposure</div>
+    <input type="range" min="-100" max="100" value="5" style="width:100%;accent-color:var(--gold);margin-bottom:6px">
+    <div style="font-size:9px;color:var(--sub);margin-bottom:4px">Saturation</div>
+    <input type="range" min="-100" max="100" value="15" style="width:100%;accent-color:var(--orange);margin-bottom:6px">
+    <div style="font-size:9px;color:var(--sub);margin-bottom:4px">Temperature</div>
+    <input type="range" min="-100" max="100" value="-10" style="width:100%;accent-color:var(--blue)">
+  `;
+}
+
+// ── AUDIO PANEL ──
+function buildAudioPanel(){
+  const el=document.getElementById('audio-panel');
+  el.innerHTML=tlTracks.filter(t=>t.type==='audio').map(t=>`
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <span style="font-size:9px;color:${t.color};width:60px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</span>
+      <input type="range" min="0" max="100" value="${60+Math.random()*30}" style="flex:1;accent-color:${t.color}">
+      <span style="font-size:9px;color:var(--sub);width:28px;text-align:right">${Math.floor(60+Math.random()*30)}%</span>
+    </div>
+  `).join('');
+}
+
+// ── EXPORT MODAL ──
+function openExport(){
+  const m=document.createElement('div');m.className='modal-overlay';
+  m.innerHTML=`<div class="modal">
+    <h3>📤 Export Video</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      ${['H.264 MP4','H.265 HEVC','ProRes 422','ProRes 4444','DNxHD','WebM VP9'].map((f,i)=>`
+        <label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:10px">
+          <input type="radio" name="vfmt" ${i===0?'checked':''} style="accent-color:var(--gold)"> ${f}
+        </label>`).join('')}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <div><div style="font-size:10px;color:var(--sub);margin-bottom:4px">Resolution</div>
+        <select style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:5px;font-family:inherit">
+          <option>1920×1080 (FHD)</option><option>3840×2160 (4K)</option><option>1280×720 (HD)</option>
+        </select></div>
+      <div><div style="font-size:10px;color:var(--sub);margin-bottom:4px">Frame Rate</div>
+        <select style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:5px;font-family:inherit">
+          <option>30 fps</option><option>24 fps</option><option>60 fps</option>
+        </select></div>
+    </div>
+    <div id="exp-prog2" style="display:none;margin-bottom:12px">
+      <div style="background:var(--bg4);border-radius:4px;height:8px;overflow:hidden">
+        <div id="exp-bar2" style="height:100%;background:var(--gold);width:0%;transition:width .1s;border-radius:4px"></div>
+      </div>
+      <div id="exp-lbl2" style="font-size:10px;color:var(--sub);text-align:center;margin-top:4px"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="this.closest('.modal-overlay').remove()" style="flex:1;padding:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);border-radius:6px;cursor:pointer;font-family:inherit">Cancel</button>
+      <button id="startExpBtn" onclick="startExportAnim()" style="flex:2;padding:8px;background:var(--gold);color:#000;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-family:inherit">🎬 Render & Export</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+}
+
+function startExportAnim(){
+  const bar=document.getElementById('exp-bar2'), lbl=document.getElementById('exp-lbl2');
+  const prog=document.getElementById('exp-prog2'), btn=document.getElementById('startExpBtn');
+  prog.style.display='block';btn.disabled=true;btn.textContent='Rendering…';
+  const stages=['Analyzing timeline…','Rendering video tracks…','Compositing effects…','Encoding audio…','Muxing container…','Writing output…','Done ✓'];
+  let p=0;
+  const iv=setInterval(()=>{
+    p+=2+Math.random()*4;if(p>100)p=100;
+    bar.style.width=p+'%';
+    lbl.textContent=stages[Math.min(Math.floor(p/16),stages.length-1)]+' '+Math.floor(p)+'%';
+    if(p>=100){clearInterval(iv);btn.textContent='✓ Exported';btn.style.background='var(--green)';}
+  },180);
+}
+
+function newProject(){alert('New Project\n[Opens project settings wizard]');}
+function openImport(){alert('Import Media\n[Opens file picker for video/audio/image]');}
+
+// ── LOOP ──
+let lastTs=0;
+function loop(ts){
+  if(ts&&lastTs&&playing){
+    const dtFrames=(ts-lastTs)/1000*fps;
+    currentFrame=Math.min(totalFrames,currentFrame+dtFrames);
+    if(currentFrame>=totalFrames){playing=false;document.getElementById('btnPlay').textContent='▶';document.getElementById('btnPlay').classList.remove('act');}
+  }
+  lastTs=ts||0;
+  updateTC();
+  buildTL();
+  drawPreview();
+  rafId=requestAnimationFrame(loop);
+}
+
+window.addEventListener('DOMContentLoaded',init);
+window.addEventListener('resize',()=>{buildRuler();buildTL();});
+</script>
+</body>
+</html>

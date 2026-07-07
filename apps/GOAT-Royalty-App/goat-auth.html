@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔑 Authentication | GOAT Royalty</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <style>
+        :root {
+            --bg: #040608; --panel: #0d1117; --panel2: #161b22;
+            --gold: #d4a03c; --gold2: #f0c040; --gold3: #ffd700;
+            --red: #c1121f; --green: #3fb950; --blue: #58a6ff;
+            --ink: #f0ece4; --dim: #8b949e; --line: #21262d;
+            --glow: rgba(212,160,60,.25);
+        }
+        body { 
+            background: var(--bg); 
+            color: var(--ink); 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .auth-container { max-width: 480px; width: 100%; }
+        
+        .auth-header { text-align: center; margin-bottom: 32px; }
+        .auth-logo { font-size: 64px; margin-bottom: 16px; }
+        .auth-title { font-size: 28px; font-weight: 700; color: var(--gold3); margin-bottom: 8px; }
+        .auth-subtitle { font-size: 14px; color: var(--dim); }
+        
+        /* Auth Form */
+        .auth-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 32px; position: relative; overflow: hidden; }
+        .auth-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--gold), var(--gold3)); }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 8px; font-weight: 500; }
+        .form-input { width: 100%; padding: 14px 16px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); border-radius: 10px; font-size: 14px; transition: all .2s; }
+        .form-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,160,60,.1); }
+        .form-input::placeholder { color: var(--dim); }
+        
+        .input-with-icon { position: relative; }
+        .input-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 20px; color: var(--dim); }
+        .input-with-icon .form-input { padding-right: 44px; }
+        
+        .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; font-size: 13px; }
+        .form-options label { display: flex; align-items: center; gap: 6px; color: var(--dim); cursor: pointer; }
+        .form-options input[type="checkbox"] { accent-color: var(--gold); }
+        .form-options a { color: var(--gold); text-decoration: none; }
+        .form-options a:hover { text-decoration: underline; }
+        
+        .auth-btn { width: 100%; padding: 16px; border: none; background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #040608; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all .2s; margin-bottom: 16px; }
+        .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(212,160,60,.3); }
+        .auth-btn:active { transform: translateY(0); }
+        
+        .divider { display: flex; align-items: center; margin: 24px 0; color: var(--dim); font-size: 13px; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+        .divider span { padding: 0 16px; }
+        
+        .social-login { display: flex; gap: 12px; }
+        .social-btn { flex: 1; padding: 14px; border: 1px solid var(--line); background: var(--panel2); border-radius: 10px; font-size: 24px; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; }
+        .social-btn:hover { border-color: var(--gold); background: var(--panel); }
+        
+        .auth-footer { text-align: center; margin-top: 24px; font-size: 14px; color: var(--dim); }
+        .auth-footer a { color: var(--gold); text-decoration: none; font-weight: 600; }
+        .auth-footer a:hover { text-decoration: underline; }
+        
+        /* 2FA Form */
+        .totp-inputs { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; }
+        .totp-input { width: 50px; height: 60px; padding: 0; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); border-radius: 8px; font-size: 24px; font-weight: 700; text-align: center; transition: all .2s; }
+        .totp-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,160,60,.1); }
+        
+        .backup-codes { background: var(--panel2); border-radius: 8px; padding: 16px; margin-top: 16px; }
+        .backup-codes-title { font-size: 12px; color: var(--dim); margin-bottom: 12px; }
+        .codes-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-family: monospace; font-size: 13px; color: var(--ink); }
+        .code-item { padding: 8px; background: var(--panel); border-radius: 6px; text-align: center; }
+        
+        /* Verify Email */
+        .email-sent { text-align: center; }
+        .email-icon { font-size: 64px; margin-bottom: 16px; }
+        .email-title { font-size: 20px; font-weight: 700; color: var(--gold3); margin-bottom: 8px; }
+        .email-message { font-size: 14px; color: var(--dim); margin-bottom: 16px; }
+        .email-address { background: var(--panel2); padding: 12px; border-radius: 8px; font-size: 14px; color: var(--ink); margin-bottom: 20px; font-weight: 600; }
+        
+        /* Link Account */
+        .link-accounts { display: flex; flex-direction: column; gap: 12px; }
+        .link-btn { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid var(--line); background: var(--panel2); border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; transition: all .2s; }
+        .link-btn:hover { border-color: var(--gold); }
+        .link-btn span { font-size: 24px; }
+        .link-btn.connected { border-color: var(--green); color: var(--green); }
+        .link-btn.connected::after { content: '✓'; margin-left: auto; }
+        
+        .auth-progress { margin-bottom: 24px; }
+        .progress-bar { height: 4px; background: var(--panel2); border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold3)); transition: width 0.3s ease; }
+        .progress-steps { display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; color: var(--dim); }
+        .step { display: flex; align-items: center; gap: 6px; }
+        .step.active { color: var(--gold3); }
+        .step.completed { color: var(--green); }
+        
+        .success-check { width: 120px; height: 120px; margin: 0 auto 24px; border-radius: 50%; background: rgba(63,185,80,.1); display: flex; align-items: center; justify-content: center; font-size: 64px; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Login Form -->
+        <div class="auth-header">
+            <div class="auth-logo">🐐</div>
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">Sign in to your GOAT Royalty account</p>
+        </div>
+
+        <div class="auth-card">
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label">Email or Username</label>
+                    <div class="input-with-icon">
+                        <input type="text" class="form-input" placeholder="Enter your email or username" value="waka@goatroyalty.com">
+                        <span class="input-icon">👤</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div class="input-with-icon">
+                        <input type="password" class="form-input" placeholder="Enter your password" value="••••••••">
+                        <span class="input-icon">🔒</span>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label>
+                        <input type="checkbox" checked>
+                        Remember me
+                    </label>
+                    <a href="#">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="auth-btn" onclick="handleLogin(event)">Sign In</button>
+            </form>
+
+            <div class="divider">
+                <span>or continue with</span>
+            </div>
+
+            <div class="social-login">
+                <button class="social-btn" title="Google">
+                    <span>🔵</span>
+                </button>
+                <button class="social-btn" title="GitHub">
+                    <span>⬛</span>
+                </button>
+                <button class="social-btn" title="Apple">
+                    <span>🍎</span>
+                </button>
+            </div>
+
+            <div class="auth-footer">
+                Don't have an account? <a href="#" onclick="showRegister()">Sign up</a>
+            </div>
+        </div>
+
+        <!-- 2FA Verification (Hidden) -->
+        <div class="auth-card" id="2fa-section" style="display: none;">
+            <div class="auth-header" style="margin-bottom: 24px;">
+                <div class="auth-logo">📱</div>
+                <h1 class="auth-title">Two-Factor Auth</h1>
+                <p class="auth-subtitle">Enter the 6-digit code from your authenticator app</p>
+            </div>
+
+            <form id="2fa-form">
+                <div class="totp-inputs">
+                    <input type="text" class="totp-input" maxlength="1" oninput="moveFocus(this)">
+                    <input type="text" class="totp-input" maxlength="1" oninput="moveFocus(this)">
+                    <input type="text" class="totp-input" maxlength="1" oninput="moveFocus(this)">
+                    <input type="text" class="totp-input" maxlength="1" oninput="moveFocus(this)">
+                    <input type="text" class="totp-input" maxlength="1" oninput="moveFocus(this)">
+                    <input type="text" class="totp-input" maxlength="1" oninput="moveFocus(this)">
+                </div>
+
+                <button type="submit" class="auth-btn" onclick="handle2FA(event)">Verify</button>
+            </form>
+
+            <button class="auth-btn" style="background: var(--panel2); color: var(--ink); margin-top: 8px;" onclick="showBackups()">Use backup code</button>
+        </div>
+
+        <!-- Backup Codes (Hidden) -->
+        <div class="auth-card" id="backup-section" style="display: none;">
+            <div style="margin-bottom: 20px; text-align: center;">
+                <p style="font-size: 14px; color: var(--dim);">Enter one of your backup codes</p>
+            </div>
+
+            <div class="form-group">
+                <input type="text" class="form-input" placeholder="Enter backup code" style="font-family: monospace; letter-spacing: 2px;">
+            </div>
+
+            <button class="auth-btn" onclick="verifyBackup()">Verify</button>
+            <button class="auth-footer" style="margin-top: 16px; cursor: pointer;" onclick="show2FA()">← Back to 2FA</button>
+        </div>
+
+        <!-- Password Reset (Hidden) -->
+        <div class="auth-card" id="reset-section" style="display: none;">
+            <div class="email-sent">
+                <div class="email-icon">📧</div>
+                <h2 class="email-title">Reset Your Password</h2>
+                <p class="email-message">We've sent a password reset link to your email address</p>
+                <div class="email-address">waka@goatroyalty.com</div>
+                <p style="font-size: 13px; color: var(--dim); margin-bottom: 20px;">Click the link in the email to reset your password. The link will expire in 1 hour.</p>
+                <button class="auth-btn" onclick="backToLogin()">Back to Login</button>
+                <button class="auth-footer" style="margin-top: 12px; cursor: pointer;" onclick="resendEmail()">Resend email</button>
+            </div>
+        </div>
+
+        <!-- Registration (Hidden) -->
+        <div class="auth-card" id="register-section" style="display: none;">
+            <div class="auth-header">
+                <h1 class="auth-title">Create Account</h1>
+                <p class="auth-subtitle">Join GOAT Royalty and start earning</p>
+            </div>
+
+            <div class="auth-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 33%;"></div>
+                </div>
+                <div class="progress-steps">
+                    <span class="step active">📝 Account</span>
+                    <span class="step">🔐 Security</span>
+                    <span class="step">✅ Complete</span>
+                </div>
+            </div>
+
+            <form id="register-form">
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-input" placeholder="your@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" placeholder="Choose a username">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div class="input-with-icon">
+                        <input type="password" class="form-input" placeholder="Create a strong password">
+                        <span class="input-icon">🔒</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" class="form-input" placeholder="Confirm your password">
+                </div>
+
+                <div class="form-options">
+                    <label>
+                        <input type="checkbox">
+                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="auth-btn" onclick="handleRegister(event)">Continue</button>
+            </form>
+
+            <div class="auth-footer">
+                Already have an account? <a href="#" onclick="showLogin()">Sign in</a>
+            </div>
+        </div>
+
+        <!-- Email Verification (Hidden) -->
+        <div class="auth-card" id="verify-section" style="display: none;">
+            <div class="email-sent">
+                <div class="email-icon">✉️</div>
+                <h2 class="email-title">Verify Your Email</h2>
+                <p class="email-message">We sent a verification code to</p>
+                <div class="email-address">newuser@goatroyalty.com</div>
+                
+                <div class="form-group" style="text-align: left;">
+                    <label class="form-label">Verification Code</label>
+                    <input type="text" class="form-input" placeholder="Enter 6-digit code" style="text-align: center; font-size: 20px; letter-spacing: 4px;">
+                </div>
+
+                <button class="auth-btn" onclick="verifyEmail()">Verify Email</button>
+                <p style="font-size: 13px; color: var(--dim); margin-top: 16px;">Didn't receive the code? <a href="#" style="color: var(--gold);">Resend</a></p>
+            </div>
+        </div>
+
+        <!-- Success (Hidden) -->
+        <div class="auth-card" id="success-section" style="display: none; text-align: center;">
+            <div class="success-check">✓</div>
+            <h2 class="email-title" style="font-size: 24px;">Account Created!</h2>
+            <p class="email-message">Your GOAT Royalty account has been successfully created and verified.</p>
+            <button class="auth-btn" onclick="goToDashboard()">Go to Dashboard</button>
+        </div>
+    </div>
+
+    <script src="lib/database/user-auth.js"></script>
+    <script>
+        function handleLogin(event) {
+            event.preventDefault();
+            // In production, this would call the UserAuth.login() method
+            show2FA();
+        }
+
+        function show2FA() {
+            document.getElementById('login-form').parentElement.style.display = 'none';
+            document.getElementById('2fa-section').style.display = 'block';
+        }
+
+        function handle2FA(event) {
+            event.preventDefault();
+            alert('2FA verified! Redirecting to dashboard...');
+            // In production, redirect to dashboard
+        }
+
+        function moveFocus(input) {
+            if (input.value.length === 1) {
+                const next = input.nextElementSibling;
+                if (next && next.classList.contains('totp-input')) {
+                    next.focus();
+                }
+            }
+        }
+
+        function showBackups() {
+            document.getElementById('2fa-section').style.display = 'none';
+            document.getElementById('backup-section').style.display = 'block';
+        }
+
+        function verifyBackup() {
+            alert('Backup code verified! Redirecting...');
+        }
+
+        function showLogin() {
+            document.getElementById('register-section').style.display = 'none';
+            document.getElementById('verify-section').style.display = 'none';
+            document.getElementById('success-section').style.display = 'none';
+            document.getElementById('backup-section').style.display = 'none';
+            document.getElementById('2fa-section').style.display = 'none';
+            document.querySelector('.auth-card').style.display = 'block';
+        }
+
+        function showRegister() {
+            document.querySelector('.auth-card').style.display = 'none';
+            document.getElementById('register-section').style.display = 'block';
+        }
+
+        function handleRegister(event) {
+            event.preventDefault();
+            document.getElementById('register-section').style.display = 'none';
+            document.getElementById('verify-section').style.display = 'block';
+        }
+
+        function verifyEmail() {
+            document.getElementById('verify-section').style.display = 'none';
+            document.getElementById('success-section').style.display = 'block';
+        }
+
+        function goToDashboard() {
+            alert('Redirecting to dashboard...');
+            window.location.href = 'index.html';
+        }
+
+        function showReset() {
+            document.querySelector('.auth-card').style.display = 'none';
+            document.getElementById('reset-section').style.display = 'block';
+        }
+
+        function backToLogin() {
+            showLogin();
+        }
+
+        function resendEmail() {
+            alert('Password reset email sent!');
+        }
+
+        // Auto-focus first TOTP input
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstInput = document.querySelector('.totp-input');
+            if (firstInput) firstInput.focus();
+        });
+    </script>
+</body>
+</html>

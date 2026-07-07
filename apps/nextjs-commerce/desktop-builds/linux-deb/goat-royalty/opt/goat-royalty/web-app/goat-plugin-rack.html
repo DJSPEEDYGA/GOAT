@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0a">
+<title>🔌 GOAT Plugin Rack — SSL · 1176 · LA-2A · Ozone · Waves</title>
+<link rel="stylesheet" href="css/goat-touch.css">
+<style>
+:root{--red:#c1121f;--gold:#ffd700;--black:#0a0a0a;--char:#1a1a1a;--gray:#2a2a2a;--cream:#f5f5dc;--green:#22c55e;--cyan:#06b6d4;--purple:#a855f7;--orange:#f97316;--silver:#9ca3af;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+body{background:var(--black);color:var(--cream);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overscroll-behavior:none;touch-action:manipulation;}
+input,select{user-select:text;-webkit-user-select:text;}
+
+.page{padding:70px 10px 90px;min-height:100vh;display:flex;flex-direction:column;gap:12px;}
+.topbar{position:fixed;top:0;left:0;right:0;height:60px;background:rgba(10,10,10,.97);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,215,0,.25);display:flex;align-items:center;padding:0 12px;gap:10px;z-index:100;}
+.topbar .brand{font-size:16px;font-weight:900;color:var(--gold);letter-spacing:.5px;}
+.topbar .spacer{flex:1;}
+.topbtn{min-height:40px;padding:6px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:var(--cream);font-size:13px;font-weight:700;cursor:pointer;}
+.chip{padding:5px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;font-size:11px;font-weight:700;color:var(--silver);}
+
+/* ── PLUGIN SLOT ── */
+.rack{display:flex;flex-direction:column;gap:10px;}
+.plugin-slot{background:var(--char);border:2px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;transition:border-color .2s;}
+.plugin-slot.active{border-color:var(--gold);box-shadow:0 0 20px rgba(255,215,0,.15);}
+.plugin-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:rgba(255,255,255,.03);}
+.plugin-power{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;flex-shrink:0;}
+.plugin-power.on{background:var(--green);border-color:var(--green);box-shadow:0 0 10px var(--green);}
+.plugin-name{font-size:14px;font-weight:900;flex:1;letter-spacing:.5px;}
+.plugin-category{font-size:10px;color:var(--silver);font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.plugin-expand{font-size:18px;color:var(--gold);cursor:pointer;padding:4px 8px;}
+.plugin-body{padding:12px 14px;border-top:1px solid rgba(255,255,255,.06);display:none;}
+.plugin-body.open{display:block;}
+
+/* ── KNOB ── */
+.knob-rack{width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#3a3a3a,#0a0a0a 70%);border:2px solid #555;position:relative;cursor:pointer;touch-action:none;}
+.knob-rack.gold{border-color:rgba(255,215,0,.5);}
+.knob-rack.red{border-color:rgba(193,18,31,.5);}
+.knob-rack.green{border-color:rgba(34,197,94,.5);}
+.knob-rack-dot{position:absolute;left:50%;top:5px;width:3px;height:15px;border-radius:2px;background:var(--gold);transform-origin:50% 19px;transform:translateX(-50%) rotate(0deg);}
+.knob-group{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.knob-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.kw-label{font-size:9px;font-weight:800;color:var(--silver);text-transform:uppercase;letter-spacing:.5px;}
+.kw-val{font-size:10px;font-weight:700;color:var(--cream);font-variant-numeric:tabular-nums;min-width:36px;text-align:center;}
+
+/* ── SWITCH / TOGGLE ── */
+.rack-switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;}
+.sw-dot{width:36px;height:20px;background:#333;border-radius:10px;position:relative;transition:background .2s;}
+.sw-dot::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:white;transition:left .2s;}
+.rack-switch.on .sw-dot{background:var(--green);}
+.rack-switch.on .sw-dot::after{left:18px;}
+.sw-label{font-size:11px;font-weight:800;color:var(--cream);text-transform:uppercase;letter-spacing:.5px;}
+
+/* ── METER ── */
+.plugin-meter{display:flex;gap:3px;align-items:flex-end;height:40px;}
+.pm-bar{width:8px;background:linear-gradient(to top,#22c55e 0%,#ffd700 70%,#e63946 95%);border-radius:2px;transition:height .1s;}
+
+/* ── GR METER (compressor) ── */
+.gr-meter{width:100%;height:28px;background:#0a0a0a;border-radius:6px;overflow:hidden;position:relative;border:1px solid rgba(255,255,255,.1);}
+.gr-fill{position:absolute;right:0;top:0;bottom:0;background:linear-gradient(90deg,#c1121f,#ffd700);transition:width .08s;}
+.gr-label{position:absolute;left:6px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.5px;}
+
+/* ── EQ DISPLAY ── */
+.eq-display{width:100%;height:80px;background:#000;border-radius:10px;overflow:hidden;position:relative;border:1px solid rgba(255,215,0,.15);}
+.eq-display canvas{display:block;width:100%;height:100%;}
+
+/* ── PRESETS ── */
+.preset-chips{display:flex;gap:6px;overflow-x:auto;padding:4px;-webkit-overflow-scrolling:touch;}
+.preset-chip{flex-shrink:0;padding:8px 12px;background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.2);border-radius:12px;font-size:11px;font-weight:700;color:var(--gold);cursor:pointer;white-space:nowrap;}
+.preset-chip:active{background:rgba(255,215,0,.2);}
+
+/* ── BOTTOM NAV ── */
+.t-tabbar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,10,.98);backdrop-filter:blur(20px);border-top:1px solid rgba(255,215,0,.2);display:flex;justify-content:space-around;padding:8px 0;z-index:100;}
+.t-tab{flex:1;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--silver);text-decoration:none;}
+.t-tab .ic{font-size:22px;}
+.t-tab .lb{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.t-tab.active{color:var(--gold);}
+
+/* ── SIGNAL CHAIN ── */
+.signal-chain{display:flex;gap:4px;overflow-x:auto;padding:6px;background:var(--char);border-radius:12px;-webkit-overflow-scrolling:touch;}
+.sc-node{flex-shrink:0;padding:8px 10px;background:var(--gray);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-size:10px;font-weight:800;color:var(--cream);white-space:nowrap;text-transform:uppercase;}
+.sc-node.active{background:linear-gradient(135deg,#c1121f,#780000);border-color:var(--gold);color:var(--gold);}
+.sc-arrow{color:var(--silver);display:flex;align-items:center;font-size:12px;flex-shrink:0;}
+</style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <button class="topbtn" onclick="history.back()">←</button>
+  <div class="brand">🔌 PLUGIN RACK</div>
+  <span class="spacer"></span>
+  <span class="chip" id="cpuChip">CPU: 0%</span>
+  <button class="topbtn" onclick="addPlugin()">+ ADD</button>
+</header>
+
+<main class="page">
+
+  <!-- SIGNAL CHAIN OVERVIEW -->
+  <div>
+    <div style="font-size:10px;color:var(--gold);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📡 Signal Chain</div>
+    <div class="signal-chain" id="signalChain">
+      <div class="sc-node active">🎤 INPUT</div><div class="sc-arrow">→</div>
+      <div class="sc-node active">GATE</div><div class="sc-arrow">→</div>
+      <div class="sc-node active">EQ</div><div class="sc-arrow">→</div>
+      <div class="sc-node active">1176</div><div class="sc-arrow">→</div>
+      <div class="sc-node active">LA-2A</div><div class="sc-arrow">→</div>
+      <div class="sc-node active">SSL BUS</div><div class="sc-arrow">→</div>
+      <div class="sc-node active">OZONE</div><div class="sc-arrow">→</div>
+      <div class="sc-node active">🔊 OUT</div>
+    </div>
+  </div>
+
+  <!-- RACK SLOTS -->
+  <div class="rack" id="rack"></div>
+
+  <!-- ADD PLUGIN PANEL -->
+  <div id="addPanel" style="display:none;background:var(--char);border-radius:16px;padding:14px;border:1px solid rgba(255,215,0,.3);">
+    <div style="font-size:11px;color:var(--gold);font-weight:800;letter-spacing:1px;margin-bottom:10px;text-transform:uppercase;">+ Add Plugin</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;" id="pluginLibrary"></div>
+  </div>
+
+</main>
+
+<nav class="t-tabbar">
+  <a class="t-tab" href="touch-hub.html"><span class="ic">🏠</span><span class="lb">Hub</span></a>
+  <a class="t-tab" href="goat-mpc.html"><span class="ic">🥁</span><span class="lb">MPC</span></a>
+  <a class="t-tab" href="goat-sampler.html"><span class="ic">🎛️</span><span class="lb">Sampler</span></a>
+  <a class="t-tab" href="goat-autotune.html"><span class="ic">🎤</span><span class="lb">Tune</span></a>
+  <a class="t-tab active" href="goat-plugin-rack.html"><span class="ic">🔌</span><span class="lb">Rack</span></a>
+</nav>
+
+<script>
+// ============== PLUGIN DEFINITIONS ==============
+const PLUGIN_LIBRARY = [
+  // DYNAMICS
+  { id:'gate',    name:'Noise Gate',       cat:'Dynamics',    color:'green', icon:'🔇',
+    inspired:'Waves NS1 · UAD 4021',
+    knobs:[{l:'THRESH',min:-80,max:0,v:-40,u:'dB'},{l:'ATTACK',min:0,max:100,v:5,u:'ms'},{l:'RELEASE',min:0,max:500,v:80,u:'ms'},{l:'RANGE',min:0,max:60,v:40,u:'dB'}],
+    switches:[{l:'KEY LISTEN',on:false},{l:'SIDECHAIN',on:false}],
+    presets:['Vocal Tight','Drum Gate','Subtle Clean','Heavy Slam'],
+    gr:true },
+  { id:'comp1176', name:'FET Compressor 1176',cat:'Dynamics',color:'red',  icon:'🎚️',
+    inspired:'UAD 1176 Rev A/E — "All-Buttons In" mode available',
+    knobs:[{l:'INPUT',min:0,max:100,v:60,u:''},{l:'OUTPUT',min:0,max:100,v:70,u:''},{l:'ATTACK',min:1,max:7,v:4,u:''},{l:'RELEASE',min:1,max:7,v:4,u:''}],
+    switches:[{l:'ALL-BUTTONS',on:false},{l:'BRIT MODE',on:true}],
+    presets:['Vocal Punch','Drum Buss','Guitar Glue','Fast Limit'],
+    gr:true, rateBtns:[4,8,12,20] },
+  { id:'compLA2A', name:'Opto Compressor LA-2A',cat:'Dynamics',color:'gold',icon:'💡',
+    inspired:'Universal Audio LA-2A — optical, program-dependent',
+    knobs:[{l:'PEAK RED',min:0,max:100,v:50,u:''},{l:'GAIN',min:0,max:100,v:60,u:''},{l:'HF EMPH',min:0,max:100,v:30,u:''}],
+    switches:[{l:'LIMIT',on:false},{l:'COMPRESS',on:true}],
+    presets:['Silky Vocal','Bass Control','Gentle Glue','Mastering'],
+    gr:true },
+  { id:'ssl',     name:'SSL G-Bus Compressor',cat:'Mix Buss', color:'gold',icon:'🎛️',
+    inspired:'SSL 4000 G+ Buss Compressor',
+    knobs:[{l:'THRESH',min:-15,max:0,v:-10,u:'dB'},{l:'RATIO',min:0,max:100,v:30,u:''},{l:'ATTACK',min:0,max:100,v:30,u:'ms'},{l:'RELEASE',min:0,max:100,v:50,u:'ms'},{l:'MAKEUP',min:0,max:30,v:8,u:'dB'}],
+    switches:[{l:'STEREO LINK',on:true},{l:'EXT SC',on:false}],
+    presets:['Glue Mix','Pump Trap','Gentle SSL','Parallel'],
+    gr:true },
+  // EQ
+  { id:'eqssl',   name:'SSL 4000 E Channel EQ',cat:'EQ',      color:'cyan', icon:'📊',
+    inspired:'SSL 4000 E Series — used on thousands of hits',
+    bands:[{n:'HF',f:10000,g:0,type:'shelf'},{n:'HMF',f:3000,g:0,q:1},{n:'LMF',f:700,g:0,q:1},{n:'LF',f:80,g:0,type:'shelf'}],
+    switches:[{l:'HF BELL',on:false},{l:'LF BELL',on:false},{l:'EQ IN',on:true}],
+    presets:['Air on Vocals','Mud Cut','Presence Boost','Analog Warmth'],
+    eq:true },
+  { id:'eqpultec',name:'Pultec EQP-1A',     cat:'EQ',      color:'gold', icon:'🟡',
+    inspired:'Pulse Techniques EQP-1A — vintage tube program EQ',
+    bands:[{n:'LOW BOOST',f:60,g:0},{n:'LOW ATT',f:60,g:0},{n:'HI BOOST',f:10000,g:0},{n:'HI ATT',f:10000,g:0}],
+    presets:['Drum Punch','Bass Beef','Air & Shimmer','Vocal Silky'],
+    eq:true },
+  { id:'eqAPI',   name:'API 550B 4-Band EQ', cat:'EQ',      color:'orange',icon:'🟠',
+    inspired:'API 500-series 550B — classic American console sound',
+    knobs:[{l:'HF',min:-12,max:12,v:0,u:'dB'},{l:'HMF',min:-12,max:12,v:0,u:'dB'},{l:'LMF',min:-12,max:12,v:0,u:'dB'},{l:'LF',min:-12,max:12,v:0,u:'dB'}],
+    presets:['Snap Drums','Vocal Gloss','Punchy Mix','Lo-Fi Warm'],
+    eq:true },
+  // REVERB / DELAY
+  { id:'reverb',  name:'UAD Plate 140 Reverb',cat:'Reverb',  color:'purple',icon:'🌊',
+    inspired:'EMT 140 plate reverb — Abbey Road staple',
+    knobs:[{l:'PRE-DLY',min:0,max:100,v:15,u:'ms'},{l:'DECAY',min:0,max:100,v:40,u:''},{l:'BASS',min:0,max:100,v:50,u:''},{l:'TREBLE',min:0,max:100,v:60,u:''},{l:'MIX',min:0,max:100,v:25,u:'%'}],
+    presets:['Vocal Room','Drum Hall','Ambience','Huge Plate'],
+    gr:false },
+  { id:'delay',   name:'H-Delay (Haas Effect)', cat:'Delay',  color:'cyan', icon:'⏱️',
+    inspired:'Waves H-Delay — slap-back, ping-pong, Haas',
+    knobs:[{l:'TIME',min:0,max:100,v:30,u:'ms'},{l:'FEEDBACK',min:0,max:95,v:25,u:'%'},{l:'LOW CUT',min:0,max:100,v:20,u:''},{l:'HIGH CUT',min:0,max:100,v:70,u:''},{l:'MIX',min:0,max:100,v:30,u:'%'}],
+    switches:[{l:'PING-PONG',on:false},{l:'SYNC',on:true}],
+    presets:['Trap Slap','Echo Verb','Mono Glue','Wide Ping'] },
+  // SATURATION
+  { id:'sat',     name:'Tape Saturation (Ampex)', cat:'Saturation',color:'orange',icon:'📼',
+    inspired:'UAD Ampex ATR-102 tape machine emulation',
+    knobs:[{l:'INPUT',min:0,max:100,v:50,u:''},{l:'OUTPUT',min:0,max:100,v:60,u:''},{l:'BIAS',min:0,max:100,v:50,u:''},{l:'IPS',min:0,max:100,v:60,u:''}],
+    switches:[{l:'15 IPS',on:true},{l:'30 IPS',on:false},{l:'REPRO',on:false}],
+    presets:['Analog Warmth','Heavy Tape','Subtle Glue','808 Tape'] },
+  // MASTERING
+  { id:'ozone',   name:'AI Mastering (Ozone)',  cat:'Mastering',color:'gold',icon:'💎',
+    inspired:'iZotope Ozone 12 — IRC V Maximizer + Stem EQ + Tonal Balance',
+    knobs:[{l:'CEILING',min:-3,max:0,v:-0.3,u:'dB'},{l:'THRESH',min:-30,max:0,v:-12,u:'dB'},{l:'RELEASE',min:0,max:100,v:50,u:''},{l:'STEREO',min:0,max:100,v:50,u:'%'}],
+    switches:[{l:'IRC V',on:true},{l:'STEM EQ',on:false},{l:'UNLIMITER',on:false}],
+    presets:['Streaming Master','Club Loud','Warm Vinyl','Reference Match'],
+    gr:true, ai:true },
+  // SLATE STYLE
+  { id:'vmr',     name:'Virtual Mix Rack (VMR)', cat:'Channel Strip',color:'red',icon:'🏗️',
+    inspired:'Slate Digital VMR 3.0 — modular channel strip',
+    knobs:[{l:'INPUT',min:0,max:100,v:60,u:''},{l:'OUTPUT',min:0,max:100,v:70,u:''},{l:'HF',min:-12,max:12,v:0,u:'dB'},{l:'LF',min:-12,max:12,v:0,u:'dB'}],
+    switches:[{l:'FG-76',on:true},{l:'FG-S',on:false},{l:'FG-401',on:false},{l:'FRESH AIR',on:true}],
+    presets:['Speedy Signature','Waka Vocal','Mix Buss','Mastering'] },
+];
+
+const rackEl = document.getElementById('rack');
+const loadedPlugins = ['gate','comp1176','compLA2A','eqssl','reverb','ozone'];
+const pluginState = {}; // id -> {on, expanded}
+
+function buildRack() {
+  rackEl.innerHTML = '';
+  loadedPlugins.forEach(id => {
+    const def = PLUGIN_LIBRARY.find(p=>p.id===id);
+    if (!def) return;
+    if (!pluginState[id]) pluginState[id] = {on:true, expanded:false};
+    rackEl.appendChild(buildPluginSlot(def));
+  });
+}
+
+function buildPluginSlot(def) {
+  const slot = document.createElement('div');
+  const state = pluginState[def.id];
+  slot.className = 'plugin-slot' + (state.on?' active':'');
+  slot.id = 'slot-'+def.id;
+  slot.innerHTML = `
+    <div class="plugin-header" onclick="toggleExpand('${def.id}')">
+      <div class="plugin-power ${state.on?'on':''}" onclick="event.stopPropagation();togglePower('${def.id}')" title="Power">⏻</div>
+      <div>
+        <div class="plugin-name">${def.icon} ${def.name}</div>
+        <div class="plugin-category">${def.cat} · ${def.inspired||''}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        ${def.gr?`<div class="plugin-meter" id="meter-${def.id}">${Array.from({length:8},(_,i)=>`<div class="pm-bar" style="height:${10+Math.random()*60}%"></div>`).join('')}</div>`:''}
+        <div class="plugin-expand" id="expand-icon-${def.id}">${state.expanded?'▲':'▼'}</div>
+      </div>
+    </div>
+    <div class="plugin-body ${state.expanded?'open':''}" id="body-${def.id}">
+      ${buildPluginBody(def)}
+    </div>`;
+  return slot;
+}
+
+function buildPluginBody(def) {
+  let html = '';
+  // Presets
+  if (def.presets) {
+    html += `<div class="preset-chips">${def.presets.map(p=>`<div class="preset-chip" onclick="loadPreset('${def.id}','${p}')">${p}</div>`).join('')}</div>`;
+  }
+  // EQ Display
+  if (def.eq) {
+    html += `<div class="eq-display" style="margin:10px 0;"><canvas id="eq-canvas-${def.id}"></canvas></div>`;
+  }
+  // GR Meter
+  if (def.gr) {
+    html += `<div style="margin-bottom:8px;"><div class="gr-meter"><div class="gr-fill" id="gr-${def.id}" style="width:0%"></div><div class="gr-label">GR</div></div></div>`;
+  }
+  // Knobs
+  if (def.knobs) {
+    html += `<div class="knob-group">${def.knobs.map(k=>`
+      <div class="knob-wrap" data-plugin="${def.id}" data-knob="${k.l}">
+        <div class="knob-rack ${def.color||''}"><div class="knob-rack-dot" style="background:${def.color==='gold'?'#ffd700':def.color==='red'?'#c1121f':def.color==='green'?'#22c55e':def.color==='cyan'?'#06b6d4':'#a855f7'};"></div></div>
+        <div class="kw-label">${k.l}</div>
+        <div class="kw-val" id="kv-${def.id}-${k.l}">${k.v}${k.u}</div>
+      </div>`).join('')}</div>`;
+  }
+  // Switches
+  if (def.switches) {
+    html += `<div style="display:flex;gap:8px;flex-wrap:wrap;">${def.switches.map(sw=>`
+      <div class="rack-switch ${sw.on?'on':''}" onclick="toggleSwitch(this)">
+        <div class="sw-dot"></div><div class="sw-label">${sw.l}</div>
+      </div>`).join('')}</div>`;
+  }
+  // 1176-style ratio buttons
+  if (def.rateBtns) {
+    html += `<div style="display:flex;gap:6px;margin-top:8px;">${def.rateBtns.map(r=>`
+      <button style="flex:1;min-height:44px;background:var(--gray);border:2px solid rgba(255,255,255,.1);border-radius:8px;color:var(--cream);font-size:13px;font-weight:900;cursor:pointer;" 
+        onclick="this.parentNode.querySelectorAll('button').forEach(b=>b.style.background='');this.style.background='var(--red)';">${r}:1</button>`).join('')}
+      <button style="flex:1.5;min-height:44px;background:var(--gray);border:2px solid rgba(255,255,255,.1);border-radius:8px;color:var(--cream);font-size:11px;font-weight:900;cursor:pointer;" 
+        onclick="this.parentNode.querySelectorAll('button').forEach(b=>b.style.background='');this.style.background='linear-gradient(135deg,#c1121f,#780000)';">ALL IN ☠️</button>
+    </div>`;
+  }
+  if (def.ai) {
+    html += `<button style="width:100%;min-height:48px;margin-top:8px;background:linear-gradient(135deg,#a855f7,#6b21a8);border:none;border-radius:12px;color:white;font-size:13px;font-weight:900;cursor:pointer;letter-spacing:.5px;" onclick="aiAssist('${def.id}')">🤖 AI ASSIST — AUTO MASTER</button>`;
+  }
+  return html;
+}
+
+function togglePower(id) {
+  pluginState[id].on = !pluginState[id].on;
+  const slot = document.getElementById('slot-'+id);
+  const pw = slot.querySelector('.plugin-power');
+  slot.classList.toggle('active', pluginState[id].on);
+  pw.classList.toggle('on', pluginState[id].on);
+  if(navigator.vibrate) navigator.vibrate(10);
+}
+function toggleExpand(id) {
+  pluginState[id].expanded = !pluginState[id].expanded;
+  const body = document.getElementById('body-'+id);
+  const icon = document.getElementById('expand-icon-'+id);
+  body.classList.toggle('open', pluginState[id].expanded);
+  icon.textContent = pluginState[id].expanded ? '▲' : '▼';
+  if (pluginState[id].expanded) {
+    setTimeout(() => drawEQCurve(id), 100);
+  }
+}
+function toggleSwitch(el) { el.classList.toggle('on'); if(navigator.vibrate) navigator.vibrate(8); }
+function loadPreset(id, name) {
+  if(navigator.vibrate) navigator.vibrate([10,30,10]);
+  const toast = document.createElement('div');
+  toast.textContent = '✅ Loaded: ' + name;
+  toast.style.cssText = 'position:fixed;bottom:110px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:2px solid #ffd700;color:#ffd700;padding:10px 20px;border-radius:20px;font-weight:800;z-index:999;pointer-events:none;';
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(), 2000);
+}
+function aiAssist(id) {
+  alert('🤖 AI Mastering Analysis\n\nAnalyzing frequency balance, dynamics, and loudness…\n\nRecommended settings:\n• Threshold: -12 dB\n• Ceiling: -0.3 dB\n• IRC Mode: Intelligent Release Control V\n• True Peak: -1 dBTP\n\nApplied to ' + id.toUpperCase() + '!');
+}
+
+// ============== KNOB BINDING ==============
+function bindKnobs() {
+  document.querySelectorAll('.knob-wrap').forEach(wrap => {
+    const knob = wrap.querySelector('.knob-rack');
+    const valEl = wrap.querySelector('.kw-val');
+    const pluginId = wrap.dataset.plugin;
+    const knobLabel = wrap.dataset.knob;
+    const def = PLUGIN_LIBRARY.find(p=>p.id===pluginId);
+    const kDef = def?.knobs?.find(k=>k.l===knobLabel);
+    if (!knob || !kDef) return;
+    let val = kDef.v;
+    let lastY = null;
+    const range = kDef.max - kDef.min;
+    function setVal(v) {
+      val = Math.max(kDef.min, Math.min(kDef.max, v));
+      const angle = ((val - kDef.min) / range - 0.5) * 270;
+      const dot = knob.querySelector('.knob-rack-dot');
+      if (dot) dot.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+      if (valEl) valEl.textContent = val.toFixed(val < 10 && val > -10 ? 1 : 0) + (kDef.u||'');
+    }
+    setVal(val);
+    knob.addEventListener('touchstart', e => { e.preventDefault(); lastY = e.touches[0].clientY; if(navigator.vibrate) navigator.vibrate(4); }, {passive:false});
+    knob.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const dy = lastY - e.touches[0].clientY;
+      lastY = e.touches[0].clientY;
+      setVal(val + dy * range / 120);
+    }, {passive:false});
+    knob.addEventListener('mousedown', e => {
+      lastY = e.clientY;
+      const mv = ev => { const dy=lastY-ev.clientY; lastY=ev.clientY; setVal(val+dy*range/120); };
+      const up = () => { document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); };
+      document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
+    });
+  });
+}
+
+// ============== EQ CURVE DRAW ==============
+function drawEQCurve(id) {
+  const canvas = document.getElementById('eq-canvas-'+id);
+  if (!canvas) return;
+  const W = canvas.offsetWidth || 300, H = 80;
+  canvas.width = W * devicePixelRatio; canvas.height = H * devicePixelRatio;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  const ctx = canvas.getContext('2d'); ctx.scale(devicePixelRatio, devicePixelRatio);
+  ctx.clearRect(0,0,W,H);
+  // Grid
+  ctx.strokeStyle='rgba(255,215,0,.1)'; ctx.lineWidth=1;
+  [H/4,H/2,3*H/4].forEach(y=>{ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();});
+  // EQ curve (random placeholder showing shape)
+  ctx.beginPath(); ctx.strokeStyle='#ffd700'; ctx.lineWidth=2;
+  const mid = H/2;
+  for (let x = 0; x < W; x++) {
+    const t = x/W;
+    const y = mid - Math.sin(t*Math.PI*2)*20 * (Math.random()*.3+.7);
+    x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  // fill under
+  ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath();
+  ctx.fillStyle='rgba(255,215,0,.06)'; ctx.fill();
+}
+
+// ============== PLUGIN LIBRARY ADD PANEL ==============
+const libEl = document.getElementById('pluginLibrary');
+PLUGIN_LIBRARY.forEach(def => {
+  const btn = document.createElement('div');
+  btn.style.cssText='padding:12px;background:var(--gray);border:1px solid rgba(255,255,255,.1);border-radius:12px;cursor:pointer;';
+  btn.innerHTML=`<div style="font-size:18px;">${def.icon}</div><div style="font-size:12px;font-weight:800;">${def.name}</div><div style="font-size:10px;color:var(--silver);margin-top:2px;">${def.cat}</div>`;
+  btn.addEventListener('click',()=>{
+    if (!loadedPlugins.includes(def.id)) {
+      loadedPlugins.push(def.id);
+      buildRack();
+      setTimeout(bindKnobs, 50);
+    }
+    document.getElementById('addPanel').style.display='none';
+  });
+  libEl.appendChild(btn);
+});
+
+function addPlugin() {
+  const panel = document.getElementById('addPanel');
+  panel.style.display = panel.style.display==='none' ? 'block' : 'none';
+}
+
+// ============== FAKE METERS ==============
+setInterval(()=>{
+  loadedPlugins.forEach(id=>{
+    const meterEl=document.getElementById('meter-'+id);
+    if(meterEl) meterEl.querySelectorAll('.pm-bar').forEach(b=>b.style.height=(5+Math.random()*70)+'%');
+    const grEl=document.getElementById('gr-'+id);
+    if(grEl) grEl.style.width=(Math.random()*30)+'%';
+  });
+  document.getElementById('cpuChip').textContent='CPU: '+Math.round(15+Math.random()*8)+'%';
+},150);
+
+// ============== INIT ==============
+buildRack();
+setTimeout(bindKnobs, 100);
+</script>
+</body>
+</html>
