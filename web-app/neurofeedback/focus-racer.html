@@ -66,7 +66,38 @@ function update(dt){
     : 'Drifting off… the engine bogs down. Refocus.';
 }
 
-function drawSprite(img,x,y,w,flash,t){
+// Wheel geometry per sprite: fx = wheel center as fraction of width from left, r = radius as fraction of width
+const WHEELS={
+  car:[{fx:0.168,r:0.082},{fx:0.800,r:0.082}],
+  police:[{fx:0.190,r:0.082},{fx:0.790,r:0.082}],
+  bike:[{fx:0.140,r:0.125},{fx:0.815,r:0.125}]
+};
+
+function drawWheelSpin(x,y,w,wheels){
+  const a=Math.min(0.55, mph/240*0.7);
+  if (a<0.03) return;
+  for(const wh of wheels){
+    const wx=x-w/2+wh.fx*w, r=wh.r*w, wy=y-r;
+    const ang=roadScroll/r;
+    cx.save();
+    cx.beginPath(); cx.arc(wx,wy,r*0.86,0,7); cx.clip();
+    cx.translate(wx,wy); cx.rotate(ang);
+    // Rotating spoke blur
+    cx.strokeStyle=`rgba(185,190,200,${a})`; cx.lineWidth=Math.max(1.5,r*0.09);
+    for(let i=0;i<5;i++){ const sa=i*(Math.PI*2/5);
+      cx.beginPath(); cx.moveTo(Math.cos(sa)*r*0.18,Math.sin(sa)*r*0.18);
+      cx.lineTo(Math.cos(sa)*r*0.72,Math.sin(sa)*r*0.72); cx.stroke(); }
+    cx.rotate(-ang);
+    // Circular motion-blur streaks at high speed
+    if (mph>110){ const ba=Math.min(0.35,(mph-110)/130*0.4);
+      cx.strokeStyle=`rgba(215,218,228,${ba})`; cx.lineWidth=r*0.16;
+      for(let i=0;i<3;i++){ const off=ang*0.4+i*2.1;
+        cx.beginPath(); cx.arc(0,0,r*(0.42+i*0.16),off,off+2.2); cx.stroke(); } }
+    cx.restore();
+  }
+}
+
+function drawSprite(img,x,y,w,flash,t,wheelKey){
   if (!img.complete || !img.naturalWidth) return;
   const h=w*img.naturalHeight/img.naturalWidth;
   // Soft contact shadow grounding the vehicle on the asphalt
@@ -80,6 +111,7 @@ function drawSprite(img,x,y,w,flash,t){
   cx.fillStyle=hb; cx.beginPath();
   cx.moveTo(x+w*0.38,y-h*0.42); cx.lineTo(x+w*1.15,y-h*0.15); cx.lineTo(x+w*1.15,y+6); cx.lineTo(x+w*0.38,y-h*0.18); cx.closePath(); cx.fill();
   cx.drawImage(img, x-w/2, y-h, w, h);
+  if (wheelKey && WHEELS[wheelKey]) drawWheelSpin(x,y,w,WHEELS[wheelKey]);
   if (flash){ const on=Math.sin(t/80)>0;
     const col=on?'255,40,60':'40,90,255';
     const lg=cx.createRadialGradient(x,y-h*0.98,2,x,y-h*0.98,46);
@@ -122,11 +154,11 @@ function draw(t){
       cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+60+mph*0.4,y); cx.stroke(); } }
 
   // Police behind (left), pulls closer with heat
-  if (heat>0.05){ drawSprite(IMG.police, W*0.42 - (0.35-heat*0.28)*W, H*0.78+14, 300, true, t); }
+  if (heat>0.05){ drawSprite(IMG.police, W*0.42 - (0.35-heat*0.28)*W, H*0.78+14, 300, true, t, 'police'); }
 
   // Player vehicle
   const shake = spike ? Math.sin(t/30)*3 : 0;
-  drawSprite(IMG[vehicle], W*0.55, H*0.78+14+shake, vehicle==='car'?340:230, false, t);
+  drawSprite(IMG[vehicle], W*0.55, H*0.78+14+shake, vehicle==='car'?340:230, false, t, vehicle);
   // Exhaust flame at high focus
   if (mph>180){ cx.fillStyle=`rgba(80,160,255,${0.5+Math.sin(t/40)*0.3})`;
     cx.beginPath(); cx.moveTo(W*0.55-165,H*0.78-18); cx.lineTo(W*0.55-210-Math.random()*30,H*0.78-14); cx.lineTo(W*0.55-165,H*0.78-8); cx.closePath(); cx.fill(); }

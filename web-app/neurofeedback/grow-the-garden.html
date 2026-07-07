@@ -22,6 +22,7 @@
 <div id="hud"></div>
 <a id="back" href="index.html">← Game Hub</a>
 <div id="toggle">🔥 Switch to Campfire</div>
+<div id="micBtn" style="display:none;position:fixed;top:114px;right:14px;z-index:10;color:#ffd9a0;cursor:pointer;background:rgba(24,12,4,.85);border:1px solid rgba(255,170,80,.4);border-radius:10px;padding:8px 14px;font-weight:700;">🎤 Mic Fire: Off</div>
 <div id="msg">Breathe slow and stay calm — your calm is the sunlight this garden grows on.</div>
 
 <script src="signal-engine.js"></script>
@@ -38,7 +39,33 @@ engine.on(s=>{calm=s.calm; spike=s.spike;});
 let mode='garden';
 const toggle=document.getElementById('toggle'), msg=document.getElementById('msg');
 toggle.onclick=()=>{ mode = mode==='garden'?'campfire':'garden';
-  toggle.textContent = mode==='garden' ? '🔥 Switch to Campfire' : '🌱 Switch to Garden'; };
+  toggle.textContent = mode==='garden' ? '🔥 Switch to Campfire' : '🌱 Switch to Garden';
+  micBtn.style.display = mode==='campfire' ? 'block' : 'none'; };
+
+// Microphone volume drives the fire (optional input)
+const micBtn=document.getElementById('micBtn');
+let micOn=false, micLevel=0, micAnalyser=null, micData=null, micStream=null;
+micBtn.onclick=async ()=>{
+  if (micOn){ micOn=false; micLevel=0; micBtn.textContent='🎤 Mic Fire: Off';
+    if (micStream){ micStream.getTracks().forEach(tr=>tr.stop()); micStream=null; } return; }
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const ac=new (window.AudioContext||window.webkitAudioContext)();
+    const src=ac.createMediaStreamSource(micStream);
+    micAnalyser=ac.createAnalyser(); micAnalyser.fftSize=512;
+    micData=new Uint8Array(micAnalyser.fftSize);
+    src.connect(micAnalyser);
+    micOn=true; micBtn.textContent='🎤 Mic Fire: On';
+  }catch(e){ micBtn.textContent='🎤 Mic blocked'; }
+};
+function readMic(){
+  if (!micOn || !micAnalyser) return;
+  micAnalyser.getByteTimeDomainData(micData);
+  let sum=0; for(let i=0;i<micData.length;i++){ const v=(micData[i]-128)/128; sum+=v*v; }
+  const rms=Math.sqrt(sum/micData.length);
+  const target=Math.min(1, rms*6);
+  micLevel += (target-micLevel)*0.18;   // smooth
+}
 
 let growth=0;  // 0..1 bloom progress (garden) ; glow (campfire uses calm directly)
 
@@ -131,7 +158,7 @@ function vignette(W,H){
   cx.fillStyle=vg; cx.fillRect(0,0,W,H);
 }
 
-const sparks=[];
+const sparks=[], flames=[], fsmoke=[];
 function drawCampfire(t,dt){
   const W=cv.width,H=cv.height;
   if (IMG.mountains.complete && IMG.mountains.naturalWidth){
@@ -154,19 +181,40 @@ function drawCampfire(t,dt){
   cx.fillStyle='#4a2c14';
   cx.save(); cx.translate(W/2,H*0.78);
   cx.rotate(0.3); cx.fillRect(-70,-9,140,18); cx.rotate(-0.6); cx.fillRect(-70,-9,140,18); cx.restore();
-  // Flames scale with calm
-  const fh=30+glow*170;
-  for(let f=0;f<3;f++){
-    const fx=W/2+(f-1)*22, flick=Math.sin(t/90+f*2)*8*(1+glow);
-    const grad=cx.createLinearGradient(0,H*0.78,0,H*0.78-fh);
-    grad.addColorStop(0,'rgba(255,90,20,0.95)'); grad.addColorStop(0.6,'rgba(255,170,40,0.85)'); grad.addColorStop(1,'rgba(255,240,150,0)');
-    cx.fillStyle=grad;
-    cx.beginPath(); cx.moveTo(fx-20,H*0.78);
-    cx.quadraticCurveTo(fx-8+flick,H*0.78-fh*0.55, fx+flick*0.5,H*0.78-fh);
-    cx.quadraticCurveTo(fx+10+flick,H*0.78-fh*0.5, fx+20,H*0.78); cx.closePath(); cx.fill();
+  // Volumetric flame body: additive-blended puffs rising through red→orange→yellow→white
+  readMic();
+  const fireLevel=Math.min(1, glow*(micOn?0.6:1) + micLevel*0.7);
+  const rate=2+Math.round(fireLevel*9);
+  for(let i=0;i<rate;i++){
+    flames.push({x:W/2+(Math.random()-0.5)*46, y:H*0.785,
+      vx:(Math.random()-0.5)*22, vy:-(70+Math.random()*90)*(0.5+fireLevel),
+      r:9+Math.random()*13, life:1, decay:1.1+Math.random()*0.7});
+  }
+  cx.save(); cx.globalCompositeOperation='lighter';
+  for(let i=flames.length-1;i>=0;i--){ const p=flames[i];
+    p.x+=p.vx*dt+Math.sin(t/110+i)*0.7; p.y+=p.vy*dt; p.r*=(1-0.8*dt); p.life-=p.decay*dt;
+    if (p.life<=0 || p.r<1.5){ flames.splice(i,1); continue; }
+    const L=p.life;
+    const g=cx.createRadialGradient(p.x,p.y,0.5,p.x,p.y,p.r);
+    g.addColorStop(0,`rgba(255,${Math.round(140+115*L)},${Math.round(200*L*L)},${0.34*L})`);
+    g.addColorStop(0.6,`rgba(255,${Math.round(60+90*L)},10,${0.22*L})`);
+    g.addColorStop(1,'rgba(180,20,0,0)');
+    cx.fillStyle=g; cx.beginPath(); cx.arc(p.x,p.y,p.r,0,7); cx.fill();
+  }
+  cx.restore();
+  // Smoke column above the flames
+  if (Math.random()<0.3+fireLevel*0.4)
+    fsmoke.push({x:W/2+(Math.random()-0.5)*30, y:H*0.78-(60+fireLevel*150),
+      vx:(Math.random()-0.5)*10+6, vy:-(20+Math.random()*24), r:8+Math.random()*8, life:1});
+  for(let i=fsmoke.length-1;i>=0;i--){ const p=fsmoke[i];
+    p.x+=p.vx*dt+Math.sin(t/800+i)*0.5; p.y+=p.vy*dt; p.r+=16*dt; p.life-=dt*0.4;
+    if (p.life<=0){ fsmoke.splice(i,1); continue; }
+    const g=cx.createRadialGradient(p.x,p.y,1,p.x,p.y,p.r);
+    g.addColorStop(0,`rgba(120,115,110,${0.14*p.life})`); g.addColorStop(1,'rgba(120,115,110,0)');
+    cx.fillStyle=g; cx.beginPath(); cx.arc(p.x,p.y,p.r,0,7); cx.fill();
   }
   // Sparks
-  if (Math.random()<glow*0.5) sparks.push({x:W/2+(Math.random()-0.5)*30,y:H*0.75,vy:-40-Math.random()*60,life:1});
+  if (Math.random()<(glow+micLevel)*0.5) sparks.push({x:W/2+(Math.random()-0.5)*30,y:H*0.75,vy:-40-Math.random()*60,life:1});
   cx.fillStyle='#ffcf70';
   for(let i=sparks.length-1;i>=0;i--){ const s=sparks[i]; s.y+=s.vy*dt; s.x+=Math.sin(t/100+i)*0.6; s.life-=dt*0.7;
     if(s.life<=0){sparks.splice(i,1);continue;}
