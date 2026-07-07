@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Force — Supreme Command Center</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<link rel="stylesheet" href="css/goat-theme.css">
+<style>
+:root {
+  --hub-gold: #FFD700;
+  --hub-gold2: #f0c040;
+  --hub-gold3: #c89b3c;
+  --hub-gold-glow: rgba(255,215,0,0.25);
+  --hub-red: #e74c3c;
+  --hub-green: #2ecc71;
+  --hub-blue: #3498db;
+  --hub-purple: #9b59b6;
+}
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: #080a0c;
+  background-image: url('assets/images/goat-og-bg-web.png');
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+  background-blend-mode: overlay;
+  color: #f5e6c8;
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* GOAT Superman watermark */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: url('assets/goat-superman.jpg') center center / 500px no-repeat;
+  opacity: 0.04;
+  filter: grayscale(100%);
+}
+body > * { position: relative; z-index: 1; }
+
+/* Floating gold particles */
+.particles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,215,0,0.2), rgba(212,160,60,0.04));
+  filter: blur(1px);
+  animation: floatParticle 20s ease-in-out infinite;
+  opacity: 0.5;
+}
+.particle:nth-child(1) { width: 300px; height: 300px; top: 5%;  left: 5%;  animation-delay: 0s; }
+.particle:nth-child(2) { width: 180px; height: 180px; top: 65%; left: 10%; animation-delay: 5s; }
+.particle:nth-child(3) { width: 400px; height: 400px; top: 20%; left: 65%; animation-delay: 10s; background: radial-gradient(circle at 30% 30%, rgba(193,18,31,0.12), rgba(0,0,0,0)); }
+.particle:nth-child(4) { width: 140px; height: 140px; top: 78%; left: 78%; animation-delay: 15s; }
+.particle:nth-child(5) { width: 260px; height: 260px; top: 45%; left: 38%; animation-delay: 7s; }
+.particle:nth-child(6) { width: 120px; height: 120px; top: 8%;  left: 52%; animation-delay: 3s; background: radial-gradient(circle at 30% 30%, rgba(52,152,219,0.12), rgba(0,0,0,0)); }
+@keyframes floatParticle {
+  0%,100% { transform: translate(0,0) scale(1); opacity: 0.4; }
+  33%     { transform: translate(40px,-60px) scale(1.08); opacity: 0.6; }
+  66%     { transform: translate(-25px,35px) scale(0.94); opacity: 0.35; }
+}
+
+/* NAV — glassmorphism dark */
+.goat-nav {
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(8,10,12,0.92) !important;
+  backdrop-filter: blur(16px);
+}
+.goat-nav .nav-brand span,
+.goat-nav span[style*="color:#fff"],
+.goat-nav span[style*="font-weight:900"] {
+  color: #fff !important;
+  text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 18px rgba(255,255,255,0.5), 0 0 35px rgba(255,255,255,0.25) !important;
+}
+.goat-nav-links a:hover { background: rgba(255,215,0,0.15); color: var(--hub-gold); }
+.goat-nav-links a.active { background: linear-gradient(135deg,rgba(184,134,11,0.3),rgba(139,105,20,0.3)); box-shadow: 0 0 20px rgba(255,215,0,0.2); color: #fff !important; }
+
+/* HUB LAYOUT */
+.hub-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 0;
+  height: calc(100vh - 80px);
+  margin: 0 24px 40px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,215,0,0.2);
+  box-shadow: 0 0 60px rgba(255,215,0,0.1), 0 20px 60px rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+}
+
+/* SIDEBAR */
+.hub-sidebar {
+  background: rgba(12,10,6,0.97);
+  border-right: 1px solid rgba(255,215,0,0.12);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  position: relative;
+}
+.hub-sidebar::-webkit-scrollbar { width: 4px; }
+.hub-sidebar::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.25); border-radius: 4px; }
+
+/* Video bg in sidebar */
+.sidebar-video-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  filter: brightness(0.08) saturate(1.5);
+  pointer-events: none;
+}
+.hub-sidebar > *:not(.sidebar-video-bg) { position: relative; z-index: 1; }
+
+.hub-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid rgba(255,215,0,0.12);
+  flex-shrink: 0;
+}
+.hub-logo img { width: 44px; height: 44px; border-radius: 10px; filter: drop-shadow(0 0 12px rgba(255,215,0,0.5)); }
+.hub-logo-text { flex: 1; }
+.hub-logo-text .title {
+  font-size: 14px; font-weight: 900; letter-spacing: 0.5px;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 18px rgba(255,255,255,0.5), 0 0 35px rgba(255,255,255,0.25);
+}
+.hub-logo-text .sub { font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+.hub-logo .intel-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--hub-green);
+  box-shadow: 0 0 8px var(--hub-green);
+  animation: pulseDot 2s infinite;
+}
+@keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+.sec-label {
+  font-size: 10px; font-weight: 800; color: #555;
+  text-transform: uppercase; letter-spacing: 1.2px;
+  padding: 14px 18px 8px;
+  flex-shrink: 0;
+}
+
+/* Agent quick-switch */
+.persona-btns { padding: 0 12px 8px; flex-shrink: 0; }
+.persona-btn {
+  width: 100%; padding: 10px 12px; margin-bottom: 5px;
+  border-radius: 12px; border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.03); color: #aaa;
+  cursor: pointer; text-align: left; font-size: 12px;
+  font-weight: 700; transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none; font-family: 'JetBrains Mono', monospace;
+}
+.persona-btn:hover { background: rgba(255,255,255,0.07); color: #fff; border-color: rgba(255,215,0,0.35); }
+.persona-btn.active {
+  background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,215,0,0.08) 100%);
+  border-color: var(--hub-gold);
+  color: #fff;
+  box-shadow: 0 0 14px rgba(255,215,0,0.15);
+}
+.persona-btn .agent-icon { font-size: 16px; width: 24px; text-align: center; }
+.persona-btn .agent-info { flex: 1; }
+.persona-btn .agent-name { font-size: 12px; color: #fff; }
+.persona-btn .agent-role { font-size: 9px; font-weight: 500; color: #666; }
+.agent-num {
+  font-size: 9px; padding: 2px 6px; border-radius: 8px;
+  background: rgba(255,255,255,0.08); color: #777;
+  font-family: 'JetBrains Mono', monospace;
+}
+.persona-btn.active .agent-num { background: var(--hub-gold); color: #000; font-weight: 900; }
+
+/* Special ops */
+.special-ops {
+  padding: 8px 12px 10px; border-bottom: 1px solid rgba(255,215,0,0.08); flex-shrink: 0;
+}
+.special-ops-title {
+  font-size: 10px; font-weight: 800; color: var(--hub-gold);
+  text-transform: uppercase; letter-spacing: 1.2px;
+  padding: 0 6px 8px; display: flex; align-items: center; gap: 6px;
+}
+.ops-btn {
+  width: 100%; padding: 9px 12px; margin-bottom: 5px;
+  border-radius: 10px; border: 1px solid rgba(255,215,0,0.18);
+  background: rgba(255,215,0,0.06); color: #e5e5e5;
+  cursor: pointer; text-align: left; font-size: 11px;
+  font-weight: 600; transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  text-decoration: none;
+}
+.ops-btn:hover { background: rgba(255,215,0,0.14); border-color: var(--hub-gold); transform: translateX(2px); }
+.ops-btn .ops-icon { font-size: 13px; }
+
+/* Status panel */
+.status-panel { padding: 12px 16px; border-bottom: 1px solid rgba(255,215,0,0.08); flex-shrink: 0; }
+.status-panel-title { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.status-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 0; font-size: 11px; color: #aaa; font-family: 'JetBrains Mono', monospace;
+}
+.status-row .status-left { display: flex; align-items: center; gap: 6px; }
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--hub-green); box-shadow: 0 0 8px var(--hub-green);
+  animation: pulseDot 2s infinite;
+}
+.status-dot.offline { background: #555; box-shadow: none; animation: none; }
+.status-role { font-size: 9px; color: #555; }
+
+/* Terminal */
+.terminal-wrap {
+  background: #0d0d0d; border: 1px solid rgba(255,215,0,0.25);
+  border-radius: 12px; overflow: hidden; font-family: 'JetBrains Mono', monospace;
+  margin: 10px 12px; flex-shrink: 0;
+}
+.terminal-titlebar {
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+  background: rgba(255,215,0,0.08); border-bottom: 1px solid rgba(255,215,0,0.15);
+}
+.terminal-dot { width: 11px; height: 11px; border-radius: 50%; }
+.terminal-dot.red    { background: #e74c3c; }
+.terminal-dot.yellow { background: #f0c040; }
+.terminal-dot.green  { background: #2ecc71; }
+.terminal-titlebar span { font-size: 11px; color: #666; margin-left: 6px; }
+.terminal-output {
+  padding: 12px 14px; min-height: 140px; max-height: 180px;
+  overflow-y: auto; font-size: 11px; line-height: 1.6;
+  color: #c8f7a0; white-space: pre-wrap;
+}
+.terminal-output::-webkit-scrollbar { width: 4px; }
+.terminal-output::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.2); border-radius: 4px; }
+.terminal-line.cmd  { color: var(--hub-gold2); }
+.terminal-line.err  { color: var(--hub-red); }
+.terminal-line.sys  { color: #666; font-style: italic; }
+.terminal-line.ok   { color: var(--hub-green); }
+.terminal-input-row {
+  display: flex; align-items: center; padding: 8px 14px;
+  border-top: 1px solid rgba(255,215,0,0.12);
+  background: rgba(0,0,0,0.4); gap: 8px;
+}
+.terminal-prompt { color: var(--hub-gold); font-size: 12px; white-space: nowrap; }
+.terminal-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: #fff; font-size: 12px; font-family: 'JetBrains Mono', monospace;
+  caret-color: var(--hub-gold);
+}
+.terminal-run-btn {
+  padding: 4px 12px; border-radius: 6px;
+  border: 1px solid rgba(255,215,0,0.4);
+  background: rgba(255,215,0,0.12); color: var(--hub-gold);
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; transition: all 0.2s;
+}
+.terminal-run-btn:hover { background: rgba(255,215,0,0.22); }
+
+/* MAIN AREA */
+.hub-main {
+  background: rgba(6,5,3,0.98);
+  display: flex; flex-direction: column; overflow-y: auto;
+}
+.hub-main::-webkit-scrollbar { width: 4px; }
+.hub-main::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.2); border-radius: 4px; }
+
+/* Hero strip */
+.hub-hero {
+  position: relative; overflow: hidden; flex-shrink: 0;
+  min-height: 280px; display: flex; align-items: flex-end; padding: 32px 32px 28px;
+  background: linear-gradient(180deg, rgba(6,5,3,0) 0%, rgba(6,5,3,0.98) 100%);
+}
+.hub-hero video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; z-index: 0;
+  filter: brightness(0.22) saturate(1.4);
+}
+.hub-hero-overlay {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(135deg, rgba(6,5,3,0.5) 0%, rgba(6,5,3,0.8) 100%),
+              radial-gradient(ellipse 80% 60% at 50% 100%, rgba(255,215,0,0.1) 0%, transparent 70%);
+}
+.hub-hero-content { position: relative; z-index: 2; }
+.hub-hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px; margin-bottom: 12px;
+  background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.25);
+  font-size: 11px; color: var(--hub-gold); letter-spacing: 1px; text-transform: uppercase;
+}
+.hub-hero h1 {
+  font-size: clamp(2.2rem, 4vw, 3.4rem); font-weight: 900; line-height: 1;
+  margin: 0 0 10px; letter-spacing: -1px;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 18px rgba(255,255,255,0.5), 0 0 35px rgba(255,255,255,0.25);
+}
+.hub-hero p { font-size: 13px; color: rgba(255,255,255,0.4); margin: 0 0 20px; letter-spacing: 0.5px; }
+.hub-stats { display: flex; gap: 28px; flex-wrap: wrap; }
+.hstat .num { font-size: 22px; font-weight: 900; color: var(--hub-gold2); }
+.hstat .lbl { font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
+
+/* Section headers inside main */
+.main-section { padding: 24px 28px 8px; flex-shrink: 0; }
+.main-section-title {
+  font-size: 11px; font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.8), 0 0 18px rgba(255,255,255,0.4);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  padding-bottom: 14px; border-bottom: 1px solid rgba(255,215,0,0.08);
+  display: flex; align-items: center; gap: 8px;
+}
+.main-section-title span { color: var(--hub-gold); }
+
+/* Agent cards grid */
+.agents-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+  gap: 12px; padding: 16px 28px;
+}
+.agent-card {
+  background: rgba(18,15,8,0.95); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px; padding: 16px 16px 14px;
+  border-left: 3px solid var(--accent, rgba(255,215,0,0.4));
+  transition: all 0.2s; cursor: pointer; text-decoration: none;
+  color: #f5e6c8; display: block;
+}
+.agent-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent, rgba(255,215,0,0.4));
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4), -3px 0 0 var(--accent, rgba(255,215,0,0.4));
+  background: rgba(25,20,10,0.98);
+}
+.agent-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.agent-card-icon { font-size: 24px; }
+.agent-card-info { flex: 1; }
+.agent-card-name {
+  font-size: 13px; font-weight: 900; color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.6), 0 0 18px rgba(255,255,255,0.2);
+}
+.agent-card-code { font-size: 9px; color: var(--accent, var(--hub-gold)); text-transform: uppercase; letter-spacing: 1px; margin-top: 1px; font-family: 'JetBrains Mono', monospace; }
+.agent-card-num {
+  font-size: 9px; padding: 2px 7px; border-radius: 8px;
+  background: rgba(255,255,255,0.06); color: #666; font-weight: 700;
+}
+.agent-card-role { font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.4; margin-bottom: 12px; }
+.agent-card-footer { display: flex; align-items: center; justify-content: space-between; }
+.agent-card-dot {
+  display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--hub-green);
+}
+.agent-card-dot::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--hub-green); box-shadow: 0 0 6px var(--hub-green);
+  animation: pulseDot 2s infinite;
+}
+.agent-card-launch {
+  padding: 5px 12px; border-radius: 8px; font-size: 10px; font-weight: 700;
+  background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3);
+  color: var(--hub-gold); text-decoration: none; transition: all 0.2s;
+  font-family: 'JetBrains Mono', monospace;
+}
+.agent-card-launch:hover { background: rgba(255,215,0,0.2); color: #fff; }
+
+/* Empire sections */
+.empire-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
+  gap: 10px; padding: 12px 28px 20px;
+}
+.empire-btn {
+  display: flex; align-items: center; gap: 8px; padding: 11px 14px;
+  background: rgba(15,12,6,0.9); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px; font-size: 12px; color: rgba(255,255,255,0.6); text-decoration: none;
+  transition: all 0.2s; font-family: 'JetBrains Mono', monospace; font-weight: 600;
+}
+.empire-btn:hover { background: rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.3); color: var(--hub-gold); transform: translateY(-2px); }
+.empire-btn .e-icon { font-size: 18px; }
+
+/* Media gallery */
+.media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 14px; padding: 12px 28px 20px; }
+.media-card {
+  background: rgba(15,12,6,0.95); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px; overflow: hidden; transition: all 0.2s;
+}
+.media-card:hover { border-color: rgba(255,215,0,0.25); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.media-card video, .media-card audio { width: 100%; display: block; }
+.media-card video { height: 150px; object-fit: cover; background: #000; }
+.media-card-label { padding: 10px 14px; font-size: 11px; color: rgba(255,255,255,0.4); font-family: 'JetBrains Mono', monospace; }
+.media-card-label strong { display: block; font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 2px; }
+
+/* Investor deck CTA */
+.deck-cta {
+  margin: 8px 28px 20px;
+  background: linear-gradient(135deg, rgba(40,30,0,0.9) 0%, rgba(20,15,5,0.97) 100%);
+  border: 1px solid rgba(255,215,0,0.35);
+  border-radius: 14px; padding: 22px 24px;
+  display: flex; align-items: center; gap: 20px;
+  box-shadow: 0 0 30px rgba(255,215,0,0.06);
+}
+.deck-cta-icon { font-size: 3rem; filter: drop-shadow(0 0 12px rgba(255,215,0,0.4)); }
+.deck-cta-text { flex: 1; }
+.deck-cta-text h3 {
+  font-size: 17px; font-weight: 900; margin: 0 0 4px;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.8), 0 0 18px rgba(255,255,255,0.4);
+}
+.deck-cta-text p { font-size: 12px; color: rgba(255,255,255,0.4); margin: 0; }
+.deck-cta-btn {
+  padding: 12px 24px; border-radius: 10px; font-size: 13px; font-weight: 800;
+  background: linear-gradient(135deg, var(--hub-gold), var(--hub-gold2));
+  color: #000; text-decoration: none; white-space: nowrap;
+  transition: all 0.2s; font-family: 'JetBrains Mono', monospace;
+  box-shadow: 0 4px 20px rgba(255,215,0,0.25);
+}
+.deck-cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,215,0,0.4); }
+
+/* Intel server card */
+.intel-card {
+  margin: 0 28px 28px;
+  background: rgba(10,8,4,0.97); border: 1px solid rgba(255,215,0,0.15);
+  border-top: 2px solid var(--hub-gold); border-radius: 14px; padding: 18px 22px;
+}
+.intel-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.intel-card-header h4 {
+  font-size: 13px; font-weight: 900; margin: 0;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.7), 0 0 18px rgba(255,255,255,0.3);
+}
+.intel-card-header p { font-size: 10px; color: rgba(255,255,255,0.35); margin: 0; }
+.intel-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.intel-row {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  background: rgba(255,255,255,0.03); border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.06); font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.intel-row .name { color: rgba(255,255,255,0.4); flex: 1; }
+.intel-row .val { font-size: 10px; font-weight: 700; }
+.intel-row .val.ok   { color: var(--hub-green); }
+.intel-row .val.warn { color: #f59e0b; }
+.intel-row .val.off  { color: #555; }
+.intel-actions { display: flex; gap: 8px; }
+.intel-btn {
+  padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: 700;
+  cursor: pointer; font-family: 'JetBrains Mono', monospace; transition: all 0.2s;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px; border: 1px solid;
+}
+.intel-btn.gold { background: linear-gradient(135deg,var(--hub-gold),var(--hub-gold2)); color: #000; border-color: transparent; }
+.intel-btn.ghost { background: transparent; color: rgba(255,255,255,0.4); border-color: rgba(255,255,255,0.1); }
+.intel-btn.ghost:hover { border-color: var(--hub-gold); color: var(--hub-gold); }
+
+/* Responsive */
+@media (max-width: 960px) {
+  .hub-layout { grid-template-columns: 1fr; height: auto; margin: 0 12px 30px; }
+  .hub-sidebar { border-right: none; border-bottom: 1px solid rgba(255,215,0,0.1); max-height: 380px; }
+  .agents-grid { grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); }
+}
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<div class="particles" aria-hidden="true">
+  <div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div>
+</div>
+
+<nav class="goat-nav">
+  <div class="nav-brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT" style="height:36px;border-radius:8px;">
+    <span style="font-weight:900;letter-spacing:0.5px;">GOAT Force AI</span>
+  </div>
+  <div class="nav-links goat-nav-links">
+    <a href="index.html">Home</a>
+    <a href="moneypenny.html">Ms. Money Penny</a>
+    <a href="music-studio.html">Studio</a>
+    <a href="goat-casino.html">Casino</a>
+    <a href="goat-city-rp.html">GTA RP</a>
+    <a href="goat-launcher-hub.html" class="active">Command Hub</a>
+    <a href="dr-devin.html">Dr. Devin</a>
+  </div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+    <div id="navStatus" style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);font-size:11px;color:rgba(255,255,255,0.4);background:rgba(255,255,255,0.03);">
+      <span id="navDot" style="width:7px;height:7px;border-radius:50%;background:#555;display:inline-block;"></span>
+      <span id="navLabel">Intel…</span>
+    </div>
+    <a href="moneypenny.html" class="goat-btn" style="font-size:12px;padding:8px 16px;">💼 Ms. Money Penny</a>
+  </div>
+</nav>
+
+<div class="hub-layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <div class="hub-sidebar">
+    <video class="sidebar-video-bg" autoplay muted loop playsinline>
+      <source src="video/goat-animated-16.mp4" type="video/mp4">
+      <source src="video/goat-animated-1.mp4" type="video/mp4">
+    </video>
+
+    <div class="hub-logo">
+      <img src="assets/images/kid-goat.png" alt="GOAT Force" style="width:44px;height:44px;border-radius:10px;object-fit:cover;border:2px solid #FFD700;box-shadow:0 0 10px rgba(255,215,0,0.5);cursor:pointer;" title="GOAT Force" onclick="this.src=this.src.includes('kid-goat-2')?'assets/images/kid-goat.png':'assets/images/kid-goat-2.png'">
+      <div class="hub-logo-text">
+        <div class="title">GOAT FORCE</div>
+        <div class="sub">Supreme Command Center</div>
+      </div>
+      <div class="intel-dot" id="sidebarDot"></div>
+    </div>
+
+    <div class="sec-label">Quick Launch — 15 Agents</div>
+    <div class="persona-btns">
+      <a class="persona-btn active" href="the-goat-launcher.html"><span class="agent-icon">🐐</span><div class="agent-info"><div class="agent-name">THE GOAT</div><div class="agent-role">Supreme Commander</div></div><span class="agent-num">000</span></a>
+      <a class="persona-btn" href="master-oscar-launcher.html"><span class="agent-icon">🎵</span><div class="agent-info"><div class="agent-name">Master Oscar</div><div class="agent-role">Operations & Deals</div></div><span class="agent-num">001</span></a>
+      <a class="persona-btn" href="money-penny-launcher.html"><span class="agent-icon">💎</span><div class="agent-info"><div class="agent-name">Ms. Money Penny</div><div class="agent-role">Intelligence Director</div></div><span class="agent-num">002</span></a>
+      <a class="persona-btn" href="vanessa-launcher.html"><span class="agent-icon">🎙️</span><div class="agent-info"><div class="agent-name">Ms. Vanessa</div><div class="agent-role">Marketing & Voice</div></div><span class="agent-num">003</span></a>
+      <a class="persona-btn" href="nexus-launcher.html"><span class="agent-icon">🔗</span><div class="agent-info"><div class="agent-name">Nexus</div><div class="agent-role">Network & Distribution</div></div><span class="agent-num">004</span></a>
+      <a class="persona-btn" href="lexi-launcher.html"><span class="agent-icon">⚖️</span><div class="agent-info"><div class="agent-name">Lexi</div><div class="agent-role">Creative & Legal</div></div><span class="agent-num">005</span></a>
+      <a class="persona-btn" href="sir-codex-launcher.html"><span class="agent-icon">🤖</span><div class="agent-info"><div class="agent-name">Sir Codex</div><div class="agent-role">Tech & Infrastructure</div></div><span class="agent-num">006</span></a>
+      <a class="persona-btn" href="dr-devin.html"><span class="agent-icon">🩺</span><div class="agent-info"><div class="agent-name">Dr. Devin</div><div class="agent-role">Strategy & Innovation</div></div><span class="agent-num">007</span></a>
+      <a class="persona-btn" href="gonbrazy-launcher.html"><span class="agent-icon">🎚️</span><div class="agent-info"><div class="agent-name">GONBRAZY</div><div class="agent-role">Studio Boss</div></div></a>
+      <a class="persona-btn" href="wooh-da-kid-launcher.html"><span class="agent-icon">🎛️</span><div class="agent-info"><div class="agent-name">Wooh Da Kid</div><div class="agent-role">Beat Maestro</div></div></a>
+      <a class="persona-btn" href="hannah-miller-launcher.html"><span class="agent-icon">🌟</span><div class="agent-info"><div class="agent-name">Hannah Miller</div><div class="agent-role">Amigo Alley</div></div></a>
+      <a class="persona-btn" href="legal-eagle-launcher.html"><span class="agent-icon">⚖️</span><div class="agent-info"><div class="agent-name">Legal Eagle</div><div class="agent-role">Music Law & IP</div></div><span class="agent-num">011</span></a>
+      <a class="persona-btn" href="ar-scout-launcher.html"><span class="agent-icon">🎯</span><div class="agent-info"><div class="agent-name">A&R Scout</div><div class="agent-role">Talent Intelligence</div></div><span class="agent-num">012</span></a>
+      <a class="persona-btn" href="cfo-brain-launcher.html"><span class="agent-icon">📊</span><div class="agent-info"><div class="agent-name">CFO Brain</div><div class="agent-role">Revenue Strategy</div></div><span class="agent-num">013</span></a>
+      <a class="persona-btn" href="autopilot-launcher.html"><span class="agent-icon">🤖</span><div class="agent-info"><div class="agent-name">Autopilot</div><div class="agent-role">Autonomous Execution</div></div><span class="agent-num">014</span></a>
+    </div>
+
+    <div class="special-ops">
+      <div class="special-ops-title">🏰 Empire Launch</div>
+      <a class="ops-btn" href="music-studio.html"><span class="ops-icon">🎵</span> GOAT Force Records</a>
+      <a class="ops-btn" href="goat-casino.html"><span class="ops-icon">🎰</span> GOAT Casino</a>
+      <a class="ops-btn" href="goat-city-rp.html"><span class="ops-icon">🏙️</span> BrickSquaD-Rp GTA</a>
+      <a class="ops-btn" href="goat-celebrity-lounge.html"><span class="ops-icon">🥂</span> Celebrity Lounge</a>
+      <a class="ops-btn" href="beat-maker.html"><span class="ops-icon">🥁</span> Beat Maker</a>
+    </div>
+
+    <div class="status-panel">
+      <div class="status-panel-title">Agent Network</div>
+      <div class="status-row"><div class="status-left"><span class="status-dot"></span>THE GOAT</div><span class="status-role">000 · Online</span></div>
+      <div class="status-row"><div class="status-left"><span class="status-dot"></span>Ms. Money Penny</div><span class="status-role">002 · Online</span></div>
+      <div class="status-row"><div class="status-left"><span class="status-dot"></span>Dr. Devin</div><span class="status-role">007 · Online</span></div>
+      <div class="status-row"><div class="status-left"><span class="status-dot"></span>GONBRAZY</div><span class="status-role">Studio · Online</span></div>
+      <div class="status-row"><div class="status-left"><span class="status-dot"></span>Wooh Da Kid</div><span class="status-role">Studio · Online</span></div>
+      <div class="status-row"><div class="status-left"><span class="status-dot" id="intelDot2" style="background:#555;box-shadow:none;animation:none;"></span>Intel Server</div><span class="status-role" id="intelLabel2">Checking…</span></div>
+    </div>
+
+    <div class="terminal-wrap">
+      <div class="terminal-titlebar">
+        <div class="terminal-dot red"></div>
+        <div class="terminal-dot yellow"></div>
+        <div class="terminal-dot green"></div>
+        <span>goat-force command</span>
+      </div>
+      <div class="terminal-output" id="termOut">
+        <p class="terminal-line sys">GOAT Force Command v3.0 — ready</p>
+        <p class="terminal-line sys">Owner: DJ Speedy · Waka Flocka Flame</p>
+        <p class="terminal-line sys">Fallback chain: Ollama→Grok→Gemini→OpenAI</p>
+        <p class="terminal-line cmd">$ hub --status all-agents</p>
+      </div>
+      <div class="terminal-input-row">
+        <span class="terminal-prompt">goat$</span>
+        <input class="terminal-input" id="termInput" placeholder="ask any agent..." onkeydown="termKey(event)">
+        <button class="terminal-run-btn" onclick="termSend()">RUN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN PANEL ═══ -->
+  <div class="hub-main" id="hubMain">
+
+    <!-- Hero strip -->
+    <div class="hub-hero">
+      <video autoplay muted loop playsinline>
+        <source src="assets/video/main-goat-video-2.mp4" type="video/mp4">
+        <source src="video/goat-animated-1.mp4" type="video/mp4">
+        <source src="video/goat-animated-2.mp4" type="video/mp4">
+      </video>
+      <div class="hub-hero-overlay"></div>
+      <div class="hub-hero-content">
+        <div class="hub-hero-badge"><span id="heroDot" style="width:7px;height:7px;border-radius:50%;background:#555;display:inline-block;"></span> GOAT Force Intel · <span id="heroStatus">Connecting…</span></div>
+        <h1>SUPREME COMMAND</h1>
+        <p>DJ Speedy · Waka Flocka Flame · GOAT Force Records · Life Imitates Art Inc</p>
+        <div class="hub-stats">
+          <div class="hstat"><div class="num">10</div><div class="lbl">AI Agents</div></div>
+          <div class="hstat"><div class="num">56</div><div class="lbl">Local Models</div></div>
+          <div class="hstat"><div class="num">282</div><div class="lbl">DSPs</div></div>
+          <div class="hstat"><div class="num">5,954</div><div class="lbl">Tracks</div></div>
+          <div class="hstat"><div class="num">$3.3B</div><div class="lbl">Empire</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Waka Flocka + GOAT Feature Banner -->
+    <div style="padding:16px 28px 0;display:flex;gap:14px;align-items:stretch;">
+      <!-- Hero banner — wide -->
+      <div style="flex:1;border-radius:14px;overflow:hidden;position:relative;max-height:200px;min-height:140px;box-shadow:0 4px 28px rgba(212,160,60,0.2);border:1px solid rgba(212,160,60,0.25);">
+        <img src="assets/waka/waka-hero-banner.jpg" alt="Waka Flocka Flame"
+             style="width:100%;height:100%;display:block;object-fit:cover;object-position:center 30%;min-height:140px;"
+             onerror="this.src='assets/waka/waka-portrait.jpg'">
+        <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0.55) 0%,transparent 55%);pointer-events:none;"></div>
+        <div style="position:absolute;top:50%;left:18px;transform:translateY(-50%);">
+          <div style="font-size:20px;font-weight:900;color:#FFD700;letter-spacing:1px;text-shadow:0 2px 8px rgba(0,0,0,0.9);">WAKA FLOCKA FLAME</div>
+          <div style="font-size:11px;color:#d4a03c;margin-top:4px;font-weight:600;">President · GOAT Force Records · BrickSquad</div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <span style="padding:2px 8px;border-radius:10px;background:rgba(193,18,31,0.8);font-size:9px;font-weight:800;color:#fff;">BRICK SQUAD</span>
+            <span style="padding:2px 8px;border-radius:10px;background:rgba(0,0,0,0.7);border:1px solid rgba(212,160,60,0.4);font-size:9px;font-weight:800;color:#d4a03c;">808 MAFIA</span>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:10px;right:14px;background:rgba(212,160,60,0.15);border:1px solid rgba(212,160,60,0.4);border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;color:#FFD700;">GOAT FORCE</div>
+      </div>
+      <!-- Profile card — right column -->
+      <div style="width:140px;border-radius:14px;overflow:hidden;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,0.5);border:1px solid rgba(212,160,60,0.25);">
+        <img src="assets/waka/waka-profile-card.jpg" alt="Waka Profile"
+             style="width:100%;height:200px;display:block;object-fit:cover;object-position:center top;"
+             onerror="this.src='assets/waka/waka-studio.webp'">
+      </div>
+    </div>
+
+    <!-- Investor deck -->
+    <div style="padding:20px 28px 0;">
+      <div class="deck-cta">
+        <div class="deck-cta-icon">📊</div>
+        <div class="deck-cta-text">
+          <h3>GOAT Royalty Investor Deck 2026</h3>
+          <p>Ms. Money Penny — Prepared by Deb Eden · Final Version · 7.6MB</p>
+        </div>
+        <a href="assets/docs/goat-royalty-investor-deck-2026.pdf" target="_blank" class="deck-cta-btn">Open Deck ↗</a>
+      </div>
+      <div class="deck-cta" style="margin-top:10px;background:linear-gradient(135deg,rgba(193,18,31,.15),rgba(255,215,0,.08));border-color:rgba(255,215,0,.3);">
+        <div class="deck-cta-icon">🐐</div>
+        <div class="deck-cta-text">
+          <h3>GOAT Royalty Force — Living Investor EPK</h3>
+          <p>Updated July 2026 · Full monetary valuation · $28M anchor · 115 pages · 14 agents · 36 models · $400K+ studio arsenal · $3.3B catalog position</p>
+        </div>
+        <a href="goat-living-epk.html" class="deck-cta-btn" style="background:linear-gradient(135deg,#c1121f,#d4a03c);color:#0a0408;">Open Living EPK ↗</a>
+      </div>
+    </div>
+
+    <!-- Agent cards -->
+    <div class="main-section">
+      <div class="main-section-title"><span>⚡</span> Agent Command Grid — All 15 Active</div>
+    </div>
+    <div class="agents-grid">
+      <a class="agent-card" href="the-goat-launcher.html" style="--accent:#FFD700;">
+        <div class="agent-card-top"><span class="agent-card-icon">🐐</span><div class="agent-card-info"><div class="agent-card-name">THE GOAT</div><div class="agent-card-code">AGENT 000 · SUPREME COMMANDER</div></div><span class="agent-card-num">000</span></div>
+        <div class="agent-card-role">Supreme Commander. Answers only to DJ Speedy and Waka.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="master-oscar-launcher.html" style="--accent:#9b59b6;">
+        <div class="agent-card-top"><span class="agent-card-icon">🎵</span><div class="agent-card-info"><div class="agent-card-name">Master Oscar</div><div class="agent-card-code">AGENT 001 · DEALMAKER</div></div><span class="agent-card-num">001</span></div>
+        <div class="agent-card-role">Operations, contracts, business development.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="money-penny-launcher.html" style="--accent:#d4a03c;">
+        <div class="agent-card-top"><span class="agent-card-icon">💎</span><div class="agent-card-info"><div class="agent-card-name">Ms. Money Penny</div><div class="agent-card-code">AGENT 002 · BOSS LADY</div></div><span class="agent-card-num">002</span></div>
+        <div class="agent-card-role">Intelligence Director. The OG. All agents born from her system.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="vanessa-launcher.html" style="--accent:#e91e63;">
+        <div class="agent-card-top"><span class="agent-card-icon">🎙️</span><div class="agent-card-info"><div class="agent-card-name">Ms. Vanessa</div><div class="agent-card-code">AGENT 003 · ICON</div></div><span class="agent-card-num">003</span></div>
+        <div class="agent-card-role">Brand, marketing, PR, voice of the empire.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="nexus-launcher.html" style="--accent:#00bcd4;">
+        <div class="agent-card-top"><span class="agent-card-icon">🔗</span><div class="agent-card-info"><div class="agent-card-name">Nexus</div><div class="agent-card-code">AGENT 004 · ORACLE</div></div><span class="agent-card-num">004</span></div>
+        <div class="agent-card-role">Intelligence, trends, network, distribution.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="lexi-launcher.html" style="--accent:#e91e8c;">
+        <div class="agent-card-top"><span class="agent-card-icon">⚖️</span><div class="agent-card-info"><div class="agent-card-name">Lexi</div><div class="agent-card-code">AGENT 005 · THE SPARK</div></div><span class="agent-card-num">005</span></div>
+        <div class="agent-card-role">Creative & legal. Lyrics, compliance, copyright protection.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="sir-codex-launcher.html" style="--accent:#00d4aa;">
+        <div class="agent-card-top"><span class="agent-card-icon">🤖</span><div class="agent-card-info"><div class="agent-card-name">Sir Codex</div><div class="agent-card-code">AGENT 006 · SENTINEL</div></div><span class="agent-card-num">006</span></div>
+        <div class="agent-card-role">Technical architect, code, infrastructure.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="dr-devin.html" style="--accent:#58a6ff;">
+        <div class="agent-card-top"><span class="agent-card-icon">🩺</span><div class="agent-card-info"><div class="agent-card-name">Dr. Devin</div><div class="agent-card-code">AGENT 007 · WHAT'S UP DOC</div></div><span class="agent-card-num">007</span></div>
+        <div class="agent-card-role">Chief AI strategist, 57 models, 14 agents coordinated.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="gonbrazy-launcher.html" style="--accent:#2ecc71;">
+        <div class="agent-card-top"><span class="agent-card-icon">🎚️</span><div class="agent-card-info"><div class="agent-card-name">GONBRAZY</div><div class="agent-card-code">STUDIO BOSS · MIXING & MASTERING</div></div></div>
+        <div class="agent-card-role">Mixing, mastering, session boss. GOAT Force audio chief.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="wooh-da-kid-launcher.html" style="--accent:#ff6b35;">
+        <div class="agent-card-top"><span class="agent-card-icon">🎛️</span><div class="agent-card-info"><div class="agent-card-name">Wooh Da Kid</div><div class="agent-card-code">TONY STARKS · THE GANGSTA NERD</div></div></div>
+        <div class="agent-card-role">Beat maestro, FL Studio guru, DJ Speedy's production buddy.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="hannah-miller-launcher.html" style="--accent:#ff9800;">
+        <div class="agent-card-top"><span class="agent-card-icon">🌟</span><div class="agent-card-info"><div class="agent-card-name">Hannah Miller</div><div class="agent-card-code">AMIGO KEEPER · AMIGO ALLEY</div></div></div>
+        <div class="agent-card-role">Latin crossover director. Amigo Alley web keeper.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="legal-eagle-launcher.html" style="--accent:#f39c12;">
+        <div class="agent-card-top"><span class="agent-card-icon">⚖️</span><div class="agent-card-info"><div class="agent-card-name">Legal Eagle</div><div class="agent-card-code">AGENT 011 · THE COUNSELOR</div></div><span class="agent-card-num">011</span></div>
+        <div class="agent-card-role">Music law, IP protection, contract strategy, $3.3B position.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="ar-scout-launcher.html" style="--accent:#e74c3c;">
+        <div class="agent-card-top"><span class="agent-card-icon">🎯</span><div class="agent-card-info"><div class="agent-card-name">A&R Scout</div><div class="agent-card-code">AGENT 012 · THE EYE</div></div><span class="agent-card-num">012</span></div>
+        <div class="agent-card-role">Talent intelligence, market signals, hit detection.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="cfo-brain-launcher.html" style="--accent:#2ecc71;">
+        <div class="agent-card-top"><span class="agent-card-icon">📊</span><div class="agent-card-info"><div class="agent-card-name">CFO Brain</div><div class="agent-card-code">AGENT 013 · THE ARCHITECT</div></div><span class="agent-card-num">013</span></div>
+        <div class="agent-card-role">Revenue strategy, financial modeling, investor relations.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+      <a class="agent-card" href="autopilot-launcher.html" style="--accent:#9b59b6;">
+        <div class="agent-card-top"><span class="agent-card-icon">🤖</span><div class="agent-card-info"><div class="agent-card-name">Autopilot</div><div class="agent-card-code">AGENT 014 · THE MACHINE</div></div><span class="agent-card-num">014</span></div>
+        <div class="agent-card-role">Autonomous execution, multi-step tasks, system coordination.</div>
+        <div class="agent-card-footer"><span class="agent-card-dot">Online</span><span class="agent-card-launch">LAUNCH →</span></div>
+      </a>
+    </div>
+
+    <!-- Empire sections -->
+    <div class="main-section"><div class="main-section-title"><span>🏰</span> Empire Sections</div></div>
+    <div class="empire-grid">
+      <a class="empire-btn" href="music-studio.html"><span class="e-icon">🎵</span> Music Studio</a>
+      <a class="empire-btn" href="beat-maker.html"><span class="e-icon">🥁</span> Beat Maker</a>
+      <a class="empire-btn" href="vocal-studio.html"><span class="e-icon">🎤</span> Vocal Studio</a>
+      <a class="empire-btn" href="movie-studio.html"><span class="e-icon">🎬</span> Movie Studio</a>
+      <a class="empire-btn" href="production-hub.html"><span class="e-icon">🎛️</span> Production Hub</a>
+      <a class="empire-btn" href="goat-casino.html"><span class="e-icon">🎰</span> GOAT Casino</a>
+      <a class="empire-btn" href="goat-city-rp.html"><span class="e-icon">🏙️</span> GTA City RP</a>
+      <a class="empire-btn" href="goat-celebrity-lounge.html"><span class="e-icon">🥂</span> Celebrity Lounge</a>
+      <a class="empire-btn" href="unreal-copilot.html"><span class="e-icon">🎮</span> Unreal Engine</a>
+      <a class="empire-btn" href="moneypenny.html"><span class="e-icon">💼</span> Royalty Tracker</a>
+      <a class="empire-btn" href="ai-dashboard.html"><span class="e-icon">📊</span> AI Dashboard</a>
+      <a class="empire-btn" href="settings.html"><span class="e-icon">⚙️</span> Settings</a>
+    </div>
+
+    <!-- Media gallery -->
+    <div class="main-section"><div class="main-section-title"><span>🎬</span> GOAT Force Media</div></div>
+    <div class="media-grid">
+      <div class="media-card">
+        <video controls poster="">
+          <source src="video/goat-animated-1.mp4" type="video/mp4">
+        </video>
+        <div class="media-card-label"><strong>Animated GOAT — Take 1</strong>Oct 2025 · 29MB</div>
+      </div>
+      <div class="media-card">
+        <video controls>
+          <source src="video/goat-animated-2.mp4" type="video/mp4">
+        </video>
+        <div class="media-card-label"><strong>Animated GOAT — Take 2</strong>Oct 2025 · 36MB</div>
+      </div>
+      <div class="media-card">
+        <video controls>
+          <source src="video/goat-royalty-demo.mov" type="video/quicktime">
+        </video>
+        <div class="media-card-label"><strong>GOAT Royalty Demo</strong>Original app demo · 14MB</div>
+      </div>
+      <div class="media-card" style="padding:12px 14px;">
+        <strong style="font-size:12px;color:rgba(255,255,255,0.8);display:block;margin-bottom:8px;">🎵 Old School Chevy</strong>
+        <audio controls style="width:100%;">
+          <source src="video/old-school-chevy.mp3" type="audio/mpeg">
+        </audio>
+        <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:8px;font-family:'JetBrains Mono',monospace;">Harvey Miller &amp; Ray Rush · 8.1MB</div>
+      </div>
+      <div class="media-card" style="padding:12px 14px;">
+        <strong style="font-size:12px;color:rgba(255,255,255,0.8);display:block;margin-bottom:8px;">🎵 EM8 85BPM — Daddy's Lil Girl</strong>
+        <audio controls style="width:100%;">
+          <source src="video/em8-85bpm-daddys-lil-girl.mp3" type="audio/mpeg">
+        </audio>
+        <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:8px;font-family:'JetBrains Mono',monospace;">Beat · 5.3MB</div>
+      </div>
+    </div>
+
+    <!-- Intel server status -->
+    <div class="main-section"><div class="main-section-title"><span>🧠</span> Intel Server Status</div></div>
+    <div class="intel-card">
+      <div class="intel-card-header">
+        <span style="font-size:2rem;">🖥️</span>
+        <div><h4>GOAT Intel Server v3</h4><p>http://localhost:5500 · Ollama → Grok → Gemini → OpenAI</p></div>
+      </div>
+      <div class="intel-rows" id="intelRows">
+        <div class="intel-row"><span class="name">🟡 Ollama</span><span class="val warn" id="ir_ollama">Checking…</span></div>
+        <div class="intel-row"><span class="name">⚡ Grok</span><span class="val warn" id="ir_grok">Checking…</span></div>
+        <div class="intel-row"><span class="name">💎 Gemini</span><span class="val warn" id="ir_gemini">Checking…</span></div>
+        <div class="intel-row"><span class="name">🤖 OpenAI</span><span class="val warn" id="ir_openai">Checking…</span></div>
+      </div>
+      <div class="intel-actions">
+        <a href="moneypenny.html" class="intel-btn gold">💼 Open Money Penny</a>
+        <button class="intel-btn ghost" onclick="checkIntel()">🔄 Refresh</button>
+        <a href="http://localhost:5500/health" target="_blank" class="intel-btn ghost">🩺 Health Check</a>
+      </div>
+    </div>
+
+  </div><!-- /hub-main -->
+</div><!-- /hub-layout -->
+
+<script>
+const INTEL = 'http://localhost:5500';
+
+// ── Terminal ──────────────────────────────────────────────
+const termOut = document.getElementById('termOut');
+function termLog(msg, cls='') {
+  const p = document.createElement('p');
+  p.className = 'terminal-line ' + cls;
+  p.textContent = msg;
+  termOut.appendChild(p);
+  termOut.scrollTop = termOut.scrollHeight;
+}
+function termKey(e) { if (e.key === 'Enter') termSend(); }
+async function termSend() {
+  const inp = document.getElementById('termInput');
+  const cmd = inp.value.trim();
+  if (!cmd) return;
+  inp.value = '';
+  termLog('$ ' + cmd, 'cmd');
+  try {
+    const r = await fetch(INTEL + '/ai/moneypenny', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({message: cmd}),
+      signal: AbortSignal.timeout(30000)
+    });
+    const d = await r.json();
+    if (d.ok && d.reply) {
+      const lines = d.reply.split('\n').slice(0,6);
+      lines.forEach(l => { if (l.trim()) termLog(l); });
+      termLog('─ ' + (d.engine || 'GOAT Intel') + ' ─', 'sys');
+    } else {
+      termLog('ERROR: ' + (d.error || 'no response'), 'err');
+    }
+  } catch(e) {
+    termLog('Intel server offline — start goat_intel.py', 'err');
+  }
+}
+
+// ── Intel Server Check ─────────────────────────────────────
+async function checkIntel() {
+  try {
+    const r = await fetch(INTEL + '/health', {signal: AbortSignal.timeout(4000)});
+    const d = await r.json();
+    // Nav
+    document.getElementById('navDot').style.background = '#2ecc71';
+    document.getElementById('navDot').style.boxShadow = '0 0 8px #2ecc71';
+    document.getElementById('navLabel').textContent = 'Intel Online';
+    document.getElementById('navLabel').style.color = '#2ecc71';
+    // Hero
+    document.getElementById('heroDot').style.background = '#2ecc71';
+    document.getElementById('heroDot').style.boxShadow = '0 0 8px #2ecc71';
+    document.getElementById('heroStatus').textContent = 'Intel Server Online';
+    // Sidebar
+    document.getElementById('sidebarDot').style.background = '#2ecc71';
+    document.getElementById('sidebarDot').style.boxShadow = '0 0 8px #2ecc71';
+    document.getElementById('intelDot2').style.background = '#2ecc71';
+    document.getElementById('intelDot2').style.boxShadow = '0 0 8px #2ecc71';
+    document.getElementById('intelLabel2').textContent = '5500 · Online';
+    // Intel rows
+    setRow('ir_ollama', d.yt_dlp ? 'Running' : 'Unknown', d.yt_dlp);
+    setRow('ir_grok',   d.grok   || 'Not set', d.grok   && d.grok.includes('✅'));
+    setRow('ir_gemini', d.gemini || 'Not set', d.gemini && d.gemini.includes('✅'));
+    setRow('ir_openai', d.openai || 'Not set', d.openai && d.openai.includes('✅'));
+    termLog('✅ Intel server online — all systems check', 'ok');
+  } catch(e) {
+    ['navDot','heroDot','sidebarDot','intelDot2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.background = '#e74c3c'; el.style.boxShadow = 'none'; }
+    });
+    document.getElementById('navLabel').textContent = 'Intel Offline';
+    document.getElementById('navLabel').style.color = '#e74c3c';
+    document.getElementById('heroStatus').textContent = 'Start goat_intel.py';
+    document.getElementById('intelLabel2').textContent = 'Offline';
+    setRow('ir_ollama', 'Server offline', false);
+    setRow('ir_grok',   'Server offline', false);
+    setRow('ir_gemini', 'Server offline', false);
+    setRow('ir_openai', 'Server offline', false);
+    termLog('⚠ Intel server offline — cd goat-intel-server && python3 goat_intel.py', 'err');
+  }
+}
+function setRow(id, text, ok) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'val ' + (ok ? 'ok' : text.includes('offline') ? 'off' : 'warn');
+}
+
+// Init
+checkIntel();
+setInterval(checkIntel, 30000);
+</script>
+
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

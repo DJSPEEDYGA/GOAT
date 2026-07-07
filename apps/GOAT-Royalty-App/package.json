@@ -60,16 +60,17 @@
     "express-rate-limit": "^8.2.1",
     "express-validator": "^7.3.1",
     "fluent-ffmpeg": "^2.1.2",
-    "googleapis": "^134.0.0",
+    "googleapis": "^173.0.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "langchain": "^1.1.2",
+    "langsmith": "^0.7.14",
     "mongoose": "^9.0.0",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
-    "music-metadata": "^9.0.0",
-    "node-cron": "^3.0.3",
-    "nodemailer": "^7.0.11",
+    "music-metadata": "^11.13.0",
+    "node-cron": "^4.5.0",
+    "nodemailer": "^9.0.3",
     "openai": "^6.9.1",
     "otplib": "^13.3.0",
     "pdf-parse": "^1.1.1",
@@ -79,7 +80,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
-    "electron": "^35.7.5",
+    "electron": "^43.0.0",
     "electron-builder": "^26.8.1",
     "eslint": "^9.39.1",
     "jest": "^30.2.0",
@@ -89,72 +90,77 @@
     "wait-on": "^7.2.0"
   },
   "build": {
-    "appId": "com.goatroyalty.app",
+    "appId": "com.goatforce.royaltyapp",
     "productName": "GOAT Royalty App",
+    "copyright": "Copyright © 2025 DJSPEEDYGA · GOAT FORCE",
     "directories": {
       "output": "dist-electron",
-      "buildResources": "build"
+      "buildResources": "assets"
     },
     "files": [
       "app/**/*",
-      "src/dist/**/*",
-      "src/public/**/*",
+      "web-app/**/*",
+      "goat-intel-server/**/*",
+      "assets/**/*",
       "node_modules/**/*",
       "package.json"
     ],
+    "extraResources": [
+      { "from": "web-app", "to": "web-app" },
+      { "from": "goat-intel-server", "to": "goat-intel-server" },
+      { "from": "assets", "to": "assets" }
+    ],
     "win": {
       "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "zip",
-          "arch": [
-            "x64"
-          ]
-        }
+        { "target": "nsis", "arch": ["x64", "arm64"] },
+        { "target": "zip",  "arch": ["x64"] }
       ],
-      "icon": "build/icon.ico"
+      "icon": "assets/icon.ico",
+      "publisherName": "GOAT FORCE",
+      "verifyUpdateCodeSignature": false
     },
     "mac": {
       "target": [
-        {
-          "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
+        { "target": "dmg", "arch": ["x64", "arm64"] },
+        { "target": "zip", "arch": ["arm64"] }
       ],
-      "icon": "build/icon.icns",
-      "category": "public.app-category.business"
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.music",
+      "darkModeSupport": true,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
     },
     "linux": {
       "target": [
-        {
-          "target": "AppImage",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "deb",
-          "arch": [
-            "x64"
-          ]
-        }
+        { "target": "AppImage", "arch": ["x64"] },
+        { "target": "deb",      "arch": ["x64"] },
+        { "target": "rpm",      "arch": ["x64"] }
       ],
-      "icon": "build/icon.png",
-      "category": "Office"
+      "icon": "assets/icon.png",
+      "category": "Audio;Music;AudioVideo",
+      "synopsis": "GOAT Royalty App — Music Production & AI Command Center",
+      "description": "Professional music production suite with AI-powered beat making, mixing, mastering, royalty tracking and more."
+    },
+    "dmg": {
+      "title": "GOAT Royalty App",
+      "backgroundColor": "#060608",
+      "window": { "width": 660, "height": 400 },
+      "contents": [
+        { "x": 180, "y": 170, "type": "file" },
+        { "x": 480, "y": 170, "type": "link", "path": "/Applications" }
+      ]
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "shortcutName": "GOAT Royalty App",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico"
+    },
+    "deb": {
+      "depends": ["python3", "python3-pip"]
     }
   }
 }

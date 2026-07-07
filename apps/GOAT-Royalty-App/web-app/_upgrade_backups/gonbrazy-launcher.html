@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GONBRAZY — STUDIO BOSS | GOAT Force Studio</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-touch.css">
+<style>
+/* === GOAT FORCE AGENT THEME — GONBRAZY / STUDIO BOSS === */
+/* === Devin 2026 Dark IDE Restyle === */
+:root {
+  --codex-blue: #2ecc71;
+  --codex-blue-glow: rgba(46, 204, 113, 0.25);
+  --bg-deepest: #121314;
+  --bg-base: #191A1B;
+  --bg-raised: #202122;
+  --bg-hover: #262728;
+  --border: #2A2B2C;
+  --devin-blue: #27ae60;
+  --fg-primary: #BBBEBF;
+  --fg-muted: #8C8C8C;
+  --fg-dim: #666666;
+  --success: #72C892;
+  --warning: #e5ba7d;
+  --error: #f48771;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #121314;
+  background-image: url('assets/images/goat-og-bg-web.png');
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+  background-blend-mode: overlay;
+  color: #BBBEBF;
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* animated particle background — keep as-is */
+.particles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(46, 204, 113, 0.35), rgba(240, 192, 112, 0.08));
+  filter: blur(1px);
+  animation: floatParticle 18s ease-in-out infinite;
+  opacity: 0.6;
+}
+.particle:nth-child(1) { width: 220px; height: 220px; top: 10%; left: 5%; animation-delay: 0s; }
+.particle:nth-child(2) { width: 160px; height: 160px; top: 60%; left: 15%; animation-delay: 4s; }
+.particle:nth-child(3) { width: 300px; height: 300px; top: 25%; left: 70%; animation-delay: 8s; }
+.particle:nth-child(4) { width: 120px; height: 120px; top: 75%; left: 80%; animation-delay: 12s; }
+.particle:nth-child(5) { width: 260px; height: 260px; top: 45%; left: 40%; animation-delay: 6s; }
+.particle:nth-child(6) { width: 100px; height: 100px; top: 5%; left: 55%; animation-delay: 2s; }
+@keyframes floatParticle {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  33% { transform: translate(30px, -50px) scale(1.08); opacity: 0.75; }
+  66% { transform: translate(-20px, 30px) scale(0.95); opacity: 0.45; }
+}
+
+/* GOAT Superman watermark — keep exactly as-is */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: url('assets/goat-superman.jpg') center center / 500px no-repeat;
+  opacity: 0.04;
+  filter: grayscale(100%);
+}
+
+body > * { position: relative; z-index: 1; }
+
+/* Navigation → VS Code titlebar */
+.goat-nav {
+  background: #191A1B !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid #2A2B2C !important;
+  height: 35px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+}
+.goat-nav .nav-brand span { color: #BBBEBF; text-shadow: none; }
+.goat-nav-links a:hover { background: rgba(39, 148, 96, 0.12); color: #BBBEBF; }
+.goat-nav-links a.active { background: rgba(39, 148, 96, 0.2); box-shadow: none; color: #BBBEBF; }
+
+h1, h2, h3 { text-shadow: none !important; }
+
+/* Agent hero banner → flat VS Code panel header */
+.agent-hero {
+  margin: 0 24px 0 !important;
+  padding: 8px 16px !important;
+  background: #191A1B !important;
+  border: 1px solid #2A2B2C !important;
+  border-bottom: none !important;
+  border-radius: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.agent-hero-left { display: flex; align-items: center; gap: 18px; }
+.agent-hero-emoji { font-size: 32px; line-height: 1; filter: none; }
+.agent-hero-name { margin: 0 0 2px; font-size: 15px !important; font-weight: 600 !important; letter-spacing: 0 !important; color: #BBBEBF !important; text-shadow: none !important; }
+.agent-hero-role { margin: 0; font-size: 11px; color: #8C8C8C; font-weight: 400; }
+.agent-hero-badges { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.hero-badge { font-size: 10px !important; font-weight: 600 !important; letter-spacing: 0.5px !important; text-transform: uppercase !important; padding: 1px 6px !important; border-radius: 3px !important; }
+.hero-badge.acc { background: rgba(39, 148, 96, 0.15) !important; border: 1px solid rgba(39, 148, 96, 0.3) !important; color: #27ae60 !important; }
+.hero-badge.gold { background: rgba(229,186,125,0.12) !important; border: 1px solid rgba(229,186,125,0.3) !important; color: #e5ba7d !important; }
+.hero-badge.green { background: rgba(114,200,146,0.12) !important; border: 1px solid rgba(114,200,146,0.3) !important; color: #72C892 !important; }
+.hero-badge.white { background: rgba(187,190,191,0.08) !important; border: 1px solid rgba(187,190,191,0.2) !important; color: #8C8C8C !important; }
+.hero-badge.codename { background: rgba(187,190,191,0.05) !important; border: 1px solid rgba(187,190,191,0.12) !important; color: #666666 !important; font-size: 9px !important; }
+
+/* Main layout */
+.ai-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 0;
+  height: calc(100vh - 80px);
+  max-height: 960px;
+  margin: 0 24px 40px;
+  border-radius: 0;
+  overflow: hidden;
+  border: 1px solid #2A2B2C;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+/* SIDEBAR → VS Code sidebar */
+.ai-sidebar {
+  background: #191A1B !important;
+  border-right: 1px solid #2A2B2C !important;
+  width: 280px !important;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow-y: auto;
+  position: relative;
+  font-size: 13px !important;
+}
+.ai-sidebar::-webkit-scrollbar { width: 10px; }
+.ai-sidebar::-webkit-scrollbar-track { background: transparent; }
+.ai-sidebar::-webkit-scrollbar-thumb { background: rgba(131,132,133,0.4); border: 2px solid transparent; background-clip: padding-box; }
+.ai-sidebar::-webkit-scrollbar-thumb:hover { background: rgba(131,132,133,0.7); background-clip: padding-box; }
+
+/* sidebar background video */
+.sidebar-bg-video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  opacity: 0.04;
+  pointer-events: none;
+}
+.sidebar-bg-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ai-sidebar > *:not(.sidebar-bg-video) { position: relative; z-index: 1; }
+
+.ai-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #2A2B2C;
+  height: 35px;
+}
+.ai-logo .logo-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background: rgba(39, 148, 96, 0.12);
+  border: 1px solid rgba(39, 148, 96, 0.25);
+  filter: none;
+}
+.ai-logo .logo-text { display: flex; flex-direction: column; }
+.ai-logo .logo-title { font-size: 13px; font-weight: 600; color: #BBBEBF; letter-spacing: 0.3px; }
+.ai-logo .logo-sub { font-size: 9px; font-weight: 500; color: #8C8C8C; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 1px; }
+
+.agent-section-title {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #8C8C8C !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  padding: 8px 12px 4px !important;
+}
+
+.persona-btns { padding: 0 0 4px; }
+.persona-btn {
+  width: 100% !important;
+  padding: 4px 12px 4px 20px !important;
+  margin-bottom: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  color: #BBBEBF !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  transition: background 0.1s !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+  height: 22px !important;
+  text-decoration: none;
+  box-shadow: none !important;
+}
+.persona-btn:hover { background: rgba(39, 148, 96, 0.12) !important; color: #BBBEBF !important; border: none !important; transform: none !important; }
+.persona-btn.active {
+  background: rgba(39, 148, 96, 0.12) !important;
+  border: none !important;
+  border-left: 2px solid #2ecc71 !important;
+  color: #BBBEBF !important;
+  box-shadow: none !important;
+}
+.persona-btn .agent-icon { font-size: 14px !important; width: 16px !important; text-align: center; }
+.persona-btn .agent-info { flex: 1; }
+.persona-btn .agent-name { font-size: 13px !important; color: #BBBEBF !important; }
+.persona-btn .agent-role { font-size: 10px !important; font-weight: 400 !important; color: #8C8C8C !important; }
+.persona-btn .agent-num {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: #202122;
+  color: #8C8C8C;
+  border: 1px solid #2A2B2C;
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+}
+.persona-btn.active .agent-num { background: rgba(39, 148, 96, 0.2); color: #27ae60; border-color: rgba(39, 148, 96, 0.3); }
+
+/* Special ops / section */
+.special-ops {
+  padding: 4px 0 4px;
+  border-bottom: 1px solid #2A2B2C;
+}
+.special-ops-title {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #8C8C8C !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  padding: 8px 12px 4px !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Sidebar ops buttons → VS Code explorer items */
+.ops-btn {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  color: #BBBEBF !important;
+  padding: 4px 12px 4px 20px !important;
+  font-size: 13px !important;
+  width: 100% !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  transition: background 0.1s !important;
+  height: 22px !important;
+  margin-bottom: 0 !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+  font-weight: 400 !important;
+}
+.ops-btn:hover {
+  background: rgba(39, 148, 96, 0.12) !important;
+  color: #BBBEBF !important;
+  transform: none !important;
+  border: none !important;
+}
+.ops-btn .ops-icon { font-size: 14px !important; width: 16px !important; }
+
+/* Status panel */
+.status-panel {
+  padding: 4px 0;
+  border-top: 1px solid #2A2B2C;
+}
+.status-panel-title {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #8C8C8C !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  padding: 8px 12px 4px !important;
+  margin-bottom: 0 !important;
+}
+.status-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 3px 12px !important;
+  font-size: 12px !important;
+  color: #8C8C8C !important;
+  border: none !important;
+  font-family: 'JetBrains Mono', monospace;
+}
+.status-row .status-left { display: flex; align-items: center; gap: 6px; }
+.status-row:hover { background: #262728 !important; }
+.status-dot {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: #72C892 !important;
+  box-shadow: none !important;
+  animation: pulseDot 2s infinite;
+}
+.status-dot.priority { background: #e5ba7d !important; box-shadow: none !important; }
+@keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.6} }
+.status-role { font-size: 10px; color: #8C8C8C; }
+
+/* TERMINAL (sidebar) */
+.terminal-wrap {
+  margin: 8px 12px 12px;
+  background: #121314 !important;
+  border: 1px solid #2A2B2C !important;
+  border-radius: 0 !important;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+}
+.terminal-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background: #191A1B !important;
+  border-bottom: 1px solid #2A2B2C !important;
+}
+.terminal-dot { width: 11px; height: 11px; border-radius: 50%; }
+.terminal-dot.red { background: #e74c3c; }
+.terminal-dot.yellow { background: #e5ba7d; }
+.terminal-dot.green { background: #72C892; }
+.terminal-titlebar span { font-size: 11px; color: #8C8C8C; margin-left: 6px; }
+.terminal-output {
+  padding: 8px 10px;
+  min-height: 80px;
+  max-height: 160px;
+  overflow-y: auto;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #c8f7a0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.terminal-output::-webkit-scrollbar { width: 4px; }
+.terminal-output::-webkit-scrollbar-thumb { background: rgba(131,132,133,0.4); border-radius: 0; }
+.terminal-line { margin: 0; }
+.terminal-line.cmd { color: #e5ba7d; }
+.terminal-line.sys { color: #8C8C8C; font-style: italic; }
+
+/* Sidebar footer */
+.sidebar-footer {
+  background: #191A1B !important;
+  border-top: 1px solid #2A2B2C !important;
+  padding: 8px 12px !important;
+  font-size: 11px !important;
+  color: #8C8C8C !important;
+  margin-top: auto;
+}
+.key-status {
+  font-size: 11px;
+  padding: 6px 8px;
+  border-radius: 3px;
+  background: #202122;
+  border: 1px solid #2A2B2C;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.key-status span { display: block; margin-bottom: 2px; color: #8C8C8C; }
+.key-status span.ok { color: #72C892; }
+.key-status span.warn { color: #e5ba7d; }
+
+/* CHAT AREA → VS Code editor/terminal panel */
+.ai-chat {
+  background: #121314 !important;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chat header → tab bar */
+.chat-header {
+  background: #191A1B !important;
+  border-bottom: 1px solid #2A2B2C !important;
+  padding: 0 16px !important;
+  height: 35px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  font-size: 13px !important;
+}
+.chat-header .persona-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  border: 1px solid rgba(39, 148, 96, 0.3);
+  box-shadow: none;
+  background: rgba(39, 148, 96, 0.1);
+}
+.chat-header .agent-title h2 { font-size: 13px !important; margin: 0 !important; color: #BBBEBF !important; letter-spacing: 0 !important; font-weight: 600 !important; text-shadow: none !important; }
+.chat-header .agent-title p { font-size: 11px; margin: 0; color: #8C8C8C; }
+.codename-tag, .chat-header .codename-tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(39, 148, 96, 0.15);
+  border: 1px solid rgba(39, 148, 96, 0.3);
+  color: #27ae60;
+  margin-left: auto;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.engine-tag, .chat-header .engine-tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(229,186,125,0.12);
+  border: 1px solid rgba(229,186,125,0.3);
+  color: #e5ba7d;
+  font-family: 'JetBrains Mono', monospace;
+}
+.command-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(229,186,125,0.15);
+  border: 1px solid rgba(229,186,125,0.3);
+  color: #e5ba7d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: none;
+  margin-left: 0;
+}
+
+/* Chat messages */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scroll-behavior: smooth;
+  background: #121314 !important;
+  font-size: 13px !important;
+}
+.chat-messages::-webkit-scrollbar { width: 10px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: rgba(131,132,133,0.4); border: 2px solid transparent; background-clip: padding-box; }
+.chat-messages::-webkit-scrollbar-thumb:hover { background: rgba(131,132,133,0.7); background-clip: padding-box; }
+
+.msg { max-width: 88%; display: flex; flex-direction: column; gap: 4px; }
+.msg.user { align-self: flex-end; align-items: flex-end; }
+.msg.assistant { align-self: flex-start; align-items: flex-start; }
+.msg-bubble {
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+}
+.msg.user .msg-bubble {
+  background: rgba(39, 148, 96, 0.08) !important;
+  border: 1px solid rgba(39, 148, 96, 0.2) !important;
+  border-radius: 4px !important;
+  color: #BBBEBF !important;
+}
+.msg.assistant .msg-bubble {
+  background: #191A1B !important;
+  color: #BBBEBF !important;
+  border: 1px solid #2A2B2C !important;
+  border-left: 2px solid #27ae60 !important;
+  border-radius: 0 4px 4px 0 !important;
+  box-shadow: none !important;
+}
+.msg-meta { font-size: 10px; color: #666666; padding: 0 4px; font-family: 'JetBrains Mono', monospace; }
+.msg.assistant .msg-meta { color: #666666; }
+
+/* Typing indicator */
+.typing-indicator {
+  display: none;
+  align-self: flex-start;
+  padding: 10px 14px;
+  background: #191A1B;
+  border-radius: 0 4px 4px 0;
+  border: 1px solid #2A2B2C;
+  border-left: 2px solid #27ae60;
+}
+.typing-indicator.visible { display: flex; gap: 6px; align-items: center; }
+.typing-dot { width: 8px !important; height: 8px !important; border-radius: 50% !important; background: #27ae60 !important; animation: typingPulse 1.2s infinite; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingPulse { 0%,60%,100%{transform:scale(1);opacity:0.4} 30%{transform:scale(1.3);opacity:1} }
+
+/* Chat input area */
+.chat-input-area {
+  background: #191A1B !important;
+  border-top: 1px solid #2A2B2C !important;
+  padding: 8px 12px !important;
+}
+.chat-input-row { display: flex; gap: 8px; align-items: flex-end; }
+.chat-textarea {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 3px;
+  border: 1px solid #2A2B2C;
+  background: #121314;
+  color: #BBBEBF;
+  font-size: 13px;
+  resize: none;
+  min-height: 38px;
+  max-height: 160px;
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+  line-height: 1.5;
+  transition: border-color 0.15s;
+}
+.chat-textarea:focus { outline: none !important; border-color: #27ae60 !important; }
+.chat-textarea::placeholder { color: #666666; }
+
+/* Send button — agent accent: teal #2ecc71 */
+.send-btn {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 3px !important;
+  background: #2ecc71 !important;
+  border: 1px solid #2ecc71 !important;
+  color: #fff !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  transition: all 0.15s !important;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none !important;
+}
+.send-btn:hover { background: #00b896 !important; border-color: #00b896 !important; transform: none !important; filter: none !important; }
+.send-btn:disabled { background: #2A2B2C !important; border-color: #2A2B2C !important; cursor: not-allowed !important; transform: none !important; box-shadow: none !important; }
+
+/* Chat quick action buttons */
+.chat-actions { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.chat-action-btn {
+  background: #202122 !important;
+  border: 1px solid #2A2B2C !important;
+  border-radius: 3px !important;
+  color: #8C8C8C !important;
+  font-size: 11px !important;
+  padding: 3px 8px !important;
+  cursor: pointer !important;
+  transition: all 0.15s !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+}
+.chat-action-btn:hover {
+  background: rgba(39, 148, 96, 0.15) !important;
+  border-color: #27ae60 !important;
+  color: #BBBEBF !important;
+}
+
+/* GOAT utility buttons */
+.goat-btn {
+  padding: 5px 14px !important;
+  border-radius: 3px !important;
+  border: 1px solid #2A2B2C !important;
+  background: #202122 !important;
+  color: #BBBEBF !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+}
+.goat-btn:hover { border-color: #27ae60 !important; background: rgba(39, 148, 96, 0.12) !important; }
+.goat-btn.gold { background: rgba(229,186,125,0.15) !important; border-color: rgba(229,186,125,0.4) !important; color: #e5ba7d !important; }
+
+/* KEY MODAL */
+.key-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7) !important;
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.key-modal.open { display: flex; }
+.key-modal-box {
+  background: #202122 !important;
+  border: 1px solid #2A2B2C !important;
+  border-radius: 6px !important;
+  padding: 24px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+.key-modal-box h2 { margin: 0 0 8px; font-size: 15px; color: #BBBEBF; text-shadow: none !important; }
+.key-modal-box p { color: #8C8C8C; font-size: 13px; margin: 0 0 16px; }
+.key-field { margin-bottom: 12px; }
+.key-field label { display: block; font-size: 11px; color: #8C8C8C; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.key-field input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 3px !important;
+  border: 1px solid #2A2B2C !important;
+  background: #121314 !important;
+  color: #BBBEBF !important;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  box-sizing: border-box;
+}
+.key-field input:focus { outline: none; border-color: #27ae60 !important; }
+.key-field small { color: #666666; font-size: 11px; margin-top: 3px; display: block; }
+.key-modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .ai-layout { grid-template-columns: 1fr; height: auto; margin: 0 12px 30px; }
+  .ai-sidebar { border-right: none; border-bottom: 1px solid #2A2B2C; max-height: 360px; overflow-y: auto; width: 100% !important; }
+  .chat-messages { min-height: 420px; }
+  .chat-header { flex-wrap: wrap; }
+  .chat-header .codename-tag { margin-left: 0; }
+}
+
+/* Command Deck Panels */
+.deck-panel {
+  display: none; position: fixed; inset: 0; z-index: 2000;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.deck-panel.open { display: flex; }
+.deck-box {
+  background: #202122 !important;
+  border: 1px solid #2A2B2C !important;
+  border-radius: 6px !important;
+  padding: 24px; width: 100%; max-width: 720px; max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7) !important;
+}
+.deck-box h2 { margin: 0 0 16px; font-size: 14px !important; color: #27ae60 !important; font-weight: 600 !important; text-shadow: none !important; display: flex; align-items: center; gap: 8px; }
+.deck-close { float: right; font-size: 18px; color: #8C8C8C; cursor: pointer; margin-top: -4px; }
+.deck-close:hover { color: #BBBEBF; }
+.deck-section { margin-bottom: 16px; }
+.deck-section h4 { margin: 0 0 8px; font-size: 11px !important; font-weight: 700 !important; color: #8C8C8C !important; text-transform: uppercase !important; letter-spacing: 1px !important; }
+.gen-ui-preview { background: rgba(255,255,255,0.02); border: 1px dashed #2A2B2C; border-radius: 3px; padding: 12px; min-height: 100px; }
+
+/* Live Terminal Panel (deck) */
+.terminal-panel-wrap {
+  background: #121314 !important;
+  border: 1px solid #2A2B2C !important;
+  border-radius: 0 !important;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+}
+.terminal-panel-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background: #191A1B !important;
+  border-bottom: 1px solid #2A2B2C !important;
+}
+.terminal-panel-output {
+  padding: 10px 12px;
+  min-height: 160px;
+  max-height: 320px;
+  overflow-y: auto;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #c8f7a0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.terminal-panel-output::-webkit-scrollbar { width: 4px; }
+.terminal-panel-output::-webkit-scrollbar-thumb { background: rgba(131,132,133,0.4); border-radius: 0; }
+.terminal-prompt-panel { color: #2ecc71; font-size: 12px; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+.terminal-input-panel {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #BBBEBF;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  caret-color: #2ecc71;
+}
+.terminal-run-btn-panel {
+  padding: 3px 10px;
+  border-radius: 3px;
+  border: 1px solid #2A2B2C;
+  background: #202122;
+  color: #8C8C8C;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'JetBrains Mono', monospace;
+}
+.terminal-run-btn-panel:hover { background: rgba(39, 148, 96, 0.15); border-color: #27ae60; color: #BBBEBF; }
+.terminal-agent-select {
+  padding: 4px 8px;
+  border-radius: 3px;
+  border: 1px solid #2A2B2C;
+  background: #202122;
+  color: #8C8C8C;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+}
+.terminal-confirm-bar {
+  display: none;
+  padding: 8px 12px;
+  background: rgba(229,186,125,0.08);
+  border-top: 1px solid rgba(229,186,125,0.25);
+  font-size: 12px;
+  color: #e5ba7d;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.terminal-confirm-bar.visible { display: flex; }
+.terminal-confirm-bar button {
+  padding: 3px 10px;
+  border-radius: 3px;
+  border: 1px solid;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+}
+.terminal-confirm-bar .btn-yes { border-color: #2ecc71; background: rgba(46, 204, 113, 0.12); color: #2ecc71; }
+.terminal-confirm-bar .btn-no { border-color: #2A2B2C; background: transparent; color: #8C8C8C; }
+
+.color-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; display: inline-block; margin: 3px; }
+.color-swatch.active { border-color: #BBBEBF; }
+
+/* Scrollbars global */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(131,132,133,0.4); border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: rgba(131,132,133,0.7); background-clip: padding-box; }
+</style>
+
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body class="bg-icon">
+
+<div class="particles" aria-hidden="true">
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+</div>
+
+<nav class="goat-nav">
+  <div class="nav-brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT" style="height:36px;border-radius:8px;">
+    <span style="font-weight:900;color:#fff;letter-spacing:0.5px;">GOAT Force AI</span>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="goat-devin-center.html">🎯 Devin Center</a>
+    <a href="agent-007.html">Agent 007</a>
+    <a href="moneypenny.html">Ms. Money Penny</a>
+    <a href="studio-hub.html">Studio Hub</a>
+    <a href="agent-status.html">Agent Status</a>
+    <a href="halito-chat.html">Halito Chat</a>
+  </div>
+</nav>
+
+<div class="agent-hero">
+  <div class="agent-hero-left">
+    <div class="agent-hero-emoji">🎚️</div>
+    <div>
+      <h1 class="agent-hero-name">GONBRAZY</h1>
+      <p class="agent-hero-role">Mixing — Mastering — Studio Ops</p>
+    </div>
+  </div>
+  <div class="agent-hero-badges">
+    <span class="hero-badge acc">STUDIO BOSS</span>
+    <span class="hero-badge gold">GOAT FORCE</span>
+    <span class="hero-badge green">● ONLINE</span>
+    <span class="hero-badge codename">CODENAME: STUDIO BOSS</span>
+  </div>
+</div>
+
+<div class="ai-layout" style="border-radius:0 0 18px 18px;margin-top:0;">
+  <!-- SIDEBAR -->
+  <div class="ai-sidebar">
+    <div class="sidebar-bg-video">
+      <video autoplay muted loop playsinline>
+        <source src="video/goat-animated-1.mp4" type="video/mp4">
+      </video>
+    </div>
+
+    <div class="ai-logo">
+      <div class="logo-icon">🎚️</div>
+      <div class="logo-text">
+        <span class="logo-title">GONBRAZY</span>
+        <span class="logo-sub">STUDIO BOSS · MIXING & MASTERING</span>
+      </div>
+    </div>
+
+    <div class="agent-section-title">Active Squad</div>
+    <div class="persona-btns" style="margin-bottom:4px;">
+      <a class="persona-btn" href="master-oscar-launcher.html"><span class="agent-icon">🎵</span><div class="agent-info"><div class="agent-name">Master Oscar</div><div class="agent-role">Artist & Creative</div></div><span class="agent-num">001</span></a>
+      <a class="persona-btn" href="money-penny-launcher.html"><span class="agent-icon">💎</span><div class="agent-info"><div class="agent-name">Ms. Money Penny</div><div class="agent-role">Intelligence OG</div></div><span class="agent-num">002</span></a>
+      <a class="persona-btn" href="vanessa-launcher.html"><span class="agent-icon">🎙️</span><div class="agent-info"><div class="agent-name">Ms. Vanessa</div><div class="agent-role">Marketing & Voice</div></div><span class="agent-num">003</span></a>
+      <a class="persona-btn" href="nexus-launcher.html"><span class="agent-icon">🔗</span><div class="agent-info"><div class="agent-name">Nexus</div><div class="agent-role">Intelligence & Distribution</div></div><span class="agent-num">004</span></a>
+      <a class="persona-btn" href="lexi-launcher.html"><span class="agent-icon">⚖️</span><div class="agent-info"><div class="agent-name">Lexi</div><div class="agent-role">Creative & Legal</div></div><span class="agent-num">005</span></a>
+      <a class="persona-btn" href="sir-codex-launcher.html"><span class="agent-icon">🤖</span><div class="agent-info"><div class="agent-name">Sir Codex</div><div class="agent-role">Tech & Production</div></div><span class="agent-num">006</span></a>
+      <a class="persona-btn" href="dr-devin.html"><span class="agent-icon">🩺</span><div class="agent-info"><div class="agent-name">Dr. Devin</div><div class="agent-role">Strategy & Innovation</div></div><span class="agent-num">007</span></a>
+    </div>
+
+    <div class="agent-section-title">Studio Specialists</div>
+    <div class="persona-btns" style="margin-bottom:4px;">
+      <a class="persona-btn active" href="gonbrazy-launcher.html"><span class="agent-icon">🎚️</span><div class="agent-info"><div class="agent-name">GONBRAZY</div><div class="agent-role">Studio Boss (ACTIVE)</div></div></a>
+      <a class="persona-btn" href="wooh-da-kid-launcher.html"><span class="agent-icon">🎛️</span><div class="agent-info"><div class="agent-name">Wooh Da Kid</div><div class="agent-role">Beat Maestro</div></div></a>
+    </div>
+
+    
+    <!-- GOAT VAULT ACCESS -->
+    <div class="special-ops" id="vaultPanel">
+      <div class="special-ops-title">🔐 GOAT Vault</div>
+      <button class="ops-btn" onclick="vaultStatus()"><span class="ops-icon">🧠</span> What Do I Know?</button>
+      <button class="ops-btn" onclick="vaultISRC()"><span class="ops-icon">🎵</span> ISRC Lookup</button>
+      <button class="ops-btn" onclick="vaultPublishing()"><span class="ops-icon">📚</span> Publishing Search</button>
+      <button class="ops-btn" onclick="vaultList()"><span class="ops-icon">📁</span> Vault Documents</button>
+      <div id="vaultStatusBar" style="display:none;font-size:10px;padding:6px 8px;background:rgba(57,148,188,0.08);border:1px solid rgba(57,148,188,0.2);border-radius:3px;margin:4px 12px;color:#8C8C8C;line-height:1.6;word-break:break-word;"></div>
+    </div>
+
+    <!-- MEMORY PANEL -->
+    <div class="special-ops" id="memoryPanel">
+      <div class="special-ops-title">💾 Memory</div>
+      <div id="memoryFacts" style="padding:0 12px 4px;font-size:10px;color:#666;line-height:1.6;min-height:20px;">Loading memories...</div>
+      <button class="ops-btn" onclick="saveMemoryPrompt()"><span class="ops-icon">💾</span> Save a Fact</button>
+      <button class="ops-btn" onclick="loadMemory()"><span class="ops-icon">🔄</span> Refresh Memory</button>
+    </div>
+
+    <div class="special-ops">
+      <div class="special-ops-title">🎛️ Command Deck</div>
+      <button class="ops-btn" onclick="openStudioPanel()">
+        <span class="ops-icon">🎚️</span> Touch Studio
+      </button>
+      <button class="ops-btn" onclick="openGenUI()">
+        <span class="ops-icon">✨</span> Generative UI
+      </button>
+      <button class="ops-btn" onclick="openTerminalPanel()">
+        <span class="ops-icon">💻</span> Live Terminal
+      </button>
+      <button class="ops-btn" onclick="openSettingsPanel()">
+        <span class="ops-icon">⚙️</span> Customize
+      </button>
+    </div>
+
+    <div class="agent-section-title">Studio Ops</div>
+    <div class="persona-btns">
+      <button class="persona-btn" onclick="quickSend('Set up a full mixing session for Hard Liquor / Backroad Baptism with the GOAT Force plugin chain')">
+        <span class="agent-icon">🎚️</span>
+        <div class="agent-info"><div class="agent-name">Mix Session</div><div class="agent-role">Hard Liquor / Backroad Baptism</div></div>
+      </button>
+      <button class="persona-btn" onclick="quickSend('Build the ultimate mastering chain from GOAT Force plugins for a radio-ready trap record')">
+        <span class="agent-icon">🔊</span>
+        <div class="agent-info"><div class="agent-name">Mastering Chain</div><div class="agent-role">Radio-ready trap</div></div>
+      </button>
+      <button class="persona-btn" onclick="quickSend('Walk me through gain staging for a 32-track trap session in Pro Tools')">
+        <span class="agent-icon">🎛️</span>
+        <div class="agent-info"><div class="agent-name">Gain Staging</div><div class="agent-role">32-track Pro Tools</div></div>
+      </button>
+      <button class="persona-btn" onclick="quickSend('What is the target LUFS and peak levels for Spotify, Apple Music, and Tidal streaming?')">
+        <span class="agent-icon">⚡</span>
+        <div class="agent-info"><div class="agent-name">Loudness</div><div class="agent-role">Spotify / Apple / Tidal</div></div>
+      </button>
+      <button class="persona-btn" onclick="quickSend('Build the perfect vocal chain from GOAT Force plugins for a Waka Flocka Flame vocal')">
+        <span class="agent-icon">🎤</span>
+        <div class="agent-info"><div class="agent-name">Vocal Chain</div><div class="agent-role">Waka Flocka Flame vocal</div></div>
+      </button>
+      <button class="persona-btn" onclick="quickSend('How do I match the sonics of a world-class reference track using GOAT Force plugins?')">
+        <span class="agent-icon">🏆</span>
+        <div class="agent-info"><div class="agent-name">Reference Mix</div><div class="agent-role">World-class sonics</div></div>
+      </button>
+    </div>
+
+    <div class="agent-section-title">Mix Tools</div>
+    <div class="persona-btns">
+      <button class="persona-btn" onclick="quickSend('Run a spectrum analysis check on the current Hard Liquor mix')">
+        <span class="agent-icon">📊</span>
+        <div class="agent-info"><div class="agent-name">Spectrum Check</div><div class="agent-role">Hard Liquor mix</div></div>
+      </button>
+      <button class="persona-btn" onclick="quickSend('Build the optimal bus routing structure for a 32-track trap session')">
+        <span class="agent-icon">🔀</span>
+        <div class="agent-info"><div class="agent-name">Bus Routing</div><div class="agent-role">32-track trap routing</div></div>
+      </button>
+      <button class="persona-btn" onclick="quickSend('What is the ideal stem prep process for GOAT Force mastering sessions?')">
+        <span class="agent-icon">🎵</span>
+        <div class="agent-info"><div class="agent-name">Stem Prep</div><div class="agent-role">Mastering session prep</div></div>
+      </button>
+      <button class="persona-btn" onclick="quickSend('Give me a mix review checklist for a GOAT Force radio-ready record')">
+        <span class="agent-icon">🏆</span>
+        <div class="agent-info"><div class="agent-name">Mix Review</div><div class="agent-role">Radio-ready checklist</div></div>
+      </button>
+    </div>
+
+    <div class="status-panel">
+      <div class="status-panel-title">System Packets</div>
+      <div class="status-row"><div class="status-left"><span class="status-dot"></span> goat-intel-server</div><span class="status-role">Online ✅</span></div>
+      <div class="status-row"><div class="status-left"><span class="status-dot"></span> pro-tools</div><span class="status-role">Ready ✅</span></div>
+      <div class="status-row"><div class="status-left"><span class="status-dot"></span> plugin-chain</div><span class="status-role">Armed ✅</span></div>
+      <div class="status-row"><div class="status-left"><span class="status-dot priority"></span> mastering-suite</div><span class="status-role">STUDIO ⚡</span></div>
+    </div>
+
+    <!-- Sidebar Terminal -->
+    <div class="terminal-wrap">
+      <div class="terminal-titlebar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span>gonbrazy console</span>
+      </div>
+      <div class="terminal-output">
+<p class="terminal-line sys">GONBRAZY STUDIO BOSS Console v3.0 — mix engine armed</p>
+<p class="terminal-line sys">Pro Tools: ready</p>
+<p class="terminal-line">GOAT Force plugin arsenal: loaded</p>
+<p class="terminal-line">UAD hardware: connected</p>
+<p class="terminal-line cmd">$ gonbrazy --mix start</p>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="key-status" id="keyStatus">
+        <span id="ks_gemini" class="warn">⚠ Gemini: checking...</span>
+        <span id="ks_openai" class="warn">⚠ OpenAI: checking...</span>
+        <span id="ks_server" class="warn">⚠ Server: checking...</span>
+      </div>
+      <button class="goat-btn" style="width:100%;margin-bottom:8px;font-size:12px;" onclick="openKeyModal()">🔐 Add API Keys</button>
+      <button class="chat-action-btn" style="width:100%;" onclick="clearChat()">🗑 Clear Chat</button>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="ai-chat">
+    <div class="chat-header">
+      <div class="persona-avatar">🎚️</div>
+      <div class="agent-title">
+        <h2>GONBRAZY — STUDIO BOSS</h2>
+        <p>Mixing — Mastering — Studio Ops · GOAT Force</p>
+      </div>
+      <span class="codename-tag">CODENAME: STUDIO BOSS</span>
+      <span class="command-badge">Mixing</span>
+      <span class="engine-tag">Session Boss</span>
+      <span id="threadNameTag" class="engine-tag" style="cursor:pointer;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Click to rename session" onclick="renameThread()">New Session</span>
+      <span id="tokenCounter" class="engine-tag" style="font-family:var(--font-mono);min-width:60px;text-align:center;">0 tok</span>
+    </div>
+
+    <!-- GONBRAZY: Tool Approval Bar -->
+    <div id="approvalBar" style="display:none;padding:8px 16px;background:rgba(229,186,125,0.08);border-bottom:1px solid rgba(229,186,125,0.25);font-size:12px;color:#e5ba7d;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span style="font-size:13px;">⚠️</span>
+      <span id="approvalMsg" style="flex:1;">Agent wants to execute an action — approve?</span>
+      <span id="approvalSandbox" style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(229,186,125,0.15);border:1px solid rgba(229,186,125,0.3);">workspace-write</span>
+      <button onclick="approveAction()" style="padding:3px 12px;border-radius:3px;border:1px solid rgba(39, 148, 96, 0.4);background:rgba(39, 148, 96, 0.15);color:#27ae60;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-mono);">APPROVE</button>
+      <button onclick="denyAction()" style="padding:3px 12px;border-radius:3px;border:1px solid #2A2B2C;background:transparent;color:#8C8C8C;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-mono);">DENY</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+      <span style="font-size:12px;color:#666;margin-left:6px;" id="typingText">GONBRAZY is mixing...</span>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-row">
+        <textarea class="chat-textarea" id="chatInput" placeholder="Ask GONBRAZY — mixing, mastering, session setup, plugin chains, vocal production..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+      </div>
+      <div class="chat-actions">
+        <button class="chat-action-btn" onclick="quickSend('Set up a full mixing session for Hard Liquor / Backroad Baptism with the GOAT Force plugin chain')">🎚️ Mix Session</button>
+        <button class="chat-action-btn" onclick="quickSend('Build the ultimate mastering chain from GOAT Force plugins for a radio-ready trap record')">🔊 Mastering Chain</button>
+        <button class="chat-action-btn" onclick="quickSend('Build the perfect vocal chain from GOAT Force plugins for a Waka Flocka Flame vocal')">🎤 Vocal Chain</button>
+        <button class="chat-action-btn" onclick="quickSend('What is the target LUFS and peak levels for Spotify, Apple Music, and Tidal streaming?')">⚡ Loudness Targets</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KEY MODAL -->
+<div class="key-modal" id="keyModal">
+  <div class="key-modal-box">
+    <h2>🔐 API Key Setup</h2>
+    <p>Keys are saved locally on your server — never sent to anyone. Paste your fresh keys below.</p>
+
+    <div class="key-field">
+      <label>Google AI Studio (Gemini) Key</label>
+      <input type="password" id="inputGemini" placeholder="AIzaSy...">
+      <small>Get from: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#2ecc71;">aistudio.google.com</a></small>
+    </div>
+    <div class="key-field">
+      <label>OpenAI Key</label>
+      <input type="password" id="inputOpenai" placeholder="sk-proj-...">
+      <small>Get from: <a href="https://platform.openai.com/api-keys" target="_blank" style="color:#2ecc71;">platform.openai.com</a></small>
+    </div>
+    <div class="key-field">
+      <label>Spotify Client ID:Secret (format: id:secret)</label>
+      <input type="password" id="inputSpotify" placeholder="clientid:clientsecret">
+      <small>Get from: <a href="https://developer.spotify.com/dashboard" target="_blank" style="color:#2ecc71;">developer.spotify.com</a></small>
+    </div>
+    <div class="key-field">
+      <label>DistroKid API Key</label>
+      <input type="password" id="inputDistrokid" placeholder="Your DistroKid API key">
+    </div>
+    <div class="key-field">
+      <label>YouTube API Key (optional — yt-dlp works without)</label>
+      <input type="password" id="inputYoutube" placeholder="AIzaSy...">
+      <small>Get from: <a href="https://console.developers.google.com" target="_blank" style="color:#2ecc71;">console.developers.google.com</a></small>
+    </div>
+
+    <div class="key-modal-actions">
+      <button class="goat-btn" onclick="saveKeys()">💾 Save Keys Locally</button>
+      <button class="goat-btn gold" onclick="closeKeyModal()">Cancel</button>
+    </div>
+    <p id="keySaveStatus" style="color:#22c55e;font-size:13px;margin:10px 0 0;display:none;">✅ Keys saved to your local server!</p>
+  </div>
+</div>
+
+<script>
+const INTEL = 'http://localhost:5500';
+const ENDPOINT = '/ai/gonbrazy';
+
+let chatHistory = [];
+let isTyping = false;
+
+const PROMPTS = [
+  'Set up a full mixing session for Hard Liquor / Backroad Baptism with the GOAT Force plugin chain',
+  'Build the ultimate mastering chain from GOAT Force plugins for a radio-ready trap record',
+  'Walk me through gain staging for a 32-track trap session in Pro Tools',
+  'What is the target LUFS and peak levels for Spotify, Apple Music, and Tidal streaming?',
+  'Build the perfect vocal chain from GOAT Force plugins for a Waka Flocka Flame vocal',
+  'How do I match the sonics of a world-class reference track using GOAT Force plugins?',
+  'Run a spectrum analysis check on the current Hard Liquor mix',
+  'Build the optimal bus routing structure for a 32-track trap session'
+];
+
+const WELCOME = `GONBRAZY — STUDIO BOSS online. Session boss in the building.
+
+Mixing, mastering, session management — everything that makes records sound world-class.
+Pro Tools loaded. GOAT Force plugin arsenal armed. UAD hardware: connected.
+
+Hard Liquor / Backroad Baptism sessions: tracked.
+The mix does not finish itself.
+
+What session are we running?`;
+
+function init() {
+  showWelcome();
+  checkServerStatus();
+}
+
+function showWelcome() {
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = `
+    <div class="msg assistant">
+      <div class="msg-bubble">${escapeHtml(WELCOME)}</div>
+      <div class="msg-meta">GONBRAZY · STUDIO BOSS · Just now</div>
+    </div>
+  `;
+}
+
+function escapeHtml(text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function nl2br(text) {
+  return escapeHtml(text).replace(/\n/g, '<br>');
+}
+
+function extractUiBlocks(text) {
+  const blocks = [];
+  const regex = /```json\n?([\s\S]*?)\n?```/g;
+  let m;
+  while ((m = regex.exec(text)) !== null) {
+    try { const parsed = JSON.parse(m[1]); const arr = Array.isArray(parsed) ? parsed : [parsed]; arr.forEach(b => { if (b.type === 'ui' || b.layout) blocks.push(b); }); } catch (e) {}
+  }
+  return blocks;
+}
+function stripUiBlocks(text) { return text.replace(/```json\n?[\s\S]*?\n?```/g, '').trim(); }
+
+function addMessage(role, content, meta, imageUrl, imageAlt) {
+  const container = document.getElementById('chatMessages');
+  const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  const name = role === 'user' ? 'You' : 'GONBRAZY' + (meta ? ` · ${meta}` : '');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  let uiHTML = '';
+  if (role === 'assistant') {
+    const uiBlocks = extractUiBlocks(content);
+    if (uiBlocks.length) {
+      const uiContainer = document.createElement('div');
+      GoatGenerativeUI.render(uiBlocks, uiContainer, { onAction: (evt) => { document.getElementById('chatInput').value = `${evt.action} ${evt.id}`; autoResize(document.getElementById('chatInput')); } });
+      uiHTML = '<div class="gen-ui-in-chat" style="margin-top:8px;">' + uiContainer.innerHTML + '</div>';
+    }
+  }
+  // Mascot / image block
+  let imgHTML = '';
+  if (imageUrl) {
+    imgHTML = `<div class="goat-mascot-reveal" style="margin:12px 0;text-align:center;">
+      <img src="${imageUrl}" alt="${imageAlt || 'GOAT Force Mascot'}"
+           style="max-width:100%;max-height:420px;border-radius:16px;border:3px solid var(--agent-accent,#d4a03c);box-shadow:0 0 32px rgba(212,160,60,0.5);cursor:pointer;"
+           onclick="this.style.maxHeight=this.style.maxHeight==='none'?'420px':'none'" />
+      <div style="font-size:11px;color:#888;margin-top:6px;">${imageAlt || 'GOAT Force Mascot'}</div>
+    </div>`;
+  }
+  div.innerHTML = `
+    <div class="msg-bubble">${nl2br(stripUiBlocks(content))}</div>
+    ${imgHTML}
+    ${uiHTML}
+    <div class="msg-meta">${name} · ${time}</div>
+  `;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function setTyping(visible) {
+  isTyping = visible;
+  const el = document.getElementById('typingIndicator');
+  const btn = document.getElementById('sendBtn');
+  el.className = 'typing-indicator' + (visible ? ' visible' : '');
+  btn.disabled = visible;
+  if (visible) el.scrollIntoView({behavior: 'smooth'});
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  let message = input.value.trim();
+  if (!message || isTyping) return;
+
+  // Inject any file attached via Devin Desktop file-attach panel
+  const attachedCtx = (typeof GAC !== 'undefined' && GAC.getAttachedContext) ? GAC.getAttachedContext() : null;
+  const fullMessage = attachedCtx ? message + attachedCtx : message;
+
+  input.value = '';
+  input.style.height = 'auto';
+  addMessage('user', message);
+  totalTokens += estimateTokens(fullMessage);
+  updateTokenCounter();
+  chatHistory.push({role: 'user', content: fullMessage});
+
+  setTyping(true);
+  try {
+    const r = await fetch(INTEL + ENDPOINT, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: fullMessage, history: chatHistory.slice(-10)}),
+      signal: AbortSignal.timeout(45000)
+    });
+    const d = await r.json();
+    setTyping(false);
+
+    if (d.ok && d.reply) {
+      totalTokens += estimateTokens(d.reply);
+      updateTokenCounter();
+      if (d.plan) injectPlanPreview(d.plan);
+      addMessage('assistant', d.reply, d.engine, d.image || null, d.image_alt || null);
+      chatHistory.push({role: 'assistant', content: d.reply});
+    } else {
+      const errMsg = d.error || 'Response failed';
+      if (errMsg.toLowerCase().includes('key') || errMsg.toLowerCase().includes('api')) {
+        addMessage('assistant', `⚠️ AI key issue: ${errMsg}\n\nClick "🔐 Add API Keys" in the sidebar to add your fresh Gemini or OpenAI key. Once added, I'll be fully operational, Commander.`, 'System');
+      } else {
+        addMessage('assistant', `⚠️ Error: ${errMsg}`, 'System');
+      }
+    }
+  } catch (e) {
+    setTyping(false);
+    if (e.name === 'TimeoutError') {
+      addMessage('assistant', '⏱ Mixing session took too long. The Intel server may be processing. Try again, Commander.', 'System');
+    } else {
+      addMessage('assistant', `⚠️ Could not reach Intel Server at ${INTEL}\n\nMake sure it's running:\n→ cd goat-intel-server\n→ python goat_intel.py`, 'System');
+    }
+  }
+}
+
+function quickSend(text) {
+  const input = document.getElementById('chatInput');
+  input.value = text;
+  autoResize(input);
+  sendMessage();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+
+function clearChat() {
+  chatHistory = [];
+  totalTokens = 0;
+  updateTokenCounter();
+  showWelcome();
+}
+
+// ── GONBRAZY: Token counter ──────────────────────────────────
+let totalTokens = 0;
+function updateTokenCounter() {
+  const el = document.getElementById('tokenCounter');
+  if (!el) return;
+  el.textContent = totalTokens >= 1000 ? (totalTokens / 1000).toFixed(1) + 'k tok' : totalTokens + ' tok';
+}
+function estimateTokens(text) { return Math.ceil((text || '').length / 4); }
+
+// ── GONBRAZY: Thread naming ──────────────────────────────────
+function renameThread() {
+  const current = localStorage.getItem('goat_gonbrazy_thread') || 'New Session';
+  const name = prompt('Name this session:', current);
+  if (name && name.trim()) {
+    const clean = name.trim().slice(0, 30);
+    localStorage.setItem('goat_gonbrazy_thread', clean);
+    document.getElementById('threadNameTag').textContent = clean;
+  }
+}
+(function restoreThread() {
+  const saved = localStorage.getItem('goat_gonbrazy_thread');
+  if (saved) document.getElementById('threadNameTag').textContent = saved;
+})();
+
+// ── GONBRAZY: Tool Approval bar ──────────────────────────────
+let _approvalPendingResolve = null;
+function showApprovalBar(msg, sandboxType) {
+  return new Promise(resolve => {
+    _approvalPendingResolve = resolve;
+    document.getElementById('approvalMsg').textContent = msg || 'Agent wants to execute an action — approve?';
+    document.getElementById('approvalSandbox').textContent = sandboxType || 'workspace-write';
+    document.getElementById('approvalBar').style.display = 'flex';
+  });
+}
+function approveAction() {
+  document.getElementById('approvalBar').style.display = 'none';
+  if (_approvalPendingResolve) { _approvalPendingResolve(true); _approvalPendingResolve = null; }
+}
+function denyAction() {
+  document.getElementById('approvalBar').style.display = 'none';
+  if (_approvalPendingResolve) { _approvalPendingResolve(false); _approvalPendingResolve = null; }
+}
+
+// ── GONBRAZY: Plan preview strip ────────────────────────────
+function injectPlanPreview(plan) {
+  if (!plan) return;
+  const c = document.getElementById('chatMessages');
+  const d = document.createElement('div');
+  d.className = 'msg assistant'; d.style.cssText = 'opacity:0.8;';
+  d.innerHTML = `<details style="background:#191A1B;border:1px solid #2A2B2C;border-left:2px solid #2ecc71;border-radius:0 4px 4px 0;padding:8px 12px;font-size:12px;font-family:var(--font-mono);cursor:pointer;"><summary style="color:#2ecc71;font-weight:600;list-style:none;outline:none;">▶ Turn Plan — click to expand</summary><div style="margin-top:8px;color:#8C8C8C;white-space:pre-wrap;line-height:1.6;">${escapeHtml(plan)}</div></details>`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+}
+
+// Key management
+function openKeyModal() { document.getElementById('keyModal').classList.add('open'); }
+function closeKeyModal() { document.getElementById('keyModal').classList.remove('open'); }
+
+async function saveKeys() {
+  const payload = {};
+  const g = document.getElementById('inputGemini').value.trim();
+  const o = document.getElementById('inputOpenai').value.trim();
+  const s = document.getElementById('inputSpotify').value.trim();
+  const dk = document.getElementById('inputDistrokid').value.trim();
+  const yt = document.getElementById('inputYoutube').value.trim();
+  if (g) payload.gemini_key = g;
+  if (o) payload.openai_key = o;
+  if (s) payload.spotify_key = s;
+  if (dk) payload.distrokid_key = dk;
+  if (yt) payload.youtube_key = yt;
+
+  if (!Object.keys(payload).length) { alert('Enter at least one key'); return; }
+
+  try {
+    const r = await fetch(INTEL + '/keys/save', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if (d.ok) {
+      document.getElementById('keySaveStatus').style.display = 'block';
+      checkServerStatus();
+      setTimeout(() => closeKeyModal(), 2000);
+    } else {
+      alert('Error saving: ' + d.error);
+    }
+  } catch (e) {
+    alert('Intel server not running. Start it first, then save keys.');
+  }
+}
+
+async function checkServerStatus() {
+  try {
+    const r = await fetch(INTEL + '/health', {signal: AbortSignal.timeout(4000)});
+    const d = await r.json();
+    setKeyStatus('gemini', d.gemini);
+    setKeyStatus('openai', d.openai);
+    document.getElementById('ks_server').textContent = '✅ Server online';
+    document.getElementById('ks_server').className = 'ok';
+  } catch (e) {
+    document.getElementById('ks_server').textContent = '❌ Server offline — run python goat_intel.py';
+    document.getElementById('ks_server').className = 'warn';
+    document.getElementById('ks_gemini').textContent = '⚠ Gemini: server needed';
+    document.getElementById('ks_openai').textContent = '⚠ OpenAI: server needed';
+  }
+}
+
+function setKeyStatus(key, status) {
+  const el = document.getElementById('ks_' + key);
+  if (!el) return;
+  const ok = status && (status.includes('✅') || status.includes('set'));
+  const label = key.charAt(0).toUpperCase() + key.slice(1);
+  el.textContent = ok ? `✅ ${label}: ready` : `⚠ ${label}: add your key`;
+  el.className = ok ? 'ok' : 'warn';
+}
+
+// Close modal on backdrop click
+document.getElementById('keyModal').addEventListener('click', (e) => {
+  if (e.target.id === 'keyModal') closeKeyModal();
+});
+
+// ── Command Deck Panels ──
+let studioInstance = null;
+
+function openStudioPanel() {
+  document.getElementById('studioPanel').classList.add('open');
+  if (!studioInstance && typeof GoatTouchStudio !== 'undefined') {
+    const container = document.getElementById('studioContainer');
+    container.innerHTML = '';
+    studioInstance = GoatTouchStudio.create(container, {
+      onChange: (id, value, type) => {
+        document.getElementById('studioEvent').textContent = `[studio] ${type} "${id}" = ${JSON.stringify(value)}`;
+      },
+      onTap: (id, data) => {
+        document.getElementById('studioEvent').textContent = `[studio] pad "${id}" index ${data.index} (${data.label})`;
+      }
+    });
+    studioInstance.addKnob('gain', { label: 'Gain', value: 60 });
+    studioInstance.addFader('master', { label: 'Master', value: 90 });
+    studioInstance.addXYPad('filter', { label: 'Filter / Reso' });
+    studioInstance.addPads('drums', { labels: ['Kick','Snare','Hat','Clap','Open','Ride','Tom','Crash'] });
+    studioInstance.addToggle('power', { label: 'Power', value: true });
+  }
+}
+function closeStudioPanel() { document.getElementById('studioPanel').classList.remove('open'); }
+
+function openGenUI() {
+  document.getElementById('genUIPanel').classList.add('open');
+  if (typeof GoatGenerativeUI !== 'undefined') {
+    const block = {
+      type: 'ui', layout: 'card', title: 'GONBRAZY Mix Stats', subtitle: 'Live Mix Data',
+      items: [
+        { type: 'stat', label: 'Plugins', value: '150+' },
+        { type: 'stat', label: 'UAD', value: 'Connected' },
+        { type: 'knob', id: 'mix', label: 'Mix Level', value: 85 },
+        { type: 'button', id: 'session', label: 'New Session' },
+        { type: 'toggle', id: 'master', label: 'Master Mode', value: false },
+        { type: 'badge', label: 'Status', value: 'MIXING', color: '#2ecc71' }
+      ]
+    };
+    GoatGenerativeUI.render([block], document.getElementById('genUIContainer'), {
+      onAction: (evt) => {
+        document.getElementById('genUIEvent').textContent = `[gen-ui] ${evt.action} id="${evt.id}" value=${JSON.stringify(evt.value || '')}`;
+      }
+    });
+  }
+}
+function closeGenUI() { document.getElementById('genUIPanel').classList.remove('open'); }
+
+function openSettingsPanel() { document.getElementById('settingsPanel').classList.add('open'); }
+function closeSettingsPanel() { document.getElementById('settingsPanel').classList.remove('open'); }
+
+function setAccent(color) {
+  document.documentElement.style.setProperty('--codex-blue', color);
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.toggle('active', s.dataset.color === color));
+  localStorage.setItem('goat_gonbrazy_accent', color);
+
+  const hex = color.replace('#', '');
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  const rgba = (a) => `rgba(${r},${g},${b},${a})`;
+
+  let style = document.getElementById('goat-accent-override');
+  if (!style) {
+    style = document.createElement('style');
+    style.id = 'goat-accent-override';
+    document.head.appendChild(style);
+  }
+  style.textContent = `
+    .goat-nav { border-bottom-color: ${rgba(0.4)} !important; }
+    .persona-btn.active { background: linear-gradient(135deg, ${rgba(0.22)} 0%, ${rgba(0.1)} 100%) !important; border-color: ${color} !important; box-shadow: 0 0 14px ${rgba(0.2)} !important; }
+    .special-ops-title { color: ${color} !important; }
+    .ops-btn { border-color: ${rgba(0.2)} !important; background: ${rgba(0.08)} !important; }
+    .ops-btn:hover { background: ${rgba(0.18)} !important; border-color: ${color} !important; }
+    .chat-action-btn:hover { border-color: ${color} !important; color: ${color} !important; background: ${rgba(0.1)} !important; }
+    .send-btn { background: ${color} !important; }
+    .send-btn:hover { background: ${color} !important; filter: brightness(1.15); }
+    .quick-btn:hover { border-color: ${color} !important; color: #fff !important; background: ${rgba(0.1)} !important; }
+    .status-dot { background: ${color} !important; box-shadow: 0 0 8px ${color} !important; }
+    .typing-dot { background: ${color} !important; }
+  `;
+}
+
+function applyLogo() {
+  const url = document.getElementById('customLogo').value.trim();
+  if (!url) return;
+  document.querySelectorAll('.ai-logo img, .persona-avatar').forEach(img => img.src = url);
+  localStorage.setItem('goat_gonbrazy_logo', url);
+}
+
+// Restore saved settings
+(function restore() {
+  const savedColor = localStorage.getItem('goat_gonbrazy_accent');
+  if (savedColor) setAccent(savedColor);
+  const savedLogo = localStorage.getItem('goat_gonbrazy_logo');
+  if (savedLogo) document.getElementById('customLogo').value = savedLogo;
+})();
+
+document.addEventListener('DOMContentLoaded', init);
+
+// ── GOAT VAULT + MEMORY ──────────────────────────────────────────────────────
+async function vaultStatus() {
+  const bar = document.getElementById('vaultStatusBar');
+  if (!bar) return;
+  bar.style.display = 'block';
+  bar.textContent = '🧠 Loading...';
+  try {
+    const r = await fetch(INTEL + '/ai/moneypenny/status', {signal: AbortSignal.timeout(6000)});
+    const d = await r.json();
+    if (d.ok) {
+      bar.innerHTML = '<strong style="color:#3994BC">LOADED</strong><br>' +
+        '📄 ' + d.knowledge_file.size_kb + 'KB knowledge<br>' +
+        '🎵 ' + d.catalog.isrc_tracks + ' ISRCs | 📚 ' + d.catalog.bsm_works + ' BSM works<br>' +
+        '📁 ' + d.vault_documents.length + ' vault docs | 💾 ' + d.memory_facts + ' memories';
+    } else { bar.textContent = '❌ Status unavailable'; }
+  } catch(e) { bar.textContent = '❌ Server offline'; }
+}
+async function vaultISRC() {
+  const q = prompt('Search ISRCs — track name or artist:'); if (!q) return;
+  const bar = document.getElementById('vaultStatusBar');
+  if (bar) { bar.style.display='block'; bar.textContent='🔍 Searching ISRCs...'; }
+  try {
+    const r = await fetch(INTEL + '/vault/catalog/isrc?title=' + encodeURIComponent(q), {signal: AbortSignal.timeout(6000)});
+    const d = await r.json();
+    if (d.results && d.results.length) {
+      if (bar) bar.innerHTML = '<strong style="color:#3994BC">ISRC: ' + d.results.length + ' found</strong><br>' +
+        d.results.slice(0,4).map(row => '• ' + Object.values(row).filter(Boolean).slice(0,3).join(' | ')).join('<br>');
+      quickSend('ISRC results for "' + q + '": ' + JSON.stringify(d.results.slice(0,3)) + '. Give me details on these tracks.');
+    } else { if (bar) bar.textContent = 'No ISRCs found for "' + q + '"'; }
+  } catch(e) { if (bar) bar.textContent = '❌ Vault search failed'; }
+}
+async function vaultPublishing() {
+  const q = prompt('Search BSM Publishing — title or writer:'); if (!q) return;
+  const bar = document.getElementById('vaultStatusBar');
+  if (bar) { bar.style.display='block'; bar.textContent='🔍 Searching publishing...'; }
+  try {
+    const r = await fetch(INTEL + '/vault/catalog/publishing?title=' + encodeURIComponent(q), {signal: AbortSignal.timeout(6000)});
+    const d = await r.json();
+    if (d.results && d.results.length) {
+      if (bar) bar.innerHTML = '<strong style="color:#3994BC">BSM: ' + d.results.length + ' found</strong><br>' +
+        d.results.slice(0,4).map(row => '• ' + Object.values(row).filter(Boolean).slice(0,3).join(' | ')).join('<br>');
+      quickSend('BSM Publishing results for "' + q + '": ' + JSON.stringify(d.results.slice(0,3)) + '. What do these tell us?');
+    } else { if (bar) bar.textContent = 'No publishing records for "' + q + '"'; }
+  } catch(e) { if (bar) bar.textContent = '❌ Vault search failed'; }
+}
+async function vaultList() {
+  const bar = document.getElementById('vaultStatusBar');
+  if (!bar) return;
+  bar.style.display = 'block'; bar.textContent = '📁 Loading vault...';
+  try {
+    const r = await fetch(INTEL + '/vault/list', {signal: AbortSignal.timeout(6000)});
+    const d = await r.json();
+    if (d.vault && d.vault.length) {
+      bar.innerHTML = '<strong style="color:#3994BC">Vault (' + d.count + ' docs)</strong><br>' + d.vault.map(f => '• ' + f).join('<br>');
+    } else { bar.textContent = 'Vault empty or server offline'; }
+  } catch(e) { bar.textContent = '❌ Vault unavailable'; }
+}
+async function loadMemory() {
+  const el = document.getElementById('memoryFacts');
+  if (!el) return;
+  try {
+    const r = await fetch(INTEL + '/memory/load', {signal: AbortSignal.timeout(4000)});
+    const d = await r.json();
+    if (d.ok && d.total > 0) {
+      el.innerHTML = '<strong style="color:#3994BC">' + d.total + ' facts saved</strong><br>' +
+        d.facts.slice(-5).map(f => '• ' + f.fact.slice(0,55) + (f.fact.length>55?'...':'')).join('<br>');
+    } else { el.textContent = 'No memories saved yet.'; }
+  } catch(e) { el.textContent = 'Memory offline.'; }
+}
+async function saveMemoryPrompt() {
+  const fact = prompt('Save a fact to memory:');
+  if (!fact || !fact.trim()) return;
+  try {
+    const r = await fetch(INTEL + '/memory/save', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({fact: fact.trim(), agent: 'gonbrazy'})
+    });
+    const d = await r.json();
+    if (d.ok) { loadMemory(); addMessage('assistant', '💾 Saved to memory. I now have ' + d.total + ' facts stored.'); }
+  } catch(e) { alert('Could not save — server offline'); }
+}
+
+</script>
+
+<!-- TOUCH STUDIO PANEL -->
+<div class="deck-panel" id="studioPanel" onclick="if(event.target.id==='studioPanel') closeStudioPanel()">
+  <div class="deck-box">
+    <div class="deck-close" onclick="closeStudioPanel()">&times;</div>
+    <h2>🎚️ Touch Studio</h2>
+    <div class="deck-section">
+      <h4>Live Controls</h4>
+      <div id="studioContainer"></div>
+    </div>
+    <div class="deck-section">
+      <h4>Last Event</h4>
+      <div id="studioEvent" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#888;min-height:20px;">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- GENERATIVE UI PANEL -->
+<div class="deck-panel" id="genUIPanel" onclick="if(event.target.id==='genUIPanel') closeGenUI()">
+  <div class="deck-box">
+    <div class="deck-close" onclick="closeGenUI()">&times;</div>
+    <h2>✨ Generative UI</h2>
+    <div class="deck-section">
+      <h4>GONBRAZY Mix Stats</h4>
+      <div id="genUIContainer" class="gen-ui-preview"></div>
+    </div>
+    <div class="deck-section">
+      <h4>Action Log</h4>
+      <div id="genUIEvent" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#888;min-height:20px;">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div class="deck-panel" id="settingsPanel" onclick="if(event.target.id==='settingsPanel') closeSettingsPanel()">
+  <div class="deck-box">
+    <div class="deck-close" onclick="closeSettingsPanel()">&times;</div>
+    <h2>⚙️ Customize</h2>
+    <div class="deck-section">
+      <h4>Accent Color</h4>
+      <div id="colorSwatches">
+        <span class="color-swatch active" style="background:#2ecc71" data-color="#2ecc71" onclick="setAccent(this.dataset.color)"></span>
+        <span class="color-swatch" style="background:#d4a03c" data-color="#d4a03c" onclick="setAccent(this.dataset.color)"></span>
+        <span class="color-swatch" style="background:#27ae60" data-color="#27ae60" onclick="setAccent(this.dataset.color)"></span>
+        <span class="color-swatch" style="background:#e91e8c" data-color="#e91e8c" onclick="setAccent(this.dataset.color)"></span>
+        <span class="color-swatch" style="background:#9b59b6" data-color="#9b59b6" onclick="setAccent(this.dataset.color)"></span>
+      </div>
+    </div>
+    <div class="deck-section">
+      <h4>Logo / Hero</h4>
+      <input type="text" id="customLogo" placeholder="URL to logo image" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;">
+      <button class="goat-btn" style="margin-top:10px;" onclick="applyLogo()">Apply Logo</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE TERMINAL PANEL -->
+<div class="deck-panel" id="terminalPanel" onclick="if(event.target.id==='terminalPanel') closeTerminalPanel()">
+  <div class="deck-box" style="max-width:860px;">
+    <div class="deck-close" onclick="closeTerminalPanel()">&times;</div>
+    <h2>💻 Live Terminal</h2>
+
+    <div class="deck-section">
+      <h4>Agent Context</h4>
+      <select class="terminal-agent-select" id="terminalAgentSelect" style="width:100%;">
+        <option value="gonbrazy">STUDIO BOSS — GONBRAZY (default)</option>
+        <option value="moneypenny">002 — Ms. Money Penny</option>
+        <option value="drdevin">007 — Dr. Devin</option>
+        <option value="oscar">001 — Master Oscar</option>
+        <option value="nexus">004 — Nexus</option>
+        <option value="lexi">005 — Lexi</option>
+      </select>
+    </div>
+
+    <div class="deck-section">
+      <h4>Terminal</h4>
+      <div class="terminal-panel-wrap">
+        <div class="terminal-panel-titlebar">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span style="margin-left:6px;font-size:11px;color:#666;">GOAT Force — GONBRAZY Terminal</span>
+          <button onclick="clearTerminal()" style="margin-left:auto;background:transparent;border:none;color:#555;cursor:pointer;font-size:11px;font-family:'JetBrains Mono',monospace;">clear</button>
+        </div>
+        <div class="terminal-panel-output" id="terminalOutput">
+          <p class="terminal-line sys">GONBRAZY Terminal — STUDIO BOSS · Online</p>
+          <p class="terminal-line sys">Commands classified by safety: readonly · dangerous (confirm) · forbidden (blocked)</p>
+          <p class="terminal-line sys">Terminal host: localhost:9999 — Run goat-intel-server terminal proxy to execute live commands.</p>
+          <p class="terminal-line sys">─────────────────────────────────────────────────────</p>
+        </div>
+        <div class="terminal-confirm-bar" id="terminalConfirmBar">
+          <span id="terminalConfirmMsg">⚠️ Dangerous command detected — confirm execution?</span>
+          <button class="btn-yes" id="terminalConfirmYes">Run It</button>
+          <button class="btn-no" onclick="cancelTerminalConfirm()">Cancel</button>
+        </div>
+        <div style="display:flex;align-items:center;padding:10px 14px;border-top:1px solid rgba(46, 204, 113, 0.2);background:rgba(0,0,0,0.4);gap:10px;">
+          <span class="terminal-prompt-panel">gonbrazy@studio $</span>
+          <input class="terminal-input-panel" id="terminalInput" type="text"
+            placeholder="ls -la / git status / ollama list / python3 -c 'print(1+1)' ..."
+            autocomplete="off" autocorrect="off" spellcheck="false"
+            onkeydown="handleTerminalKey(event)">
+          <button class="terminal-run-btn-panel" onclick="runTerminalCommand()">RUN</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="deck-section">
+      <h4>Quick Commands</h4>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="chat-action-btn" onclick="terminalQuick('ls -la')">ls -la</button>
+        <button class="chat-action-btn" onclick="terminalQuick('pwd')">pwd</button>
+        <button class="chat-action-btn" onclick="terminalQuick('ps aux | grep python')">ps python</button>
+        <button class="chat-action-btn" onclick="terminalQuick('ollama list')">ollama list</button>
+        <button class="chat-action-btn" onclick="terminalQuick('git status')">git status</button>
+        <button class="chat-action-btn" onclick="terminalQuick('df -h')">disk space</button>
+        <button class="chat-action-btn" onclick="terminalQuick('curl -s http://localhost:5500/health')">intel health</button>
+        <button class="chat-action-btn" onclick="terminalQuick('python3 -c \"import sys; print(sys.version)\"')">python ver</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Live Terminal ─────────────────────────────────────
+let _terminalPendingCmd = null;
+
+function openTerminalPanel() {
+  document.getElementById('terminalPanel').classList.add('open');
+  setTimeout(() => document.getElementById('terminalInput').focus(), 100);
+}
+function closeTerminalPanel() {
+  document.getElementById('terminalPanel').classList.remove('open');
+  cancelTerminalConfirm();
+}
+
+function clearTerminal() {
+  const out = document.getElementById('terminalOutput');
+  out.innerHTML = '<p class="terminal-line sys">Terminal cleared. Ready.</p>';
+}
+
+function terminalPrint(text, cls) {
+  const out = document.getElementById('terminalOutput');
+  const p = document.createElement('p');
+  p.className = 'terminal-line' + (cls ? ' ' + cls : '');
+  p.textContent = text;
+  out.appendChild(p);
+  out.scrollTop = out.scrollHeight;
+}
+
+function handleTerminalKey(e) {
+  if (e.key === 'Enter') runTerminalCommand();
+}
+
+function terminalQuick(cmd) {
+  document.getElementById('terminalInput').value = cmd;
+  runTerminalCommand();
+}
+
+async function runTerminalCommand(confirmed) {
+  const input = document.getElementById('terminalInput');
+  const cmd = (confirmed || input.value).trim();
+  if (!cmd) return;
+
+  const agentId = document.getElementById('terminalAgentSelect').value;
+
+  if (confirmed) cancelTerminalConfirm();
+
+  terminalPrint('$ ' + cmd, 'cmd');
+  input.value = '';
+
+  if (typeof Patch !== 'undefined' && Patch.terminalExec) {
+    const result = await Patch.terminalExec(cmd, { agentId, confirm: !!confirmed });
+
+    if (!result.ok && result.classification && result.classification.class === 'forbidden') {
+      terminalPrint('BLOCKED: ' + result.classification.reason, 'err');
+      return;
+    }
+
+    if (result.needs_confirm) {
+      _terminalPendingCmd = cmd;
+      document.getElementById('terminalConfirmMsg').textContent =
+        `⚠️ Dangerous command: "${cmd}" — confirm execution?`;
+      document.getElementById('terminalConfirmBar').classList.add('visible');
+      document.getElementById('terminalConfirmYes').onclick = () => runTerminalCommand(cmd);
+      return;
+    }
+
+    if (result.stdout) terminalPrint(result.stdout, '');
+    if (result.stderr) terminalPrint(result.stderr, 'err');
+
+    if (!result.ok && result.error) {
+      if (result.error.includes('fetch') || result.error.includes('NetworkError') || result.error.includes('Failed to fetch')) {
+        terminalPrint('Terminal proxy offline. To enable live execution:', 'warn');
+        terminalPrint('  cd goat-intel-server && python3 goat_terminal_proxy.py', 'sys');
+      } else {
+        terminalPrint('Error: ' + result.error, 'err');
+      }
+    }
+
+    if (result.returncode !== null && result.returncode !== undefined) {
+      terminalPrint('[exit ' + result.returncode + ']', 'sys');
+    }
+  } else {
+    terminalPrint('Patch terminal not loaded. Command queued for review.', 'sys');
+  }
+}
+
+function cancelTerminalConfirm() {
+  _terminalPendingCmd = null;
+  document.getElementById('terminalConfirmBar').classList.remove('visible');
+}
+</script>
+
+<script src="lib/agents/patch/patch-core.js"></script>
+<script src="lib/agents/patch/goat-touch-studio.js"></script>
+<script src="lib/agents/patch/goat-generative-ui.js"></script>
+<script src="lib/agents/patch/patch-widget.js" data-agent="gonbrazy"></script>
+<script src="js/goat-touch.js"></script>
+<script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

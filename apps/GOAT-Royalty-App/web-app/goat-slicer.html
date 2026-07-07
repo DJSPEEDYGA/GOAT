@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Slicer</title>
+<link rel="icon" href="favicon.ico">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060608;--bg2:#0a0a0d;--bg3:#0f0f13;--bg4:#141418;--bg5:#1a1a20;--bg6:#22222a;
+  --gold:#c9922a;--gold-dim:rgba(201,146,42,0.15);--gold-line:rgba(201,146,42,0.22);
+  --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#7c3aed;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);
+  --text:#e8e4dd;--text2:#a09a90;--text3:#504a42;
+  --radius:6px;
+}
+html,body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:13px;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg6);border-radius:2px}
+canvas{display:block}
+
+/* NAV */
+.nav{
+  height:44px;background:rgba(6,6,8,0.96);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px;gap:8px;
+  flex-shrink:0;position:relative;z-index:100;
+}
+.nav-brand{font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--gold);flex-shrink:0;margin-right:8px}
+.nav-sep{width:1px;height:18px;background:var(--border);flex-shrink:0}
+.nav-btn{
+  height:26px;padding:0 12px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--bg3);
+  color:var(--text3);font-size:11px;font-weight:500;font-family:inherit;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.nav-btn:hover{border-color:var(--border2);color:var(--text2)}
+.nav-btn.active{border-color:var(--gold-line);background:var(--gold-dim);color:var(--gold)}
+.nav-btn.go{background:var(--gold);border-color:var(--gold);color:#000;font-weight:700}
+.nav-btn.go:hover{background:#e0a830}
+.bpm-group{display:flex;align-items:center;gap:6px}
+.bpm-label{font-size:10px;color:var(--text3);letter-spacing:.5px}
+.bpm-input{
+  width:56px;height:26px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--bg4);
+  color:var(--gold);font-size:14px;font-weight:700;font-family:inherit;
+  text-align:center;padding:0 4px;
+}
+.bpm-input:focus{outline:none;border-color:var(--gold-line)}
+.transport-group{display:flex;gap:4px}
+.t-btn{
+  width:28px;height:26px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--bg3);
+  color:var(--text2);font-size:10px;font-family:inherit;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.t-btn:hover{border-color:var(--border2)}
+.t-btn.playing{border-color:rgba(34,197,94,0.4);background:rgba(34,197,94,0.08);color:var(--green)}
+.t-btn.recording{border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.08);color:var(--red)}
+.nav-status{font-size:11px;color:var(--text3);padding:0 4px}
+.nav-spacer{flex:1}
+.nav-hub-link{
+  height:26px;padding:0 12px;border-radius:var(--radius);
+  border:1px solid var(--border);background:transparent;
+  color:var(--text3);font-size:11px;font-family:inherit;
+  cursor:pointer;text-decoration:none;display:flex;align-items:center;
+  transition:all .15s;
+}
+.nav-hub-link:hover{border-color:var(--border2);color:var(--text2)}
+.tap-btn{
+  height:26px;padding:0 12px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--bg4);
+  color:var(--text2);font-size:11px;font-family:inherit;
+  cursor:pointer;transition:all .15s;
+  user-select:none;
+}
+.tap-btn:active{background:var(--bg5);border-color:var(--border2)}
+
+/* LAYOUT */
+.app{display:flex;flex-direction:column;height:calc(100vh - 44px)}
+
+/* WAVEFORM */
+.waveform-section{
+  flex-shrink:0;position:relative;background:var(--bg2);
+  border-bottom:1px solid var(--border);
+}
+.waveform-toolbar{
+  position:absolute;top:6px;left:8px;z-index:10;
+  display:flex;gap:6px;align-items:center;
+}
+.wt-btn{
+  height:20px;padding:0 8px;border-radius:3px;
+  border:1px solid var(--border);background:rgba(6,6,8,0.8);
+  color:var(--text3);font-size:9px;font-weight:600;font-family:inherit;letter-spacing:.5px;
+  cursor:pointer;transition:all .15s;
+}
+.wt-btn:hover{border-color:var(--border2);color:var(--text2)}
+.wt-btn.active{border-color:var(--gold-line);color:var(--gold)}
+.waveform-controls{
+  position:absolute;top:6px;right:8px;z-index:10;
+  display:flex;gap:6px;align-items:center;
+}
+#waveformCanvas{cursor:crosshair;touch-action:none}
+.waveform-hint{
+  position:absolute;bottom:6px;left:8px;
+  font-size:9px;color:var(--text3);letter-spacing:.5px;pointer-events:none;
+}
+
+/* MIDDLE SECTION */
+.middle-section{
+  display:flex;flex-shrink:0;border-bottom:1px solid var(--border);
+  background:var(--bg3);
+}
+
+/* SLICE CONTROLS */
+.slice-controls{
+  width:300px;flex-shrink:0;border-right:1px solid var(--border);
+  padding:10px 14px;display:flex;flex-direction:column;gap:10px;
+}
+.sc-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+.sc-row{display:flex;align-items:center;gap:8px}
+.sc-label{font-size:10px;color:var(--text2);width:72px;flex-shrink:0}
+.sc-slider{
+  flex:1;-webkit-appearance:none;height:3px;background:var(--bg5);
+  border-radius:2px;cursor:pointer;accent-color:var(--gold);
+}
+.sc-val{font-size:10px;color:var(--text3);width:28px;text-align:right;flex-shrink:0}
+.snap-group{display:flex;gap:4px;flex-wrap:wrap}
+.snap-btn{
+  height:22px;padding:0 8px;border-radius:3px;
+  border:1px solid var(--border);background:var(--bg4);
+  color:var(--text3);font-size:9px;font-weight:600;letter-spacing:.3px;font-family:inherit;
+  cursor:pointer;transition:all .15s;
+}
+.snap-btn:hover{border-color:var(--border2);color:var(--text2)}
+.snap-btn.active{border-color:var(--gold-line);background:var(--gold-dim);color:var(--gold)}
+.detect-btn{
+  height:28px;border-radius:var(--radius);border:none;
+  background:var(--gold);color:#000;
+  font-size:11px;font-weight:700;font-family:inherit;
+  cursor:pointer;transition:all .15s;padding:0 14px;
+}
+.detect-btn:hover{background:#e0a830}
+.clear-btn{
+  height:28px;border-radius:var(--radius);border:1px solid var(--border);
+  background:transparent;color:var(--text3);
+  font-size:11px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all .15s;padding:0 12px;
+}
+.clear-btn:hover{border-color:var(--border2);color:var(--text2)}
+
+/* SLICE LIST */
+.slice-list{
+  flex:1;overflow-y:auto;border-right:1px solid var(--border);
+}
+.sl-header{
+  display:flex;align-items:center;padding:8px 10px;
+  border-bottom:1px solid var(--border);
+  font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);
+  position:sticky;top:0;background:var(--bg3);z-index:2;
+}
+.sl-row{
+  display:flex;align-items:center;padding:5px 8px;gap:6px;
+  border-bottom:1px solid rgba(255,255,255,0.03);
+  cursor:pointer;transition:background .1s;
+  font-size:11px;
+}
+.sl-row:hover{background:rgba(255,255,255,0.03)}
+.sl-row.active{background:var(--gold-dim);border-left:2px solid var(--gold)}
+.sl-num{width:22px;color:var(--text3);font-size:10px;font-weight:600;flex-shrink:0}
+.sl-start{flex:1;color:var(--text2);font-variant-numeric:tabular-nums}
+.sl-end{flex:1;color:var(--text3);font-variant-numeric:tabular-nums}
+.sl-dur{width:48px;color:var(--text3);text-align:right;font-variant-numeric:tabular-nums}
+.sl-play{
+  width:22px;height:22px;border-radius:50%;
+  border:1px solid var(--border);background:var(--bg4);
+  color:var(--text2);font-size:8px;font-family:inherit;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+.sl-play:hover{border-color:var(--gold-line);color:var(--gold)}
+
+/* EXPORT PANEL */
+.export-panel{
+  width:200px;flex-shrink:0;padding:10px 14px;display:flex;flex-direction:column;gap:8px;
+}
+.ep-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+.ep-btn{
+  height:28px;border-radius:var(--radius);border:1px solid var(--border);
+  background:var(--bg4);color:var(--text2);
+  font-size:10px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all .15s;text-align:left;padding:0 10px;
+}
+.ep-btn:hover{border-color:var(--border2);color:var(--text)}
+.ep-btn.highlight{border-color:var(--gold-line);background:var(--gold-dim);color:var(--gold)}
+
+/* BOTTOM: PAD GRID + PAD CONTROLS */
+.bottom-section{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* PAD GRID */
+.pad-section{
+  flex:1;display:flex;flex-direction:column;padding:14px;
+  overflow:hidden;
+}
+.pad-section-header{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;
+}
+.pad-section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+.auto-assign-btn{
+  height:24px;padding:0 10px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--bg3);
+  color:var(--text3);font-size:10px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all .15s;
+}
+.auto-assign-btn:hover{border-color:var(--border2);color:var(--text2)}
+
+.pad-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:8px;flex:1;max-height:calc(100% - 40px);
+}
+.pad{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  cursor:pointer;position:relative;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:8px;transition:all .1s;
+  user-select:none;
+  min-height:60px;
+}
+.pad:hover{border-color:var(--border2);background:var(--bg4)}
+.pad.active{border-color:var(--gold);box-shadow:0 0 12px rgba(201,146,42,0.2);background:var(--gold-dim)}
+.pad.triggered{border-color:var(--gold);background:rgba(201,146,42,0.25)}
+.pad.has-slice{border-color:rgba(201,146,42,0.2)}
+.pad-num{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.5px}
+.pad.active .pad-num{color:var(--gold)}
+.pad-name{font-size:10px;font-weight:600;color:var(--text2);text-align:center;line-height:1.3}
+.pad.active .pad-name{color:var(--text)}
+.pad.has-slice .pad-name{color:var(--text)}
+.pad-slice-num{font-size:9px;color:var(--text3);text-align:right}
+.pad.active .pad-slice-num{color:var(--gold)}
+.pad-mini-wave{
+  position:absolute;bottom:0;left:0;right:0;height:20px;border-radius:0 0 var(--radius) var(--radius);
+  overflow:hidden;pointer-events:none;
+}
+
+/* PAD CONTROLS */
+.pad-controls{
+  width:220px;flex-shrink:0;border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+.pc-title{
+  font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text3);padding:10px 14px 6px;border-bottom:1px solid var(--border);
+}
+.pc-body{padding:10px 14px;display:flex;flex-direction:column;gap:10px}
+.pc-row{display:flex;align-items:center;gap:8px}
+.pc-label{font-size:10px;color:var(--text2);width:58px;flex-shrink:0}
+.pc-slider{
+  flex:1;-webkit-appearance:none;height:3px;background:var(--bg5);
+  border-radius:2px;cursor:pointer;accent-color:var(--gold);
+}
+.pc-val{font-size:10px;color:var(--text3);width:36px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+.pc-toggle-row{display:flex;gap:6px}
+.pc-toggle{
+  flex:1;height:26px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--bg4);
+  color:var(--text3);font-size:10px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all .15s;
+}
+.pc-toggle:hover{border-color:var(--border2);color:var(--text2)}
+.pc-toggle.on{border-color:var(--gold-line);background:var(--gold-dim);color:var(--gold)}
+.pc-toggle.on-red{border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.08);color:var(--red)}
+.pc-mode-row{display:flex;gap:6px}
+.pc-empty{padding:20px 14px;font-size:11px;color:var(--text3);text-align:center}
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <span class="nav-brand">GOAT Slicer</span>
+  <div class="nav-sep"></div>
+  <button class="nav-btn go" onclick="document.getElementById('slicerFileInput').click()">Load Audio</button>
+  <input type="file" id="slicerFileInput" accept="audio/*" style="display:none">
+  <div class="nav-sep"></div>
+  <div class="bpm-group">
+    <span class="bpm-label">BPM</span>
+    <input class="bpm-input" id="bpmInput" type="number" value="120" min="40" max="300" oninput="updateBPM(+this.value)">
+    <button class="tap-btn" id="tapBtn" onclick="tapTempo()">TAP</button>
+  </div>
+  <div class="nav-sep"></div>
+  <div class="transport-group">
+    <button class="t-btn" id="btnPlay" onclick="togglePlayback()" title="Play">
+      <svg width="8" height="10" viewBox="0 0 8 10" fill="currentColor"><path d="M0 0l8 5L0 10z"/></svg>
+    </button>
+    <button class="t-btn" onclick="stopPlayback()" title="Stop">
+      <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><rect width="8" height="8"/></svg>
+    </button>
+  </div>
+  <div class="nav-sep"></div>
+  <button class="nav-btn" id="btnBeatGrid" onclick="toggleBeatGrid()">Beat Grid</button>
+  <span class="nav-status" id="navStatus">No file loaded</span>
+  <div class="nav-spacer"></div>
+  <a href="goat-production-hub.html" class="nav-hub-link">Production Hub</a>
+</nav>
+
+<div class="app">
+
+  <!-- WAVEFORM -->
+  <div class="waveform-section" id="waveformSection">
+    <div class="waveform-toolbar">
+      <button class="wt-btn active" id="btnModeAuto" onclick="setEditMode('auto')">Auto</button>
+      <button class="wt-btn" id="btnModeManual" onclick="setEditMode('manual')">Manual</button>
+      <div style="width:1px;height:14px;background:var(--border)"></div>
+      <button class="wt-btn" onclick="zoomIn()">Zoom +</button>
+      <button class="wt-btn" onclick="zoomOut()">Zoom -</button>
+      <button class="wt-btn" onclick="zoomFit()">Fit</button>
+    </div>
+    <div class="waveform-controls">
+      <span style="font-size:9px;color:var(--text3)">Right-click = add marker</span>
+    </div>
+    <canvas id="waveformCanvas" style="width:100%"></canvas>
+    <div class="waveform-hint" id="waveformHint">No audio loaded — click Load Audio to begin</div>
+  </div>
+
+  <!-- MIDDLE -->
+  <div class="middle-section" id="middleSection">
+
+    <!-- SLICE CONTROLS -->
+    <div class="slice-controls">
+      <div class="sc-title">Slice Detection</div>
+      <div style="display:flex;gap:6px">
+        <button class="detect-btn" onclick="autoDetect()">Auto-Detect</button>
+        <button class="clear-btn" onclick="clearSlices()">Clear</button>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">Sensitivity</span>
+        <input class="sc-slider" type="range" id="sensitivitySlider" min="0" max="100" value="50"
+          oninput="document.getElementById('sensitivityVal').textContent=this.value+'%'">
+        <span class="sc-val" id="sensitivityVal">50%</span>
+      </div>
+      <div class="sc-row" style="align-items:flex-start;flex-direction:column;gap:4px">
+        <span class="sc-label" style="width:auto">Snap to</span>
+        <div class="snap-group">
+          <button class="snap-btn active" data-snap="free" onclick="setSnap(this)">Free</button>
+          <button class="snap-btn" data-snap="16" onclick="setSnap(this)">1/16</button>
+          <button class="snap-btn" data-snap="8" onclick="setSnap(this)">1/8</button>
+          <button class="snap-btn" data-snap="4" onclick="setSnap(this)">1/4</button>
+          <button class="snap-btn" data-snap="beat" onclick="setSnap(this)">Beat</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLICE LIST -->
+    <div class="slice-list" id="sliceList">
+      <div class="sl-header">
+        <span style="width:22px">#</span>
+        <span style="flex:1">Start</span>
+        <span style="flex:1">End</span>
+        <span style="width:48px;text-align:right">Dur</span>
+        <span style="width:22px"></span>
+      </div>
+      <div id="sliceListBody"></div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="export-panel">
+      <div class="ep-title">Export</div>
+      <button class="ep-btn highlight" onclick="exportAllWav()">Export All as WAV (ZIP)</button>
+      <button class="ep-btn" onclick="exportSFZ()">Export as SFZ Instrument</button>
+      <button class="ep-btn" onclick="exportMPC()">Export MPC Pad Layout</button>
+      <button class="ep-btn" onclick="sendToBeatMaker()">Send to Beat Maker</button>
+      <div style="margin-top:4px;padding-top:8px;border-top:1px solid var(--border)">
+        <div class="ep-title" style="margin-bottom:6px">Detect BPM</div>
+        <button class="ep-btn" onclick="detectBPM()">Auto-Detect BPM</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bottom-section">
+
+    <!-- PAD GRID -->
+    <div class="pad-section">
+      <div class="pad-section-header">
+        <span class="pad-section-title">Pad Grid — 16 Pads</span>
+        <button class="auto-assign-btn" onclick="autoAssign()">Auto-Assign Slices</button>
+      </div>
+      <div class="pad-grid" id="padGrid"></div>
+    </div>
+
+    <!-- PAD CONTROLS -->
+    <div class="pad-controls" id="padControls">
+      <div class="pc-title">Pad Controls</div>
+      <div class="pc-empty" id="pcEmpty">Select a pad to edit settings</div>
+      <div class="pc-body" id="pcBody" style="display:none">
+        <div class="pc-row">
+          <span class="pc-label">Pitch</span>
+          <input class="pc-slider" type="range" id="pcPitch" min="-24" max="24" value="0"
+            oninput="updatePadParam('pitch',+this.value); document.getElementById('pcPitchVal').textContent=this.value+'st'">
+          <span class="pc-val" id="pcPitchVal">0st</span>
+        </div>
+        <div class="pc-row">
+          <span class="pc-label">Volume</span>
+          <input class="pc-slider" type="range" id="pcVol" min="0" max="100" value="80"
+            oninput="updatePadParam('vol',+this.value); document.getElementById('pcVolVal').textContent=this.value+'%'">
+          <span class="pc-val" id="pcVolVal">80%</span>
+        </div>
+        <div class="pc-row">
+          <span class="pc-label">Pan</span>
+          <input class="pc-slider" type="range" id="pcPan" min="-100" max="100" value="0"
+            oninput="updatePadParam('pan',+this.value); document.getElementById('pcPanVal').textContent=this.value===0?'C':this.value>0?'R'+this.value:'L'+Math.abs(this.value)">
+          <span class="pc-val" id="pcPanVal">C</span>
+        </div>
+        <div class="pc-toggle-row">
+          <button class="pc-toggle" id="pcReverse" onclick="togglePadFlag('reverse')">Reverse</button>
+          <button class="pc-toggle" id="pcLoop" onclick="togglePadFlag('loop')">Loop</button>
+        </div>
+        <div class="pc-mode-row">
+          <button class="pc-toggle" id="pcOneShot" onclick="setPadMode('oneshot')">One-Shot</button>
+          <button class="pc-toggle" id="pcGate" onclick="setPadMode('gate')">Gate</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /app -->
+
+<!-- CONTEXT MENU -->
+<div id="ctxMenu" style="
+  display:none;position:fixed;z-index:1000;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);
+  box-shadow:0 8px 24px rgba(0,0,0,0.5);min-width:160px;overflow:hidden;
+">
+  <button onclick="ctxAddMarker()" style="width:100%;padding:9px 14px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text2);font-size:12px;font-family:inherit;text-align:left;cursor:pointer">Add Marker Here</button>
+  <button onclick="ctxDeleteMarker()" style="width:100%;padding:9px 14px;background:none;border:none;color:var(--red);font-size:12px;font-family:inherit;text-align:left;cursor:pointer">Delete Nearest Marker</button>
+  <button onclick="hideCtxMenu()" style="width:100%;padding:9px 14px;background:none;border:none;color:var(--text3);font-size:12px;font-family:inherit;text-align:left;cursor:pointer">Cancel</button>
+</div>
+
+<script>
+// ── STATE ──
+const S = {
+  audioCtx: null,
+  audioBuffer: null,
+  filename: '',
+  sliceMarkers: [], // array of normalized positions 0-1
+  pads: Array.from({length:16}, (_,i) => ({
+    id:i, sliceIndex:-1, pitch:0, vol:80, pan:0,
+    reverse:false, loop:false, mode:'oneshot'
+  })),
+  selectedPad: -1,
+  editMode: 'auto',
+  snap: 'free',
+  bpm: 120,
+  showBeatGrid: false,
+  // Waveform view
+  viewStart: 0, viewEnd: 1, // normalized scroll
+  draggingMarker: -1,
+  playhead: 0,
+  playing: false,
+  playbackSource: null,
+  tapTimes: [],
+  ctxPos: 0, // for context menu
+};
+
+const MIDDLE_H = 120;
+const WAVEFORM_H = 180;
+
+// ── LAYOUT ──
+function layoutSections() {
+  const appH = document.querySelector('.app').clientHeight;
+  const bottomH = Math.floor(appH * 0.42);
+  const waveH = WAVEFORM_H;
+  const midH = MIDDLE_H;
+
+  document.getElementById('waveformSection').style.height = waveH + 'px';
+  document.getElementById('middleSection').style.height = midH + 'px';
+
+  const canvas = document.getElementById('waveformCanvas');
+  const w = canvas.offsetWidth || window.innerWidth;
+  canvas.width = w * devicePixelRatio;
+  canvas.height = waveH * devicePixelRatio;
+  canvas.style.height = waveH + 'px';
+}
+window.addEventListener('resize', () => { layoutSections(); drawWaveform(); });
+
+// ── AUDIO CONTEXT ──
+function getCtx() {
+  if (!S.audioCtx) S.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return S.audioCtx;
+}
+
+// ── FILE LOADING ──
+document.getElementById('slicerFileInput').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return;
+  const ctx = getCtx();
+  document.getElementById('navStatus').textContent = 'Decoding...';
+  try {
+    const ab = await file.arrayBuffer();
+    S.audioBuffer = await ctx.decodeAudioData(ab);
+    S.filename = file.name;
+    S.sliceMarkers = [];
+    S.viewStart = 0; S.viewEnd = 1;
+    document.getElementById('navStatus').textContent = file.name + ' — ' + S.audioBuffer.duration.toFixed(2) + 's';
+    document.getElementById('waveformHint').style.display = 'none';
+    drawWaveform();
+    renderSliceList();
+  } catch(err) {
+    document.getElementById('navStatus').textContent = 'Error decoding file';
+  }
+});
+
+// ── WAVEFORM DRAW ──
+function drawWaveform() {
+  const canvas = document.getElementById('waveformCanvas');
+  const ctx2 = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const dpr = devicePixelRatio;
+  const w = W/dpr, h = H/dpr;
+  ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  ctx2.fillStyle = '#0a0a0d';
+  ctx2.fillRect(0, 0, w, h);
+
+  if (!S.audioBuffer) return;
+
+  const data = S.audioBuffer.getChannelData(0);
+  const totalSamples = data.length;
+  const startSample = Math.floor(S.viewStart * totalSamples);
+  const endSample = Math.floor(S.viewEnd * totalSamples);
+  const visibleSamples = endSample - startSample;
+  const step = Math.ceil(visibleSamples / w);
+
+  // Waveform
+  ctx2.strokeStyle = '#c9922a';
+  ctx2.lineWidth = 1;
+  ctx2.beginPath();
+  for (let px = 0; px < w; px++) {
+    const si = startSample + Math.floor(px / w * visibleSamples);
+    let min = 1, max = -1;
+    for (let j = 0; j < step; j++) {
+      const v = data[si + j] || 0;
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+    const y1 = ((1 - max) / 2) * h;
+    const y2 = ((1 - min) / 2) * h;
+    ctx2.moveTo(px, y1);
+    ctx2.lineTo(px, y2);
+  }
+  ctx2.stroke();
+
+  // Beat grid
+  if (S.showBeatGrid && S.bpm > 0 && S.audioBuffer) {
+    const dur = S.audioBuffer.duration;
+    const beatDur = 60 / S.bpm;
+    ctx2.strokeStyle = 'rgba(201,146,42,0.18)';
+    ctx2.lineWidth = 1;
+    for (let t = 0; t < dur; t += beatDur) {
+      const norm = t / dur;
+      if (norm < S.viewStart || norm > S.viewEnd) continue;
+      const x = ((norm - S.viewStart) / (S.viewEnd - S.viewStart)) * w;
+      ctx2.beginPath(); ctx2.moveTo(x, 0); ctx2.lineTo(x, h); ctx2.stroke();
+    }
+  }
+
+  // Slice markers
+  S.sliceMarkers.forEach((norm, idx) => {
+    if (norm < S.viewStart || norm > S.viewEnd) return;
+    const x = ((norm - S.viewStart) / (S.viewEnd - S.viewStart)) * w;
+    ctx2.strokeStyle = idx === S.draggingMarker ? '#fff' : 'rgba(255,255,255,0.6)';
+    ctx2.lineWidth = 1;
+    ctx2.beginPath(); ctx2.moveTo(x, 0); ctx2.lineTo(x, h); ctx2.stroke();
+    // Handle
+    ctx2.fillStyle = idx === S.draggingMarker ? '#fff' : 'rgba(255,255,255,0.5)';
+    ctx2.fillRect(x - 3, 0, 6, 10);
+    ctx2.fillStyle = '#000';
+    ctx2.font = '7px Inter';
+    ctx2.textAlign = 'center';
+    ctx2.fillText(idx + 1, x, 8);
+  });
+
+  // Playhead
+  const phx = ((S.playhead - S.viewStart) / (S.viewEnd - S.viewStart)) * w;
+  if (phx >= 0 && phx <= w) {
+    ctx2.strokeStyle = '#c9922a';
+    ctx2.lineWidth = 1.5;
+    ctx2.beginPath(); ctx2.moveTo(phx, 0); ctx2.lineTo(phx, h); ctx2.stroke();
+    ctx2.fillStyle = '#c9922a';
+    ctx2.beginPath(); ctx2.moveTo(phx-5,0); ctx2.lineTo(phx+5,0); ctx2.lineTo(phx,8); ctx2.closePath(); ctx2.fill();
+  }
+}
+
+// ── MOUSE INTERACTION ──
+const wvCanvas = document.getElementById('waveformCanvas');
+let mouseDown = false, mouseStartX = 0;
+
+wvCanvas.addEventListener('mousedown', e => {
+  if (e.button === 2) return;
+  mouseDown = true;
+  const norm = canvasXToNorm(e.offsetX);
+  // Check if clicking near a marker
+  const hitIdx = findNearestMarker(norm, 0.01);
+  if (hitIdx >= 0 && e.ctrlKey) {
+    S.draggingMarker = hitIdx;
+    return;
+  }
+  if (S.editMode === 'manual' && !e.ctrlKey) {
+    // Add marker on click in manual mode
+    const snapped = snapNorm(norm);
+    S.sliceMarkers.push(snapped);
+    S.sliceMarkers.sort((a,b)=>a-b);
+    drawWaveform();
+    renderSliceList();
+    return;
+  }
+  // Set playhead
+  S.playhead = Math.max(0, Math.min(1, norm));
+  drawWaveform();
+});
+
+wvCanvas.addEventListener('mousemove', e => {
+  if (!mouseDown) return;
+  if (S.draggingMarker >= 0) {
+    const norm = canvasXToNorm(e.offsetX);
+    S.sliceMarkers[S.draggingMarker] = Math.max(0, Math.min(1, snapNorm(norm)));
+    S.sliceMarkers.sort((a,b)=>a-b);
+    drawWaveform();
+    renderSliceList();
+  }
+});
+
+wvCanvas.addEventListener('mouseup', () => { mouseDown = false; S.draggingMarker = -1; });
+
+wvCanvas.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  S.ctxPos = canvasXToNorm(e.offsetX);
+  const menu = document.getElementById('ctxMenu');
+  menu.style.display = 'block';
+  menu.style.left = e.clientX + 'px';
+  menu.style.top = e.clientY + 'px';
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#ctxMenu')) hideCtxMenu();
+});
+
+wvCanvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 1.2 : 1/1.2;
+  const norm = canvasXToNorm(e.offsetX);
+  const span = (S.viewEnd - S.viewStart) * delta;
+  const newSpan = Math.max(0.02, Math.min(1, span));
+  const center = norm;
+  S.viewStart = Math.max(0, center - newSpan * (center - S.viewStart) / (S.viewEnd - S.viewStart));
+  S.viewEnd = Math.min(1, S.viewStart + newSpan);
+  drawWaveform();
+}, {passive:false});
+
+function canvasXToNorm(px) {
+  const canvas = document.getElementById('waveformCanvas');
+  const w = canvas.offsetWidth;
+  return S.viewStart + (px / w) * (S.viewEnd - S.viewStart);
+}
+
+function findNearestMarker(norm, threshold) {
+  let best = -1, bestDist = threshold;
+  S.sliceMarkers.forEach((m, i) => {
+    const d = Math.abs(m - norm);
+    if (d < bestDist) { bestDist = d; best = i; }
+  });
+  return best;
+}
+
+function ctxAddMarker() {
+  hideCtxMenu();
+  S.sliceMarkers.push(snapNorm(S.ctxPos));
+  S.sliceMarkers.sort((a,b)=>a-b);
+  drawWaveform();
+  renderSliceList();
+}
+function ctxDeleteMarker() {
+  hideCtxMenu();
+  const idx = findNearestMarker(S.ctxPos, 0.05);
+  if (idx >= 0) { S.sliceMarkers.splice(idx, 1); drawWaveform(); renderSliceList(); }
+}
+function hideCtxMenu() { document.getElementById('ctxMenu').style.display = 'none'; }
+
+// ── ZOOM ──
+function zoomIn() {
+  const center = (S.viewStart + S.viewEnd) / 2;
+  const span = (S.viewEnd - S.viewStart) * 0.6;
+  S.viewStart = Math.max(0, center - span/2);
+  S.viewEnd = Math.min(1, center + span/2);
+  drawWaveform();
+}
+function zoomOut() {
+  const center = (S.viewStart + S.viewEnd) / 2;
+  const span = Math.min(1, (S.viewEnd - S.viewStart) * 1.6);
+  S.viewStart = Math.max(0, center - span/2);
+  S.viewEnd = Math.min(1, center + span/2);
+  drawWaveform();
+}
+function zoomFit() { S.viewStart = 0; S.viewEnd = 1; drawWaveform(); }
+
+// ── SNAP ──
+function snapNorm(norm) {
+  if (!S.audioBuffer || S.snap === 'free') return norm;
+  const dur = S.audioBuffer.duration;
+  const t = norm * dur;
+  if (S.snap === 'beat') {
+    const beatDur = 60 / S.bpm;
+    return (Math.round(t / beatDur) * beatDur) / dur;
+  }
+  const divs = {'16': 16, '8': 8, '4': 4}[S.snap];
+  if (!divs) return norm;
+  const beatDur = 60 / S.bpm;
+  const noteDur = beatDur * (4 / divs);
+  return (Math.round(t / noteDur) * noteDur) / dur;
+}
+
+function setSnap(btn) {
+  document.querySelectorAll('.snap-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  S.snap = btn.dataset.snap;
+}
+
+// ── EDIT MODE ──
+function setEditMode(mode) {
+  S.editMode = mode;
+  document.getElementById('btnModeAuto').classList.toggle('active', mode === 'auto');
+  document.getElementById('btnModeManual').classList.toggle('active', mode === 'manual');
+}
+
+// ── AUTO DETECT ──
+function autoDetect() {
+  if (!S.audioBuffer) return;
+  const sensitivity = parseInt(document.getElementById('sensitivitySlider').value);
+  const data = S.audioBuffer.getChannelData(0);
+  const sr = S.audioBuffer.sampleRate;
+  const dur = S.audioBuffer.duration;
+  // Onset strength: amplitude differential
+  const windowSize = Math.floor(sr * 0.02); // 20ms
+  const hopSize = Math.floor(windowSize / 2);
+  const onsets = [];
+  for (let i = 0; i + windowSize < data.length; i += hopSize) {
+    let energy = 0;
+    for (let j = 0; j < windowSize; j++) energy += data[i+j] * data[i+j];
+    onsets.push({ t: (i + windowSize/2) / sr / dur, e: Math.sqrt(energy / windowSize) });
+  }
+  // Differential
+  const diffs = onsets.map((o, i) => ({
+    t: o.t,
+    d: i > 0 ? Math.max(0, o.e - onsets[i-1].e) : 0
+  }));
+  // Find max for thresholding
+  const maxD = Math.max(...diffs.map(d=>d.d));
+  const threshold = maxD * (1 - sensitivity / 100) * 0.3 + maxD * 0.01;
+  const minGap = (60 / S.bpm) / dur * 0.5; // half beat minimum gap
+  const detected = [];
+  let lastT = -1;
+  diffs.forEach(d => {
+    if (d.d > threshold && d.t > 0.01 && (lastT < 0 || d.t - lastT > minGap)) {
+      detected.push(snapNorm(d.t));
+      lastT = d.t;
+    }
+  });
+  S.sliceMarkers = detected.slice(0, 64);
+  drawWaveform();
+  renderSliceList();
+  document.getElementById('navStatus').textContent = S.sliceMarkers.length + ' slices detected';
+}
+
+function clearSlices() {
+  S.sliceMarkers = [];
+  drawWaveform();
+  renderSliceList();
+}
+
+// ── SLICE LIST ──
+function renderSliceList() {
+  const body = document.getElementById('sliceListBody');
+  body.innerHTML = '';
+  if (!S.audioBuffer) return;
+  const dur = S.audioBuffer.duration;
+  const allMarkers = [0, ...S.sliceMarkers, 1].sort((a,b)=>a-b);
+  for (let i = 0; i < allMarkers.length - 1; i++) {
+    const start = allMarkers[i] * dur;
+    const end = allMarkers[i+1] * dur;
+    const sliceDur = end - start;
+    const row = document.createElement('div');
+    row.className = 'sl-row';
+    row.innerHTML = `
+      <span class="sl-num">${i+1}</span>
+      <span class="sl-start">${fmtTime(start)}</span>
+      <span class="sl-end">${fmtTime(end)}</span>
+      <span class="sl-dur">${sliceDur.toFixed(3)}s</span>
+      <button class="sl-play" onclick="previewSlice(${i})">
+        <svg width="6" height="7" viewBox="0 0 6 7" fill="currentColor"><path d="M0 0l6 3.5L0 7z"/></svg>
+      </button>
+    `;
+    body.appendChild(row);
+  }
+}
+
+function fmtTime(t) {
+  const m = Math.floor(t / 60);
+  const s = (t % 60).toFixed(3);
+  return `${m}:${s.padStart(6,'0')}`;
+}
+
+// ── PLAYBACK ──
+function previewSlice(idx) {
+  if (!S.audioBuffer) return;
+  const ctx = getCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+  const dur = S.audioBuffer.duration;
+  const allMarkers = [0, ...S.sliceMarkers, 1].sort((a,b)=>a-b);
+  if (idx >= allMarkers.length - 1) return;
+  const startT = allMarkers[idx] * dur;
+  const endT = allMarkers[idx+1] * dur;
+  const src = ctx.createBufferSource();
+  src.buffer = S.audioBuffer;
+  src.connect(ctx.destination);
+  src.start(ctx.currentTime, startT, endT - startT);
+}
+
+function togglePlayback() {
+  if (!S.audioBuffer) return;
+  const ctx = getCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+  if (S.playing) {
+    S.playbackSource?.stop();
+    S.playing = false;
+    document.getElementById('btnPlay').classList.remove('playing');
+    return;
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = S.audioBuffer;
+  src.connect(ctx.destination);
+  const startSec = S.playhead * S.audioBuffer.duration;
+  src.start(ctx.currentTime, startSec);
+  S.playbackSource = src;
+  S.playing = true;
+  const startTime = ctx.currentTime;
+  document.getElementById('btnPlay').classList.add('playing');
+  src.onended = () => { S.playing = false; document.getElementById('btnPlay').classList.remove('playing'); };
+  // Animate playhead
+  function animPH() {
+    if (!S.playing) return;
+    const elapsed = ctx.currentTime - startTime;
+    S.playhead = Math.min(1, (startSec + elapsed) / S.audioBuffer.duration);
+    drawWaveform();
+    requestAnimationFrame(animPH);
+  }
+  requestAnimationFrame(animPH);
+}
+function stopPlayback() {
+  S.playbackSource?.stop(); S.playing = false;
+  document.getElementById('btnPlay').classList.remove('playing');
+}
+
+// ── BEAT GRID ──
+function toggleBeatGrid() {
+  S.showBeatGrid = !S.showBeatGrid;
+  document.getElementById('btnBeatGrid').classList.toggle('active', S.showBeatGrid);
+  drawWaveform();
+}
+
+// ── BPM ──
+function updateBPM(val) {
+  S.bpm = Math.max(40, Math.min(300, val));
+  if (S.showBeatGrid) drawWaveform();
+}
+
+let tapTimesArr = [];
+function tapTempo() {
+  const now = Date.now();
+  tapTimesArr.push(now);
+  if (tapTimesArr.length > 8) tapTimesArr.shift();
+  if (tapTimesArr.length >= 2) {
+    const diffs = [];
+    for (let i = 1; i < tapTimesArr.length; i++) diffs.push(tapTimesArr[i] - tapTimesArr[i-1]);
+    const avg = diffs.reduce((a,b)=>a+b,0) / diffs.length;
+    const bpm = Math.round(60000 / avg);
+    S.bpm = Math.max(40, Math.min(300, bpm));
+    document.getElementById('bpmInput').value = S.bpm;
+    if (S.showBeatGrid) drawWaveform();
+  }
+  // Reset if no tap for 2s
+  clearTimeout(S.tapResetTimer);
+  S.tapResetTimer = setTimeout(() => { tapTimesArr = []; }, 2000);
+}
+
+// ── BPM DETECT ──
+function detectBPM() {
+  if (!S.audioBuffer) return;
+  const data = S.audioBuffer.getChannelData(0);
+  const sr = S.audioBuffer.sampleRate;
+  const windowSize = Math.floor(sr * 0.025);
+  const hopSize = Math.floor(windowSize / 2);
+  const energies = [];
+  for (let i = 0; i + windowSize < data.length; i += hopSize) {
+    let e = 0;
+    for (let j = 0; j < windowSize; j++) e += data[i+j]*data[i+j];
+    energies.push(Math.sqrt(e / windowSize));
+  }
+  // Autocorrelation approach
+  const fps = sr / hopSize;
+  const minBPM = 60, maxBPM = 200;
+  const minLag = Math.floor(fps * 60 / maxBPM);
+  const maxLag = Math.floor(fps * 60 / minBPM);
+  let bestLag = minLag, bestCorr = -1;
+  for (let lag = minLag; lag <= maxLag && lag < energies.length; lag++) {
+    let corr = 0;
+    const n = energies.length - lag;
+    for (let i = 0; i < n; i++) corr += energies[i] * energies[i + lag];
+    corr /= n;
+    if (corr > bestCorr) { bestCorr = corr; bestLag = lag; }
+  }
+  const detectedBPM = Math.round(fps * 60 / bestLag);
+  S.bpm = Math.max(40, Math.min(300, detectedBPM));
+  document.getElementById('bpmInput').value = S.bpm;
+  document.getElementById('navStatus').textContent = `Detected BPM: ${S.bpm}`;
+  if (S.showBeatGrid) drawWaveform();
+}
+
+// ── PAD GRID ──
+function buildPadGrid() {
+  const grid = document.getElementById('padGrid');
+  grid.innerHTML = '';
+  S.pads.forEach((pad, i) => {
+    const el = document.createElement('div');
+    el.className = 'pad' + (pad.sliceIndex >= 0 ? ' has-slice' : '');
+    el.dataset.padId = i;
+    el.id = 'pad_' + i;
+    el.innerHTML = `
+      <span class="pad-num">PAD ${i+1}</span>
+      <span class="pad-name">${pad.sliceIndex >= 0 ? 'Slice ' + (pad.sliceIndex+1) : '—'}</span>
+      <span class="pad-slice-num">${pad.sliceIndex >= 0 ? '#' + (pad.sliceIndex+1) : ''}</span>
+    `;
+    el.addEventListener('click', () => { selectPad(i); triggerPad(i); });
+    grid.appendChild(el);
+  });
+}
+
+function selectPad(idx) {
+  document.querySelectorAll('.pad').forEach(p => p.classList.remove('active'));
+  document.getElementById('pad_' + idx)?.classList.add('active');
+  S.selectedPad = idx;
+  showPadControls(idx);
+}
+
+function triggerPad(idx) {
+  const pad = S.pads[idx];
+  if (pad.sliceIndex < 0 || !S.audioBuffer) return;
+  const ctx = getCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+  const dur = S.audioBuffer.duration;
+  const allMarkers = [0, ...S.sliceMarkers, 1].sort((a,b)=>a-b);
+  const si = pad.sliceIndex;
+  if (si >= allMarkers.length - 1) return;
+  const startT = allMarkers[si] * dur;
+  const endT = allMarkers[si+1] * dur;
+  const src = ctx.createBufferSource();
+  src.buffer = S.audioBuffer;
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = pad.vol / 100;
+  const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+  if (panner) { panner.pan.value = pad.pan / 100; src.connect(gainNode); gainNode.connect(panner); panner.connect(ctx.destination); }
+  else { src.connect(gainNode); gainNode.connect(ctx.destination); }
+  if (pad.pitch !== 0) src.playbackRate.value = Math.pow(2, pad.pitch / 12);
+  src.start(ctx.currentTime, startT, endT - startT);
+  // Visual flash
+  const el = document.getElementById('pad_' + idx);
+  if (el) { el.classList.add('triggered'); setTimeout(() => el.classList.remove('triggered'), 120); }
+}
+
+function showPadControls(idx) {
+  const pad = S.pads[idx];
+  document.getElementById('pcEmpty').style.display = 'none';
+  document.getElementById('pcBody').style.display = 'flex';
+  document.getElementById('pcPitch').value = pad.pitch;
+  document.getElementById('pcPitchVal').textContent = pad.pitch + 'st';
+  document.getElementById('pcVol').value = pad.vol;
+  document.getElementById('pcVolVal').textContent = pad.vol + '%';
+  document.getElementById('pcPan').value = pad.pan;
+  document.getElementById('pcPanVal').textContent = pad.pan === 0 ? 'C' : pad.pan > 0 ? 'R'+pad.pan : 'L'+Math.abs(pad.pan);
+  document.getElementById('pcReverse').classList.toggle('on-red', pad.reverse);
+  document.getElementById('pcLoop').classList.toggle('on', pad.loop);
+  document.getElementById('pcOneShot').classList.toggle('on', pad.mode === 'oneshot');
+  document.getElementById('pcGate').classList.toggle('on', pad.mode === 'gate');
+}
+
+function updatePadParam(param, val) {
+  if (S.selectedPad < 0) return;
+  S.pads[S.selectedPad][param] = val;
+}
+function togglePadFlag(flag) {
+  if (S.selectedPad < 0) return;
+  S.pads[S.selectedPad][flag] = !S.pads[S.selectedPad][flag];
+  document.getElementById('pcReverse').classList.toggle('on-red', S.pads[S.selectedPad].reverse);
+  document.getElementById('pcLoop').classList.toggle('on', S.pads[S.selectedPad].loop);
+}
+function setPadMode(mode) {
+  if (S.selectedPad < 0) return;
+  S.pads[S.selectedPad].mode = mode;
+  document.getElementById('pcOneShot').classList.toggle('on', mode === 'oneshot');
+  document.getElementById('pcGate').classList.toggle('on', mode === 'gate');
+}
+
+function autoAssign() {
+  const allMarkers = [0, ...S.sliceMarkers, 1].sort((a,b)=>a-b);
+  const numSlices = allMarkers.length - 1;
+  for (let i = 0; i < 16; i++) {
+    S.pads[i].sliceIndex = i < numSlices ? i : -1;
+  }
+  buildPadGrid();
+}
+
+// ── EXPORT ──
+async function exportAllWav() {
+  if (!S.audioBuffer) return;
+  const allMarkers = [0, ...S.sliceMarkers, 1].sort((a,b)=>a-b);
+  const blobs = [];
+  const base = S.filename.replace(/\.[^.]+$/, '') || 'slice';
+  for (let i = 0; i < allMarkers.length - 1; i++) {
+    const startSec = allMarkers[i] * S.audioBuffer.duration;
+    const endSec = allMarkers[i+1] * S.audioBuffer.duration;
+    const sr = S.audioBuffer.sampleRate;
+    const startSample = Math.floor(startSec * sr);
+    const endSample = Math.floor(endSec * sr);
+    const len = endSample - startSample;
+    const ctx = getCtx();
+    const offCtx = new OfflineAudioContext(S.audioBuffer.numberOfChannels, len, sr);
+    const src = offCtx.createBufferSource();
+    src.buffer = S.audioBuffer;
+    src.connect(offCtx.destination);
+    src.start(0, startSec, endSec - startSec);
+    const rendered = await offCtx.startRendering();
+    blobs.push({ name: `${base}_slice_${String(i+1).padStart(2,'0')}.wav`, blob: audioBufferToWav(rendered) });
+  }
+  // Simple: download each file individually (ZIP requires JSZip library)
+  for (const f of blobs) {
+    const url = URL.createObjectURL(f.blob);
+    const a = document.createElement('a'); a.href=url; a.download=f.name; a.click();
+    URL.revokeObjectURL(url);
+    await new Promise(r=>setTimeout(r,50));
+  }
+}
+
+function exportSFZ() {
+  if (!S.audioBuffer) return;
+  const allMarkers = [0, ...S.sliceMarkers, 1].sort((a,b)=>a-b);
+  const base = S.filename.replace(/\.[^.]+$/, '') || 'slice';
+  let sfz = `<control>\ndefault_path=./\n\n<group>\n`;
+  allMarkers.slice(0,-1).forEach((start, i) => {
+    const end = allMarkers[i+1];
+    const sr = S.audioBuffer.sampleRate;
+    sfz += `<region> sample=${base}_slice_${String(i+1).padStart(2,'0')}.wav lokey=${36+i} hikey=${36+i} pitch_keycenter=${36+i} offset=${Math.floor(start*S.audioBuffer.length)} end=${Math.floor(end*S.audioBuffer.length)}\n`;
+  });
+  const blob = new Blob([sfz], {type:'text/plain'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=base+'.sfz'; a.click();
+}
+
+function exportMPC() {
+  const data = {
+    pads: S.pads.map((p,i) => ({
+      padNumber: i+1, sliceIndex: p.sliceIndex+1, pitch: p.pitch, vol: p.vol, pan: p.pan
+    })),
+    bpm: S.bpm, sliceCount: S.sliceMarkers.length+1
+  };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='goat_slicer_pads.json'; a.click();
+}
+
+function sendToBeatMaker() {
+  if (!S.audioBuffer) return;
+  const allMarkers = [0, ...S.sliceMarkers, 1].sort((a,b)=>a-b);
+  const base = S.filename.replace(/\.[^.]+$/, '') || 'slice';
+  const existing = JSON.parse(localStorage.getItem('goat_beat_maker_slices') || '[]');
+  S.pads.forEach((pad, i) => {
+    if (pad.sliceIndex < 0) return;
+    const si = pad.sliceIndex;
+    if (si >= allMarkers.length-1) return;
+    existing.push({
+      padNum: i+1, sliceIdx: si+1,
+      startNorm: allMarkers[si], endNorm: allMarkers[si+1],
+      filename: S.filename, bpm: S.bpm
+    });
+  });
+  localStorage.setItem('goat_beat_maker_slices', JSON.stringify(existing));
+  alert('Pad layout sent to Beat Maker. ' + S.pads.filter(p=>p.sliceIndex>=0).length + ' pads stored.');
+}
+
+// ── WAV ENCODER ──
+function audioBufferToWav(buffer) {
+  const nCh = buffer.numberOfChannels;
+  const sr = buffer.sampleRate;
+  const len = buffer.length;
+  const arrayBuffer = new ArrayBuffer(44 + len * nCh * 2);
+  const view = new DataView(arrayBuffer);
+  const setStr = (offset, str) => { for (let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i)); };
+  setStr(0,'RIFF'); view.setUint32(4, 36+len*nCh*2, true); setStr(8,'WAVE');
+  setStr(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true);
+  view.setUint16(22,nCh,true); view.setUint32(24,sr,true); view.setUint32(28,sr*nCh*2,true);
+  view.setUint16(32,nCh*2,true); view.setUint16(34,16,true);
+  setStr(36,'data'); view.setUint32(40,len*nCh*2,true);
+  let offset=44;
+  for(let i=0;i<len;i++){
+    for(let ch=0;ch<nCh;ch++){
+      const s=Math.max(-1,Math.min(1,buffer.getChannelData(ch)[i]));
+      view.setInt16(offset, s<0?s*0x8000:s*0x7FFF, true); offset+=2;
+    }
+  }
+  return new Blob([arrayBuffer],{type:'audio/wav'});
+}
+
+// ── KEYBOARD SHORTCUTS ──
+document.addEventListener('keydown', e => {
+  if (['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+  if (e.code === 'Space') { e.preventDefault(); togglePlayback(); }
+  if (e.code === 'Escape') stopPlayback();
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    // Delete marker near playhead
+    const idx = findNearestMarker(S.playhead, 0.02);
+    if (idx >= 0) { S.sliceMarkers.splice(idx, 1); drawWaveform(); renderSliceList(); }
+  }
+  // Keyboard pad trigger 1-9 and q-p
+  const keyMap = {'1':0,'2':1,'3':2,'4':3,'5':4,'6':5,'7':6,'8':7,'q':8,'w':9,'e':10,'r':11,'a':12,'s':13,'d':14,'f':15};
+  if (keyMap[e.key] !== undefined) triggerPad(keyMap[e.key]);
+});
+
+// ── INIT ──
+window.addEventListener('load', () => {
+  layoutSections();
+  buildPadGrid();
+  drawWaveform();
+});
+</script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

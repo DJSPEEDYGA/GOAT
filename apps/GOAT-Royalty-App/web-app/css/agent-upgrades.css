@@ -1,0 +1,259 @@
+/* === GOAT Force Agent Launcher Upgrades ===
+   Shared: drag-drop file zone + Devin Command Center settings
+   Injected by /js/agent-upgrades.js into every agent launcher that
+   does not already have these features.
+*/
+
+:root {
+  --upg-accent: #d4a03c;
+  --upg-accent-rgb: 212, 160, 60;
+  --upg-blue: #58a6ff;
+  --upg-red: #ff0040;
+  --upg-bg: #13141a;
+  --upg-card: #191a1b;
+  --upg-border: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- Drag & Drop Zone ---------- */
+.upgrade-drop-zone {
+  border: 2px dashed var(--upg-accent);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 8px 0;
+  text-align: center;
+  background: rgba(var(--upg-accent-rgb), 0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.upgrade-drop-zone.dragover {
+  background: rgba(var(--upg-accent-rgb), 0.15);
+  border-color: var(--upg-accent);
+  transform: scale(1.02);
+}
+
+.upgrade-drop-zone-text {
+  color: var(--upg-accent);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.upgrade-drop-zone-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  display: block;
+  color: var(--upg-accent);
+}
+
+.upgrade-file-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.upgrade-file-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: rgba(var(--upg-accent-rgb), 0.1);
+  border-radius: 8px;
+  font-size: 12px;
+  color: #fff;
+}
+
+.upgrade-file-preview-remove {
+  background: var(--upg-accent);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.upgrade-file-preview-remove:hover {
+  background: #fff;
+}
+
+/* ---------- Devin Command Center (collapsed upgrade panel) ---------- */
+.upgrade-devin-panel {
+  background: var(--upg-bg);
+  border: 1px solid var(--upg-border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 0 28px 36px;
+}
+
+.upgrade-devin-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--upg-border);
+  background: rgba(88, 166, 255, 0.04);
+  cursor: pointer;
+  user-select: none;
+}
+
+.upgrade-devin-panel-header:hover {
+  background: rgba(88, 166, 255, 0.08);
+}
+
+.upgrade-devin-panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.upgrade-devin-panel-sub {
+  font-size: 10px;
+  color: var(--upg-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.upgrade-devin-chevron {
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.upgrade-devin-chevron.open {
+  transform: rotate(180deg);
+}
+
+.upgrade-devin-body {
+  display: none;
+  padding: 20px;
+}
+
+.upgrade-devin-body.open {
+  display: block;
+}
+
+.upgrade-settings-section {
+  background: rgba(255, 0, 64, 0.04);
+  border: 1px solid rgba(255, 0, 64, 0.12);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.upgrade-settings-section h4 {
+  color: var(--upg-red);
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.upgrade-setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 12px;
+}
+
+.upgrade-setting-row:last-child {
+  border-bottom: none;
+}
+
+.upgrade-setting-row label {
+  color: #fff;
+  font-size: 13px;
+  flex: 1;
+}
+
+.upgrade-setting-row input[type="text"],
+.upgrade-setting-row input[type="number"],
+.upgrade-setting-row input[type="password"],
+.upgrade-setting-row select,
+.upgrade-setting-row textarea {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 0, 64, 0.3);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  width: 150px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.upgrade-setting-row textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.upgrade-setting-row input[type="range"] {
+  width: 100px;
+}
+
+.upgrade-setting-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--upg-red);
+  cursor: pointer;
+}
+
+.upgrade-settings-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.upgrade-btn-primary {
+  background: var(--upg-red);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.upgrade-btn-primary:hover {
+  background: #ff3355;
+}
+
+.upgrade-btn-secondary {
+  background: rgba(255, 0, 64, 0.2);
+  color: var(--upg-red);
+  border: 1px solid var(--upg-red);
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.upgrade-btn-secondary:hover {
+  background: rgba(255, 0, 64, 0.3);
+}
+
+.upgrade-devin-panel .setting-hint {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 4px;
+}
+
+@media (max-width: 700px) {
+  .upgrade-devin-panel {
+    margin: 0 12px 24px;
+  }
+  .upgrade-setting-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .upgrade-setting-row input,
+  .upgrade-setting-row select,
+  .upgrade-setting-row textarea {
+    width: 100%;
+  }
+}

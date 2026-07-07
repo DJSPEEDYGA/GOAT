@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Devin Center — Unified Command & Control</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<link rel="stylesheet" href="css/goat-theme.css">
+<style>
+:root {
+  --accent: #d4a03c;
+  --accent-glow: rgba(212,160,60,0.25);
+  --accent-dark: #9a7a2c;
+  --bg-0: #07090d;
+  --bg-1: #0d1219;
+  --bg-2: #141b26;
+  --bg-3: #1c2632;
+  --border: rgba(255,255,255,0.08);
+  --border-accent: rgba(212,160,60,0.25);
+  --text: #f0ece4;
+  --text-muted: #8a8070;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  --radius: 14px;
+  --sidebar: 240px;
+  --right-panel: 380px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; overflow: hidden; background: var(--bg-0); color: var(--text); font-family: var(--font-sans); }
+body { display: flex; }
+
+/* Left sidebar */
+.leftbar {
+  width: var(--sidebar); min-width: var(--sidebar); height: 100%;
+  background: var(--bg-1); border-right: 1px solid var(--border); display: flex; flex-direction: column;
+}
+.brand {
+  display: flex; align-items: center; gap: 10px; padding: 16px; border-bottom: 1px solid var(--border);
+}
+.brand img { width: 36px; height: 36px; border-radius: 8px; }
+.brand span { font-size: 15px; font-weight: 900; letter-spacing: 0.5px; }
+.new-btn {
+  margin: 14px; padding: 10px; border-radius: 12px; border: 1px solid var(--border-accent);
+  background: linear-gradient(135deg, rgba(212,160,60,0.18), rgba(212,160,60,0.06));
+  color: var(--accent); font-weight: 700; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; justify-content: center;
+}
+.new-btn:hover { background: rgba(212,160,60,0.25); }
+.section-title { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; padding: 12px 16px 6px; }
+.nav-item {
+  padding: 9px 16px; margin: 2px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 10px;
+}
+.nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+.nav-item.active { background: rgba(212,160,60,0.12); color: var(--accent); font-weight: 700; }
+.nav-item .icon { width: 20px; text-align: center; }
+
+/* Center */
+.center { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.topbar {
+  height: 64px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: rgba(7,9,13,0.7);
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-title { font-size: 16px; font-weight: 800; }
+.topbar-sub { font-size: 11px; color: var(--text-muted); }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.icon-btn {
+  width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.icon-btn:hover { border-color: var(--border-accent); color: var(--accent); }
+
+/* Command area */
+.command-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; overflow: auto; }
+.hero { text-align: center; margin-bottom: 30px; }
+.hero h1 { font-size: 38px; margin: 0 0 10px; background: linear-gradient(135deg, var(--accent), #f5e6c8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--text-muted); margin: 0; font-size: 15px; }
+.prompt-box { width: 100%; max-width: 720px; background: var(--bg-2); border: 1px solid var(--border-accent); border-radius: 22px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+.prompt-box textarea {
+  width: 100%; background: transparent; border: none; color: var(--text); font-size: 15px; resize: none; outline: none; min-height: 56px; max-height: 160px; font-family: var(--font-sans);
+}
+.prompt-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+.prompt-left { display: flex; gap: 8px; }
+.prompt-left button { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 12px; cursor: pointer; }
+.prompt-left button:hover { border-color: var(--border-accent); color: var(--accent); }
+.prompt-right { display: flex; gap: 8px; }
+.send-circle { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--accent); color: #030609; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.send-circle:hover { filter: brightness(1.1); }
+.quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; width: 100%; max-width: 720px; margin-top: 24px; }
+.quick-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; transition: all .2s; }
+.quick-card:hover { border-color: var(--border-accent); transform: translateY(-2px); }
+.quick-card .icon { font-size: 20px; margin-bottom: 8px; }
+.quick-card .title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.quick-card .desc { font-size: 11px; color: var(--text-muted); }
+
+/* Chat stream */
+.chat-stream { flex: 1; overflow-y: auto; padding: 20px 30px; display: none; }
+.chat-stream.active { display: block; }
+.msg { max-width: 760px; margin: 0 auto 18px; display: flex; gap: 12px; }
+.msg-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--bg-3); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.msg-content { flex: 1; }
+.msg-bubble { background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; padding: 14px 18px; font-size: 14px; line-height: 1.5; }
+.msg.user .msg-bubble { background: rgba(212,160,60,0.1); border-color: var(--border-accent); }
+.msg-meta { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+/* Right panel */
+.right-panel {
+  width: var(--right-panel); min-width: var(--right-panel); height: 100%; background: var(--bg-1); border-left: 1px solid var(--border); display: flex; flex-direction: column; transition: width .2s;
+}
+.right-panel.collapsed { width: 0; min-width: 0; overflow: hidden; border-left: none; }
+.right-header { height: 64px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
+.right-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); padding: 0 12px; }
+.right-tab { padding: 12px 10px; font-size: 12px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; }
+.right-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+.right-body { flex: 1; overflow-y: auto; padding: 16px; }
+.right-section { display: none; }
+.right-section.active { display: block; }
+
+/* Settings */
+.setting-row { padding: 14px 0; border-bottom: 1px solid var(--border); }
+.setting-row label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.setting-row small { display: block; color: var(--text-muted); font-size: 11px; margin-top: 4px; }
+.setting-row input, .setting-row select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 13px; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.toggle-row span { font-size: 13px; }
+.toggle-switch { width: 44px; height: 24px; border-radius: 12px; background: var(--bg-3); position: relative; cursor: pointer; transition: background .2s; }
+.toggle-switch.on { background: var(--accent); }
+.toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left .2s; }
+.toggle-switch.on::after { left: 22px; }
+
+/* Usage bars */
+.usage-bar { height: 8px; background: var(--bg-3); border-radius: 4px; overflow: hidden; margin: 8px 0; }
+.usage-fill { height: 100%; background: var(--accent); border-radius: 4px; }
+.usage-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); }
+
+/* MCP marketplace */
+.mcp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.mcp-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; cursor: pointer; transition: all .2s; }
+.mcp-card:hover { border-color: var(--border-accent); }
+.mcp-card.installed { border-color: var(--accent); background: rgba(212,160,60,0.08); }
+.mcp-card .name { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.mcp-card .desc { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+.mcp-card .status { font-size: 10px; color: var(--accent); margin-top: 8px; font-weight: 700; }
+
+/* Terminal */
+.term-wrap { background: #05080d; border: 1px solid var(--border); border-radius: 12px; padding: 12px; font-family: var(--font-mono); font-size: 12px; }
+.term-output { height: 280px; overflow: auto; white-space: pre-wrap; color: var(--text-muted); padding-bottom: 10px; }
+.term-output .cmd { color: var(--accent); }
+.term-output .out { color: var(--text); }
+.term-output .err { color: #e74c3c; }
+.term-input-row { display: flex; gap: 8px; margin-top: 10px; }
+.term-input-row input { flex: 1; background: var(--bg-0); border: 1px solid var(--border); border-radius: 8px; padding: 8px; color: var(--text); }
+.term-input-row button { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #030609; font-weight: 700; cursor: pointer; }
+
+/* Studio */
+.studio-host { margin-top: 10px; }
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .right-panel { position: fixed; right: 0; top: 0; z-index: 100; box-shadow: -10px 0 40px rgba(0,0,0,0.6); }
+  .right-panel.collapsed { position: static; width: 0; }
+}
+@media (max-width: 800px) {
+  .leftbar { position: fixed; left: 0; top: 0; z-index: 100; transform: translateX(-100%); transition: transform .2s; }
+  .leftbar.open { transform: translateX(0); }
+  body { flex-direction: column; }
+}
+</style>
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<!-- LEFT SIDEBAR -->
+<aside class="leftbar" id="leftbar">
+  <div class="brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT">
+    <span>GOAT Devin</span>
+  </div>
+  <button class="new-btn" onclick="newCommand()">
+    <span>+</span> New Command
+  </button>
+
+  <div class="section-title">Spaces</div>
+  <div class="nav-item active" data-space="command" onclick="switchSpace('command')"><span class="icon">🎯</span> Command</div>
+  <div class="nav-item" data-space="agents" onclick="switchSpace('agents')"><span class="icon">🐐</span> Agents</div>
+  <div class="nav-item" data-space="studio" onclick="switchSpace('studio')"><span class="icon">🎛️</span> Studio</div>
+  <div class="nav-item" data-space="models" onclick="switchSpace('models')"><span class="icon">🧠</span> Models</div>
+  <div class="nav-item" data-space="deploy" onclick="switchSpace('deploy')"><span class="icon">🚀</span> Deploy</div>
+
+  <div class="section-title">Sessions</div>
+  <div class="nav-item" onclick="restoreSession('patch')"><span class="icon">🩺</span> Patch Repair</div>
+  <div class="nav-item" onclick="restoreSession('epk')"><span class="icon">🎬</span> Investor EPK</div>
+  <div class="nav-item" onclick="restoreSession('oscar')"><span class="icon">🎵</span> Master Oscar Launch</div>
+  <div class="nav-item" onclick="restoreSession('royalty')"><span class="icon">💰</span> Royalty Audit</div>
+
+  <div class="section-title">Agents</div>
+  <div class="nav-item" onclick="launchAgent('moneypenny')"><span class="icon">💎</span> Ms. Money Penny</div>
+  <div class="nav-item" onclick="launchAgent('oscar')"><span class="icon">🎵</span> Master Oscar</div>
+  <div class="nav-item" onclick="launchAgent('agent007')"><span class="icon">🎯</span> Agent-007</div>
+  <div class="nav-item" onclick="launchAgent('vanessa')"><span class="icon">🎙️</span> Vanessa</div>
+  <div class="nav-item" onclick="launchAgent('nexus')"><span class="icon">🔗</span> Nexus</div>
+  <div class="nav-item" onclick="launchAgent('lexi')"><span class="icon">⚖️</span> Lexi</div>
+  <div class="nav-item" onclick="launchAgent('codex')"><span class="icon">🤖</span> Codex</div>
+  <div class="nav-item" onclick="launchAgent('devin')"><span class="icon">🩺</span> Dr. Devin</div>
+</aside>
+
+<!-- CENTER -->
+<main class="center">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div>
+        <div class="topbar-title">Command</div>
+        <div class="topbar-sub">AGENT-007 · GOAT Force Intelligence</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" onclick="toggleRightPanel('settings')" title="Settings">⚙️</button>
+      <button class="icon-btn" onclick="toggleRightPanel('huggingface')" title="Hugging Face">🤗</button>
+      <button class="icon-btn" onclick="toggleRightPanel('ace')" title="NVIDIA ACE">🎮</button>
+      <button class="icon-btn" onclick="toggleRightPanel('thor')" title="NVIDIA Thor">⚡</button>
+      <button class="icon-btn" onclick="toggleRightPanel('mcp')" title="MCP Marketplace">🧩</button>
+      <button class="icon-btn" onclick="toggleRightPanel('terminal')" title="Terminal">💻</button>
+      <button class="icon-btn" onclick="toggleRightPanel('studio')" title="Touch Studio">🎚️</button>
+      <button class="icon-btn" onclick="toggleRightPanel('genui')" title="Generative UI">✨</button>
+    </div>
+  </div>
+
+  <!-- Hero prompt -->
+  <div class="command-area" id="heroArea">
+    <div class="hero">
+      <h1>GOAT Force Command</h1>
+      <p>Deploy agents, run diagnostics, control models, and launch from one place.</p>
+    </div>
+    <div class="prompt-box">
+      <textarea id="mainInput" placeholder="Ask Dr. Devin anything — or type a command like /health oscar, /deploy epk, /studio..." rows="1" onkeydown="handleMainKey(event)" oninput="autoResize(this)"></textarea>
+      <div class="prompt-actions">
+        <div class="prompt-left">
+          <button onclick="quickCommand('/health all')">/health all</button>
+          <button onclick="quickCommand('/deploy oscar')">/deploy oscar</button>
+          <button onclick="quickCommand('/studio')">/studio</button>
+          <button onclick="quickCommand('/models')">/models</button>
+        </div>
+        <div class="prompt-right">
+          <button class="send-circle" onclick="sendMain()">➤</button>
+        </div>
+      </div>
+    </div>
+    <div class="quick-grid">
+      <div class="quick-card" onclick="quickCommand('Run full system health check')">
+        <div class="icon">🩺</div><div class="title">Patch Health</div><div class="desc">Check every agent's model, server, and data links.</div>
+      </div>
+      <div class="quick-card" onclick="quickCommand('Open touch studio')">
+        <div class="icon">🎚️</div><div class="title">Touch Studio</div><div class="desc">Knobs, faders, XY pad, and drum pads for Master Oscar.</div>
+      </div>
+      <div class="quick-card" onclick="quickCommand('Build investor EPK page')">
+        <div class="icon">🎬</div><div class="title">Investor EPK</div><div class="desc">Publish the latest demo video to the public site.</div>
+      </div>
+      <div class="quick-card" onclick="quickCommand('List all local models')">
+        <div class="icon">🧠</div><div class="title">Model Roster</div><div class="desc">Show installed models and their catalog status.</div>
+      </div>
+      <div class="quick-card" onclick="toggleRightPanel('huggingface')">
+        <div class="icon">🤗</div><div class="title">Hugging Face</div><div class="desc">Queue Llama, Qwen, Whisper, MusicGen, Stable Diffusion.</div>
+      </div>
+      <div class="quick-card" onclick="toggleRightPanel('ace')">
+        <div class="icon">🎮</div><div class="title">NVIDIA ACE</div><div class="desc">Enable Audio2Face, ASR, LLM, TTS for in-game NPCs.</div>
+      </div>
+      <div class="quick-card" onclick="toggleRightPanel('thor')">
+        <div class="icon">⚡</div><div class="title">Thor Deploy</div><div class="desc">Build deploy package for Jetson Thor / Orin edge device.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat stream -->
+  <div class="chat-stream" id="chatStream"></div>
+</main>
+
+<!-- RIGHT PANEL -->
+<aside class="right-panel" id="rightPanel">
+  <div class="right-header">
+    <span id="rightTitle">Settings</span>
+    <button class="icon-btn" onclick="closeRightPanel()" style="width:28px;height:28px;font-size:14px;">✕</button>
+  </div>
+  <div class="right-tabs">
+    <div class="right-tab active" data-tab="settings" onclick="switchRightTab('settings')">Settings</div>
+    <div class="right-tab" data-tab="mcp" onclick="switchRightTab('mcp')">MCP</div>
+    <div class="right-tab" data-tab="huggingface" onclick="switchRightTab('huggingface')">Hugging Face</div>
+    <div class="right-tab" data-tab="ace" onclick="switchRightTab('ace')">ACE</div>
+    <div class="right-tab" data-tab="thor" onclick="switchRightTab('thor')">Thor</div>
+    <div class="right-tab" data-tab="terminal" onclick="switchRightTab('terminal')">Terminal</div>
+    <div class="right-tab" data-tab="studio" onclick="switchRightTab('studio')">Studio</div>
+    <div class="right-tab" data-tab="genui" onclick="switchRightTab('genui')">Gen UI</div>
+  </div>
+  <div class="right-body">
+    <!-- Settings -->
+    <div class="right-section active" id="right-settings">
+      <div class="setting-row">
+        <label>Accent Color</label>
+        <div id="colorSwatches">
+          <span class="color-swatch active" style="background:#d4a03c" data-color="#d4a03c" onclick="setAccent(this.dataset.color)"></span>
+          <span class="color-swatch" style="background:#e74c3c" data-color="#e74c3c" onclick="setAccent(this.dataset.color)"></span>
+          <span class="color-swatch" style="background:#3498db" data-color="#3498db" onclick="setAccent(this.dataset.color)"></span>
+          <span class="color-swatch" style="background:#2ecc71" data-color="#2ecc71" onclick="setAccent(this.dataset.color)"></span>
+          <span class="color-swatch" style="background:#9b59b6" data-color="#9b59b6" onclick="setAccent(this.dataset.color)"></span>
+          <span class="color-swatch" style="background:#e91e8c" data-color="#e91e8c" onclick="setAccent(this.dataset.color)"></span>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label>Brand Logo URL</label>
+        <input type="text" id="brandLogo" placeholder="https://.../logo.png" onchange="applyBrandLogo()">
+        <small>Used in sidebar, header, and favicon.</small>
+      </div>
+      <div class="setting-row">
+        <label>Default AI Engine</label>
+        <select id="defaultEngine">
+          <option value="adaptive">Adaptive (Cloud + Local)</option>
+          <option value="gemini">Gemini</option>
+          <option value="openai">OpenAI</option>
+          <option value="ollama">Ollama Local</option>
+          <option value="grok">Grok</option>
+        </select>
+      </div>
+      <div class="toggle-row">
+        <span>Auto-save sessions</span><div class="toggle-switch on" id="toggleAutosave" onclick="toggleSwitch(this)"></div>
+      </div>
+      <div class="toggle-row">
+        <span>Touch-first mode</span><div class="toggle-switch" id="toggleTouch" onclick="toggleSwitch(this)"></div>
+      </div>
+      <div class="toggle-row">
+        <span>Voice input</span><div class="toggle-switch" id="toggleVoice" onclick="toggleSwitch(this)"></div>
+      </div>
+      <div class="toggle-row">
+        <span>Dark mode</span><div class="toggle-switch on" id="toggleDark" onclick="toggleSwitch(this)"></div>
+      </div>
+
+      <div class="section-title" style="padding-left:0;margin-top:20px;">Plan & Usage</div>
+      <div class="usage-label"><span>Daily quota</span><span>2% used</span></div>
+      <div class="usage-bar"><div class="usage-fill" style="width:2%"></div></div>
+      <div class="usage-label"><span>Weekly quota</span><span>100% used</span></div>
+      <div class="usage-bar"><div class="usage-fill" style="width:100%;background:#e74c3c"></div></div>
+      <small style="color:var(--text-muted)">Current plan: Pro · Extra usage active · $46.91 balance</small>
+
+      <div class="section-title" style="padding-left:0;margin-top:20px;">Agents</div>
+      <div id="agentSettingsList">Loading...</div>
+    </div>
+
+    <!-- MCP -->
+    <div class="right-section" id="right-mcp">
+      <div class="setting-row">
+        <label>MCP Marketplace</label>
+        <small>Integrate external tools into GOAT agents. Toggle to install.</small>
+      </div>
+      <div class="mcp-grid" id="mcpGrid"></div>
+    </div>
+
+    <!-- Terminal -->
+    <div class="right-section" id="right-terminal">
+      <div class="setting-row">
+        <label>Terminal Host</label>
+        <input type="text" id="termHost" value="localhost:9999">
+        <small>Start the server: python3 web-app/lib/agents/patch/patch-terminal-server.py --port 9999</small>
+      </div>
+      <div class="term-wrap">
+        <div class="term-output" id="termOutput">Ready. Start the server and type commands.</div>
+        <div class="term-input-row">
+          <input type="text" id="termInput" placeholder="Command..." onkeydown="if(event.key==='Enter') sendTerm()">
+          <button onclick="sendTerm()">Run</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Studio -->
+    <div class="right-section" id="right-studio">
+      <div class="studio-host" id="studioHost"></div>
+      <div id="studioEvent" style="margin-top:12px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">—</div>
+    </div>
+
+    <!-- Gen UI -->
+    <div class="right-section" id="right-genui">
+      <div id="genUIHost" style="min-height:120px;"></div>
+      <div id="genUIEvent" style="margin-top:12px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">—</div>
+    </div>
+
+    <!-- Hugging Face -->
+    <div class="right-section" id="right-huggingface">
+      <div class="setting-row">
+        <label>Hugging Face Model Hub</label>
+        <small>Search models, copy download commands, or queue them to the terminal.</small>
+      </div>
+      <div class="term-input-row" style="margin-bottom:12px;">
+        <input type="text" id="hfSearch" placeholder="Search models (e.g., musicgen, llama, whisper)..." onkeydown="if(event.key==='Enter') searchHF()">
+        <button onclick="searchHF()">Search</button>
+      </div>
+      <div class="mcp-grid" id="hfGrid"></div>
+      <div id="hfCommand" style="margin-top:12px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);min-height:20px;">—</div>
+    </div>
+
+    <!-- NVIDIA ACE -->
+    <div class="right-section" id="right-ace">
+      <div class="setting-row">
+        <label>NVIDIA ACE for Games</label>
+        <small>On-device AI NPC pipeline: Audio2Face, ASR, LLM, TTS, Game Agent SDK.</small>
+      </div>
+      <div class="mcp-grid" id="aceGrid"></div>
+      <div id="aceCommand" style="margin-top:12px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);min-height:20px;">—</div>
+    </div>
+
+    <!-- NVIDIA Thor / Jetson -->
+    <div class="right-section" id="right-thor">
+      <div class="setting-row">
+        <label>NVIDIA Thor / Jetson Deployment</label>
+        <small>Deploy GOAT agents and models to Jetson Thor/Orin edge devices.</small>
+      </div>
+      <div class="toggle-row"><span>Target: Jetson Thor</span><div class="toggle-switch on" id="toggleThor" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-row"><span>Enable CUDA / TensorRT</span><div class="toggle-switch on" id="toggleCuda" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-row"><span>ARM64 build</span><div class="toggle-switch" id="toggleArm64" onclick="toggleSwitch(this)"></div></div>
+      <div class="setting-row">
+        <label>Device IP or Host</label>
+        <input type="text" id="thorHost" value="thor.local">
+      </div>
+      <div class="setting-row">
+        <label>Models to Sync</label>
+        <input type="text" id="thorModels" value="llama3.2,qwen2.5,whisper-base" placeholder="comma-separated model IDs">
+      </div>
+      <button class="new-btn" style="margin:14px 0;" onclick="buildThorDeploy()">Build Deploy Package</button>
+      <div id="thorOutput" style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);white-space:pre-wrap;">—</div>
+    </div>
+  </div>
+</aside>
+
+<script src="lib/agents/patch/patch-core.js"></script>
+<script src="lib/agents/patch/goat-touch-studio.js"></script>
+<script src="lib/agents/patch/goat-generative-ui.js"></script>
+<script src="lib/agents/patch/patch-widget.js" data-agent="devin"></script>
+<script>
+const INTEL = 'http://localhost:5500';
+let currentSpace = 'command';
+let chatHistory = [];
+let studioInstance = null;
+let termHistory = [];
+let termIndex = -1;
+
+const MCP_SERVERS = [
+  { id: 'github', name: 'GitHub', icon: '🐙', desc: 'Read, search, and manage repos and issues.' },
+  { id: 'linear', name: 'Linear', icon: '📋', desc: 'Create and track engineering tasks.' },
+  { id: 'notion', name: 'Notion', icon: '📝', desc: 'Read and write Notion pages.' },
+  { id: 'slack', name: 'Slack', icon: '💬', desc: 'Send messages and search channels.' },
+  { id: 'postgres', name: 'PostgreSQL', icon: '🐘', desc: 'Read-only database access.' },
+  { id: 'brave', name: 'Brave Search', icon: '🔍', desc: 'Web search and local results.' },
+  { id: 'figma', name: 'Figma', icon: '🎨', desc: 'Access design files and comments.' },
+  { id: 'perplexity', name: 'Perplexity', icon: '❓', desc: 'AI-powered web answers.' },
+  { id: 'google-drive', name: 'Google Drive', icon: '📁', desc: 'Search and read Drive files.' },
+  { id: 'airtable', name: 'Airtable', icon: '📊', desc: 'Query bases and records.' },
+  { id: 'spotify', name: 'Spotify', icon: '🎵', desc: 'Search tracks and manage playlists.' },
+  { id: 'youtube', name: 'YouTube', icon: '📺', desc: 'Search videos and captions.' }
+];
+
+function init() {
+  renderMCP();
+  renderAgentSettings();
+  restoreSettings();
+  initStudio();
+  initGenUI();
+  renderHF();
+  renderACE();
+  renderThor();
+}
+
+const HF_MODELS = [
+  { id: 'meta-llama/Llama-3.2-3B-Instruct', name: 'Llama 3.2 3B', tags: ['llm','chat'], size: '3B' },
+  { id: 'Qwen/Qwen2.5-7B-Instruct', name: 'Qwen 2.5 7B', tags: ['llm','chat'], size: '7B' },
+  { id: 'openai/whisper-base', name: 'Whisper Base', tags: ['asr','speech'], size: '74M' },
+  { id: 'facebook/musicgen-small', name: 'MusicGen Small', tags: ['audio','music'], size: 'small' },
+  { id: 'stabilityai/stable-diffusion-2-1', name: 'Stable Diffusion 2.1', tags: ['image','t2i'], size: '5B' },
+  { id: 'sentence-transformers/all-MiniLM-L6-v2', name: 'MiniLM Embeddings', tags: ['embeddings','rag'], size: '22M' },
+  { id: 'microsoft/DialoGPT-medium', name: 'DialoGPT Medium', tags: ['llm','chat'], size: '345M' },
+  { id: 'bert-base-uncased', name: 'BERT Base', tags: ['nlp','embeddings'], size: '110M' },
+  { id: 'EleutherAI/gpt-neo-1.3B', name: 'GPT-Neo 1.3B', tags: ['llm','chat'], size: '1.3B' },
+  { id: 'google/flan-t5-base', name: 'Flan-T5 Base', tags: ['llm','instruction'], size: '248M' },
+  { id: 'runwayml/stable-diffusion-v1-5', name: 'SD v1.5', tags: ['image','t2i'], size: '4B' },
+  { id: 'huggingface/llava-1.5-7b-hf', name: 'LLaVA 1.5 7B', tags: ['vision','vlm'], size: '7B' }
+];
+
+const ACE_MODELS = [
+  { id: 'audio2face-3d', name: 'Audio2Face-3D', tags: ['animation','face'], desc: 'Audio-driven facial blendshapes for UE5/Maya.' },
+  { id: 'audio2emotion-3d', name: 'Audio2Emotion-3D', tags: ['emotion'], desc: 'Infer emotional state from audio.' },
+  { id: 'ace-asr', name: 'ACE ASR', tags: ['asr','speech'], desc: 'Unreal Engine 5 English speech recognition plugin.' },
+  { id: 'ace-llm', name: 'ACE LLM', tags: ['llm','dialogue'], desc: 'Local low-latency dialogue and function calling for NPCs.' },
+  { id: 'ace-tts', name: 'ACE TTS', tags: ['tts','voice'], desc: 'High-quality ready-to-use voices for UE5.' },
+  { id: 'ace-game-agent-sdk', name: 'Game Agent SDK', tags: ['agent','sdk'], desc: 'C/C++ agentic framework connecting NPCs to game state.' },
+  { id: 'ace-in-game-inferencing', name: 'In-Game Inferencing SDK', tags: ['inference','cuda'], desc: 'High-performance local model execution in games.' }
+];
+
+function renderHF() {
+  const grid = document.getElementById('hfGrid');
+  const queued = JSON.parse(localStorage.getItem('goat_hf_queue') || '[]');
+  const q = document.getElementById('hfSearch').value.trim().toLowerCase();
+  const models = q ? HF_MODELS.filter(m => m.name.toLowerCase().includes(q) || m.tags.some(t => t.includes(q))) : HF_MODELS.slice(0, 6);
+  grid.innerHTML = models.map(m => {
+    const isQueued = queued.includes(m.id);
+    return `
+      <div class="mcp-card ${isQueued ? 'installed' : ''}" onclick="queueHF('${m.id}')">
+        <div class="name"><span>🤗</span> ${m.name}</div>
+        <div class="desc">${m.tags.join(' · ')} · ${m.size}</div>
+        <div class="status">${isQueued ? 'QUEUED' : 'Click to queue'}</div>
+      </div>
+    `;
+  }).join('') || '<div style="color:var(--text-muted);font-size:12px;">No models found.</div>';
+}
+function searchHF() { renderHF(); }
+function queueHF(id) {
+  let queued = JSON.parse(localStorage.getItem('goat_hf_queue') || '[]');
+  if (queued.includes(id)) queued = queued.filter(x => x !== id);
+  else queued.push(id);
+  localStorage.setItem('goat_hf_queue', JSON.stringify(queued));
+  renderHF();
+  document.getElementById('hfCommand').textContent = queued.length ? `Queued: ${queued.join(', ')}` : '—';
+}
+
+function renderACE() {
+  const grid = document.getElementById('aceGrid');
+  const installed = JSON.parse(localStorage.getItem('goat_ace_installed') || '[]');
+  grid.innerHTML = ACE_MODELS.map(m => {
+    const isInstalled = installed.includes(m.id);
+    return `
+      <div class="mcp-card ${isInstalled ? 'installed' : ''}" onclick="queueACE('${m.id}')">
+        <div class="name"><span>🎮</span> ${m.name}</div>
+        <div class="desc">${m.desc}</div>
+        <div class="status">${isInstalled ? 'INSTALLED' : 'Click to install'}</div>
+      </div>
+    `;
+  }).join('');
+}
+function queueACE(id) {
+  let installed = JSON.parse(localStorage.getItem('goat_ace_installed') || '[]');
+  if (installed.includes(id)) installed = installed.filter(x => x !== id);
+  else installed.push(id);
+  localStorage.setItem('goat_ace_installed', JSON.stringify(installed));
+  renderACE();
+  document.getElementById('aceCommand').textContent = installed.length ? `Selected: ${installed.join(', ')}` : '—';
+}
+
+function renderThor() {
+  const saved = JSON.parse(localStorage.getItem('goat_thor_settings') || '{}');
+  if (saved.host) document.getElementById('thorHost').value = saved.host;
+  if (saved.models) document.getElementById('thorModels').value = saved.models;
+  if (saved.thor !== undefined) document.getElementById('toggleThor').classList.toggle('on', saved.thor);
+  if (saved.cuda !== undefined) document.getElementById('toggleCuda').classList.toggle('on', saved.cuda);
+  if (saved.arm64 !== undefined) document.getElementById('toggleArm64').classList.toggle('on', saved.arm64);
+}
+function buildThorDeploy() {
+  const host = document.getElementById('thorHost').value.trim();
+  const models = document.getElementById('thorModels').value.trim();
+  const thor = document.getElementById('toggleThor').classList.contains('on');
+  const cuda = document.getElementById('toggleCuda').classList.contains('on');
+  const arm64 = document.getElementById('toggleArm64').classList.contains('on');
+  localStorage.setItem('goat_thor_settings', JSON.stringify({host, models, thor, cuda, arm64}));
+  const script = [
+    '#!/bin/bash',
+    '# GOAT Thor / Jetson deploy package',
+    `TARGET_HOST=${host}`,
+    `MODELS="${models}"`,
+    '',
+    '# 1. Install CUDA Toolkit (Jetson/Ubuntu)',
+    'wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/arm64/cuda-keyring_1.1-1_all.deb',
+    'sudo dpkg -i cuda-keyring_1.1-1_all.deb',
+    'sudo apt update && sudo apt install -y cuda-toolkit',
+    '',
+    '# 2. Install Ollama for ARM64 (if not present)',
+    'curl -fsSL https://ollama.com/install.sh | sh',
+    '',
+    '# 3. Pull target models',
+    'for m in $(echo $MODELS | tr "," "\\n"); do',
+    '  ollama pull $m',
+    'done',
+    '',
+    '# 4. Sync GOAT web-app',
+    `rsync -avz web-app/ ${host}:/opt/goat/web-app/`,
+    '',
+    '# 5. Start services',
+    'ollama serve &',
+    `python3 web-app/lib/agents/patch/patch-terminal-server.py --port 9999 --host ${host}`,
+  ];
+  document.getElementById('thorOutput').textContent = script.join('\\n');
+}
+
+function switchSpace(id) {
+  currentSpace = id;
+  document.querySelectorAll('.leftbar .nav-item').forEach(n => n.classList.toggle('active', n.dataset.space === id));
+  if (id === 'agents') { quickCommand('List all agents and their status'); }
+  else if (id === 'studio') { toggleRightPanel('studio'); }
+  else if (id === 'models') { quickCommand('List all local models'); }
+  else if (id === 'deploy') { quickCommand('Show deployment options'); }
+}
+
+function newCommand() {
+  document.getElementById('heroArea').style.display = 'flex';
+  document.getElementById('chatStream').classList.remove('active');
+  document.getElementById('chatStream').innerHTML = '';
+  chatHistory = [];
+  document.getElementById('mainInput').value = '';
+  document.getElementById('mainInput').style.height = 'auto';
+}
+
+function restoreSession(name) { quickCommand(`Restore session: ${name}`); }
+function launchAgent(name) {
+  const map = {
+    moneypenny: 'moneypenny.html',
+    oscar: 'http://127.0.0.1:3333/',
+    agent007: 'agent-007.html',
+    devin: 'goat-devin-center.html',
+    vanessa: 'goat-launcher-hub.html#agents',
+    nexus: 'goat-launcher-hub.html#agents',
+    lexi: 'goat-launcher-hub.html#agents',
+    codex: 'goat-launcher-hub.html#agents'
+  };
+  window.open(map[name] || 'goat-launcher-hub.html#agents', '_blank');
+}
+
+function handleMainKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMain(); } }
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 160) + 'px'; }
+function quickCommand(text) { document.getElementById('mainInput').value = text; autoResize(document.getElementById('mainInput')); sendMain(); }
+
+function addStream(role, content, meta) {
+  const stream = document.getElementById('chatStream');
+  document.getElementById('heroArea').style.display = 'none';
+  stream.classList.add('active');
+  const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+
+  let uiHTML = '';
+  if (role === 'assistant') {
+    const blocks = extractUiBlocks(content);
+    if (blocks.length) {
+      const uiContainer = document.createElement('div');
+      GoatGenerativeUI.render(blocks, uiContainer, { onAction: (e) => quickCommand(`${e.action} ${e.id}`) });
+      uiHTML = uiContainer.innerHTML;
+    }
+  }
+
+  div.innerHTML = `
+    <div class="msg-avatar">${role === 'user' ? '👤' : '🩺'}</div>
+    <div class="msg-content">
+      <div class="msg-bubble">${escapeHtml(stripUiBlocks(content)).replace(/\n/g, '<br>')}</div>
+      ${uiHTML ? '<div style="margin-top:8px;">' + uiHTML + '</div>' : ''}
+      <div class="msg-meta">${role === 'user' ? 'You' : 'Dr. Devin' + (meta ? ' · ' + meta : '')} · ${time}</div>
+    </div>
+  `;
+  stream.appendChild(div);
+  stream.scrollTop = stream.scrollHeight;
+}
+
+function extractUiBlocks(text) {
+  const blocks = [];
+  const regex = /```json\n?([\s\S]*?)\n?```/g; let m;
+  while ((m = regex.exec(text)) !== null) { try { const p = JSON.parse(m[1]); (Array.isArray(p) ? p : [p]).forEach(b => { if (b.type === 'ui' || b.layout) blocks.push(b); }); } catch (e) {} }
+  return blocks;
+}
+function stripUiBlocks(text) { return text.replace(/```json\n?[\s\S]*?\n?```/g, '').trim(); }
+function escapeHtml(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+async function sendMain() {
+  const input = document.getElementById('mainInput');
+  const text = input.value.trim(); if (!text) return;
+  input.value = ''; input.style.height = 'auto';
+  addStream('user', text);
+  chatHistory.push({role: 'user', content: text});
+
+  // Handle local slash commands
+  if (text.startsWith('/health')) { addStream('assistant', await slashHealth(text)); return; }
+  if (text.startsWith('/studio')) { toggleRightPanel('studio'); addStream('assistant', 'Touch Studio opened in the right panel.'); return; }
+  if (text.startsWith('/models')) { addStream('assistant', await slashModels()); return; }
+  if (text.startsWith('/deploy')) { addStream('assistant', 'Deployment options:\n- Master Oscar: python3 chat_server.py\n- EPK: push to prod server\n- Patch: already running'); return; }
+
+  try {
+    const r = await fetch(INTEL + '/ai/devin', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: text, history: chatHistory.slice(-10)}), signal: AbortSignal.timeout(45000)
+    });
+    const d = await r.json();
+    if (d.ok && d.reply) { addStream('assistant', d.reply, d.engine); chatHistory.push({role: 'assistant', content: d.reply}); }
+    else { addStream('assistant', '⚠️ ' + (d.error || 'Response failed'), 'System'); }
+  } catch (e) {
+    addStream('assistant', `⚠️ Could not reach Intel Server at ${INTEL}\nMake sure goat_intel.py is running.`, 'System');
+  }
+}
+
+async function slashHealth(cmd) {
+  const parts = cmd.split(' ');
+  const agent = parts[1] || 'all';
+  if (agent === 'all') {
+    const agents = ['moneypenny','agent007','oscar','nexus','codex','drdevin'];
+    const results = await Promise.all(agents.map(id => Patch.healthCheck(id)));
+    return results.map(r => `${r.agentName}: ${r.healthy ? 'HEALTHY' : 'needs attention'}`).join('\n');
+  }
+  const r = await Patch.healthCheck(agent);
+  return `${r.agentName}: ${r.healthy ? 'HEALTHY' : 'needs attention'}\nModels: ${r.modelCatalog.local}/${r.modelCatalog.expected}`;
+}
+
+async function slashModels() {
+  try {
+    const r = await fetch('http://localhost:11435/api/tags', {signal: AbortSignal.timeout(4000)});
+    const d = await r.json();
+    return 'Installed models:\n' + (d.models || []).map(m => '- ' + m.name).join('\n');
+  } catch (e) { return '⚠️ Ollama not running at localhost:11435'; }
+}
+
+// Right panel
+function toggleRightPanel(tab) {
+  const panel = document.getElementById('rightPanel');
+  const isCollapsed = panel.classList.contains('collapsed');
+  if (isCollapsed) { panel.classList.remove('collapsed'); }
+  switchRightTab(tab);
+}
+function closeRightPanel() { document.getElementById('rightPanel').classList.add('collapsed'); }
+function switchRightTab(tab) {
+  document.querySelectorAll('.right-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.right-section').forEach(s => s.classList.toggle('active', s.id === 'right-' + tab));
+  const titles = {settings:'Settings', mcp:'MCP Marketplace', terminal:'Terminal', studio:'Touch Studio', genui:'Generative UI', huggingface:'Hugging Face Hub', ace:'NVIDIA ACE', thor:'NVIDIA Thor Deploy'};
+  document.getElementById('rightTitle').textContent = titles[tab];
+  if (tab === 'huggingface') renderHF();
+  if (tab === 'ace') renderACE();
+  if (tab === 'thor') renderThor();
+  if (tab === 'studio' && !studioInstance) initStudio();
+  if (tab === 'genui') initGenUI();
+}
+
+// Settings
+function setAccent(color) {
+  document.documentElement.style.setProperty('--accent', color);
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.toggle('active', s.dataset.color === color));
+  const hex = color.replace('#', '');
+  const r = parseInt(hex.substr(0,2),16), g = parseInt(hex.substr(2,2),16), b = parseInt(hex.substr(4,2),16);
+  const rgba = a => `rgba(${r},${g},${b},${a})`;
+  document.documentElement.style.setProperty('--accent-glow', rgba(0.25));
+  document.documentElement.style.setProperty('--accent-dark', color);
+  localStorage.setItem('goat_devin_center_accent', color);
+  let style = document.getElementById('accent-override');
+  if (!style) { style = document.createElement('style'); style.id = 'accent-override'; document.head.appendChild(style); }
+  style.textContent = `
+    .send-circle, .toggle-switch.on, .usage-fill { background: ${color} !important; }
+    .nav-item.active, .quick-card:hover, .mcp-card.installed { border-color: ${color} !important; }
+    .right-tab.active { border-bottom-color: ${color} !important; color: ${color} !important; }
+    .new-btn { color: ${color} !important; border-color: ${rgba(0.4)} !important; background: ${rgba(0.15)} !important; }
+  `;
+}
+function applyBrandLogo() { localStorage.setItem('goat_devin_center_logo', document.getElementById('brandLogo').value); }
+function toggleSwitch(el) { el.classList.toggle('on'); saveSettings(); }
+function saveSettings() {
+  localStorage.setItem('goat_devin_center_settings', JSON.stringify({
+    engine: document.getElementById('defaultEngine').value,
+    autosave: document.getElementById('toggleAutosave').classList.contains('on'),
+    touch: document.getElementById('toggleTouch').classList.contains('on'),
+    voice: document.getElementById('toggleVoice').classList.contains('on'),
+    dark: document.getElementById('toggleDark').classList.contains('on')
+  }));
+}
+function restoreSettings() {
+  const saved = localStorage.getItem('goat_devin_center_settings');
+  if (saved) {
+    const s = JSON.parse(saved);
+    document.getElementById('defaultEngine').value = s.engine || 'adaptive';
+    if (s.autosave) document.getElementById('toggleAutosave').classList.add('on');
+    if (s.touch) document.getElementById('toggleTouch').classList.add('on');
+    if (s.voice) document.getElementById('toggleVoice').classList.add('on');
+    if (s.dark !== false) document.getElementById('toggleDark').classList.add('on');
+  }
+  const accent = localStorage.getItem('goat_devin_center_accent');
+  if (accent) setAccent(accent);
+  const logo = localStorage.getItem('goat_devin_center_logo');
+  if (logo) document.getElementById('brandLogo').value = logo;
+}
+document.getElementById('defaultEngine').addEventListener('change', saveSettings);
+
+function renderAgentSettings() {
+  const list = document.getElementById('agentSettingsList');
+  const agents = [
+    {id:'oscar', name:'Master Oscar', role:'Artist & Creative'},
+    {id:'moneypenny', name:'Ms. Money Penny', role:'Royalties & Business'},
+    {id:'vanessa', name:'Vanessa', role:'Marketing & Voice'},
+    {id:'nexus', name:'Nexus', role:'Network & Distribution'},
+    {id:'lexi', name:'Lexi', role:'Legal & Compliance'},
+    {id:'codex', name:'Codex', role:'Tech & Production'},
+    {id:'devin', name:'Dr. Devin', role:'Strategy & Innovation'}
+  ];
+  list.innerHTML = agents.map(a => `
+    <div class="toggle-row">
+      <span>${a.name} <small style="color:var(--text-muted)">· ${a.role}</small></span>
+      <div class="toggle-switch on" data-agent="${a.id}" onclick="toggleSwitch(this)"></div>
+    </div>
+  `).join('');
+}
+
+// MCP
+function renderMCP() {
+  const grid = document.getElementById('mcpGrid');
+  const installed = JSON.parse(localStorage.getItem('goat_mcp_installed') || '[]');
+  grid.innerHTML = MCP_SERVERS.map(m => `
+    <div class="mcp-card ${installed.includes(m.id) ? 'installed' : ''}" id="mcp-${m.id}" onclick="toggleMCP('${m.id}')">
+      <div class="name"><span>${m.icon}</span> ${m.name}</div>
+      <div class="desc">${m.desc}</div>
+      <div class="status">${installed.includes(m.id) ? 'INSTALLED' : 'Click to install'}</div>
+    </div>
+  `).join('');
+}
+function toggleMCP(id) {
+  let installed = JSON.parse(localStorage.getItem('goat_mcp_installed') || '[]');
+  if (installed.includes(id)) installed = installed.filter(x => x !== id);
+  else installed.push(id);
+  localStorage.setItem('goat_mcp_installed', JSON.stringify(installed));
+  document.getElementById('mcp-' + id).classList.toggle('installed', installed.includes(id));
+  document.querySelector('#mcp-' + id + ' .status').textContent = installed.includes(id) ? 'INSTALLED' : 'Click to install';
+}
+
+// Terminal
+function appendTerm(cls, text) {
+  const out = document.getElementById('termOutput');
+  const line = document.createElement('div'); line.className = cls; line.textContent = text; out.appendChild(line); out.scrollTop = out.scrollHeight;
+}
+async function sendTerm() {
+  const input = document.getElementById('termInput');
+  const cmd = input.value.trim(); if (!cmd) return;
+  termHistory.push(cmd); termIndex = termHistory.length; input.value = '';
+  appendTerm('cmd', '$ ' + cmd);
+  const host = document.getElementById('termHost').value.trim();
+  let result = await Patch.terminalExec(cmd, { agentId: currentSpace, terminalHost: host });
+  if (result.needs_confirm) {
+    const ok = confirm(result.classification.reason + '\n\n' + cmd + '\n\nRun this command?');
+    if (!ok) { appendTerm('out', 'Cancelled.'); return; }
+    result = await Patch.terminalExec(cmd, { agentId: currentSpace, terminalHost: host, confirm: true });
+  }
+  if (result.ok) { if (result.stdout) appendTerm('out', result.stdout); if (result.stderr) appendTerm('err', result.stderr); }
+  else { appendTerm('err', result.stderr || result.error || 'Command failed'); }
+}
+
+// Studio
+function initStudio() {
+  if (studioInstance) return;
+  const host = document.getElementById('studioHost'); host.innerHTML = '';
+  studioInstance = GoatTouchStudio.create(host, {
+    onChange: (id, value, type) => { document.getElementById('studioEvent').textContent = `[studio] ${type} "${id}" = ${JSON.stringify(value)}`; },
+    onTap: (id, data) => { document.getElementById('studioEvent').textContent = `[studio] pad "${id}" index ${data.index} (${data.label})`; }
+  });
+  studioInstance.addKnob('gain', { label: 'Gain', value: 60 });
+  studioInstance.addFader('master', { label: 'Master', value: 90 });
+  studioInstance.addXYPad('filter', { label: 'Filter / Reso' });
+  studioInstance.addPads('drums', { labels: ['Kick','Snare','Hat','Clap','Open','Ride','Tom','Crash'] });
+  studioInstance.addToggle('power', { label: 'Power', value: true });
+}
+
+// Gen UI
+function initGenUI() {
+  const block = {
+    type: 'ui', layout: 'card', title: 'GOAT Devin Center', subtitle: 'Live command status',
+    items: [
+      { type: 'stat', label: 'Agents', value: '7' },
+      { type: 'stat', label: 'Models', value: '6/53' },
+      { type: 'knob', id: 'priority', label: 'Priority', value: 75 },
+      { type: 'button', id: 'brief', label: 'Brief All' },
+      { type: 'toggle', id: 'auto', label: 'Auto-Heal', value: true },
+      { type: 'badge', label: 'Status', value: 'ONLINE', color: '#2ecc71' }
+    ]
+  };
+  GoatGenerativeUI.render([block], document.getElementById('genUIHost'), {
+    onAction: (e) => { document.getElementById('genUIEvent').textContent = `[gen-ui] ${e.action} id="${e.id}"`; }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

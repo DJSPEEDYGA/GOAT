@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐐 GOAT Command Center — DJ Speedy</title>
+<link rel="icon" href="favicon.ico">
+<style>
+:root {
+  --bg:     #030608;
+  --panel:  #0d1117;
+  --panel2: #161b22;
+  --panel3: #1c2430;
+  --gold:   #d4a03c;
+  --gold2:  #f0c040;
+  --gold3:  #ffd700;
+  --red:    #e63946;
+  --green:  #3fb950;
+  --blue:   #58a6ff;
+  --purple: #a78bfa;
+  --cyan:   #00d4ff;
+  --ink:    #f0ece4;
+  --dim:    #8b949e;
+  --line:   #21262d;
+  --glow:   rgba(212,160,60,.25);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;overflow-x:hidden;}
+
+/* TOP BAR */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(3,6,8,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);height:60px;display:flex;align-items:center;padding:0 24px;gap:14px;}
+.topbar-logo{width:36px;height:36px;border-radius:8px;object-fit:cover;}
+.topbar-title{font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.topbar-sub{font-size:12px;color:var(--dim);margin-left:4px;}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:blink 2s infinite;display:inline-block;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.status-badge{font-size:11px;color:var(--dim);display:flex;align-items:center;gap:5px;}
+
+/* HERO */
+.hero{padding:90px 24px 40px;text-align:center;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(212,160,60,.1),transparent 70%);}
+.hero img.hero-logo{width:96px;height:96px;border-radius:20px;object-fit:cover;box-shadow:0 0 40px var(--glow);margin-bottom:20px;}
+.hero h1{font-size:clamp(32px,5vw,56px);font-weight:900;letter-spacing:-1.5px;line-height:1.05;margin-bottom:10px;}
+.hero h1 span{background:linear-gradient(135deg,var(--gold),var(--gold2),var(--gold3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero-sub{color:var(--dim);font-size:16px;max-width:600px;margin:0 auto 32px;}
+.owner-tag{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(212,160,60,.1);border:1px solid rgba(212,160,60,.3);border-radius:20px;font-size:12px;color:var(--gold);margin-bottom:32px;}
+
+/* SECTION */
+.section{max-width:1400px;margin:0 auto;padding:0 20px 60px;}
+.sec-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--line);}
+.sec-icon{font-size:22px;}
+.sec-title{font-size:20px;font-weight:700;}
+.sec-count{font-size:12px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:2px 8px;margin-left:auto;}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+.grid-lg{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
+
+/* CARD */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;text-decoration:none;color:var(--ink);display:flex;align-items:flex-start;gap:14px;transition:all .18s;cursor:pointer;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(255,255,255,.02));pointer-events:none;}
+.card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 32px rgba(212,160,60,.15);}
+.card.green:hover{border-color:var(--green);box-shadow:0 8px 32px rgba(63,185,80,.15);}
+.card.blue:hover{border-color:var(--blue);box-shadow:0 8px 32px rgba(88,166,255,.15);}
+.card.red:hover{border-color:var(--red);box-shadow:0 8px 32px rgba(230,57,70,.15);}
+.card.purple:hover{border-color:var(--purple);box-shadow:0 8px 32px rgba(167,139,250,.15);}
+.card.cyan:hover{border-color:var(--cyan);box-shadow:0 8px 32px rgba(0,212,255,.15);}
+.card-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.card-body{flex:1;min-width:0;}
+.card-name{font-size:14px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-desc{font-size:12px;color:var(--dim);line-height:1.5;}
+.card-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;}
+.badge-gold{background:rgba(212,160,60,.15);color:var(--gold);}
+.badge-green{background:rgba(63,185,80,.15);color:var(--green);}
+.badge-blue{background:rgba(88,166,255,.15);color:var(--blue);}
+.badge-red{background:rgba(230,57,70,.15);color:var(--red);}
+.badge-purple{background:rgba(167,139,250,.15);color:var(--purple);}
+.badge-cyan{background:rgba(0,212,255,.15);color:var(--cyan);}
+.badge-dim{background:rgba(139,148,158,.1);color:var(--dim);}
+
+/* STATUS ROW */
+.status-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:40px;}
+.status-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:10px;}
+.status-dot-lg{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.dot-green{background:var(--green);box-shadow:0 0 8px var(--green);}
+.dot-yellow{background:#d29922;box-shadow:0 0 8px #d29922;}
+.dot-red{background:var(--red);box-shadow:0 0 8px var(--red);}
+.dot-dim{background:var(--dim);}
+.status-label{font-size:13px;font-weight:600;}
+.status-sub{font-size:11px;color:var(--dim);}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--line);margin:40px 0;}
+
+/* LAUNCH BIG */
+.launch-big{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:40px;}
+.launch-card{background:linear-gradient(135deg,var(--panel2),var(--panel));border:1px solid rgba(212,160,60,.3);border-radius:18px;padding:24px;text-decoration:none;color:var(--ink);transition:all .2s;position:relative;overflow:hidden;}
+.launch-card::after{content:'';position:absolute;top:0;right:0;width:120px;height:120px;background:radial-gradient(circle,var(--glow),transparent 70%);pointer-events:none;}
+.launch-card:hover{border-color:var(--gold2);transform:translateY(-3px);box-shadow:0 12px 48px rgba(212,160,60,.2);}
+.launch-card .lc-icon{font-size:40px;margin-bottom:14px;}
+.launch-card .lc-title{font-size:20px;font-weight:800;margin-bottom:6px;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.launch-card .lc-desc{font-size:13px;color:var(--dim);line-height:1.6;margin-bottom:14px;}
+.launch-card .lc-url{font-size:12px;color:var(--gold);font-family:monospace;background:rgba(212,160,60,.08);padding:4px 10px;border-radius:6px;display:inline-block;}
+
+/* FOOTER */
+footer{border-top:1px solid var(--line);padding:30px 24px;text-align:center;color:var(--dim);font-size:12px;}
+footer span{color:var(--gold);}
+
+@media(max-width:600px){
+  .hero h1{font-size:28px;}
+  .topbar-sub{display:none;}
+  .launch-big{grid-template-columns:1fr;}
+  .grid{grid-template-columns:1fr;}
+}
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <img src="goat-logo.png" class="topbar-logo" onerror="this.style.display='none'">
+  <div>
+    <div class="topbar-title">GOAT Command Center</div>
+  </div>
+  <span class="topbar-sub">DJ Speedy × Waka Flocka Flame</span>
+  <div class="topbar-right">
+    <div class="status-badge"><span class="live-dot"></span> Systems Online</div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <img src="goat-logo.png" class="hero-logo" onerror="this.style.display='none'">
+  <div class="owner-tag">👑 DJ Speedy (Harvey L. Miller Jr.) × Waka Flocka Flame — GOAT Force</div>
+  <h1>The <span>GOAT Empire</span><br>Command Center</h1>
+  <p class="hero-sub">Every app, agent, server, and tool — one place. Click anything to launch.</p>
+</div>
+
+<!-- LIVE STATUS -->
+<div class="section">
+  <div class="sec-header">
+    <span class="sec-icon">📡</span>
+    <span class="sec-title">Live System Status</span>
+  </div>
+  <div class="status-row">
+    <div class="status-card">
+      <div class="status-dot-lg dot-green"></div>
+      <div><div class="status-label">Agent-007</div><div class="status-sub">localhost:3333 · Mac</div></div>
+    </div>
+    <div class="status-card">
+      <div class="status-dot-lg dot-green"></div>
+      <div><div class="status-label">Ollama Local</div><div class="status-sub">localhost:11435 · Mac</div></div>
+    </div>
+    <div class="status-card">
+      <div class="status-dot-lg" id="dot-intel"></div>
+      <div><div class="status-label">GOAT Intel Brain</div><div class="status-sub">localhost:5500</div></div>
+    </div>
+    <div class="status-card">
+      <div class="status-dot-lg dot-green"></div>
+      <div><div class="status-label">Server 2 · Ubuntu</div><div class="status-sub">72.61.193.184 · Live</div></div>
+    </div>
+    <div class="status-card">
+      <div class="status-dot-lg dot-yellow"></div>
+      <div><div class="status-label">Production VPS</div><div class="status-sub">2.25.68.216 · Needs SSH</div></div>
+    </div>
+    <div class="status-card">
+      <div class="status-dot-lg dot-green"></div>
+      <div><div class="status-label">goat-intel.service</div><div class="status-sub">72.61.193.184:5500 · Live</div></div>
+    </div>
+    <div class="status-card">
+      <div class="status-dot-lg dot-green"></div>
+      <div><div class="status-label">Nginx · Server 2</div><div class="status-sub">Port 80 / 443 / 8080</div></div>
+    </div>
+    <div class="status-card">
+      <div class="status-dot-lg dot-green"></div>
+      <div><div class="status-label">i2i 1 Drive (7.3TB)</div><div class="status-sub">/Volumes/i2i 1 · Mounted</div></div>
+    </div>
+  </div>
+
+  <!-- BIG LAUNCH CARDS -->
+  <div class="sec-header">
+    <span class="sec-icon">🚀</span>
+    <span class="sec-title">Primary Launchers</span>
+  </div>
+  <div class="launch-big">
+    <a href="powerhouse.html" class="launch-card">
+      <div class="lc-icon">⚡</div>
+      <div class="lc-title">GOAT Powerhouse</div>
+      <div class="lc-desc">The main hub — all 65+ studio tools, AI agents, business suite, royalties. Start here.</div>
+      <div class="lc-url">powerhouse.html</div>
+    </a>
+    <a href="http://localhost:3333" target="_blank" class="launch-card">
+      <div class="lc-icon">🔫</div>
+      <div class="lc-title">Agent-007 · Local</div>
+      <div class="lc-desc">AGENT007 private AI bridge — DJ Speedy's personal original LLM. Running on Mac port 3333.</div>
+      <div class="lc-url">localhost:3333</div>
+    </a>
+    <a href="http://72.61.193.184" target="_blank" class="launch-card">
+      <div class="lc-icon">🌐</div>
+      <div class="lc-title">Live Server · Ubuntu</div>
+      <div class="lc-desc">Server 2 (KVM2) — 249 pages live, Nginx, Ollama, goat-intel.service running 24/7.</div>
+      <div class="lc-url">72.61.193.184</div>
+    </a>
+    <a href="agents-brain.html" class="launch-card">
+      <div class="lc-icon">🧠</div>
+      <div class="lc-title">AI Brain · 11 Agents</div>
+      <div class="lc-desc">Ms. Money Penny, Codex, Legal, A&R, CFO, Producer, Stylist, Researcher, Lyricist, Autopilot, Vault.</div>
+      <div class="lc-url">agents-brain.html</div>
+    </a>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- LOCAL MAC TOOLS -->
+<div class="section">
+  <div class="sec-header">
+    <span class="sec-icon">🖥️</span>
+    <span class="sec-title">Local Mac — Running Now</span>
+    <span class="sec-count">6 services</span>
+  </div>
+  <div class="grid">
+    <a href="http://localhost:3333" target="_blank" class="card">
+      <div class="card-icon" style="background:rgba(212,160,60,.15)">🔫</div>
+      <div class="card-body">
+        <div class="card-name">Agent-007 Chat</div>
+        <div class="card-desc">Personal original LLM bridge. FastChatUI. Tool-calling AI. Voice auto-speak ON.</div>
+        <div class="card-badges"><span class="badge badge-gold">LIVE</span><span class="badge badge-gold">PORT 3333</span><span class="badge badge-dim">AGENT-007</span></div>
+      </div>
+    </a>
+    <a href="http://localhost:11435" target="_blank" class="card green">
+      <div class="card-icon" style="background:rgba(63,185,80,.15)">🦙</div>
+      <div class="card-body">
+        <div class="card-name">Ollama · Local AI</div>
+        <div class="card-desc">Running locally. Models: gemma2:2b, llama3.2, qwen3.5, gemma4 and more.</div>
+        <div class="card-badges"><span class="badge badge-green">LIVE</span><span class="badge badge-green">PORT 11435</span></div>
+      </div>
+    </a>
+    <a href="http://localhost:5500" target="_blank" class="card blue">
+      <div class="card-icon" style="background:rgba(88,166,255,.15)">🧠</div>
+      <div class="card-body">
+        <div class="card-name">GOAT Intel Brain</div>
+        <div class="card-desc">goat_intel.py — iTunes, YouTube, Billboard, Gemini/Ms. Money Penny AI. Port 5500.</div>
+        <div class="card-badges"><span class="badge badge-blue">PORT 5500</span><span class="badge badge-dim">start-goat.sh</span></div>
+      </div>
+    </a>
+    <a href="http://localhost:8090" target="_blank" class="card">
+      <div class="card-icon" style="background:rgba(212,160,60,.12)">🌐</div>
+      <div class="card-body">
+        <div class="card-name">Web App · Local</div>
+        <div class="card-desc">Python http.server serving web-app/ on port 8090. Run start-goat.sh to start.</div>
+        <div class="card-badges"><span class="badge badge-dim">PORT 8090</span><span class="badge badge-dim">start-goat.sh</span></div>
+      </div>
+    </a>
+    <div class="card" onclick="navigator.clipboard&&navigator.clipboard.writeText('cd /Users/be100radio/GOAT-Royalty-App && bash start-goat.sh')">
+      <div class="card-icon" style="background:rgba(63,185,80,.15)">▶️</div>
+      <div class="card-body">
+        <div class="card-name">Start GOAT App</div>
+        <div class="card-desc">Launches Ollama + AI Brain (5500) + Web App (8090). Click to copy command.</div>
+        <div class="card-badges"><span class="badge badge-green">LAUNCHER</span><span class="badge badge-dim">start-goat.sh</span></div>
+      </div>
+    </div>
+    <a href="moneypenny.html" class="card purple">
+      <div class="card-icon" style="background:rgba(167,139,250,.15)">💼</div>
+      <div class="card-body">
+        <div class="card-name">Ms. Money Penny</div>
+        <div class="card-desc">Executive AI orchestrator. Coordinates all agents. DJ Speedy's personal original.</div>
+        <div class="card-badges"><span class="badge badge-purple">PERSONAL</span><span class="badge badge-gold">ORIGINAL LLM</span></div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- SERVER 2 LIVE -->
+<div class="section">
+  <div class="sec-header">
+    <span class="sec-icon">🖥️</span>
+    <span class="sec-title">Server 2 · Ubuntu · 72.61.193.184</span>
+    <span class="sec-count">249 pages live</span>
+  </div>
+  <div class="grid grid-lg">
+    <a href="http://72.61.193.184" target="_blank" class="card green">
+      <div class="card-icon" style="background:rgba(63,185,80,.15)">🌐</div>
+      <div class="card-body">
+        <div class="card-name">GOAT Royalty · Live Server</div>
+        <div class="card-desc">249 HTML pages. Nginx port 80/443/8080. Ubuntu 24.04 LTS. 96GB disk.</div>
+        <div class="card-badges"><span class="badge badge-green">LIVE</span><span class="badge badge-green">PORT 80</span></div>
+      </div>
+    </a>
+    <a href="http://72.61.193.184/powerhouse.html" target="_blank" class="card green">
+      <div class="card-icon" style="background:rgba(212,160,60,.15)">⚡</div>
+      <div class="card-body">
+        <div class="card-name">Powerhouse · Server</div>
+        <div class="card-desc">Full GOAT Powerhouse live on server. All studio + business tools.</div>
+        <div class="card-badges"><span class="badge badge-green">LIVE</span><span class="badge badge-gold">POWERHOUSE</span></div>
+      </div>
+    </a>
+    <a href="http://72.61.193.184:8080" target="_blank" class="card blue">
+      <div class="card-icon" style="background:rgba(88,166,255,.15)">🏪</div>
+      <div class="card-body">
+        <div class="card-name">GOAT Store · Port 8080</div>
+        <div class="card-desc">GOAT Store + proxied AI brains. Single port for investors and clients.</div>
+        <div class="card-badges"><span class="badge badge-blue">PORT 8080</span><span class="badge badge-dim">STORE</span></div>
+      </div>
+    </a>
+    <a href="http://72.61.193.184/api/intel/" target="_blank" class="card blue">
+      <div class="card-icon" style="background:rgba(88,166,255,.15)">🧠</div>
+      <div class="card-body">
+        <div class="card-name">Intel Brain · Server</div>
+        <div class="card-desc">goat-intel.service running 24/7. Money Penny + crew brain. Port 5500 proxied.</div>
+        <div class="card-badges"><span class="badge badge-green">LIVE</span><span class="badge badge-blue">SYSTEMD</span></div>
+      </div>
+    </a>
+    <a href="http://72.61.193.184/agent-007-launcher.html" target="_blank" class="card">
+      <div class="card-icon" style="background:rgba(212,160,60,.15)">🔫</div>
+      <div class="card-body">
+        <div class="card-name">Agent-007 Launcher · Server</div>
+        <div class="card-desc">Agent-007 launcher page hosted on live server.</div>
+        <div class="card-badges"><span class="badge badge-gold">AGENT-007</span><span class="badge badge-green">LIVE</span></div>
+      </div>
+    </a>
+    <a href="http://72.61.193.184/goat-apps.html" target="_blank" class="card">
+      <div class="card-icon" style="background:rgba(212,160,60,.12)">📱</div>
+      <div class="card-body">
+        <div class="card-name">All GOAT Apps · Server</div>
+        <div class="card-desc">Full app directory on live server — all 249 pages accessible.</div>
+        <div class="card-badges"><span class="badge badge-green">LIVE</span></div>
+      </div>
+    </a>
+    <a href="http://72.61.193.184/agents-brain.html" target="_blank" class="card purple">
+      <div class="card-icon" style="background:rgba(167,139,250,.15)">🤖</div>
+      <div class="card-body">
+        <div class="card-name">AI Brain · Server</div>
+        <div class="card-desc">11 AI agents live on server. Ollama: gemma2, qwen3.5, gemma4, llama3.2.</div>
+        <div class="card-badges"><span class="badge badge-purple">11 AGENTS</span><span class="badge badge-green">LIVE</span></div>
+      </div>
+    </a>
+    <a href="http://72.61.193.184/command-center.html" target="_blank" class="card">
+      <div class="card-icon" style="background:rgba(88,166,255,.12)">🎯</div>
+      <div class="card-body">
+        <div class="card-name">Command Center · Server</div>
+        <div class="card-desc">GOAT Force command center page hosted live.</div>
+        <div class="card-badges"><span class="badge badge-green">LIVE</span></div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- GITHUB -->
+<div class="section">
+  <div class="sec-header">
+    <span class="sec-icon">🐙</span>
+    <span class="sec-title">GitHub — DJSPEEDYGA</span>
+    <span class="sec-count">Main repo</span>
+  </div>
+  <div class="grid">
+    <a href="https://github.com/DJSPEEDYGA/GOAT-Royalty-App" target="_blank" class="card">
+      <div class="card-icon" style="background:rgba(255,255,255,.06)">📦</div>
+      <div class="card-body">
+        <div class="card-name">GOAT-Royalty-App</div>
+        <div class="card-desc">Main repo. 86 HTML pages. Node.js backend, Express API, full web app.</div>
+        <div class="card-badges"><span class="badge badge-dim">GITHUB</span><span class="badge badge-green">PUBLIC</span></div>
+      </div>
+    </a>
+    <a href="https://github.com/DJSPEEDYGA/GOAT-Royalty-App/tree/main/web-app" target="_blank" class="card">
+      <div class="card-icon" style="background:rgba(88,166,255,.12)">🌐</div>
+      <div class="card-body">
+        <div class="card-name">Web App Source</div>
+        <div class="card-desc">All frontend HTML, CSS, JS. Gold theme. 86 pages. Deployed to both servers.</div>
+        <div class="card-badges"><span class="badge badge-blue">WEB-APP</span></div>
+      </div>
+    </a>
+    <a href="https://github.com/DJSPEEDYGA/GOAT-Royalty-App/tree/main/src" target="_blank" class="card">
+      <div class="card-icon" style="background:rgba(63,185,80,.12)">⚙️</div>
+      <div class="card-body">
+        <div class="card-name">Backend API Source</div>
+        <div class="card-desc">Node.js/Express. Routes, agents, middleware, models. All auth fixed + secured.</div>
+        <div class="card-badges"><span class="badge badge-green">BACKEND</span><span class="badge badge-green">FIXED</span></div>
+      </div>
+    </a>
+    <a href="https://github.com/DJSPEEDYGA/GOAT-Royalty-App/tree/main/scripts" target="_blank" class="card">
+      <div class="card-icon" style="background:rgba(212,160,60,.12)">📜</div>
+      <div class="card-body">
+        <div class="card-name">Deploy Scripts</div>
+        <div class="card-desc">deploy-server-1.sh, deploy-server-2.sh, hostinger setup, Google Drive pipeline.</div>
+        <div class="card-badges"><span class="badge badge-gold">SCRIPTS</span></div>
+      </div>
+    </a>
+    <a href="https://raw.githubusercontent.com/DJSPEEDYGA/GOAT-Royalty-App/main/installers/install.sh" target="_blank" class="card green">
+      <div class="card-icon" style="background:rgba(63,185,80,.15)">⬇️</div>
+      <div class="card-body">
+        <div class="card-name">One-Click Installer</div>
+        <div class="card-desc">curl installer. Installs deps, clones repo, pulls Gemma 3 4B, creates Desktop shortcut.</div>
+        <div class="card-badges"><span class="badge badge-green">INSTALLER</span><span class="badge badge-dim">MAC + LINUX</span></div>
+      </div>
+    </a>
+    <a href="https://github.com/DJSPEEDYGA/GOAT-Royalty-App/commits/main" target="_blank" class="card">
+      <div class="card-icon" style="background:rgba(139,148,158,.1)">📝</div>
+      <div class="card-body">
+        <div class="card-name">Recent Commits</div>
+        <div class="card-desc">Latest: auth middleware fixes, security patches, 3 crypto pages added. 26/26 tests pass.</div>
+        <div class="card-badges"><span class="badge badge-green">26 TESTS ✓</span></div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- i2i DRIVE -->
+<div class="section">
+  <div class="sec-header">
+    <span class="sec-icon">💾</span>
+    <span class="sec-title">i2i 1 Drive · 7.3TB · /Volumes/i2i 1</span>
+    <span class="sec-count">Mounted</span>
+  </div>
+  <div class="grid">
+    <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/')">
+      <div class="card-icon" style="background:rgba(212,160,60,.15)">🔫</div>
+      <div class="card-body">
+        <div class="card-name">Agent-007-GOAT · Root</div>
+        <div class="card-desc">Main Agent-007 folder. All launchers, deploy scripts, models, docs, agents.</div>
+        <div class="card-badges"><span class="badge badge-gold">AGENT-007</span><span class="badge badge-dim">7.3TB DRIVE</span></div>
+      </div>
+    </div>
+    <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Master-AGENT-007/')">
+      <div class="card-icon" style="background:rgba(212,160,60,.15)">👑</div>
+      <div class="card-body">
+        <div class="card-name">Master-AGENT-007</div>
+        <div class="card-desc">The master Agent-007 build. GOAT-Royalty, GOAT-App, GOAT-Royalty-App-macOS, portable.</div>
+        <div class="card-badges"><span class="badge badge-gold">MASTER</span></div>
+      </div>
+    </div>
+    <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Deploy/ubuntu-goat-agent-007/')">
+      <div class="card-icon" style="background:rgba(88,166,255,.15)">🚀</div>
+      <div class="card-body">
+        <div class="card-name">Ubuntu Deploy Kit</div>
+        <div class="card-desc">build + dist packages, install-on-ubuntu.sh, nginx config, systemd service. Ready to push.</div>
+        <div class="card-badges"><span class="badge badge-blue">DEPLOY</span><span class="badge badge-green">BUILT</span></div>
+      </div>
+    </div>
+    <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/GTA-FiveM-Server/')">
+      <div class="card-icon" style="background:rgba(230,57,70,.15)">🎮</div>
+      <div class="card-body">
+        <div class="card-name">GTA FiveM Server</div>
+        <div class="card-desc">goat-city-rp-server, server-artifacts, server-data. Ready to deploy on Server 2.</div>
+        <div class="card-badges"><span class="badge badge-red">FIVEM</span><span class="badge badge-dim">SERVER 2</span></div>
+      </div>
+    </div>
+    <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Jetson-Thor-Deploy-Kit/')">
+      <div class="card-icon" style="background:rgba(0,212,255,.15)">⚡</div>
+      <div class="card-body">
+        <div class="card-name">Jetson Thor Deploy Kit</div>
+        <div class="card-desc">Jetson AGX Thor setup for Lexi + crew agents. Waka's baby hardware home.</div>
+        <div class="card-badges"><span class="badge badge-cyan">JETSON</span><span class="badge badge-dim">THOR</span></div>
+      </div>
+    </div>
+    <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Investor-EPK/')">
+      <div class="card-icon" style="background:rgba(167,139,250,.15)">📊</div>
+      <div class="card-body">
+        <div class="card-name">Investor EPK</div>
+        <div class="card-desc">Full investor electronic press kit. Rendered pages, pitch decks, financials.</div>
+        <div class="card-badges"><span class="badge badge-purple">INVESTOR</span><span class="badge badge-dim">EPK</span></div>
+      </div>
+    </div>
+    <div class="card" onclick="open('file:///Volumes/i2i%201/Agent-007-GOAT/Shared/')">
+      <div class="card-icon" style="background:rgba(88,166,255,.12)">🗂️</div>
+      <div class="card-body">
+        <div class="card-name">Shared · Chat + Models</div>
+        <div class="card-desc">FastChatUI, chat_server.py, model_packs, generated_images, session_packets, runtime.</div>
+        <div class="card-badges"><span class="badge badge-blue">SHARED</span><span class="badge badge-dim">CHAT</span></div>
+      </div>
+    </div>
+    <div class="card" onclick="open('file:///Volumes/i2i%201/DJ%20SPEEDY%20SOUNDS%20/')">
+      <div class="card-icon" style="background:rgba(63,185,80,.15)">🎵</div>
+      <div class="card-body">
+        <div class="card-name">DJ Speedy Sounds</div>
+        <div class="card-desc">Full sound library, beats, samples, stems, FL Studio projects, audio files.</div>
+        <div class="card-badges"><span class="badge badge-green">SOUNDS</span><span class="badge badge-dim">FL STUDIO</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- GOAT WEB APP PAGES -->
+<div class="section">
+  <div class="sec-header">
+    <span class="sec-icon">🎛️</span>
+    <span class="sec-title">GOAT Web App · All Tools</span>
+    <span class="sec-count">86 pages</span>
+  </div>
+  <div class="grid">
+    <a href="studio.html" class="card"><div class="card-icon" style="background:rgba(230,57,70,.12)">🎙️</div><div class="card-body"><div class="card-name">Recording Studio</div><div class="card-desc">Multi-track, SSL signal chain, real-time monitoring.</div><div class="card-badges"><span class="badge badge-red">FLAGSHIP</span></div></div></a>
+    <a href="beat-maker.html" class="card"><div class="card-icon" style="background:rgba(212,160,60,.12)">🎵</div><div class="card-body"><div class="card-name">Beat Maker</div><div class="card-desc">FL Studio-style. Step sequencer, piano roll, 16 channels.</div><div class="card-badges"><span class="badge badge-gold">PRO</span></div></div></a>
+    <a href="ssl-mixer.html" class="card"><div class="card-icon" style="background:rgba(212,160,60,.12)">🎚️</div><div class="card-body"><div class="card-name">SSL Mixer</div><div class="card-desc">32-channel SSL 9000. Aux sends, groups, compression, EQ.</div><div class="card-badges"><span class="badge badge-gold">32CH</span></div></div></a>
+    <a href="mastering.html" class="card"><div class="card-icon" style="background:rgba(88,166,255,.12)">💿</div><div class="card-body"><div class="card-name">Mastering Suite</div><div class="card-desc">AI mastering. Ozone-style dynamics, loudness targeting.</div><div class="card-badges"><span class="badge badge-blue">AI</span></div></div></a>
+    <a href="vocal-studio.html" class="card"><div class="card-icon" style="background:rgba(167,139,250,.12)">🎤</div><div class="card-body"><div class="card-name">Vocal Studio</div><div class="card-desc">Auto-Tune, harmony, compression, de-essing, reverb, delay.</div><div class="card-badges"><span class="badge badge-purple">VOCAL</span></div></div></a>
+    <a href="goat-mpc.html" class="card"><div class="card-icon" style="background:rgba(230,57,70,.12)">🥁</div><div class="card-body"><div class="card-name">GOAT MPC</div><div class="card-desc">64 velocity pads, 8 banks, piano roll, pattern chain.</div><div class="card-badges"><span class="badge badge-red">NEW</span></div></div></a>
+    <a href="royalty-calc.html" class="card"><div class="card-icon" style="background:rgba(212,160,60,.12)">💰</div><div class="card-body"><div class="card-name">Royalty Calculator</div><div class="card-desc">DSP earnings, sync deals, mechanical licenses with precision.</div><div class="card-badges"><span class="badge badge-gold">MONEY</span></div></div></a>
+    <a href="catalog.html" class="card"><div class="card-icon" style="background:rgba(88,166,255,.12)">📁</div><div class="card-body"><div class="card-name">Catalog Manager</div><div class="card-desc">ISRC, ISWC, UPC tracking. Metadata editor. CWR export.</div><div class="card-badges"><span class="badge badge-blue">CATALOG</span></div></div></a>
+    <a href="distribution.html" class="card"><div class="card-icon" style="background:rgba(63,185,80,.12)">🌍</div><div class="card-body"><div class="card-name">Distribution</div><div class="card-desc">Spotify, Apple, Tidal, Amazon, YouTube + 50 DSPs.</div><div class="card-badges"><span class="badge badge-green">DSP</span></div></div></a>
+    <a href="sync-catalog.html" class="card"><div class="card-icon" style="background:rgba(167,139,250,.12)">🎬</div><div class="card-body"><div class="card-name">Sync Licensing</div><div class="card-desc">TV, film, ads, games. Pitch tracker, deal management.</div><div class="card-badges"><span class="badge badge-purple">SYNC</span></div></div></a>
+    <a href="autopilot.html" class="card"><div class="card-icon" style="background:rgba(63,185,80,.12)">🤖</div><div class="card-body"><div class="card-name">Autopilot</div><div class="card-desc">Full automation agent. Runs tasks while you sleep.</div><div class="card-badges"><span class="badge badge-green">AUTO</span></div></div></a>
+    <a href="goat-nft-studio.html" class="card"><div class="card-icon" style="background:rgba(167,139,250,.12)">🖼️</div><div class="card-body"><div class="card-name">NFT Studio</div><div class="card-desc">Mint, buy, sell celebrity NFTs. ETH, Polygon, Solana.</div><div class="card-badges"><span class="badge badge-purple">WEB3</span></div></div></a>
+    <a href="goat-crypto-wallet.html" class="card"><div class="card-icon" style="background:rgba(212,160,60,.12)">💎</div><div class="card-body"><div class="card-name">Crypto Wallet</div><div class="card-desc">Multi-chain. ETH, BTC, SOL, MATIC, GOAT Token.</div><div class="card-badges"><span class="badge badge-gold">MULTI-CHAIN</span></div></div></a>
+    <a href="touch-hub.html" class="card"><div class="card-icon" style="background:rgba(0,212,255,.12)">📱</div><div class="card-body"><div class="card-name">Touch Hub</div><div class="card-desc">iPad/Surface touch interface. MPC pads, mixer, piano.</div><div class="card-badges"><span class="badge badge-cyan">TOUCH</span></div></div></a>
+    <a href="film-score.html" class="card"><div class="card-icon" style="background:rgba(88,166,255,.12)">🎻</div><div class="card-body"><div class="card-name">Film Score</div><div class="card-desc">Hollywood orchestra. Full scoring suite.</div><div class="card-badges"><span class="badge badge-blue">FILM</span></div></div></a>
+    <a href="api-vault.html" class="card"><div class="card-icon" style="background:rgba(212,160,60,.15)">🔐</div><div class="card-body"><div class="card-name">API Vault</div><div class="card-desc">Secure API key manager. All integrations in one place.</div><div class="card-badges"><span class="badge badge-gold">SECURE</span></div></div></a>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- DEPLOY COMMANDS -->
+<div class="section">
+  <div class="sec-header">
+    <span class="sec-icon">⚙️</span>
+    <span class="sec-title">Deploy Commands — Click to Copy</span>
+  </div>
+  <div class="grid">
+    <div class="card green" onclick="copyCmd('bash /Users/be100radio/GOAT-Royalty-App/start-goat.sh')">
+      <div class="card-icon" style="background:rgba(63,185,80,.15)">▶️</div>
+      <div class="card-body">
+        <div class="card-name">Start GOAT Local</div>
+        <div class="card-desc"><code style="font-size:11px;color:var(--green)">bash ~/GOAT-Royalty-App/start-goat.sh</code></div>
+        <div class="card-badges"><span class="badge badge-green">CLICK TO COPY</span></div>
+      </div>
+    </div>
+    <div class="card blue" onclick="copyCmd('bash \"/Volumes/i2i 1/Agent-007-GOAT/DEPLOY GOAT ROYALTY + AGENT-007 TO UBUNTU.command\"')">
+      <div class="card-icon" style="background:rgba(88,166,255,.15)">🚀</div>
+      <div class="card-body">
+        <div class="card-name">Deploy to Ubuntu Server</div>
+        <div class="card-desc">Builds package from drive + uploads to chosen Hostinger VPS. Prompts for target.</div>
+        <div class="card-badges"><span class="badge badge-blue">CLICK TO COPY</span></div>
+      </div>
+    </div>
+    <div class="card" onclick="copyCmd('ssh root@72.61.193.184')">
+      <div class="card-icon" style="background:rgba(212,160,60,.12)">🔒</div>
+      <div class="card-body">
+        <div class="card-name">SSH → Server 2</div>
+        <div class="card-desc"><code style="font-size:11px;color:var(--gold)">ssh root@72.61.193.184</code></div>
+        <div class="card-badges"><span class="badge badge-gold">CLICK TO COPY</span><span class="badge badge-green">SSH OK</span></div>
+      </div>
+    </div>
+    <div class="card" onclick="copyCmd('ssh root@2.25.68.216')">
+      <div class="card-icon" style="background:rgba(230,57,70,.12)">🔒</div>
+      <div class="card-body">
+        <div class="card-name">SSH → Production VPS</div>
+        <div class="card-desc"><code style="font-size:11px;color:var(--red)">ssh root@2.25.68.216</code> — needs password</div>
+        <div class="card-badges"><span class="badge badge-gold">CLICK TO COPY</span><span class="badge badge-red">NEEDS PW</span></div>
+      </div>
+    </div>
+    <div class="card green" onclick="copyCmd('cd /Users/be100radio/GOAT-Royalty-App && npm test')">
+      <div class="card-icon" style="background:rgba(63,185,80,.15)">🧪</div>
+      <div class="card-body">
+        <div class="card-name">Run Tests</div>
+        <div class="card-desc"><code style="font-size:11px;color:var(--green)">npm test</code> — 26/26 passing</div>
+        <div class="card-badges"><span class="badge badge-green">CLICK TO COPY</span><span class="badge badge-green">26/26 ✓</span></div>
+      </div>
+    </div>
+    <div class="card" onclick="copyCmd('cd /Users/be100radio/GOAT-Royalty-App && git push')">
+      <div class="card-icon" style="background:rgba(139,148,158,.1)">📤</div>
+      <div class="card-body">
+        <div class="card-name">Push to GitHub</div>
+        <div class="card-desc"><code style="font-size:11px;color:var(--dim)">git push</code> — push latest fixes to DJSPEEDYGA/GOAT-Royalty-App</div>
+        <div class="card-badges"><span class="badge badge-dim">CLICK TO COPY</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>🐐 <span>GOAT Royalty Empire</span> · DJ Speedy (Harvey L. Miller Jr.) × Waka Flocka Flame · GOAT Force Records</p>
+  <p style="margin-top:8px">Only <span>AGENT007 + MONEY PENNY</span> are the personal original LLMs — built by DJ Speedy + Money Penny.</p>
+</footer>
+
+<div id="toast" style="display:none;position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;font-weight:700;padding:10px 24px;border-radius:10px;font-size:14px;z-index:999;">Copied to clipboard!</div>
+
+<script>
+function copyCmd(cmd) {
+  navigator.clipboard.writeText(cmd).then(() => {
+    const t = document.getElementById('toast');
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 2000);
+  });
+}
+
+// Check local service status
+async function checkStatus(url, dotId, onClass, offClass) {
+  const dot = document.getElementById(dotId);
+  if (!dot) return;
+  try {
+    const r = await fetch(url, {signal: AbortSignal.timeout(2500)});
+    dot.className = 'status-dot-lg ' + (r.ok ? onClass : offClass);
+  } catch {
+    dot.className = 'status-dot-lg ' + offClass;
+  }
+}
+checkStatus('http://localhost:5500/health', 'dot-intel', 'dot-green', 'dot-red');
+</script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

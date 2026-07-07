@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GOAT Gaming Server — Setup & Deploy</title>
+<style>
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2128;--border:#30363d;
+  --gold:#d4a03c;--gold2:#f0c040;--green:#3fb950;--blue:#58a6ff;
+  --purple:#a87dff;--red:#e63946;--dim:#8b949e;--text:#e6edf3;
+  --cyan:#39d0d8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;}
+
+/* NAV */
+nav{display:flex;align-items:center;gap:16px;padding:12px 24px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.nav-logo{font-size:22px;font-weight:800;color:var(--gold);text-decoration:none;}
+.nav-links{display:flex;gap:10px;flex-wrap:wrap;flex:1;}
+.nav-links a{color:var(--dim);text-decoration:none;font-size:13px;padding:4px 10px;border-radius:6px;transition:.15s;}
+.nav-links a:hover{color:var(--text);background:var(--bg3);}
+.nav-links a.hot{color:var(--gold);font-weight:700;}
+.nav-links a.g{color:var(--green);}
+.back{margin-left:auto;color:var(--dim);text-decoration:none;font-size:13px;}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,rgba(212,160,60,.08),rgba(167,139,250,.06),transparent);border-bottom:1px solid var(--border);padding:48px 32px 36px;}
+.hero-inner{max-width:960px;margin:0 auto;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(212,160,60,.12);border:1px solid rgba(212,160,60,.25);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--gold);margin-bottom:18px;}
+h1{font-size:38px;font-weight:800;line-height:1.15;margin-bottom:12px;}
+h1 span{color:var(--gold);}
+.hero-sub{color:var(--dim);font-size:17px;max-width:680px;line-height:1.6;}
+.hero-stats{display:flex;gap:24px;margin-top:28px;flex-wrap:wrap;}
+.hs{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 20px;min-width:120px;}
+.hs .v{font-size:24px;font-weight:800;color:var(--gold);}
+.hs .l{font-size:11px;color:var(--dim);margin-top:2px;}
+.hero-btns{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:.15s;}
+.btn-gold{background:var(--gold);color:#000;}
+.btn-gold:hover{background:var(--gold2);}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+.btn-green{background:rgba(63,185,80,.15);border:1px solid rgba(63,185,80,.3);color:var(--green);}
+.btn-green:hover{background:rgba(63,185,80,.25);}
+
+/* SECTIONS */
+.page{max-width:1100px;margin:0 auto;padding:32px 24px;}
+.sec{margin-bottom:48px;}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.sec-head h2{font-size:20px;font-weight:700;}
+.sec-head .ico{font-size:22px;}
+.sec-head .cnt{margin-left:auto;font-size:12px;color:var(--dim);background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:3px 10px;}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.grid-2{grid-template-columns:repeat(auto-fill,minmax(420px,1fr));}
+
+/* CARD */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;cursor:pointer;transition:.15s;display:flex;flex-direction:column;gap:10px;}
+.card:hover{border-color:var(--gold);transform:translateY(-2px);}
+.card.g:hover{border-color:var(--green);}
+.card.b:hover{border-color:var(--blue);}
+.card.p:hover{border-color:var(--purple);}
+.card.r:hover{border-color:var(--red);}
+.card.c:hover{border-color:var(--cyan);}
+.card h3{font-size:15px;font-weight:700;}
+.card p{font-size:13px;color:var(--dim);line-height:1.5;}
+.card .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;letter-spacing:.5px;}
+.tg{background:rgba(63,185,80,.15);color:var(--green);}
+.tgr{background:rgba(212,160,60,.15);color:var(--gold);}
+.tb{background:rgba(88,166,255,.15);color:var(--blue);}
+.tp{background:rgba(167,139,250,.15);color:var(--purple);}
+.tr{background:rgba(230,57,70,.15);color:var(--red);}
+.tc{background:rgba(57,208,216,.15);color:var(--cyan);}
+
+/* STEP LIST */
+.steps{display:flex;flex-direction:column;gap:0;}
+.step{display:flex;gap:16px;padding:20px 0;border-bottom:1px solid var(--border);}
+.step:last-child{border-bottom:none;}
+.step-num{width:36px;height:36px;min-width:36px;background:rgba(212,160,60,.15);border:1px solid rgba(212,160,60,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--gold);}
+.step-body h4{font-size:14px;font-weight:700;margin-bottom:6px;}
+.step-body p{font-size:13px;color:var(--dim);line-height:1.6;}
+.step-body code,.step-body .cmd{display:block;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-family:'SF Mono',Menlo,monospace;font-size:12px;color:var(--cyan);margin-top:8px;white-space:pre-wrap;cursor:pointer;position:relative;}
+.step-body .cmd::after{content:'click to copy';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--dim);font-family:sans-serif;}
+.step-body .cmd:hover{border-color:var(--gold);}
+.step-body .cmd:hover::after{color:var(--gold);}
+.note{background:rgba(88,166,255,.07);border:1px solid rgba(88,166,255,.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--blue);margin-top:8px;line-height:1.5;}
+.warn{background:rgba(212,160,60,.07);border:1px solid rgba(212,160,60,.25);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--gold);margin-top:8px;line-height:1.5;}
+
+/* SPEC TABLE */
+.spec-table{width:100%;border-collapse:collapse;font-size:13px;}
+.spec-table th{text-align:left;color:var(--dim);font-weight:600;padding:8px 12px;border-bottom:1px solid var(--border);}
+.spec-table td{padding:10px 12px;border-bottom:1px solid rgba(48,54,61,.5);}
+.spec-table tr:hover td{background:var(--bg3);}
+.spec-table .val{color:var(--green);font-weight:600;}
+.spec-table .alt{color:var(--dim);}
+
+/* TAB BAR */
+.tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:24px;}
+.tab{flex:1;text-align:center;padding:8px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;color:var(--dim);transition:.15s;}
+.tab.active{background:var(--bg3);color:var(--text);}
+.tab:hover:not(.active){color:var(--text);}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+
+/* STATUS */
+.status-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:8px;}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--green);}
+.dot.warn{background:var(--gold);}
+.dot.off{background:var(--dim);}
+
+/* COPY TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#000;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;transform:translateY(80px);transition:.3s;z-index:999;}
+#toast.show{transform:translateY(0);}
+
+@media(max-width:640px){
+  h1{font-size:26px;}
+  .grid{grid-template-columns:1fr;}
+  .grid-2{grid-template-columns:1fr;}
+  .hero-stats{gap:12px;}
+}
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="goat-launcher-hub.html">🐐 GOAT</a>
+  <div class="nav-links">
+    <a href="goat-launcher-hub.html">🚀 Hub</a>
+    <a href="http://127.0.0.1:3333/" target="_blank" class="hot">🐐 Master Oscar</a>
+    <a href="powerhouse.html">⚡ Powerhouse</a>
+    <a href="agents-brain.html">🤖 AI Brain</a>
+    <a href="#ubuntu" class="g">🐧 Ubuntu</a>
+    <a href="#jetson" class="g">🖥️ Jetson</a>
+    <a href="#gaming">🎮 Gaming Server</a>
+    <a href="#vm">💻 Mac VM</a>
+  </div>
+  <a class="back" href="goat-launcher-hub.html">← Back to Hub</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">💾 AGENT1 Drive — All ISOs Ready</div>
+    <h1>GOAT <span>Gaming + AI</span> Server<br>Setup & Deploy</h1>
+    <p class="hero-sub">Everything on your AGENT1 drive — Ubuntu 26.04, Jetson r39.2, NVIDIA SDK Manager — wired into one deployment dashboard. Flash USBs, set up Jetson boards, run Ubuntu in a VM, and stand up the GOAT gaming server.</p>
+    <div class="hero-stats">
+      <div class="hs"><div class="v">6.1GB</div><div class="l">Ubuntu 26.04 ISO</div></div>
+      <div class="hs"><div class="v">4.7GB</div><div class="l">Jetson r39.2 ISO</div></div>
+      <div class="hs"><div class="v">131MB</div><div class="l">NVIDIA SDK Mgr</div></div>
+      <div class="hs"><div class="v">3</div><div class="l">SDK Docker images</div></div>
+    </div>
+    <div class="hero-btns">
+      <button class="btn btn-gold" onclick="scrollTo('ubuntu')">🐧 Flash Ubuntu USB</button>
+      <button class="btn btn-green" onclick="scrollTo('jetson')">🖥️ Flash Jetson</button>
+      <button class="btn btn-outline" onclick="scrollTo('gaming')">🎮 Gaming Server</button>
+      <button class="btn btn-outline" onclick="scrollTo('vm')">💻 Run in Mac VM</button>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- ── UBUNTU 26.04 ─────────────────────────────────── -->
+  <div class="sec" id="ubuntu">
+    <div class="sec-head">
+      <span class="ico">🐧</span>
+      <h2>Ubuntu 26.04 — Flash USB + Server Setup</h2>
+      <span class="cnt">6.1 GB · x86_64</span>
+    </div>
+
+    <div class="tabs" id="ubuntu-tabs">
+      <div class="tab active" onclick="switchTab('ubuntu','flash')">1. Flash USB</div>
+      <div class="tab" onclick="switchTab('ubuntu','gaming')">2. Gaming Server</div>
+      <div class="tab" onclick="switchTab('ubuntu','vm')">3. Mac VM (UTM)</div>
+      <div class="tab" onclick="switchTab('ubuntu','ai')">4. AI/GPU Stack</div>
+    </div>
+
+    <!-- Tab: Flash USB -->
+    <div class="tab-pane active" id="ubuntu-flash">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Get a USB drive — 8GB+ recommended (16GB+ for install + data)</h4>
+            <p>Plug in a USB drive. The flash process will ERASE it completely. Make sure it's the right one.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Find your USB disk identifier on Mac</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">diskutil list
+# Look for your USB — e.g. /dev/disk4 (FAT32 or "external, physical")
+# DO NOT use your internal disk (disk0) or AGENT1</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Unmount the USB, then flash the ISO</h4>
+            <div class="cmd" onclick="copy('diskutil unmountDisk /dev/diskN\nsudo dd if=\"/Volumes/AGENT1/ubuntu-26.04-desktop-amd64.iso\" of=/dev/rdiskN bs=1m status=progress')">diskutil unmountDisk /dev/diskN
+sudo dd if="/Volumes/AGENT1/ubuntu-26.04-desktop-amd64.iso" of=/dev/rdiskN bs=1m status=progress
+# Replace N with your actual disk number — e.g. disk4 → rdisk4
+# Takes ~5 minutes · r-prefix = raw = much faster on macOS</div>
+            <div class="warn">Replace <strong>diskN</strong> with your actual USB disk number. Wrong disk = data loss. Double-check with diskutil list first.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Eject and boot the target PC from USB</h4>
+            <p>Eject the USB, plug into the gaming/AI server PC, then press F12 (Dell/HP/ASUS) or F2 (Lenovo) or Delete at POST to enter boot menu. Select the USB drive. Ubuntu installer launches.</p>
+            <div class="note">Ubuntu 26.04 (Noble Numbat) is an LTS release — 5 years of support. Perfect for a dedicated gaming/AI server.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <h4>Install Ubuntu — recommended settings for a server</h4>
+            <p>Choose <strong>Minimal Install</strong>, enable <strong>Install third-party software</strong> (for NVIDIA drivers), and if this is a dedicated machine, select <strong>Erase disk and install Ubuntu</strong>. Set your timezone, create user <strong>goat</strong> with a strong password.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Gaming Server -->
+    <div class="tab-pane" id="ubuntu-gaming">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>After Ubuntu is installed — update everything first</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">sudo apt update && sudo apt upgrade -y
+sudo apt install -y curl wget git build-essential python3-pip ufw</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Install NVIDIA GPU drivers (if you have an NVIDIA GPU)</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">sudo apt install -y nvidia-driver-555 nvidia-cuda-toolkit
+# Reboot after install
+sudo reboot
+# Verify after reboot:
+nvidia-smi</div>
+            <div class="note">Ubuntu 26.04 auto-detects NVIDIA cards. If nvidia-driver-555 isn't found, run: <strong>ubuntu-drivers devices</strong> to see available drivers.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Install Ollama AI engine (runs Master Oscar locally on this server)</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">curl -fsSL https://ollama.com/install.sh | sh
+ollama serve &
+sleep 3
+ollama pull llama3.2:3b
+# Test:
+ollama run llama3.2:3b "Hello from GOAT Force"</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Clone GOAT Royalty App + start Master Oscar Console</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">git clone https://github.com/DJSPEEDYGA/GOAT-Royalty-App.git ~/goat
+cd ~/goat
+bash start-goat.sh</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <h4>Open firewall ports + make Master Oscar accessible on your network</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">sudo ufw allow 3333/tcp   # Master Oscar Console
+sudo ufw allow 3334/tcp   # Agent 007
+sudo ufw allow 8090/tcp   # Web App
+sudo ufw allow 5500/tcp   # Intel Brain
+sudo ufw allow 22/tcp     # SSH
+sudo ufw enable
+# Master Oscar will now be accessible from any device on your network at:
+# http://YOUR-SERVER-IP:3333/</div>
+            <div class="note">Find your server IP: <strong>ip a | grep inet</strong> — look for 192.168.x.x or 10.x.x.x. Everyone on your WiFi can hit Master Oscar at that address.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">6</div>
+          <div class="step-body">
+            <h4>Auto-start Master Oscar on boot</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">sudo tee /etc/systemd/system/goat-oscar.service << 'EOF'
+[Unit]
+Description=GOAT Master Oscar Console
+After=network.target
+
+[Service]
+Type=simple
+User=goat
+WorkingDirectory=/home/goat/goat
+ExecStart=/bin/bash /home/goat/goat/start-goat.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl daemon-reload
+sudo systemctl enable goat-oscar
+sudo systemctl start goat-oscar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Mac VM (UTM) -->
+    <div class="tab-pane" id="ubuntu-vm">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Install UTM — free VM app for Apple Silicon Macs</h4>
+            <p>UTM is the best free VM solution for M1/M2/M3 Macs. It supports both ARM64 VMs (fast, native) and x86_64 emulation (slower but works).</p>
+            <div class="cmd" onclick="copy('brew install --cask utm')">brew install --cask utm
+# Or download directly from https://mac.getutm.app/</div>
+            <div class="note">Ubuntu 26.04 desktop ISO is x86_64. On Apple Silicon, UTM will emulate it (QEMU mode) — works but slower. For best performance, use an ARM64 Ubuntu ISO instead. The Jetson ISO is ARM64.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Create new VM in UTM</h4>
+            <p>Open UTM → + New VM → <strong>Emulate</strong> → Linux → Browse → select <code>/Volumes/AGENT1/ubuntu-26.04-desktop-amd64.iso</code>. Recommended settings:</p>
+            <table class="spec-table" style="margin-top:12px;">
+              <tr><th>Setting</th><th>Value</th></tr>
+              <tr><td>Architecture</td><td class="val">x86_64</td></tr>
+              <tr><td>RAM</td><td class="val">8 GB</td></tr>
+              <tr><td>CPU cores</td><td class="val">4</td></tr>
+              <tr><td>Storage</td><td class="val">80 GB</td></tr>
+              <tr><td>Display</td><td class="val">VirtIO GPU</td></tr>
+              <tr><td>Network</td><td class="val">Shared (NAT) or Bridged for LAN access</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Install Ubuntu inside the VM</h4>
+            <p>Boot the VM, follow installer, then install VMware/QEMU guest additions for clipboard + folder sharing:</p>
+            <div class="cmd" onclick="copy('sudo apt install -y spice-vdagent qemu-guest-agent')">sudo apt install -y spice-vdagent qemu-guest-agent</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Run Master Oscar Console inside the VM</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">sudo apt install -y git python3 curl
+git clone https://github.com/DJSPEEDYGA/GOAT-Royalty-App.git ~/goat
+curl -fsSL https://ollama.com/install.sh | sh
+cd ~/goat && bash start-goat.sh</div>
+            <div class="note">Master Oscar will run on port 3333 inside the VM. On Mac host, access it at <strong>http://localhost:3333</strong> (UTM NAT mode) or the VM's bridged IP.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: AI/GPU Stack -->
+    <div class="tab-pane" id="ubuntu-ai">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Install CUDA + cuDNN (full GPU AI stack)</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
+sudo apt update
+sudo apt install -y cuda-toolkit-12-6 libcudnn9-cuda-12</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Install Python AI stack</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip3 install transformers diffusers accelerate bitsandbytes
+pip3 install langchain openai anthropic
+# Verify GPU:
+python3 -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Install NVIDIA SDK Manager (from AGENT1 drive)</h4>
+            <p>Transfer the .deb from your AGENT1 drive to the Ubuntu machine, then install:</p>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">sudo dpkg -i sdkmanager_2.4.1-13529_amd64.deb
+sudo apt-get install -f   # fix any dependency issues
+sdkmanager --help</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Run bigger Ollama models with GPU acceleration</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">ollama pull llama3.1:8b         # 8B — needs 8GB VRAM
+ollama pull mixtral:8x7b        # 47B — needs 26GB VRAM (or 64GB RAM)
+ollama pull codellama:13b       # Code specialist
+# Master Oscar will auto-detect the GPU-accelerated models</div>
+            <div class="note">With a 24GB GPU (RTX 3090/4090/A5000) you can run the 13B+ models at full speed — 10-40x faster than CPU-only. The 70B models need 2x GPUs or 64GB RAM.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── JETSON ─────────────────────────────────────────── -->
+  <div class="sec" id="jetson">
+    <div class="sec-head">
+      <span class="ico">🖥️</span>
+      <h2>NVIDIA Jetson — Flash JetPack r39.2</h2>
+      <span class="cnt">4.7 GB · ARM64</span>
+    </div>
+
+    <div class="grid" style="margin-bottom:24px;">
+      <div class="card g">
+        <h3>What You Have</h3>
+        <p>JetPack r39.2.0 ARM64 ISO. This is the full NVIDIA JetPack SDK for Jetson Orin series (Orin NX, Orin Nano, AGX Orin). Includes L4T Linux, CUDA, cuDNN, TensorRT, DeepStream, Jetson-specific OpenCV.</p>
+        <div class="tags"><span class="tag tg">JetPack 6.x</span><span class="tag tgr">Orin Series</span><span class="tag tb">CUDA Included</span></div>
+      </div>
+      <div class="card c">
+        <h3>What Jetson Does for GOAT</h3>
+        <p>Jetson Orin is a small GPU computer (~$500-800). Run Master Oscar locally at the edge. No cloud needed. 40 TOPS of AI compute. Perfect for a live venue AI rig, tour setup, or server rack card.</p>
+        <div class="tags"><span class="tag tc">40 TOPS</span><span class="tag tg">Edge AI</span><span class="tag tp">CUDA 12</span></div>
+      </div>
+    </div>
+
+    <div class="tabs" id="jetson-tabs">
+      <div class="tab active" onclick="switchTab('jetson','sdk')">1. SDK Manager Setup</div>
+      <div class="tab" onclick="switchTab('jetson','flash')">2. Flash Jetson</div>
+      <div class="tab Master Oscar on Jetson</div>
+      <div class="tab" onclick="switchTab('jetson','docker')">4. Docker Images</div>
+    </div>
+
+    <!-- Tab: SDK Manager -->
+    <div class="tab-pane active" id="jetson-sdk">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Requirements — you need an Ubuntu 20.04/22.04 x86 host machine</h4>
+            <p>NVIDIA SDK Manager only runs on Ubuntu. You have two options: use a dedicated Linux PC, or run the Docker version of SDK Manager (on AGENT1) from your Mac's Docker Desktop.</p>
+            <div class="warn">SDK Manager does NOT run natively on macOS. Use the Docker image on AGENT1 or a separate Ubuntu machine.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Option A — Run SDK Manager via Docker on this Mac</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">## First install Docker Desktop for Mac (if not already installed)
+## Then load the SDK Manager Docker image from AGENT1:
+
+cd "/Volumes/AGENT1"
+docker load -i sdkmanager-2.4.1.13529-Ubuntu_22.04_docker.tar.gz
+
+docker run -it --rm \
+  --privileged \
+  -v /dev/bus/usb:/dev/bus/usb \
+  -v ~/nvidia:/home/nvidia \
+  sdkmanager:2.4.1-ubuntu22.04 --cli install \
+  --logintype devzone \
+  --product Jetson \
+  --version 6.0 \
+  --targetos Linux \
+  --host</div>
+            <div class="note">Docker on macOS can't forward USB, so full Jetson flashing from Docker on Mac is limited. Best path: use an Ubuntu machine (real or VM) for flashing. Docker image is used for the SDK Manager UI + downloads.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Option B — Transfer SDK Manager .deb to Ubuntu machine and install</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">## Copy from AGENT1 to your Ubuntu machine over SSH:
+scp "/Volumes/AGENT1/sdkmanager_2.4.1-13529_amd64.deb" goat@YOUR-UBUNTU-IP:~
+
+## On the Ubuntu machine:
+sudo dpkg -i sdkmanager_2.4.1-13529_amd64.deb
+sudo apt-get install -f
+sdkmanager   # opens GUI</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Log into NVIDIA Developer account in SDK Manager</h4>
+            <p>SDK Manager requires a free NVIDIA Developer account. Sign up at <strong>developer.nvidia.com</strong> if you don't have one. Then in SDK Manager: select <strong>Jetson Orin NX / Orin Nano / AGX Orin</strong> as target, select <strong>JetPack 6.x</strong>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Flash Jetson -->
+    <div class="tab-pane" id="jetson-flash">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Put Jetson into Recovery Mode</h4>
+            <p>With power OFF, hold the <strong>Recovery button</strong> while connecting USB-C to your host machine, then power on. LED will light but no display output — that's normal. Verify it's detected:</p>
+            <div class="cmd" onclick="copy('lsusb | grep NVIDIA')">lsusb | grep NVIDIA
+# Should show: Bus 00X Device 00X: ID 0955:XXXX NVIDIA Corp. APX</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Flash using SDK Manager (GUI)</h4>
+            <p>In SDK Manager: target = your Jetson model → Step 2 → check all components (OS + CUDA + cuDNN + TensorRT + DeepStream) → Flash. Takes 15-30 minutes.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Or flash using the Jetson ISO directly (manual)</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">## Mount and use the ISO on Ubuntu:
+sudo mkdir -p /mnt/jetson-iso
+sudo mount -o loop jetsoninstaller-r39.2.0-2026-06-01-23-53-13-arm64.iso /mnt/jetson-iso
+cd /mnt/jetson-iso
+sudo ./flash.sh jetson-orin-nano-devkit mmcblk0p1</div>
+            <div class="note">Replace <strong>jetson-orin-nano-devkit</strong> with your board config. Find it at: <strong>https://docs.nvidia.com/jetson/archives/r36.4/DeveloperGuide/</strong></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>First boot + OEM setup</h4>
+            <p>After flash completes, disconnect USB-C, connect HDMI + keyboard. Power on. Ubuntu OEM setup wizard appears. Create user <strong>goat</strong>. System will reboot into JetPack Linux.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Master Oscar on Jetson -->
+    <div class="tab-pane" id="jetson-oscar">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>SSH into Jetson + install Ollama (ARM64)</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">ssh goat@JETSON-IP
+# Install Ollama (ARM64 build — runs on Jetson GPU via CUDA):
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3.2:3b    # Fits in 8GB Orin RAM
+ollama serve &</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Clone GOAT + start Master Oscar</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">sudo apt install -y git python3
+git clone https://github.com/DJSPEEDYGA/GOAT-Royalty-App.git ~/goat
+cd ~/goat && bash start-goat.sh</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Access Master Oscar from Mac (same network)</h4>
+            <p>Master Oscar runs on port 3333 on the Jetson. From your Mac Studio, open:</p>
+            <div class="cmd" onclick="copy('open http://JETSON-IP:3333/')">open http://JETSON-IP:3333/
+# Replace JETSON-IP with the Jetson's LAN IP (e.g. 192.168.1.55)
+# Find it on Jetson with: hostname -I</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Expected performance on Jetson Orin</h4>
+            <table class="spec-table" style="margin-top:8px;">
+              <tr><th>Model</th><th>Speed</th><th>VRAM needed</th></tr>
+              <tr><td>llama3.2:3b</td><td class="val">~25 tok/s</td><td class="alt">~3GB</td></tr>
+              <tr><td>llama3.1:8b</td><td class="val">~8 tok/s</td><td class="alt">~8GB</td></tr>
+              <tr><td>qwen2.5:3b</td><td class="val">~30 tok/s</td><td class="alt">~3GB</td></tr>
+              <tr><td>codellama:7b</td><td class="val">~12 tok/s</td><td class="alt">~7GB</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Docker Images -->
+    <div class="tab-pane" id="jetson-docker">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>What Docker images you have on AGENT1</h4>
+            <table class="spec-table" style="margin-top:8px;">
+              <tr><th>File</th><th>Size</th><th>Use Case</th></tr>
+              <tr><td>sdkmanager…Ubuntu_20.04_docker.tar.gz</td><td class="alt">478 MB</td><td class="val">SDK Manager on Ubuntu 20.04 host</td></tr>
+              <tr><td>sdkmanager…Ubuntu_22.04_docker.tar.gz</td><td class="alt">480 MB</td><td class="val">SDK Manager on Ubuntu 22.04 host (recommended)</td></tr>
+              <tr><td>sdkmanager…Ubuntu_24.04_docker.tar.gz</td><td class="alt">534 MB</td><td class="val">SDK Manager on Ubuntu 24.04 host</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Load the right image for your host Ubuntu version</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">## On the Ubuntu machine — copy from AGENT1 first via USB or SCP, then:
+docker load -i sdkmanager-2.4.1.13529-Ubuntu_22.04_docker.tar.gz
+docker images | grep sdkmanager</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Run SDK Manager container with X11 GUI forwarding (on Ubuntu)</h4>
+            <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">xhost +local:docker
+docker run -it --rm \
+  --privileged \
+  -e DISPLAY=$DISPLAY \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -v /dev/bus/usb:/dev/bus/usb \
+  -v ~/sdkmanager-home:/home/nvidia \
+  sdkmanager:2.4.1-ubuntu22.04</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GAMING SERVER ──────────────────────────────────── -->
+  <div class="sec" id="gaming">
+    <div class="sec-head">
+      <span class="ico">🎮</span>
+      <h2>GOAT Gaming Server — Plan</h2>
+      <span class="cnt">gaming server.pdf on AGENT1</span>
+    </div>
+
+    <div class="grid" style="margin-bottom:24px;">
+      <div class="card g" onclick="open('file:///Volumes/AGENT1/gaming%20server.pdf')">
+        <h3>📄 Open Gaming Server PDF</h3>
+        <p>Full business plan on AGENT1. Click to open the PDF in Preview.</p>
+        <div class="tags"><span class="tag tg">OPEN NOW</span><span class="tag tgr">AGENT1</span></div>
+      </div>
+      <div class="card b">
+        <h3>🖥️ Recommended Hardware</h3>
+        <p>Ubuntu 26.04 server + RTX 4090 or dual RTX 3090 + 128GB RAM + NVMe RAID. Runs game servers, AI models, and GOAT streaming simultaneously.</p>
+        <div class="tags"><span class="tag tb">NVIDIA GPU</span><span class="tag tb">128GB RAM</span></div>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Install Ubuntu 26.04 on dedicated gaming server hardware</h4>
+          <p>Follow the Ubuntu USB flash steps above. Recommended: separate NVMe for OS (512GB) + separate NVMe RAID for game data + assets.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Install gaming server software stack</h4>
+          <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">sudo apt install -y steamcmd lib32gcc-s1 ufw nginx
+# SteamCMD for dedicated game servers
+mkdir -p ~/game-servers
+steamcmd +quit</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Install GOAT AI stack alongside gaming (they share the GPU)</h4>
+          <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">curl -fsSL https://ollama.com/install.sh | sh
+git clone https://github.com/DJSPEEDYGA/GOAT-Royalty-App.git ~/goat
+cd ~/goat && bash start-goat.sh</div>
+          <div class="note">Ollama uses CUDA and will share GPU memory with game server. Set <strong>OLLAMA_NUM_PARALLEL=1</strong> and <strong>OLLAMA_MAX_LOADED_MODELS=1</strong> to keep memory under control while gaming server is running.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>Nginx reverse proxy — expose everything on clean ports</h4>
+          <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">sudo tee /etc/nginx/sites-available/goat << 'EOF'
+server {
+    listen 80;
+    server_name goat.local;
+    location /oscar/ { proxy_pass http://127.0.0.1:3333/; }
+    location /hub/   { proxy_pass http://127.0.0.1:8090/goat-launcher-hub.html; }
+    location /ai/    { proxy_pass http://127.0.0.1:11434/; }
+}
+EOF
+sudo ln -s /etc/nginx/sites-available/goat /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h4>Access everything from your Mac Studio</h4>
+          <div class="cmd" onclick="copy(this.innerText.split('\n').slice(0,-1).join('\n'))">## Add to /etc/hosts on your Mac:
+echo "192.168.1.SERVER-IP  goat.local" | sudo tee -a /etc/hosts
+
+## Then open:
+open http://goat.local/oscar/   # Master Oscar Console
+open http://goat.local/hub/     # Launcher Hub
+open http://goat.local/ai/      # Ollama API</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── QUICK REFERENCE ────────────────────────────────── -->
+  <div class="sec" id="ref">
+    <div class="sec-head"><span class="ico">⚡</span><h2>Quick Commands — All Platforms</h2></div>
+    <div class="grid grid-2">
+      <div class="card" onclick="copy('diskutil list')">
+        <h3>Find USB disk on Mac</h3>
+        <div class="cmd" style="cursor:default;">diskutil list</div>
+      </div>
+      <div class="card" onclick="copy('sudo dd if=\"/Volumes/AGENT1/ubuntu-26.04-desktop-amd64.iso\" of=/dev/rdisk4 bs=1m status=progress')">
+        <h3>Flash Ubuntu to USB (Mac, disk4)</h3>
+        <div class="cmd" style="cursor:default;">sudo dd if="/Volumes/AGENT1/ubuntu-26.04-desktop-amd64.iso" of=/dev/rdisk4 bs=1m status=progress</div>
+      </div>
+      <div class="card" onclick="copy('docker load -i \"/Volumes/AGENT1/sdkmanager-2.4.1.13529-Ubuntu_22.04_docker.tar.gz\"')">
+        <h3>Load SDK Manager Docker image</h3>
+        <div class="cmd" style="cursor:default;">docker load -i "/Volumes/AGENT1/sdkmanager-2.4.1.13529-Ubuntu_22.04_docker.tar.gz"</div>
+      </div>
+      <div class="card" onclick="copy('curl -fsSL https://ollama.com/install.sh | sh && ollama pull llama3.2:3b')">
+        <h3>Install Ollama + pull model (Linux)</h3>
+        <div class="cmd" style="cursor:default;">curl -fsSL https://ollama.com/install.sh | sh && ollama pull llama3.2:3b</div>
+      </div>
+      <div class="card" onclick="copy('scp \"/Volumes/AGENT1/sdkmanager_2.4.1-13529_amd64.deb\" goat@SERVER-IP:~')">
+        <h3>Copy SDK Manager .deb to server</h3>
+        <div class="cmd" style="cursor:default;">scp "/Volumes/AGENT1/sdkmanager_2.4.1-13529_amd64.deb" goat@SERVER-IP:~</div>
+      </div>
+      <div class="card" onclick="copy('git clone https://github.com/DJSPEEDYGA/GOAT-Royalty-App.git ~/goat && cd ~/goat && bash start-goat.sh')">
+        <h3>Clone + Start GOAT on any Linux box</h3>
+        <div class="cmd" style="cursor:default;">git clone https://github.com/DJSPEEDYGA/GOAT-Royalty-App.git ~/goat && cd ~/goat && bash start-goat.sh</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<div id="toast">Copied!</div>
+
+<script>
+function scrollTo(id){document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});}
+
+function switchTab(group,pane){
+  const bar=document.getElementById(group+'-tabs');
+  if(!bar)return;
+  bar.querySelectorAll('.tab').forEach((t,i)=>t.classList.remove('active'));
+  document.querySelectorAll(`[id^="${group}-"]`).forEach(p=>p.classList.remove('active'));
+  const target=document.getElementById(group+'-'+pane);
+  if(target)target.classList.add('active');
+  // activate tab button
+  const tabs=Array.from(bar.querySelectorAll('.tab'));
+  const names={flash:0,gaming:1,vm:2,ai:3,sdk:0,oscar:2,docker:3};
+  const idx=names[pane]??0;
+  if(tabs[idx])tabs[idx].classList.add('active');
+}
+
+let toastTimer;
+function copy(text){
+  navigator.clipboard.writeText(text).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=text;document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');ta.remove();
+  });
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+function open(url){window.open(url,'_blank');}
+</script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

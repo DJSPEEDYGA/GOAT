@@ -12,6 +12,7 @@
 
 const express = require('express');
 const router = express.Router();
+const { protect, authorize } = require('../middleware/auth');
 
 // Initialize RAG system
 let ragSystem = null;
@@ -69,7 +70,7 @@ async function getRAGSystem() {
  * POST /rag/query
  * Generate a response using RAG
  */
-router.post('/query', async (req, res) => {
+router.post('/query', protect, async (req, res) => {
   try {
     const { query, options } = req.body;
     
@@ -98,7 +99,7 @@ router.post('/query', async (req, res) => {
  * POST /rag/search
  * Perform semantic search without generation
  */
-router.post('/search', async (req, res) => {
+router.post('/search', protect, async (req, res) => {
   try {
     const { query, options } = req.body;
     
@@ -132,7 +133,7 @@ router.post('/search', async (req, res) => {
  * POST /rag/documents
  * Add a document to the knowledge base
  */
-router.post('/documents', async (req, res) => {
+router.post('/documents', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     const { content, metadata, id } = req.body;
     
@@ -161,7 +162,7 @@ router.post('/documents', async (req, res) => {
  * DELETE /rag/documents/:id
  * Remove a document from the knowledge base
  */
-router.delete('/documents/:id', async (req, res) => {
+router.delete('/documents/:id', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -183,7 +184,7 @@ router.delete('/documents/:id', async (req, res) => {
  * GET /rag/documents
  * List all documents in the knowledge base
  */
-router.get('/documents', async (req, res) => {
+router.get('/documents', protect, async (req, res) => {
   try {
     const system = await getRAGSystem();
     
@@ -212,7 +213,7 @@ router.get('/documents', async (req, res) => {
  * GET /rag/history
  * Get query history
  */
-router.get('/history', async (req, res) => {
+router.get('/history', protect, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
     
@@ -238,7 +239,7 @@ router.get('/history', async (req, res) => {
  * GET /rag/metrics
  * Get system metrics
  */
-router.get('/metrics', async (req, res) => {
+router.get('/metrics', protect, async (req, res) => {
   try {
     const system = await getRAGSystem();
     const metrics = system.getMetrics();
@@ -261,7 +262,7 @@ router.get('/metrics', async (req, res) => {
  * POST /rag/rebuild
  * Rebuild the entire knowledge base
  */
-router.post('/rebuild', async (req, res) => {
+router.post('/rebuild', protect, authorize('admin'), async (req, res) => {
   try {
     const system = await getRAGSystem();
     

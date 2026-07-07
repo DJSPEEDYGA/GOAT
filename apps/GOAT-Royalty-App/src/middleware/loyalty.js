@@ -72,11 +72,10 @@ function logSecure(level, event, meta = {}) {
 /** @type {Map<string, { count: number, lockedUntil: number | null }>} */
 const intrusionStore = new Map();
 
-const LOCKOUT_THRESHOLD = parseInt(process.env.LOCKOUT_THRESHOLD || '10', 10);
-const LOCKOUT_DURATION_MS = parseInt(
-  process.env.LOCKOUT_DURATION_MS || String(15 * 60 * 1000), // 15 min default
-  10
-);
+// Read lazily so tests can override process.env before requiring this module
+const getLockoutThreshold = () => parseInt(process.env.LOCKOUT_THRESHOLD || '10', 10);
+const getLockoutDurationMs = () =>
+  parseInt(process.env.LOCKOUT_DURATION_MS || String(15 * 60 * 1000), 10);
 
 /**
  * Record a failed attempt for an IP address.
@@ -88,8 +87,8 @@ function recordFailedAttempt(ip) {
   const entry = intrusionStore.get(ip) || { count: 0, lockedUntil: null };
   entry.count += 1;
 
-  if (entry.count >= LOCKOUT_THRESHOLD) {
-    entry.lockedUntil = Date.now() + LOCKOUT_DURATION_MS;
+  if (entry.count >= getLockoutThreshold()) {
+    entry.lockedUntil = Date.now() + getLockoutDurationMs();
     logSecure('warn', 'intrusion_lockdown', { ip, attempts: entry.count });
   }
 

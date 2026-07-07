@@ -49,11 +49,11 @@ const API_CONFIG = {
     }
   },
   
-  // Supabase Configuration
+  // Supabase Configuration — GOAT Force project: xmvlnonsxmrpvlssjstl
   supabase: {
-    url: process.env.SUPABASE_URL || 'https://your-project.supabase.co',
-    anonKey: process.env.SUPABASE_ANON_KEY,
-    serviceKey: process.env.SUPABASE_SERVICE_KEY,
+    url: process.env.SUPABASE_URL || 'https://xmvlnonsxmrpvlssjstl.supabase.co',
+    anonKey: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhtdmxub25zeG1ycHZsc3Nqc3RsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExODY5MzEsImV4cCI6MjA3Njc2MjkzMX0.29rr7p9mzPAyjRmnASo6c9rVZES211oFip1fh-chOtA',
+    serviceKey: process.env.SUPABASE_SERVICE_KEY, // NEVER expose in browser — server-side only
     tables: {
       users: 'users',
       profiles: 'profiles',
@@ -114,8 +114,8 @@ const API_CONFIG = {
       }
     },
     local: {
-      ollamaUrl: 'http://localhost:11434',
-      models: ['llama3:70b', 'mistral:7b', 'codellama:34b']
+      ollamaUrl: 'http://localhost:11435', // GOAT Force 56-model store on port 11435
+      models: ['llama3.1:70b', 'qwen3:14b', 'deepseek-r1:14b', 'mistral:7b', 'codestral:22b']
     }
   },
   

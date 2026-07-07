@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Royalty Casino — Play Like The Greatest</title>
+<link rel="stylesheet" href="css/goat-brand.css">
+<link rel="stylesheet" href="css/goat-theme.css">
+<style>
+:root {
+  --gold: #FFD700;
+  --gold-dim: #d4a03c;
+  --red: #c1121f;
+  --bg: #050507;
+  --bg-panel: rgba(255,255,255,0.045);
+  --border: rgba(255,255,255,0.09);
+  --text: #f5f5f7;
+  --muted: #9ca3af;
+  --teal: #00d4aa;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(193,18,31,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 100% 0%, rgba(212,160,60,0.12) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 100%, rgba(0,212,170,0.07) 0%, transparent 40%),
+    #050507;
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Animated gold particle layer */
+.casino-particles {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+}
+.casino-particle {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(255,215,0,0.25), transparent 70%);
+  animation: casinoFloat 20s ease-in-out infinite;
+  opacity: 0;
+}
+.casino-particle:nth-child(1) { width:300px;height:300px;top:5%;left:3%;animation-delay:0s;opacity:.18; }
+.casino-particle:nth-child(2) { width:200px;height:200px;top:55%;left:12%;animation-delay:5s;opacity:.12; }
+.casino-particle:nth-child(3) { width:400px;height:400px;top:20%;left:68%;animation-delay:10s;opacity:.10; }
+.casino-particle:nth-child(4) { width:150px;height:150px;top:78%;left:82%;animation-delay:15s;opacity:.15; }
+.casino-particle:nth-child(5) { width:250px;height:250px;top:42%;left:44%;animation-delay:7s;opacity:.09; }
+@keyframes casinoFloat {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(25px,-40px) scale(1.1); }
+  66% { transform: translate(-18px,28px) scale(0.92); }
+}
+
+/* Watermark GOAT */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: url('assets/goat/goat-superman-city.webp') center center / 600px no-repeat;
+  opacity: 0.025; filter: grayscale(100%);
+}
+body > * { position: relative; z-index: 1; }
+
+/* ── NAV ── */
+.casino-nav {
+  background: rgba(5,5,7,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,215,0,0.15);
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 0;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 24px rgba(0,0,0,0.6);
+}
+.casino-nav-brand {
+  display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0;
+  margin-right: 20px;
+}
+.casino-nav-brand img { height: 32px; border-radius: 6px; }
+.casino-nav-brand span {
+  font-weight: 900; font-size: 15px; letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #FFD700, #f0c040, #fff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.casino-nav-links {
+  display: flex; align-items: center; gap: 2px; flex: 1; overflow-x: auto;
+}
+.casino-nav-links a {
+  color: #9ca3af; text-decoration: none; font-size: 12px; font-weight: 500;
+  padding: 4px 10px; border-radius: 4px; transition: all 0.15s; white-space: nowrap;
+}
+.casino-nav-links a:hover { color: #fff; background: rgba(255,215,0,0.08); }
+.casino-nav-links a.active { color: var(--gold); background: rgba(255,215,0,0.12); }
+.casino-nav-right {
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-left: auto;
+}
+.nav-wallet-pill {
+  background: rgba(255,215,0,0.12); border: 1px solid rgba(255,215,0,0.25);
+  border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 700;
+  color: var(--gold); cursor: pointer;
+}
+.nav-vip-btn {
+  background: linear-gradient(135deg, var(--red), #8b0000);
+  border: none; border-radius: 6px; padding: 6px 14px;
+  font-size: 11px; font-weight: 800; color: #fff; cursor: pointer;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  box-shadow: 0 0 12px rgba(193,18,31,0.4);
+}
+.nav-vip-btn:hover { filter: brightness(1.15); }
+
+/* ── HERO BANNER ── */
+.casino-hero {
+  position: relative; overflow: hidden;
+  min-height: 220px;
+  background: linear-gradient(135deg,
+    rgba(193,18,31,0.25) 0%,
+    rgba(5,5,7,0.8) 40%,
+    rgba(212,160,60,0.15) 100%);
+  border-bottom: 1px solid rgba(255,215,0,0.12);
+  display: flex; align-items: center; padding: 0 40px;
+  gap: 40px;
+}
+.casino-hero-bg {
+  position: absolute; inset: 0; z-index: 0; overflow: hidden;
+}
+.casino-hero-bg img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center 30%;
+  opacity: 0.12; filter: saturate(1.3);
+}
+.casino-hero-content {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; gap: 32px; flex: 1;
+}
+.casino-hero-goat {
+  width: 140px; height: 140px; flex-shrink: 0;
+  border-radius: 50%; object-fit: cover;
+  border: 3px solid var(--gold);
+  box-shadow: 0 0 40px rgba(255,215,0,0.5), 0 0 80px rgba(255,215,0,0.2);
+  animation: heroGlow 3s ease-in-out infinite;
+  cursor: pointer;
+}
+@keyframes heroGlow {
+  0%,100% { box-shadow: 0 0 40px rgba(255,215,0,0.5), 0 0 80px rgba(255,215,0,0.2); }
+  50% { box-shadow: 0 0 60px rgba(255,215,0,0.8), 0 0 120px rgba(255,215,0,0.35); }
+}
+.casino-hero-text { flex: 1; }
+.casino-hero-eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--gold-dim); margin-bottom: 6px;
+}
+.casino-hero-title {
+  font-size: clamp(28px, 4vw, 52px); font-weight: 900; line-height: 1.05;
+  background: linear-gradient(135deg, #fff 0%, var(--gold) 50%, #fff 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 8px;
+}
+.casino-hero-sub {
+  font-size: 14px; color: rgba(245,245,247,0.6); max-width: 480px; line-height: 1.5;
+}
+.casino-hero-stats {
+  display: flex; gap: 24px; margin-top: 18px; flex-wrap: wrap;
+}
+.casino-hero-stat { text-align: center; }
+.casino-hero-stat .val {
+  font-size: 22px; font-weight: 900; color: var(--gold); display: block;
+}
+.casino-hero-stat .lbl {
+  font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;
+}
+.casino-hero-imgs {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; gap: 12px; align-items: center;
+}
+.casino-hero-img-stack {
+  display: flex; gap: 10px;
+}
+.casino-hero-img-stack img {
+  width: 80px; height: 80px; object-fit: cover; border-radius: 12px;
+  border: 2px solid rgba(255,215,0,0.3);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  transition: transform 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+.casino-hero-img-stack img:hover {
+  transform: scale(1.08) translateY(-4px);
+  border-color: var(--gold);
+}
+
+/* ── QUICK STATS BAR ── */
+.casino-stats-bar {
+  display: flex; align-items: center; gap: 0;
+  background: rgba(0,0,0,0.4);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; padding: 0 20px;
+}
+.casino-stat-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-right: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.casino-stat-item .s-val {
+  font-size: 16px; font-weight: 900; color: var(--gold);
+}
+.casino-stat-item .s-lbl {
+  font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em;
+}
+.casino-stat-live::before {
+  content: ''; display: inline-block; width: 7px; height: 7px;
+  border-radius: 50%; background: var(--teal);
+  box-shadow: 0 0 6px var(--teal); animation: pulse-live 1.5s ease-in-out infinite;
+  margin-right: 6px;
+}
+@keyframes pulse-live {
+  0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+}
+
+/* ── CASINO IFRAME WRAPPER ── */
+.casino-embed-wrap {
+  position: relative;
+  background: #050505;
+  border-top: 1px solid rgba(255,215,0,0.08);
+}
+.casino-embed-wrap iframe {
+  width: 100%; min-height: calc(100vh - 270px);
+  border: none; display: block;
+}
+/* Loading overlay */
+.casino-loading {
+  position: absolute; inset: 0; z-index: 10;
+  background: #050507;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px; transition: opacity 0.4s;
+}
+.casino-loading.hidden { opacity: 0; pointer-events: none; }
+.casino-loading-goat {
+  width: 100px; height: 100px; border-radius: 50%;
+  border: 3px solid var(--gold);
+  box-shadow: 0 0 30px rgba(255,215,0,0.5);
+  animation: heroGlow 2s ease-in-out infinite;
+  object-fit: cover;
+}
+.casino-loading-text {
+  font-size: 16px; font-weight: 700; color: var(--gold); letter-spacing: 0.05em;
+}
+.casino-loading-bar {
+  width: 200px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;
+}
+.casino-loading-fill {
+  height: 100%; background: linear-gradient(90deg, var(--red), var(--gold));
+  border-radius: 2px; animation: loadFill 1.5s ease-in-out infinite;
+}
+@keyframes loadFill {
+  0% { width: 0%; } 70% { width: 90%; } 100% { width: 100%; }
+}
+
+/* ── GOAT ART GALLERY STRIP ── */
+.casino-art-strip {
+  background: rgba(0,0,0,0.5);
+  border-top: 1px solid rgba(255,215,0,0.1);
+  border-bottom: 1px solid rgba(255,215,0,0.1);
+  padding: 16px 20px;
+  overflow-x: auto;
+  display: flex; align-items: center; gap: 12px;
+}
+.casino-art-strip::-webkit-scrollbar { height: 4px; }
+.casino-art-strip::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.3); border-radius: 2px; }
+.art-strip-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gold-dim); flex-shrink: 0; margin-right: 8px;
+}
+.art-strip-img {
+  height: 72px; width: 72px; flex-shrink: 0;
+  border-radius: 10px; object-fit: cover;
+  border: 2px solid rgba(255,215,0,0.2);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  cursor: pointer; transition: all 0.2s;
+}
+.art-strip-img:hover {
+  transform: scale(1.12) translateY(-4px);
+  border-color: var(--gold);
+  box-shadow: 0 8px 24px rgba(255,215,0,0.3);
+}
+
+/* ── LIGHTBOX ── */
+.art-lightbox {
+  display: none; position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.92); align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
+}
+.art-lightbox.open { display: flex; }
+.art-lightbox img {
+  max-width: 90vw; max-height: 88vh; border-radius: 16px;
+  border: 3px solid var(--gold); box-shadow: 0 0 60px rgba(255,215,0,0.4);
+}
+.art-lightbox-close {
+  position: absolute; top: 20px; right: 28px;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  color: #fff; font-size: 22px; width: 40px; height: 40px;
+  border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+
+/* ── FOOTER ── */
+.casino-footer {
+  background: rgba(0,0,0,0.7);
+  border-top: 1px solid rgba(255,215,0,0.08);
+  padding: 20px 40px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+}
+.casino-footer-brand {
+  display: flex; align-items: center; gap: 10px;
+}
+.casino-footer-brand img { height: 32px; border-radius: 6px; }
+.casino-footer-brand span { font-size: 13px; color: var(--muted); }
+.casino-footer-links {
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+.casino-footer-links a {
+  font-size: 11px; color: var(--muted); text-decoration: none;
+  transition: color 0.15s;
+}
+.casino-footer-links a:hover { color: var(--gold); }
+.casino-footer-note {
+  font-size: 10px; color: rgba(156,163,175,0.5); text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .casino-hero { min-height: 160px; padding: 20px; gap: 16px; }
+  .casino-hero-goat { width: 80px; height: 80px; }
+  .casino-hero-imgs { display: none; }
+  .casino-hero-title { font-size: 24px; }
+  .casino-footer { padding: 16px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Ambient particles -->
+<div class="casino-particles">
+  <div class="casino-particle"></div>
+  <div class="casino-particle"></div>
+  <div class="casino-particle"></div>
+  <div class="casino-particle"></div>
+  <div class="casino-particle"></div>
+</div>
+
+<!-- ── NAVIGATION ── -->
+<nav class="casino-nav">
+  <a class="casino-nav-brand" href="goat-launcher-hub.html">
+    <img src="assets/images/the-goat-icon.png" alt="GOAT Force">
+    <span>GOAT FORCE</span>
+  </a>
+  <div class="casino-nav-links">
+    <a href="goat-launcher-hub.html">Hub</a>
+    <a href="the-goat-launcher.html">THE GOAT</a>
+    <a href="money-penny-launcher.html">Ms. Money Penny</a>
+    <a href="master-oscar-launcher.html">Master Oscar</a>
+    <a href="agent-007.html">Agent 007</a>
+    <a href="goat-casino.html" class="active">🎰 Casino</a>
+    <a href="goat-celebrity-lounge.html">Celebrity Lounge</a>
+    <a href="studio-hub.html">Studio Hub</a>
+    <a href="agent-status.html">Agent Status</a>
+    <a href="halito-chat.html">Halito Chat</a>
+  </div>
+  <div class="casino-nav-right">
+    <span class="nav-wallet-pill" id="navWallet">25,000 USDT-D</span>
+    <button class="nav-vip-btn" onclick="openVip()">VIP ACCESS</button>
+  </div>
+</nav>
+
+<!-- ── HERO BANNER ── -->
+<section class="casino-hero">
+  <div class="casino-hero-bg">
+    <img src="assets/goat/goat-marvel-logo.webp" alt="" aria-hidden="true">
+  </div>
+  <div class="casino-hero-content">
+    <img class="casino-hero-goat"
+         src="assets/goat/the-goat-2.webp"
+         alt="THE GOAT"
+         id="heroGoatImg"
+         onclick="cycleHeroGoat()"
+         title="Click to cycle GOAT images">
+    <div class="casino-hero-text">
+      <div class="casino-hero-eyebrow">🐐 GOAT Royalty · VIP Casino · Play Like The Greatest</div>
+      <h1 class="casino-hero-title">GOAT Royalty Casino</h1>
+      <p class="casino-hero-sub">29 live games · Ultimate Bourré · Crash · Dice · Slots · VIP tables · Brick Squad private rooms — fastest payouts in the game.</p>
+      <div class="casino-hero-stats">
+        <div class="casino-hero-stat"><span class="val">29</span><span class="lbl">Live Games</span></div>
+        <div class="casino-hero-stat"><span class="val">12.8k</span><span class="lbl">Players Online</span></div>
+        <div class="casino-hero-stat"><span class="val">1.6%</span><span class="lbl">House Edge</span></div>
+        <div class="casino-hero-stat"><span class="val">VIP</span><span class="lbl">Instant Access</span></div>
+        <div class="casino-hero-stat"><span class="val">$3.3B</span><span class="lbl">Portfolio</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="casino-hero-imgs">
+    <div class="casino-hero-img-stack">
+      <img src="assets/goat/goat-flying-cape.png"     alt="GOAT" onclick="lightbox(this.src)">
+      <img src="assets/goat/goat-superman-city.webp"  alt="GOAT Superman" onclick="lightbox(this.src)">
+      <img src="assets/goat/waka-goat-flying.webp"    alt="Waka + GOAT" onclick="lightbox(this.src)">
+    </div>
+    <div class="casino-hero-img-stack">
+      <img src="assets/goat/goat-marvel-logo.webp"    alt="GOAT Marvel" onclick="lightbox(this.src)">
+      <img src="assets/goat/goat-app-icon-red.webp"   alt="GOAT Icon" onclick="lightbox(this.src)">
+      <img src="assets/goat/the-goat-1.webp"          alt="THE GOAT" onclick="lightbox(this.src)">
+    </div>
+  </div>
+</section>
+
+<!-- ── LIVE STATS BAR ── -->
+<div class="casino-stats-bar">
+  <div class="casino-stat-item">
+    <span class="casino-stat-live"></span>
+    <div><div class="s-val" id="statPlayers">12,847</div><div class="s-lbl">Players Live</div></div>
+  </div>
+  <div class="casino-stat-item">
+    <div><div class="s-val" id="statBets">$284,391</div><div class="s-lbl">Wagered Today</div></div>
+  </div>
+  <div class="casino-stat-item">
+    <div><div class="s-val" id="statWins">$231,862</div><div class="s-lbl">Paid Out Today</div></div>
+  </div>
+  <div class="casino-stat-item">
+    <div><div class="s-val">29</div><div class="s-lbl">Games Online</div></div>
+  </div>
+  <div class="casino-stat-item">
+    <div><div class="s-val">VIP-GOAT-ROYALTY</div><div class="s-lbl">VIP Invite Code</div></div>
+  </div>
+  <div class="casino-stat-item">
+    <div><div class="s-val">OSCAR-TOOLS</div><div class="s-lbl">Operator Code</div></div>
+  </div>
+  <div class="casino-stat-item">
+    <div><div class="s-val" id="statTime">—</div><div class="s-lbl">Local Time</div></div>
+  </div>
+</div>
+
+<!-- ── GOAT ART STRIP ── -->
+<div class="casino-art-strip">
+  <span class="art-strip-label">🎨 GOAT Art</span>
+  <img class="art-strip-img" src="assets/goat/the-goat-2.webp"           alt="THE GOAT 2"         onclick="lightbox(this.src)">
+  <img class="art-strip-img" src="assets/goat/the-goat-1.webp"           alt="THE GOAT"           onclick="lightbox(this.src)">
+  <img class="art-strip-img" src="assets/goat/goat-flying-cape.png"      alt="GOAT Cape"          onclick="lightbox(this.src)">
+  <img class="art-strip-img" src="assets/goat/goat-marvel-logo.webp"     alt="GOAT Marvel"        onclick="lightbox(this.src)">
+  <img class="art-strip-img" src="assets/goat/goat-superman-city.webp"   alt="GOAT Superman"      onclick="lightbox(this.src)">
+  <img class="art-strip-img" src="assets/goat/waka-goat-flying.webp"     alt="Waka + GOAT"        onclick="lightbox(this.src)">
+  <img class="art-strip-img" src="assets/goat/waka-goat-flying-2.webp"   alt="Waka + GOAT 2"      onclick="lightbox(this.src)">
+  <img class="art-strip-img" src="assets/goat/goat-app-icon-red.webp"    alt="App Icon"           onclick="lightbox(this.src)">
+  <img class="art-strip-img" src="assets/goat/goat-icon-app-mockup.webp" alt="App Mockup"         onclick="lightbox(this.src)">
+  <img class="art-strip-img" src="assets/goat/goat-og-fiery.png"         alt="OG Fiery GOAT"      onclick="lightbox(this.src)">
+  <img class="art-strip-img" src="assets/goat/goat-fiery-chaos.png"      alt="Fiery Chaos GOAT"   onclick="lightbox(this.src)">
+  <img class="art-strip-img" src="assets/goat/goat-logo-designed.png"    alt="GOAT Logo"          onclick="lightbox(this.src)">
+  <img class="art-strip-img" src="assets/goat/goat-and-moneypenny.png"   alt="GOAT + Money Penny" onclick="lightbox(this.src)">
+  <img class="art-strip-img" src="assets/goat/moneypenny-cartoon.png"    alt="Ms. Money Penny"    onclick="lightbox(this.src)">
+</div>
+
+<!-- ── CASINO EMBED ── -->
+<div class="casino-embed-wrap">
+  <!-- Loading overlay -->
+  <div class="casino-loading" id="casinoLoading">
+    <img class="casino-loading-goat"
+         src="assets/goat/goat-flying-cape.png"
+         alt="Loading..." id="loadingGoatImg">
+    <div class="casino-loading-text">LOADING GOAT ROYALTY CASINO...</div>
+    <div class="casino-loading-bar"><div class="casino-loading-fill"></div></div>
+  </div>
+  <iframe
+    id="casinoFrame"
+    src="casino/index.html"
+    title="GOAT Royalty Casino"
+    allowfullscreen
+    onload="casinoLoaded()">
+  </iframe>
+</div>
+
+<!-- ── LIGHTBOX ── -->
+<div class="art-lightbox" id="artLightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt="GOAT Art">
+  <button class="art-lightbox-close" onclick="closeLightbox()">✕</button>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer class="casino-footer">
+  <div class="casino-footer-brand">
+    <img src="assets/images/the-goat-icon.png" alt="GOAT Force">
+    <span>© 2026 GOAT Force Records · Speedy Productions Inc · DJ Speedy (Harvey L. Miller Jr.)</span>
+  </div>
+  <div class="casino-footer-links">
+    <a href="goat-launcher-hub.html">Hub</a>
+    <a href="the-goat-launcher.html">THE GOAT</a>
+    <a href="money-penny-launcher.html">Ms. Money Penny</a>
+    <a href="agent-007.html">Agent 007</a>
+    <a href="goat-celebrity-lounge.html">Celebrity Lounge</a>
+    <a href="goat-vault.html">Vault</a>
+    <a href="agent-status.html">Status</a>
+  </div>
+  <div class="casino-footer-note">
+    Demo mode — 25,000 USDT-D sandbox balance · VIP code: VIP-GOAT-ROYALTY<br>
+    Operator code: OSCAR-TOOLS · Real-money rails pending licensing
+  </div>
+</footer>
+
+<script>
+// ── Hero GOAT image cycler ──────────────────────────────────
+const heroGoatImages = [
+  'assets/goat/the-goat-2.webp',
+  'assets/goat/the-goat-1.webp',
+  'assets/goat/goat-flying-cape.png',
+  'assets/goat/goat-superman-city.webp',
+  'assets/goat/goat-marvel-logo.webp',
+  'assets/goat/goat-app-icon-red.webp',
+  'assets/goat/goat-og-fiery.png',
+];
+let heroGoatIdx = 0;
+function cycleHeroGoat() {
+  heroGoatIdx = (heroGoatIdx + 1) % heroGoatImages.length;
+  document.getElementById('heroGoatImg').src = heroGoatImages[heroGoatIdx];
+}
+
+// ── Lightbox ────────────────────────────────────────────────
+function lightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('artLightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('artLightbox').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+// ── Casino loaded ───────────────────────────────────────────
+function casinoLoaded() {
+  setTimeout(() => {
+    document.getElementById('casinoLoading').classList.add('hidden');
+  }, 600);
+}
+
+// ── Open VIP modal (pass code into iframe) ──────────────────
+function openVip() {
+  const frame = document.getElementById('casinoFrame');
+  try {
+    // Try to focus the VIP code input inside the iframe
+    frame.contentWindow.document.getElementById('vip-code') &&
+      frame.contentWindow.document.getElementById('vip-code').scrollIntoView({ behavior: 'smooth' });
+  } catch(e) {}
+  // Fallback: scroll to bottom where VIP section is
+  frame.contentWindow.location.hash = '#vip-access';
+}
+
+// ── Live stats ticker ───────────────────────────────────────
+function updateCasinoStats() {
+  const players = document.getElementById('statPlayers');
+  const bets    = document.getElementById('statBets');
+  const wins    = document.getElementById('statWins');
+  const time    = document.getElementById('statTime');
+  if (players) {
+    const base = 12847;
+    players.textContent = (base + Math.floor(Math.random() * 200 - 100)).toLocaleString();
+  }
+  if (bets) {
+    const b = 284391 + Math.floor(Math.random() * 5000);
+    bets.textContent = '$' + b.toLocaleString();
+  }
+  if (wins) {
+    const w = 231862 + Math.floor(Math.random() * 4000);
+    wins.textContent = '$' + w.toLocaleString();
+  }
+  if (time) {
+    time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  // Sync wallet display from iframe if possible
+  try {
+    const bal = document.getElementById('casinoFrame').contentWindow.state?.wallet;
+    if (bal && document.getElementById('navWallet')) {
+      document.getElementById('navWallet').textContent =
+        parseFloat(bal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USDT-D';
+    }
+  } catch(e) {}
+}
+setInterval(updateCasinoStats, 3000);
+updateCasinoStats();
+
+// ── Auto-cycle loading goat image ──────────────────────────
+const loadGoatImgs = heroGoatImages;
+let loadGoatIdx = 0;
+setInterval(() => {
+  const el = document.getElementById('loadingGoatImg');
+  if (el && !document.getElementById('casinoLoading').classList.contains('hidden')) {
+    loadGoatIdx = (loadGoatIdx + 1) % loadGoatImgs.length;
+    el.src = loadGoatImgs[loadGoatIdx];
+  }
+}, 800);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT FX RACK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --bg: #060608;
+    --panel: #0f0f13;
+    --border: rgba(255,255,255,0.06);
+    --gold: #c9922a;
+    --gold-dim: #8c6b1f;
+    --text: #e5e5e7;
+    --text-muted: #8b8b92;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+  html, body { height: 100%; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .nav {
+    height: 44px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    flex-shrink: 0;
+  }
+  .nav-left, .nav-center, .nav-right { display: flex; align-items: center; gap: 12px; }
+  .brand { font-weight: 700; font-size: 13px; letter-spacing: 0.14em; color: var(--gold); }
+  .brand span { color: var(--text); font-weight: 500; }
+  .btn {
+    background: #15151a;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 4px;
+    padding: 5px 12px;
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.12s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { border-color: var(--gold); color: var(--gold); }
+  .btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
+  .btn.active:hover { color: #000; }
+  .btn-sm { padding: 3px 8px; font-size: 10px; }
+  input[type="file"] { display: none; }
+  input[type="text"], input[type="number"] {
+    background: #15151a; border: 1px solid var(--border); color: var(--text);
+    border-radius: 3px; font-family: var(--font); font-size: 11px; padding: 3px 6px; outline: none;
+  }
+  input[type="text"]:focus, input[type="number"]:focus { border-color: var(--gold); }
+  .waveform-wrap {
+    height: 80px; background: #08080b; border-bottom: 1px solid var(--border);
+    position: relative; flex-shrink: 0;
+  }
+  .waveform-wrap canvas { width: 100%; height: 100%; display: block; }
+  .playhead {
+    position: absolute; top: 0; bottom: 0; left: 0; width: 1px;
+    background: var(--gold); pointer-events: none; box-shadow: 0 0 6px rgba(201,146,42,0.5);
+  }
+  .rack-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px 12px; }
+  .rack-scroll::-webkit-scrollbar { width: 6px; }
+  .rack-scroll::-webkit-scrollbar-track { background: transparent; }
+  .rack-scroll::-webkit-scrollbar-thumb { background: #2a2a30; border-radius: 3px; }
+  .rack { display: flex; flex-direction: column; gap: 6px; }
+  .module {
+    background: var(--panel); border: 1px solid var(--border); border-left-width: 4px;
+    border-left-color: var(--accent); border-radius: 4px; height: 100px;
+    display: flex; align-items: stretch; user-select: none; position: relative; transition: opacity 0.15s;
+  }
+  .module.dragging { opacity: 0.4; }
+  .module.drag-over::before {
+    content: ''; position: absolute; top: -3px; left: 0; right: 0;
+    height: 2px; background: var(--gold); border-radius: 1px;
+  }
+  .module.bypassed { opacity: 0.55; }
+  .module.bypassed .module-led { background: #333; box-shadow: none; }
+  .handle {
+    width: 18px; min-width: 18px; display: flex; align-items: center; justify-content: center;
+    cursor: grab; border-right: 1px solid var(--border);
+  }
+  .handle:active { cursor: grabbing; }
+  .handle svg { width: 10px; height: 14px; opacity: 0.35; }
+  .module-head {
+    width: 78px; min-width: 78px; padding: 8px; border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .module-name { font-weight: 600; font-size: 11px; letter-spacing: 0.04em; line-height: 1.2; }
+  .module-type { font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; letter-spacing: 0.05em; }
+  .module-status { display: flex; align-items: center; gap: 6px; }
+  .module-led {
+    width: 8px; height: 8px; border-radius: 50%; background: #1c7c32;
+    box-shadow: 0 0 6px rgba(34,197,94,0.6); transition: all 0.15s;
+  }
+  .power-btn {
+    width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--border);
+    background: #1a1a1f; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .power-btn::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #444; transition: background 0.15s; }
+  .module:not(.bypassed) .power-btn::after { background: #22c55e; }
+  .module-controls {
+    flex: 1; padding: 8px 12px; display: flex; gap: 14px; align-items: center; overflow-x: auto;
+  }
+  .module-controls::-webkit-scrollbar { height: 3px; }
+  .module-controls::-webkit-scrollbar-thumb { background: #2a2a30; }
+  .control { display: flex; flex-direction: column; gap: 3px; min-width: 80px; }
+  .control label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .slider-row { display: flex; align-items: center; gap: 8px; }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none; height: 3px; background: #222;
+    border-radius: 2px; outline: none; flex: 1; min-width: 60px;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 10px; height: 10px; border-radius: 50%;
+    background: #fff; border: none; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 10px; height: 10px; border-radius: 50%; background: #fff; border: none; cursor: pointer;
+  }
+  .value { min-width: 44px; text-align: right; font-size: 10px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .select { background: #15151a; border: 1px solid var(--border); color: var(--text); border-radius: 3px; font-size: 10px; padding: 2px 5px; outline: none; }
+  .select:focus { border-color: var(--gold); }
+  .module-right {
+    width: 92px; min-width: 92px; border-left: 1px solid var(--border); padding: 8px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .meter-wrap {
+    width: 8px; height: 72px; background: #1a1a1f; border: 1px solid var(--border);
+    border-radius: 2px; position: relative; overflow: hidden;
+  }
+  .meter-bar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, #22c55e, #eab308, #ef4444); transition: height 0.05s linear;
+  }
+  .gr-meter { background: #ef4444; }
+  .meters { display: flex; gap: 4px; }
+  .meter-label { font-size: 8px; color: var(--text-muted); text-transform: uppercase; text-align: center; }
+  .meter-labels { display: flex; gap: 4px; }
+  .wetdry-control { display: flex; flex-direction: column; gap: 3px; }
+  .wetdry-control label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+  .wetdry-control input { width: 100%; }
+  .meter-panel { display: flex; align-items: center; gap: 8px; }
+  .meter-stack { display: flex; flex-direction: column; align-items: center; }
+  .meter-stack.small .meter-wrap { height: 36px; width: 6px; }
+  .meter-stack.small .meter-label { font-size: 7px; }
+  .eq-canvas { width: 200px; height: 72px; background: #0a0a0c; border: 1px solid var(--border); border-radius: 3px; }
+  .toggle-row { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text-muted); }
+  .toggle-row input { accent-color: var(--gold); }
+  .status-bar {
+    height: 24px; background: #0a0a0d; border-top: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 12px; font-size: 10px; color: var(--text-muted); flex-shrink: 0; gap: 12px;
+  }
+  .status-bar .right { margin-left: auto; display: flex; gap: 10px; }
+  .status-msg { color: var(--text); }
+  .progress { width: 140px; height: 3px; background: #222; border-radius: 2px; overflow: hidden; display: none; }
+  .progress-bar { height: 100%; width: 0%; background: var(--gold); }
+  .correlation-meter { display: flex; flex-direction: column; align-items: center; }
+  .correlation-meter canvas { width: 120px; height: 28px; background: #0a0a0c; border: 1px solid var(--border); border-radius: 2px; }
+  .correlation-label { font-size: 8px; color: var(--text-muted); margin-top: 2px; }
+  .spinner {
+    width: 12px; height: 12px; border: 2px solid #222; border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 1s linear infinite; display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .master-bypassed .module { opacity: 0.55; }
+  .master-bypassed .module .module-led { background: #333; box-shadow: none; }
+  .drop-overlay {
+    position: fixed; inset: 0; background: rgba(6,6,8,0.85); border: 2px dashed var(--gold);
+    display: none; align-items: center; justify-content: center; z-index: 100;
+    font-size: 16px; color: var(--gold); letter-spacing: 0.1em; font-weight: 600;
+  }
+  .drop-overlay.active { display: flex; }
+  .time-display { font-variant-numeric: tabular-nums; }
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+<div class="drop-overlay" id="dropOverlay">DROP AUDIO FILE</div>
+<nav class="nav">
+  <div class="nav-left">
+    <div class="brand">GOAT <span>FX RACK</span></div>
+  </div>
+  <div class="nav-center">
+    <label class="btn"><input type="file" id="fileInput" accept="audio/*">Load File</label>
+    <button class="btn btn-sm" id="playBtn">Play</button>
+    <button class="btn btn-sm" id="stopBtn">Stop</button>
+    <label class="toggle-row"><input type="checkbox" id="loopBtn"> Loop</label>
+    <button class="btn btn-sm" id="exportBtn">Export WAV</button>
+  </div>
+  <div class="nav-right">
+    <label class="toggle-row">BPM <input type="number" id="bpmInput" value="120" min="20" max="300" style="width:48px"></label>
+    <button class="btn btn-sm" id="masterBypass">Master Bypass</button>
+  </div>
+</nav>
+<div class="waveform-wrap">
+  <canvas id="waveformCanvas"></canvas>
+  <div class="playhead" id="playhead"></div>
+</div>
+<div class="rack-scroll">
+  <div class="rack" id="rack"></div>
+</div>
+<div class="status-bar">
+  <div id="statusText">Ready</div>
+  <div class="progress" id="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="spinner" id="spinner"></div>
+  <div class="right">
+    <div class="time-display" id="timeDisplay">00:00.00 / 00:00.00</div>
+    <div id="sampleRate">-- kHz</div>
+  </div>
+</div>
+<script>
+(function() {
+  'use strict';
+
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  let audioCtx = null;
+  let audioBuffer = null;
+  let sourceNode = null;
+  let isPlaying = false;
+  let startTime = 0;
+  let pauseOffset = 0;
+  let duration = 0;
+  let rafId = null;
+  let masterBypass = false;
+  let sampleRate = 44100;
+  let nextModuleId = 1;
+
+  const rack = document.getElementById('rack');
+  const playBtn = document.getElementById('playBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const loopBtn = document.getElementById('loopBtn');
+  const fileInput = document.getElementById('fileInput');
+  const waveformCanvas = document.getElementById('waveformCanvas');
+  const playhead = document.getElementById('playhead');
+  const timeDisplay = document.getElementById('timeDisplay');
+  const statusText = document.getElementById('statusText');
+  const sampleRateDisplay = document.getElementById('sampleRate');
+  const dropOverlay = document.getElementById('dropOverlay');
+  const masterBypassBtn = document.getElementById('masterBypass');
+  const bpmInput = document.getElementById('bpmInput');
+  const exportBtn = document.getElementById('exportBtn');
+  const progress = document.getElementById('progress');
+  const progressBar = document.getElementById('progressBar');
+  const spinner = document.getElementById('spinner');
+  const waveformCtx = waveformCanvas.getContext('2d');
+
+  const modules = [];
+  const workletModules = new Map();
+
+  function dbToGain(db) { return Math.pow(10, db / 20); }
+  function gainToDb(g) { return 20 * Math.log10(Math.max(g, 1e-10)); }
+  function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    const ms = Math.floor((s % 1) * 100);
+    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
+  }
+  function setStatus(msg) { statusText.textContent = msg; }
+
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new AudioContext({ sampleRate: 48000 });
+      sampleRate = audioCtx.sampleRate;
+      sampleRateDisplay.textContent = (sampleRate / 1000).toFixed(1) + ' kHz';
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  async function registerWorklet(ctx, name, code) {
+    const key = name + '-' + ctx.sampleRate;
+    if (workletModules.has(key)) return;
+    const blob = new Blob([code], { type: 'application/javascript' });
+    const url = URL.createObjectURL(blob);
+    try {
+      await ctx.audioWorklet.addModule(url);
+      workletModules.set(key, true);
+    } catch (e) {
+      console.error('Worklet register failed', name, e);
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  function createWetDry(ctx, effectNode) {
+    const input = ctx.createGain();
+    const dry = ctx.createGain();
+    const wet = ctx.createGain();
+    const output = ctx.createGain();
+    input.connect(dry);
+    input.connect(effectNode);
+    effectNode.connect(wet);
+    dry.connect(output);
+    wet.connect(output);
+    return { input, output, dry, wet };
+  }
+
+  class ModuleBase {
+    constructor(id, name, type, color, params) {
+      this.id = id; this.name = name; this.type = type; this.color = color;
+      this.bypass = false; this.params = params; this.element = null;
+      this.nodes = null; this.wet = 1.0;
+    }
+
+    createUI() {
+      const el = document.createElement('div');
+      el.className = 'module';
+      el.dataset.id = this.id;
+      el.style.setProperty('--accent', this.color);
+      el.draggable = true;
+      el.innerHTML = `
+        <div class="handle" title="Drag to reorder">
+          <svg viewBox="0 0 10 14" fill="currentColor"><circle cx="2" cy="2" r="1.2"/><circle cx="8" cy="2" r="1.2"/><circle cx="2" cy="7" r="1.2"/><circle cx="8" cy="7" r="1.2"/><circle cx="2" cy="12" r="1.2"/><circle cx="8" cy="12" r="1.2"/></svg>
+        </div>
+        <div class="module-head">
+          <div><div class="module-name">${this.name}</div><div class="module-type">${this.type}</div></div>
+          <div class="module-status"><div class="module-led"></div><div class="power-btn" title="Toggle bypass"></div></div>
+        </div>
+        <div class="module-controls" id="controls-${this.id}"></div>
+        <div class="module-right">
+          <div class="wetdry-control">
+            <label>Wet / Dry</label>
+            <input type="range" min="0" max="100" value="${this.wet * 100}" class="wet-slider">
+            <div class="value" id="wetval-${this.id}">${Math.round(this.wet * 100)}%</div>
+          </div>
+        </div>
+      `;
+      this.element = el;
+      const controls = el.querySelector(`#controls-${this.id}`);
+      this.renderControls(controls);
+      el.querySelector('.power-btn').addEventListener('click', () => this.toggleBypass());
+      el.querySelector('.wet-slider').addEventListener('input', (e) => {
+        this.wet = parseInt(e.target.value, 10) / 100;
+        document.getElementById(`wetval-${this.id}`).textContent = Math.round(this.wet * 100) + '%';
+        if (this.nodes) this.updateNodes();
+      });
+      this.setupDrag(el);
+      return el;
+    }
+
+    setupDrag(el) {
+      el.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', this.id);
+        e.dataTransfer.effectAllowed = 'move';
+        el.classList.add('dragging');
+      });
+      el.addEventListener('dragend', () => {
+        el.classList.remove('dragging');
+        document.querySelectorAll('.module').forEach(m => m.classList.remove('drag-over'));
+      });
+      el.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const draggingId = e.dataTransfer.getData('text/plain');
+        if (draggingId && draggingId !== String(this.id)) el.classList.add('drag-over');
+      });
+      el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+      el.addEventListener('drop', (e) => {
+        e.preventDefault();
+        el.classList.remove('drag-over');
+        const draggingId = e.dataTransfer.getData('text/plain');
+        if (!draggingId || draggingId === String(this.id)) return;
+        const fromIdx = modules.findIndex(m => String(m.id) === draggingId);
+        const toIdx = modules.findIndex(m => m.id === this.id);
+        if (fromIdx < 0 || toIdx < 0) return;
+        const [moved] = modules.splice(fromIdx, 1);
+        modules.splice(toIdx, 0, moved);
+        rebuildRackUI();
+        reconnectChain();
+      });
+    }
+
+    toggleBypass() {
+      this.bypass = !this.bypass;
+      this.element.classList.toggle('bypassed', this.bypass);
+      if (this.nodes) this.updateNodes();
+    }
+
+    renderControls() {}
+    createNodes(ctx) { return null; }
+    updateNodes() {}
+    tick() {}
+
+    makeSlider(label, min, max, val, unit, key) {
+      const wrap = document.createElement('div'); wrap.className = 'control';
+      const id = `${this.id}-${key}`;
+      const step = (max - min) / 1000;
+      wrap.innerHTML = `
+        <label>${label}</label>
+        <div class="slider-row">
+          <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}">
+          <div class="value" id="${id}-val">${val}${unit}</div>
+        </div>
+      `;
+      wrap.querySelector('input').addEventListener('input', (e) => {
+        this.params[key] = parseFloat(e.target.value);
+        document.getElementById(`${id}-val`).textContent = this.params[key] + unit;
+        if (this.nodes) this.updateNodes();
+      });
+      return wrap;
+    }
+
+    makeSelect(label, opts, key) {
+      const wrap = document.createElement('div'); wrap.className = 'control';
+      const id = `${this.id}-${key}`;
+      let html = `<label>${label}</label><select class="select" id="${id}">`;
+      opts.forEach(o => html += `<option value="${o}"${String(this.params[key])===String(o)?' selected':''}>${o}</option>`);
+      html += '</select>';
+      wrap.innerHTML = html;
+      wrap.querySelector('select').addEventListener('change', (e) => {
+        this.params[key] = e.target.value;
+        if (this.nodes) this.updateNodes();
+      });
+      return wrap;
+    }
+
+    makeMeter(label, idSuffix='gr') {
+      const wrap = document.createElement('div'); wrap.className = 'meter-stack';
+      wrap.innerHTML = `
+        <div class="meters"><div class="meter-wrap"><div class="meter-bar gr-meter" id="${idSuffix}-${this.id}" style="height:0%"></div></div></div>
+        <div class="meter-label">${label}</div>
+      `;
+      return wrap;
+    }
+  }
+
+  class GateModule extends ModuleBase {
+    constructor() {
+      super(nextModuleId++, 'Gate / Expander', 'Dynamics', '#374151', {
+        threshold: -60, attack: 1, release: 100, hold: 0, range: -80
+      });
+    }
+    renderControls(controls) {
+      controls.appendChild(this.makeSlider('Threshold', -80, 0, this.params.threshold, ' dB', 'threshold'));
+      controls.appendChild(this.makeSlider('Attack', 0.1, 500, this.params.attack, ' ms', 'attack'));
+      controls.appendChild(this.makeSlider('Release', 10, 3000, this.params.release, ' ms', 'release'));
+      controls.appendChild(this.makeSlider('Hold', 0, 500, this.params.hold, ' ms', 'hold'));
+      controls.appendChild(this.makeSlider('Range', -80, 0, this.params.range, ' dB', 'range'));
+      controls.appendChild(this.makeMeter('GR'));
+    }
+    async createNodes(ctx) {
+      await registerWorklet(ctx, 'gate-processor', `
+        class GateProcessor extends AudioWorkletProcessor {
+          constructor() {
+            super();
+            this.threshold = 0.001;
+            this.attack = 0.001;
+            this.release = 0.1;
+            this.hold = 0;
+            this.range = 0.0001;
+            this.envelope = 0;
+            this.gain = 1;
+            this.holdSamps = 0;
+            this.port.onmessage = (e) => {
+              const d = e.data;
+              if (d.threshold !== undefined) this.threshold = d.threshold;
+              if (d.attack !== undefined) this.attack = d.attack;
+              if (d.release !== undefined) this.release = d.release;
+              if (d.hold !== undefined) this.hold = d.hold;
+              if (d.range !== undefined) this.range = d.range;
+            };
+          }
+          process(inputs, outputs) {
+            const input = inputs[0];
+            const output = outputs[0];
+            if (!input || !output || !input.length || !output.length) return true;
+            const sr = sampleRate;
+            const atkCoef = Math.exp(-1 / (Math.max(this.attack, 1/sr) * sr));
+            const relCoef = Math.exp(-1 / (Math.max(this.release, 1/sr) * sr));
+            const holdSamps = Math.max(0, Math.round(this.hold * sr));
+            const len = input[0].length;
+            let gr = 0;
+            for (let i = 0; i < len; i++) {
+              let maxEnv = 0;
+              for (let c = 0; c < input.length; c++) maxEnv = Math.max(maxEnv, Math.abs(input[c][i]));
+              this.envelope = Math.max(maxEnv, this.envelope * (maxEnv > this.envelope ? atkCoef : relCoef));
+              let target = 1;
+              if (this.envelope < this.threshold) {
+                const ratio = this.envelope / this.threshold;
+                target = this.range + (1 - this.range) * ratio;
+              } else {
+                this.holdSamps = holdSamps;
+              }
+              if (target < 1 && this.holdSamps > 0) { target = 1; this.holdSamps--; }
+              this.gain += (target - this.gain) * 0.1;
+              const g = this.gain;
+              for (let c = 0; c < output.length; c++) output[c][i] = input[c] ? input[c][i] * g : 0;
+              gr = Math.max(gr, 1 - g);
+            }
+            this.port.postMessage({ gr: Math.max(0, gr) });
+            return true;
+          }
+        }
+        registerProcessor('gate-processor', GateProcessor);
+      `);
+      const input = ctx.createGain();
+      const output = ctx.createGain();
+      const dry = ctx.createGain();
+      const wet = ctx.createGain();
+      const gate = new AudioWorkletNode(ctx, 'gate-processor', { channelCount: 2, outputChannelCount: [2] });
+      input.connect(dry);
+      input.connect(gate);
+      gate.connect(wet);
+      dry.connect(output);
+      wet.connect(output);
+      const nodes = { input, output, dry, wet, gate };
+      this.nodes = nodes;
+      this.updateNodes();
+      gate.port.onmessage = (e) => {
+        const gr = e.data.gr || 0;
+        const el = document.getElementById(`gr-${this.id}`);
+        if (el) el.style.height = Math.min(100, gr * 100) + '%';
+      };
+      return nodes;
+    }
+    updateNodes() {
+      const n = this.nodes;
+      const p = this.params;
+      const bypass = this.bypass || masterBypass;
+      n.gate.port.postMessage({
+        threshold: dbToGain(p.threshold),
+        attack: p.attack / 1000,
+        release: p.release / 1000,
+        hold: p.hold / 1000,
+        range: dbToGain(p.range)
+      });
+      const mix = bypass ? 0 : this.wet;
+      n.dry.gain.value = 1 - mix;
+      n.wet.gain.value = mix;
+    }
+  }
+
+  class CompressorModule extends ModuleBase {
+    constructor() {
+      super(nextModuleId++, 'Compressor', 'Dynamics', '#1e40af', {
+        threshold: -24, ratio: 4, attack: 0.003, release: 0.25, knee: 6, makeup: 0, compType: 'VCA'
+      });
+    }
+    renderControls(controls) {
+      controls.appendChild(this.makeSlider('Threshold', -60, 0, this.params.threshold, ' dB', 'threshold'));
+      controls.appendChild(this.makeSlider('Ratio', 1, 20, this.params.ratio, ':1', 'ratio'));
+      controls.appendChild(this.makeSlider('Attack', 0.001, 0.1, this.params.attack, ' s', 'attack'));
+      controls.appendChild(this.makeSlider('Release', 0.01, 1, this.params.release, ' s', 'release'));
+      controls.appendChild(this.makeSlider('Knee', 0, 20, this.params.knee, ' dB', 'knee'));
+      controls.appendChild(this.makeSlider('Makeup', 0, 24, this.params.makeup, ' dB', 'makeup'));
+      controls.appendChild(this.makeSelect('Type', ['VCA','FET','OPTO'], 'compType'));
+      controls.appendChild(this.makeMeter('GR'));
+    }
+    createNodes(ctx) {
+      const comp = ctx.createDynamicsCompressor();
+      const input = ctx.createGain();
+      const output = ctx.createGain();
+      const dry = ctx.createGain();
+      const wet = ctx.createGain();
+      const makeup = ctx.createGain();
+      const character = ctx.createBiquadFilter();
+      input.connect(dry);
+      input.connect(comp);
+      comp.connect(makeup);
+      makeup.connect(character);
+      character.connect(wet);
+      dry.connect(output);
+      wet.connect(output);
+      this.nodes = { input, output, dry, wet, comp, makeup, character };
+      this.updateNodes();
+      return this.nodes;
+    }
+    updateNodes() {
+      const n = this.nodes;
+      const p = this.params;
+      const bypass = this.bypass || masterBypass;
+      n.comp.threshold.value = bypass ? 0 : p.threshold;
+      n.comp.ratio.value = bypass ? 1 : p.ratio;
+      n.comp.attack.value = p.attack;
+      n.comp.release.value = p.release;
+      n.comp.knee.value = bypass ? 0 : p.knee;
+      n.makeup.gain.value = bypass ? 1 : dbToGain(p.makeup);
+      if (p.compType === 'VCA') { n.character.type = 'allpass'; n.character.frequency.value = 1000; n.character.gain.value = 0; }
+      else if (p.compType === 'FET') { n.character.type = 'highshelf'; n.character.frequency.value = 3500; n.character.gain.value = bypass ? 0 : 2; }
+      else if (p.compType === 'OPTO') { n.character.type = 'lowshelf'; n.character.frequency.value = 250; n.character.gain.value = bypass ? 0 : 2; }
+      const mix = bypass ? 0 : this.wet;
+      n.dry.gain.value = 1 - mix;
+      n.wet.gain.value = mix;
+      const meter = document.getElementById(`gr-${this.id}`);
+      if (meter) {
+        const reduction = n.comp.reduction;
+        const pct = Math.min(100, Math.max(0, -reduction / 40 * 100));
+        meter.style.height = pct + '%';
+      }
+    }
+    tick() { this.updateNodes(); }
+  }
+
+  class DistortionModule extends ModuleBase {
+    constructor() {
+      super(nextModuleId++, 'Distortion', 'Saturation', '#dc2626', {
+        distType: 'Soft Clip', drive: 30, tone: 0, mix: 50, preGain: 0, postGain: -6
+      });
+    }
+    renderControls(controls) {
+      controls.appendChild(this.makeSelect('Type', ['Tape Sat','Tube Sat','Soft Clip','Hard Clip','Fuzz','Bitcrush'], 'distType'));
+      controls.appendChild(this.makeSlider('Drive', 0, 100, this.params.drive, '%', 'drive'));
+      controls.appendChild(this.makeSlider('Tone', -12, 12, this.params.tone, ' dB', 'tone'));
+      controls.appendChild(this.makeSlider('Mix', 0, 100, this.params.mix, '%', 'mix'));
+      controls.appendChild(this.makeSlider('Pre Gain', -12, 24, this.params.preGain, ' dB', 'preGain'));
+      controls.appendChild(this.makeSlider('Post Gain', -24, 12, this.params.postGain, ' dB', 'postGain'));
+    }
+    makeCurve(type, drive) {
+      const N = 4096;
+      const curve = new Float32Array(N);
+      const d = drive / 100;
+      const driveLin = 1 + d * 9;
+      for (let i = 0; i < N; i++) {
+        const x = (i / (N - 1)) * 2 - 1;
+        let y = x;
+        if (type === 'Hard Clip') {
+          const t = 1 / (1 + d * 2);
+          y = x > t ? t : (x < -t ? -t : x);
+        } else if (type === 'Soft Clip') {
+          const s = x * driveLin;
+          y = Math.tanh(s) / (1 + d * 0.5);
+        } else if (type === 'Tube Sat') {
+          const s = x * (1 + d * 3);
+          y = (s / (1 + Math.abs(s))) * (1 + d * 0.3);
+        } else if (type === 'Tape Sat') {
+          const s = x * (1 + d * 1.5);
+          y = Math.tanh(s);
+        } else if (type === 'Fuzz') {
+          const s = x * (1 + d * 20);
+          y = Math.sign(s) * Math.min(Math.abs(s), 1 + d * 2);
+        } else if (type === 'Bitcrush') {
+          const bits = Math.max(2, 16 - d * 14);
+          const step = 2 / Math.pow(2, bits);
+          y = Math.floor(x / step) * step;
+        }
+        curve[i] = clamp(y, -1, 1);
+      }
+      return curve;
+    }
+    createNodes(ctx) {
+      const input = ctx.createGain();
+      const output = ctx.createGain();
+      const dry = ctx.createGain();
+      const wet = ctx.createGain();
+      const pre = ctx.createGain();
+      const shaper = ctx.createWaveShaper();
+      const tone = ctx.createBiquadFilter();
+      const post = ctx.createGain();
+      input.connect(dry);
+      input.connect(pre);
+      pre.connect(shaper);
+      shaper.connect(tone);
+      tone.connect(post);
+      post.connect(wet);
+      dry.connect(output);
+      wet.connect(output);
+      this.nodes = { input, output, dry, wet, pre, shaper, tone, post };
+      this.updateNodes();
+      return this.nodes;
+    }
+    updateNodes() {
+      const n = this.nodes;
+      const p = this.params;
+      const bypass = this.bypass || masterBypass;
+      n.pre.gain.value = bypass ? 1 : dbToGain(p.preGain);
+      n.shaper.curve = this.makeCurve(p.distType, p.drive);
+      n.shaper.oversample = '4x';
+      n.tone.type = 'peaking';
+      n.tone.frequency.value = 1000;
+      n.tone.gain.value = bypass ? 0 : p.tone;
+      n.post.gain.value = bypass ? 1 : dbToGain(p.postGain);
+      const mix = bypass ? 0 : p.mix / 100;
+      n.dry.gain.value = 1 - mix;
+      n.wet.gain.value = mix;
+    }
+  }
+
+  class EQModule extends ModuleBase {
+    constructor() {
+      super(nextModuleId++, 'Parametric EQ', '4-Band', '#059669', {
+        hpFreq: 80, hpQ: 0.7,
+        lowShelfFreq: 120, lowShelfGain: 0,
+        highShelfFreq: 8000, highShelfGain: 0,
+        lpFreq: 20000, lpQ: 0.7
+      });
+    }
+    renderControls(controls) {
+      controls.appendChild(this.makeSlider('HP Freq', 20, 1000, this.params.hpFreq, ' Hz', 'hpFreq'));
+      controls.appendChild(this.makeSlider('HP Q', 0.1, 10, this.params.hpQ, '', 'hpQ'));
+      controls.appendChild(this.makeSlider('Low Shelf', 40, 500, this.params.lowShelfFreq, ' Hz', 'lowShelfFreq'));
+      controls.appendChild(this.makeSlider('Low Gain', -18, 18, this.params.lowShelfGain, ' dB', 'lowShelfGain'));
+      controls.appendChild(this.makeSlider('High Shelf', 1000, 16000, this.params.highShelfFreq, ' Hz', 'highShelfFreq'));
+      controls.appendChild(this.makeSlider('High Gain', -18, 18, this.params.highShelfGain, ' dB', 'highShelfGain'));
+      controls.appendChild(this.makeSlider('LP Freq', 1000, 20000, this.params.lpFreq, ' Hz', 'lpFreq'));
+      controls.appendChild(this.makeSlider('LP Q', 0.1, 10, this.params.lpQ, '', 'lpQ'));
+      const canvasWrap = document.createElement('div');
+      canvasWrap.innerHTML = `<canvas class="eq-canvas" id="eq-${this.id}"></canvas>`;
+      controls.appendChild(canvasWrap);
+      setTimeout(() => this.drawResponse(), 0);
+    }
+    createNodes(ctx) {
+      const hp = ctx.createBiquadFilter();
+      const ls = ctx.createBiquadFilter();
+      const hs = ctx.createBiquadFilter();
+      const lp = ctx.createBiquadFilter();
+      hp.type = 'highpass'; ls.type = 'lowshelf'; hs.type = 'highshelf'; lp.type = 'lowpass';
+      const input = ctx.createGain();
+      const output = ctx.createGain();
+      const dry = ctx.createGain();
+      const wet = ctx.createGain();
+      input.connect(dry);
+      input.connect(hp); hp.connect(ls); ls.connect(hs); hs.connect(lp); lp.connect(wet);
+      dry.connect(output);
+      wet.connect(output);
+      this.nodes = { input, output, dry, wet, hp, ls, hs, lp };
+      this.updateNodes();
+      return this.nodes;
+    }
+    updateNodes() {
+      const n = this.nodes;
+      const p = this.params;
+      const bypass = this.bypass || masterBypass;
+      n.hp.frequency.value = p.hpFreq;
+      n.hp.Q.value = p.hpQ;
+      n.ls.frequency.value = p.lowShelfFreq;
+      n.ls.gain.value = bypass ? 0 : p.lowShelfGain;
+      n.hs.frequency.value = p.highShelfFreq;
+      n.hs.gain.value = bypass ? 0 : p.highShelfGain;
+      n.lp.frequency.value = p.lpFreq;
+      n.lp.Q.value = p.lpQ;
+      const mix = bypass ? 0 : this.wet;
+      n.dry.gain.value = 1 - mix;
+      n.wet.gain.value = mix;
+      this.drawResponse();
+    }
+    drawResponse() {
+      const canvas = document.getElementById(`eq-${this.id}`);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width = canvas.clientWidth * 2;
+      const h = canvas.height = canvas.clientHeight * 2;
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
+      ctx.beginPath();
+      const fmin = 20, fmax = 20000;
+      for (let x = 0; x <= w; x += 4) {
+        const f = fmin * Math.pow(fmax / fmin, x / w);
+        let mag = 0;
+        const p = this.params;
+        const sections = [
+          { type: 'hp', freq: p.hpFreq, Q: p.hpQ, gain: 0 },
+          { type: 'ls', freq: p.lowShelfFreq, Q: 1, gain: p.lowShelfGain },
+          { type: 'hs', freq: p.highShelfFreq, Q: 1, gain: p.highShelfGain },
+          { type: 'lp', freq: p.lpFreq, Q: p.lpQ, gain: 0 }
+        ];
+        sections.forEach(s => {
+          const wc = 2 * Math.PI * s.freq / sampleRate;
+          const wn = 2 * Math.PI * f / sampleRate;
+          const K = Math.tan(wc / 2);
+          let b0=1,b1=0,b2=0,a0=1,a1=0,a2=0;
+          if (s.type === 'hp') {
+            const q = s.Q || 0.707;
+            const norm = 1 / (1 + K / q + K * K);
+            b0 = 1 * norm; b1 = -2 * norm; b2 = 1 * norm;
+            a1 = 2 * (K * K - 1) * norm; a2 = (1 - K / q + K * K) * norm;
+          } else if (s.type === 'lp') {
+            const q = s.Q || 0.707;
+            const norm = 1 / (1 + K / q + K * K);
+            b0 = K * K * norm; b1 = 2 * K * K * norm; b2 = K * K * norm;
+            a1 = 2 * (K * K - 1) * norm; a2 = (1 - K / q + K * K) * norm;
+          } else if (s.type === 'ls') {
+            const A = Math.pow(10, s.gain / 40);
+            const sqrtA = Math.sqrt(A);
+            const denom = (A + 1) + (A - 1) * K + 2 * sqrtA * K;
+            b0 = A * ((A + 1) - (A - 1) * K + 2 * sqrtA * K) / denom;
+            b1 = 2 * A * ((A - 1) - (A + 1) * K) / denom;
+            b2 = A * ((A + 1) - (A - 1) * K - 2 * sqrtA * K) / denom;
+            a0 = 1; a1 = 2 * ((A - 1) - (A + 1) * K) / denom;
+            a2 = ((A + 1) - (A - 1) * K - 2 * sqrtA * K) / denom;
+          } else if (s.type === 'hs') {
+            const A = Math.pow(10, s.gain / 40);
+            const sqrtA = Math.sqrt(A);
+            const denom = (A + 1) - (A - 1) * K + 2 * sqrtA * K;
+            b0 = A * ((A + 1) + (A - 1) * K + 2 * sqrtA * K) / denom;
+            b1 = -2 * A * ((A - 1) + (A + 1) * K) / denom;
+            b2 = A * ((A + 1) + (A - 1) * K - 2 * sqrtA * K) / denom;
+            a0 = 1; a1 = -2 * ((A - 1) + (A + 1) * K) / denom;
+            a2 = ((A + 1) + (A - 1) * K - 2 * sqrtA * K) / denom;
+          }
+          const cosw = Math.cos(wn); const sinw = Math.sin(wn);
+          const realNum = b0 + b1 * cosw + b2 * Math.cos(2 * wn);
+          const imagNum = b1 * sinw + b2 * Math.sin(2 * wn);
+          const realDen = a0 + a1 * cosw + a2 * Math.cos(2 * wn);
+          const imagDen = a1 * sinw + a2 * Math.sin(2 * wn);
+          const magH = Math.sqrt((realNum * realNum + imagNum * imagNum) / (realDen * realDen + imagDen * imagDen + 1e-24));
+          mag += 20 * Math.log10(magH + 1e-12);
+        });
+        const y = h / 2 - (mag / 24) * (h / 2);
+        if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = this.color; ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, h * 0.25); ctx.lineTo(w, h * 0.25); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, h * 0.75); ctx.lineTo(w, h * 0.75); ctx.stroke();
+    }
+    tick() { this.drawResponse(); }
+  }
+
+  class ChorusModule extends ModuleBase {
+    constructor() {
+      super(nextModuleId++, 'Chorus', 'Ensemble', '#7c3aed', {
+        rate: 0.5, depth: 50, delayTime: 20, voices: 2, spread: 50
+      });
+      this.voiceNodes = [];
+    }
+    renderControls(controls) {
+      controls.appendChild(this.makeSlider('Rate', 0.1, 10, this.params.rate, ' Hz', 'rate'));
+      controls.appendChild(this.makeSlider('Depth', 0, 100, this.params.depth, '%', 'depth'));
+      controls.appendChild(this.makeSlider('Delay', 5, 50, this.params.delayTime, ' ms', 'delayTime'));
+      const voiceWrap = document.createElement('div'); voiceWrap.className = 'control';
+      const id = `${this.id}-voices`;
+      voiceWrap.innerHTML = `<label>Voices</label><select class="select" id="${id}"><option value="2"${this.params.voices===2?' selected':''}>2</option><option value="3"${this.params.voices===3?' selected':''}>3</option><option value="4"${this.params.voices===4?' selected':''}>4</option></select>`;
+      voiceWrap.querySelector('select').addEventListener('change', (e) => {
+        this.params.voices = parseInt(e.target.value, 10);
+        if (this.nodes) { this.disposeVoiceNodes(); this.rebuild(this.nodes.wetSum.context); }
+      });
+      controls.appendChild(voiceWrap);
+      controls.appendChild(this.makeSlider('Spread', 0, 100, this.params.spread, '%', 'spread'));
+    }
+    disposeVoiceNodes() {
+      this.voiceNodes.forEach(v => {
+        try { v.lfo.stop(); v.lfo.disconnect(); v.lfoGain.disconnect(); v.delay.disconnect(); v.pan.disconnect(); } catch(e){}
+      });
+      this.voiceNodes = [];
+    }
+    createNodes(ctx) {
+      this.disposeVoiceNodes();
+      const input = ctx.createGain();
+      const output = ctx.createGain();
+      const dry = ctx.createGain();
+      const wet = ctx.createGain();
+      const wetSum = ctx.createGain();
+      input.connect(dry); input.connect(wet);
+      dry.connect(output);
+      this.nodes = { input, output, dry, wet, wetSum };
+      this.rebuild(ctx);
+      return this.nodes;
+    }
+    rebuild(ctx) {
+      const n = this.nodes;
+      n.wet.disconnect();
+      this.voiceNodes.forEach(v => { try { v.delay.disconnect(); v.pan.disconnect(); } catch(e){} });
+      const voices = this.params.voices;
+      const delayBase = this.params.delayTime / 1000;
+      const depth = this.params.depth / 100 * 0.004;
+      const spread = this.params.spread / 100;
+      n.wetSum = n.wetSum || ctx.createGain();
+      n.wetSum.gain.value = 1 / Math.max(1, voices);
+      n.wetSum.disconnect();
+      n.wetSum.connect(n.output);
+      this.voiceNodes.forEach(v => {
+        v.lfo.frequency.value = this.params.rate * (0.95 + v.index * 0.05);
+        v.lfoGain.gain.value = depth * (1 + v.index * 0.2);
+        v.delay.delayTime.value = delayBase;
+        v.pan.pan.value = (v.index / (voices - 1 || 1)) * 2 * spread - spread;
+        n.wet.connect(v.delay);
+        v.delay.connect(v.pan);
+        v.pan.connect(n.wetSum);
+      });
+      if (this.voiceNodes.length === 0) {
+        for (let v = 0; v < voices; v++) {
+          const delay = ctx.createDelay(1);
+          delay.delayTime.value = delayBase;
+          const lfo = ctx.createOscillator();
+          lfo.type = 'sine';
+          lfo.frequency.value = this.params.rate * (0.95 + v * 0.05);
+          const lfoGain = ctx.createGain();
+          lfoGain.gain.value = depth * (1 + v * 0.2);
+          const pan = ctx.createStereoPanner();
+          pan.pan.value = (v / (voices - 1 || 1)) * 2 * spread - spread;
+          lfo.connect(lfoGain); lfoGain.connect(delay.delayTime);
+          n.wet.connect(delay); delay.connect(pan); pan.connect(n.wetSum);
+          lfo.start();
+          this.voiceNodes.push({ index: v, lfo, lfoGain, delay, pan });
+        }
+      }
+      this.updateNodes();
+    }
+    updateNodes() {
+      const n = this.nodes;
+      const bypass = this.bypass || masterBypass;
+      n.dry.gain.value = bypass ? 1 : 1 - this.wet;
+      n.wet.gain.value = bypass ? 0 : this.wet;
+      this.voiceNodes.forEach((v, i) => {
+        v.lfo.frequency.value = this.params.rate * (0.95 + i * 0.05);
+        v.lfoGain.gain.value = (this.params.depth / 100 * 0.004) * (1 + i * 0.2);
+        v.delay.delayTime.value = this.params.delayTime / 1000;
+        v.pan.pan.value = (i / (this.params.voices - 1 || 1)) * 2 * (this.params.spread / 100) - (this.params.spread / 100);
+      });
+    }
+  }
+
+  class PhaserModule extends ModuleBase {
+    constructor() {
+      super(nextModuleId++, 'Phaser', 'Modulation', '#0891b2', {
+        rate: 0.5, depth: 50, stages: 4, feedback: 50, baseFreq: 1000
+      });
+    }
+    renderControls(controls) {
+      controls.appendChild(this.makeSlider('Rate', 0.01, 10, this.params.rate, ' Hz', 'rate'));
+      controls.appendChild(this.makeSlider('Depth', 0, 100, this.params.depth, '%', 'depth'));
+      const stageWrap = document.createElement('div'); stageWrap.className = 'control';
+      const id = `${this.id}-stages`;
+      const opts = [2,4,6,8];
+      let html = `<label>Stages</label><select class="select" id="${id}">`;
+      opts.forEach(o => html += `<option value="${o}"${this.params.stages===o?' selected':''}>${o}</option>`);
+      html += '</select>';
+      stageWrap.innerHTML = html;
+      stageWrap.querySelector('select').addEventListener('change', (e) => {
+        this.params.stages = parseInt(e.target.value, 10);
+        if (this.nodes) this.rebuildNodes();
+      });
+      controls.appendChild(stageWrap);
+      controls.appendChild(this.makeSlider('Feedback', -100, 100, this.params.feedback, '%', 'feedback'));
+      controls.appendChild(this.makeSlider('Base Freq', 100, 3000, this.params.baseFreq, ' Hz', 'baseFreq'));
+    }
+    createNodes(ctx) {
+      this.nodes = { ctx };
+      this.rebuildNodes();
+      return this.nodes;
+    }
+    rebuildNodes() {
+      const ctx = this.nodes.ctx;
+      if (this.nodes && this.nodes.allpasses) {
+        try { this.nodes.lfo.stop(); this.nodes.lfoGain.disconnect(); this.nodes.fb.disconnect(); this.nodes.wetMix.disconnect(); this.nodes.dry.disconnect(); this.nodes.wet.disconnect(); } catch(e){}
+        this.nodes.allpasses.forEach(ap => { try { ap.disconnect(); } catch(e){} });
+      }
+      const input = ctx.createGain();
+      const output = ctx.createGain();
+      const dry = ctx.createGain();
+      const wet = ctx.createGain();
+      const wetMix = ctx.createGain();
+      const fb = ctx.createGain();
+      input.connect(dry); input.connect(wet);
+      dry.connect(output);
+      const allpasses = [];
+      const stages = this.params.stages;
+      const feedback = this.params.feedback / 100;
+      let prev = wet;
+      for (let i = 0; i < stages; i++) {
+        const ap = ctx.createBiquadFilter();
+        ap.type = 'allpass';
+        ap.frequency.value = this.params.baseFreq;
+        ap.Q.value = 1;
+        allpasses.push(ap);
+        prev.connect(ap);
+        prev = ap;
+      }
+      prev.connect(wetMix);
+      wetMix.connect(output);
+      wetMix.connect(fb);
+      fb.connect(wet);
+      const lfo = ctx.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = this.params.rate;
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = this.params.depth / 100 * this.params.baseFreq * 0.9;
+      lfo.connect(lfoGain);
+      allpasses.forEach(ap => lfoGain.connect(ap.frequency));
+      lfo.start();
+      this.nodes = { input, output, dry, wet, allpasses, lfo, lfoGain, fb, wetMix };
+      this.updateNodes();
+    }
+    updateNodes() {
+      const n = this.nodes;
+      const bypass = this.bypass || masterBypass;
+      n.dry.gain.value = bypass ? 1 : 1 - this.wet;
+      n.wet.gain.value = bypass ? 0 : this.wet;
+      n.fb.gain.value = this.params.feedback / 100;
+      n.lfo.frequency.value = this.params.rate;
+      n.lfoGain.gain.value = this.params.depth / 100 * this.params.baseFreq * 0.9;
+      n.allpasses.forEach(ap => { ap.frequency.value = this.params.baseFreq; ap.Q.value = 1; });
+    }
+  }
+
+  class FlangerModule extends ModuleBase {
+    constructor() {
+      super(nextModuleId++, 'Flanger', 'Modulation', '#d97706', {
+        rate: 0.25, depth: 5, feedback: 30, delayBase: 1
+      });
+    }
+    renderControls(controls) {
+      controls.appendChild(this.makeSlider('Rate', 0.01, 5, this.params.rate, ' Hz', 'rate'));
+      controls.appendChild(this.makeSlider('Depth', 0, 20, this.params.depth, ' ms', 'depth'));
+      controls.appendChild(this.makeSlider('Feedback', -100, 100, this.params.feedback, '%', 'feedback'));
+      controls.appendChild(this.makeSlider('Delay Base', 1, 20, this.params.delayBase, ' ms', 'delayBase'));
+    }
+    createNodes(ctx) {
+      const input = ctx.createGain();
+      const output = ctx.createGain();
+      const dry = ctx.createGain();
+      const wet = ctx.createGain();
+      const delay = ctx.createDelay(0.5);
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      const fb = ctx.createGain();
+      const wetMix = ctx.createGain();
+      input.connect(dry); input.connect(wet);
+      dry.connect(output);
+      wet.connect(delay); delay.connect(wetMix); wetMix.connect(output);
+      wetMix.connect(fb); fb.connect(wet);
+      lfo.type = 'triangle';
+      lfo.frequency.value = this.params.rate;
+      lfoGain.gain.value = this.params.depth / 1000 / 2;
+      lfo.connect(lfoGain); lfoGain.connect(delay.delayTime);
+      lfo.start();
+      this.nodes = { input, output, dry, wet, delay, lfo, lfoGain, fb, wetMix };
+      this.updateNodes();
+      return this.nodes;
+    }
+    updateNodes() {
+      const n = this.nodes;
+      const bypass = this.bypass || masterBypass;
+      n.dry.gain.value = bypass ? 1 : 1 - this.wet;
+      n.wet.gain.value = bypass ? 0 : this.wet;
+      n.fb.gain.value = this.params.feedback / 100;
+      n.lfo.frequency.value = this.params.rate;
+      n.lfoGain.gain.value = this.params.depth / 1000 / 2;
+    }
+  }
+
+  class DelayModule extends ModuleBase {
+    constructor() {
+      super(nextModuleId++, 'Delay', 'Time', '#0e7490', {
+        time: 250, timeMode: 'ms', feedback: 35, feedbackHP: 100, feedbackLP: 8000, pingPong: false, bpm: 120
+      });
+    }
+    renderControls(controls) {
+      controls.appendChild(this.makeSlider('Time', 1, 2000, this.params.time, ' ms', 'time'));
+      controls.appendChild(this.makeSelect('Mode', ['ms','1/4','1/8','1/16','1/32','1/2','1bar','2bars'], 'timeMode'));
+      controls.appendChild(this.makeSlider('Feedback', 0, 100, this.params.feedback, '%', 'feedback'));
+      controls.appendChild(this.makeSlider('HP FB', 20, 2000, this.params.feedbackHP, ' Hz', 'feedbackHP'));
+      controls.appendChild(this.makeSlider('LP FB', 500, 20000, this.params.feedbackLP, ' Hz', 'feedbackLP'));
+      controls.appendChild(this.makeToggle('Ping-Pong', 'pingPong'));
+    }
+    makeToggle(label, key) {
+      const wrap = document.createElement('div'); wrap.className = 'control';
+      const id = `${this.id}-${key}`;
+      wrap.innerHTML = `<label class="toggle-row"><input type="checkbox" id="${id}"${this.params[key] ? ' checked' : ''}> ${label}</label>`;
+      wrap.querySelector('input').addEventListener('change', (e) => { this.params[key] = e.target.checked; if (this.nodes) this.updateNodes(); });
+      return wrap;
+    }
+    getDelayTime() {
+      const bpm = parseFloat(bpmInput.value) || 120;
+      const beat = 60 / bpm;
+      const map = { '1/4': beat, '1/8': beat / 2, '1/16': beat / 4, '1/32': beat / 8, '1/2': beat * 2, '1bar': beat * 4, '2bars': beat * 8, 'ms': this.params.time / 1000 };
+      return map[this.params.timeMode] || this.params.time / 1000;
+    }
+    createNodes(ctx) {
+      const input = ctx.createGain();
+      const output = ctx.createGain();
+      const dry = ctx.createGain();
+      const wet = ctx.createGain();
+      const delayL = ctx.createDelay(4);
+      const delayR = ctx.createDelay(4);
+      const fbHP = ctx.createBiquadFilter();
+      const fbLP = ctx.createBiquadFilter();
+      const fbGain = ctx.createGain();
+      const splitter = ctx.createChannelSplitter(2);
+      const merger = ctx.createChannelMerger(2);
+      fbHP.type = 'highpass'; fbLP.type = 'lowpass';
+      input.connect(dry); input.connect(wet);
+      dry.connect(output);
+      wet.connect(splitter);
+      splitter.connect(delayL, 0); splitter.connect(delayR, 1);
+      delayL.connect(merger, 0, 0); delayR.connect(merger, 0, 1);
+      merger.connect(output);
+      merger.connect(fbHP); fbHP.connect(fbLP); fbLP.connect(fbGain); fbGain.connect(wet);
+      this.nodes = { input, output, dry, wet, delayL, delayR, fbHP, fbLP, fbGain };
+      this.updateNodes();
+      return this.nodes;
+    }
+    updateNodes() {
+      const n = this.nodes;
+      const bypass = this.bypass || masterBypass;
+      n.dry.gain.value = bypass ? 1 : 1 - this.wet;
+      n.wet.gain.value = bypass ? 0 : this.wet;
+      const t = this.getDelayTime();
+      n.delayL.delayTime.value = t;
+      n.delayR.delayTime.value = this.params.pingPong ? t * 1.5 : t;
+      n.fbHP.frequency.value = this.params.feedbackHP;
+      n.fbLP.frequency.value = this.params.feedbackLP;
+      n.fbGain.gain.value = this.params.feedback / 100;
+    }
+  }
+
+  class ReverbModule extends ModuleBase {
+    constructor() {
+      super(nextModuleId++, 'Reverb', 'Space', '#6d28d9', {
+        type: 'Hall', size: 2, preDelay: 20, damping: 50, width: 100
+      });
+    }
+    renderControls(controls) {
+      controls.appendChild(this.makeSelect('Type', ['Room','Hall','Plate','Spring','Chamber'], 'type'));
+      controls.appendChild(this.makeSlider('Size', 0.1, 10, this.params.size, ' s', 'size'));
+      controls.appendChild(this.makeSlider('Pre-Delay', 0, 200, this.params.preDelay, ' ms', 'preDelay'));
+      controls.appendChild(this.makeSlider('Damping', 0, 100, this.params.damping, '%', 'damping'));
+      controls.appendChild(this.makeSlider('Width', 0, 100, this.params.width, '%', 'width'));
+    }
+    generateIR(ctx) {
+      const sr = ctx.sampleRate;
+      const len = Math.ceil(this.params.size * sr);
+      const pre = Math.ceil(this.params.preDelay / 1000 * sr);
+      const buffer = ctx.createBuffer(2, len + pre, sr);
+      const type = this.params.type;
+      const damping = this.params.damping / 100;
+      for (let ch = 0; ch < 2; ch++) {
+        const data = buffer.getChannelData(ch);
+        for (let i = 0; i < len + pre; i++) data[i] = 0;
+        const seed = 1 + ch * 31;
+        let seedVal = seed;
+        const rand = () => { seedVal = (seedVal * 16807) % 2147483647; return (seedVal / 2147483647) * 2 - 1; };
+        for (let i = 0; i < len; i++) {
+          const t = i / sr;
+          const decay = Math.exp(-3 * t / Math.max(0.1, this.params.size));
+          const noise = rand();
+          const density = type === 'Plate' ? 1 - Math.exp(-5 * t) : (type === 'Spring' ? Math.sin(t * 1000) * Math.exp(-t * 3) : 1);
+          const filtered = noise * decay * density;
+          data[i + pre] = filtered * (1 - damping * 0.5);
+        }
+        if (type === 'Spring') {
+          for (let i = 0; i < len; i++) data[i + pre] += rand() * Math.exp(-i / sr * 6) * 0.3;
+        }
+        if (type === 'Chamber') {
+          for (let i = 0; i < len; i++) data[i + pre] += rand() * Math.exp(-i / sr * 4) * Math.sin(i / sr * 50) * 0.4;
+        }
+      }
+      return buffer;
+    }
+    createNodes(ctx) {
+      const input = ctx.createGain();
+      const output = ctx.createGain();
+      const dry = ctx.createGain();
+      const wet = ctx.createGain();
+      const convolver = ctx.createConvolver();
+      const preDelay = ctx.createDelay(0.5);
+      const damping = ctx.createBiquadFilter();
+      const widthSplitter = ctx.createChannelSplitter(2);
+      const widthMerger = ctx.createChannelMerger(2);
+      const widthL = ctx.createGain();
+      const widthR = ctx.createGain();
+      const widthCrossL = ctx.createGain();
+      const widthCrossR = ctx.createGain();
+      damping.type = 'lowpass';
+      input.connect(dry); input.connect(wet);
+      dry.connect(output);
+      wet.connect(preDelay); preDelay.connect(damping); damping.connect(convolver);
+      convolver.connect(widthSplitter);
+      widthSplitter.connect(widthL, 0); widthSplitter.connect(widthCrossL, 1);
+      widthSplitter.connect(widthCrossR, 0); widthSplitter.connect(widthR, 1);
+      widthL.connect(widthMerger, 0, 0); widthCrossL.connect(widthMerger, 0, 0);
+      widthCrossR.connect(widthMerger, 0, 1); widthR.connect(widthMerger, 0, 1);
+      widthMerger.connect(output);
+      this.nodes = { input, output, dry, wet, convolver, preDelay, damping, widthSplitter, widthMerger, widthL, widthR, widthCrossL, widthCrossR };
+      this.updateNodes();
+      return this.nodes;
+    }
+    updateNodes() {
+      const n = this.nodes;
+      const bypass = this.bypass || masterBypass;
+      n.dry.gain.value = bypass ? 1 : 1 - this.wet;
+      n.wet.gain.value = bypass ? 0 : this.wet;
+      n.preDelay.delayTime.value = this.params.preDelay / 1000;
+      n.damping.frequency.value = 200 + (1 - this.params.damping / 100) * 18000;
+      const w = this.params.width / 100;
+      const a = 0.5 * (1 + w);
+      const b = 0.5 * (1 - w);
+      n.widthL.gain.value = a;
+      n.widthR.gain.value = a;
+      n.widthCrossL.gain.value = b;
+      n.widthCrossR.gain.value = b;
+      n.convolver.normalize = true;
+      n.convolver.buffer = this.generateIR(n.convolver.context);
+    }
+  }
+
+  class StereoWidthModule extends ModuleBase {
+    constructor() {
+      super(nextModuleId++, 'Stereo Width', 'Imaging', '#be185d', {
+        width: 100, midLevel: 0, sideLevel: 0
+      });
+    }
+    renderControls(controls) {
+      controls.appendChild(this.makeSlider('Width', 0, 200, this.params.width, '%', 'width'));
+      controls.appendChild(this.makeSlider('Mid', -60, 6, this.params.midLevel, ' dB', 'midLevel'));
+      controls.appendChild(this.makeSlider('Side', -60, 6, this.params.sideLevel, ' dB', 'sideLevel'));
+      const corr = document.createElement('div');
+      corr.className = 'correlation-meter';
+      corr.innerHTML = `<canvas id="corr-${this.id}"></canvas><div class="correlation-label">Correlation</div>`;
+      controls.appendChild(corr);
+      setTimeout(() => this.drawCorrelation(), 0);
+    }
+    createNodes(ctx) {
+      const input = ctx.createGain();
+      const output = ctx.createGain();
+      const dry = ctx.createGain();
+      const wet = ctx.createGain();
+      const splitter = ctx.createChannelSplitter(2);
+      const merger = ctx.createChannelMerger(2);
+      const midGain = ctx.createGain();
+      const sideGain = ctx.createGain();
+      const sideInv = ctx.createGain();
+      const mid = ctx.createGain();
+      const side = ctx.createGain();
+      const outSplitter = ctx.createChannelSplitter(2);
+      const analyserL = ctx.createAnalyser();
+      const analyserR = ctx.createAnalyser();
+      analyserL.fftSize = 2048; analyserR.fftSize = 2048;
+      input.connect(dry);
+      input.connect(splitter);
+      splitter.connect(mid, 0); splitter.connect(mid, 1);
+      splitter.connect(side, 0); splitter.connect(side, 1);
+      mid.connect(midGain); side.connect(sideGain);
+      sideGain.connect(sideInv);
+      midGain.connect(merger, 0, 0); midGain.connect(merger, 0, 1);
+      sideGain.connect(merger, 0, 0);
+      sideInv.connect(merger, 0, 1);
+      merger.connect(wet);
+      dry.connect(output);
+      wet.connect(output);
+      output.connect(outSplitter);
+      outSplitter.connect(analyserL, 0);
+      outSplitter.connect(analyserR, 1);
+      this.analyserL = analyserL;
+      this.analyserR = analyserR;
+      this.nodes = { input, output, dry, wet, splitter, mid, side, midGain, sideGain, sideInv, merger, outSplitter, analyserL, analyserR };
+      this.updateNodes();
+      return this.nodes;
+    }
+    updateNodes() {
+      const n = this.nodes;
+      const bypass = this.bypass || masterBypass;
+      const w = bypass ? 1 : this.params.width / 100;
+      const midDb = bypass ? 0 : this.params.midLevel;
+      const sideDb = bypass ? 0 : this.params.sideLevel;
+      n.midGain.gain.value = dbToGain(midDb) * (1 + w) / 2;
+      n.sideGain.gain.value = dbToGain(sideDb) * w;
+      n.sideInv.gain.value = -1;
+      const mix = bypass ? 0 : this.wet;
+      n.dry.gain.value = 1 - mix;
+      n.wet.gain.value = mix;
+    }
+    drawCorrelation() {
+      const canvas = document.getElementById(`corr-${this.id}`);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width = canvas.clientWidth * 2;
+      const h = canvas.height = canvas.clientHeight * 2;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#1a1a1f';
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#333';
+      ctx.fillRect(w / 2 - 2, 0, 4, h);
+      let corr = 0;
+      if (this.analyserL && this.analyserR && audioCtx) {
+        const len = this.analyserL.fftSize;
+        const dataL = new Float32Array(len);
+        const dataR = new Float32Array(len);
+        this.analyserL.getFloatTimeDomainData(dataL);
+        this.analyserR.getFloatTimeDomainData(dataR);
+        let sumL = 0, sumR = 0, sumLR = 0;
+        for (let i = 0; i < len; i++) {
+          sumL += dataL[i] * dataL[i];
+          sumR += dataR[i] * dataR[i];
+          sumLR += dataL[i] * dataR[i];
+        }
+        const denom = Math.sqrt(sumL * sumR) + 1e-12;
+        corr = sumLR / denom;
+      } else {
+        const w = this.params.width / 100;
+        corr = (2 - w) / (2 + w);
+      }
+      corr = clamp(corr, -1, 1);
+      const color = corr < 0 ? 'rgba(239,68,68,0.7)' : (corr < 0.5 ? 'rgba(234,179,8,0.7)' : 'rgba(34,197,94,0.7)');
+      ctx.fillStyle = color;
+      const cx = w / 2 + corr * (w / 2);
+      const barW = Math.abs(cx - w / 2);
+      ctx.fillRect(Math.min(cx, w / 2), h * 0.25, barW, h * 0.5);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(cx, h * 0.2); ctx.lineTo(cx, h * 0.8); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '10px Inter';
+      ctx.textAlign = 'center';
+      ctx.fillText(corr.toFixed(2), w / 2, h - 3);
+    }
+    tick() { this.drawCorrelation(); }
+  }
+
+  class LimiterModule extends ModuleBase {
+    constructor() {
+      super(nextModuleId++, 'Limiter', 'Master', '#c9922a', {
+        ceiling: -0.1, release: 50, truePeak: true
+      });
+    }
+    renderControls(controls) {
+      controls.appendChild(this.makeSlider('Ceiling', -12, 0, this.params.ceiling, ' dB', 'ceiling'));
+      controls.appendChild(this.makeSlider('Release', 1, 1000, this.params.release, ' ms', 'release'));
+      controls.appendChild(this.makeToggle('True Peak', 'truePeak'));
+      controls.appendChild(this.makeMeter('GR', 'gr'));
+      const meterWrap = document.createElement('div'); meterWrap.className = 'meter-panel';
+      meterWrap.innerHTML = `
+        <div class="meter-stack small"><div class="meter-wrap"><div class="meter-bar" id="in-${this.id}" style="height:0%"></div></div><div class="meter-label">In</div></div>
+        <div class="meter-stack small"><div class="meter-wrap"><div class="meter-bar" id="out-${this.id}" style="height:0%"></div></div><div class="meter-label">Out</div></div>
+      `;
+      controls.appendChild(meterWrap);
+    }
+    makeToggle(label, key) {
+      const wrap = document.createElement('div'); wrap.className = 'control';
+      const id = `${this.id}-${key}`;
+      wrap.innerHTML = `<label class="toggle-row"><input type="checkbox" id="${id}"${this.params[key] ? ' checked' : ''}> ${label}</label>`;
+      wrap.querySelector('input').addEventListener('change', (e) => { this.params[key] = e.target.checked; if (this.nodes) this.updateNodes(); });
+      return wrap;
+    }
+    async createNodes(ctx) {
+      await registerWorklet(ctx, 'limiter-processor', `
+        class LimiterProcessor extends AudioWorkletProcessor {
+          constructor() {
+            super();
+            this.ceiling = 0.999;
+            this.release = 0.05;
+            this.truePeak = true;
+            this.gain = 1;
+            this.port.onmessage = (e) => {
+              const d = e.data;
+              if (d.ceiling !== undefined) this.ceiling = d.ceiling;
+              if (d.release !== undefined) this.release = d.release;
+              if (d.truePeak !== undefined) this.truePeak = d.truePeak;
+            };
+          }
+          process(inputs, outputs) {
+            const inCh = inputs[0] || [];
+            const outCh = outputs[0] || [];
+            if (!inCh.length || !outCh.length) return true;
+            const sr = sampleRate;
+            const relCoef = Math.exp(-1 / (Math.max(this.release, 1/sr) * sr));
+            let peak = 0, outPeak = 0, gr = 0;
+            const oversample = this.truePeak ? 4 : 1;
+            for (let i = 0; i < inCh[0].length; i++) {
+              let maxS = 0;
+              for (let c = 0; c < inCh.length; c++) maxS = Math.max(maxS, Math.abs(inCh[c][i]));
+              if (this.truePeak) {
+                for (let c = 0; c < inCh.length; c++) {
+                  const s = inCh[c][i];
+                  for (let k = 1; k < oversample; k++) {
+                    const next = inCh[c][i + 1] || s;
+                    const interp = s + (next - s) * (k / oversample);
+                    maxS = Math.max(maxS, Math.abs(interp));
+                  }
+                }
+              }
+              const target = maxS > this.ceiling ? this.ceiling / maxS : 1;
+              this.gain = Math.min(this.gain / relCoef, target);
+              this.gain += (target - this.gain) * 0.3;
+              gr = Math.max(gr, 1 - this.gain);
+              for (let c = 0; c < outCh.length; c++) {
+                const y = inCh[c][i] * this.gain;
+                outCh[c][i] = y;
+                outPeak = Math.max(outPeak, Math.abs(y));
+              }
+              peak = Math.max(peak, maxS);
+            }
+            this.port.postMessage({ gr, peak, outPeak });
+            return true;
+          }
+        }
+        registerProcessor('limiter-processor', LimiterProcessor);
+      `);
+      const input = ctx.createGain();
+      const output = ctx.createGain();
+      const dry = ctx.createGain();
+      const wet = ctx.createGain();
+      const limiter = new AudioWorkletNode(ctx, 'limiter-processor', { channelCount: 2, outputChannelCount: [2] });
+      input.connect(dry);
+      input.connect(limiter);
+      limiter.connect(wet);
+      dry.connect(output);
+      wet.connect(output);
+      this.nodes = { input, output, dry, wet, limiter };
+      this.updateNodes();
+      limiter.port.onmessage = (e) => {
+        const d = e.data;
+        const grEl = document.getElementById(`gr-${this.id}`);
+        const inEl = document.getElementById(`in-${this.id}`);
+        const outEl = document.getElementById(`out-${this.id}`);
+        if (grEl) grEl.style.height = Math.min(100, d.gr * 100) + '%';
+        if (inEl) inEl.style.height = Math.min(100, Math.max(0, (gainToDb(d.peak) + 60) / 60 * 100)) + '%';
+        if (outEl) outEl.style.height = Math.min(100, Math.max(0, (gainToDb(d.outPeak) + 60) / 60 * 100)) + '%';
+      };
+      return this.nodes;
+    }
+    updateNodes() {
+      const n = this.nodes;
+      const p = this.params;
+      const bypass = this.bypass || masterBypass;
+      n.limiter.port.postMessage({
+        ceiling: dbToGain(p.ceiling),
+        release: p.release / 1000,
+        truePeak: p.truePeak
+      });
+      const mix = bypass ? 0 : this.wet;
+      n.dry.gain.value = 1 - mix;
+      n.wet.gain.value = mix;
+    }
+  }
+
+  let inputNode = null;
+  let outputNode = null;
+  let analyserNode = null;
+
+  function createDefaultModules() {
+    modules.push(new GateModule());
+    modules.push(new CompressorModule());
+    modules.push(new DistortionModule());
+    modules.push(new EQModule());
+    modules.push(new ChorusModule());
+    modules.push(new PhaserModule());
+    modules.push(new FlangerModule());
+    modules.push(new DelayModule());
+    modules.push(new ReverbModule());
+    modules.push(new StereoWidthModule());
+    modules.push(new LimiterModule());
+  }
+
+  function rebuildRackUI() {
+    rack.innerHTML = '';
+    modules.forEach(m => {
+      if (!m.element) m.createUI();
+      rack.appendChild(m.element);
+    });
+  }
+
+  async function initModules() {
+    for (const m of modules) {
+      if (!m.nodes) await m.createNodes(audioCtx);
+    }
+  }
+
+  async function connectChain() {
+    if (!audioCtx) return;
+    await initModules();
+    if (inputNode) inputNode.disconnect();
+    if (outputNode) outputNode.disconnect();
+    inputNode = audioCtx.createGain();
+    outputNode = audioCtx.createGain();
+    analyserNode = audioCtx.createAnalyser();
+    analyserNode.fftSize = 2048;
+    inputNode.connect(modules[0].nodes.input);
+    for (let i = 0; i < modules.length - 1; i++) {
+      modules[i].nodes.output.connect(modules[i + 1].nodes.input);
+    }
+    modules[modules.length - 1].nodes.output.connect(outputNode);
+    outputNode.connect(analyserNode);
+    analyserNode.connect(audioCtx.destination);
+    if (sourceNode) sourceNode.connect(inputNode);
+  }
+
+  function reconnectChain() {
+    if (!audioCtx) return;
+    modules.forEach(m => { if (m.nodes) { try { m.nodes.output.disconnect(); } catch(e){} } });
+    for (let i = 0; i < modules.length - 1; i++) {
+      try { modules[i].nodes.output.connect(modules[i + 1].nodes.input); } catch(e){}
+    }
+    try { modules[modules.length - 1].nodes.output.connect(outputNode); } catch(e){}
+  }
+
+  function play() {
+    if (!audioCtx) initAudio();
+    if (!audioBuffer) return;
+    if (isPlaying) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    sourceNode = audioCtx.createBufferSource();
+    sourceNode.buffer = audioBuffer;
+    sourceNode.loop = loopBtn.checked;
+    sourceNode.connect(inputNode);
+    sourceNode.onended = () => {
+      if (!loopBtn.checked) { isPlaying = false; playBtn.textContent = 'Play'; pauseOffset = 0; }
+    };
+    startTime = audioCtx.currentTime;
+    sourceNode.start(0, pauseOffset);
+    isPlaying = true;
+    playBtn.textContent = 'Pause';
+    playBtn.classList.add('active');
+    tick();
+    setStatus('Playing');
+  }
+
+  function pause() {
+    if (!isPlaying) return;
+    pauseOffset += audioCtx.currentTime - startTime;
+    if (pauseOffset >= audioBuffer.duration) pauseOffset = 0;
+    sourceNode.stop();
+    sourceNode.disconnect();
+    sourceNode = null;
+    isPlaying = false;
+    playBtn.textContent = 'Play';
+    playBtn.classList.remove('active');
+    cancelAnimationFrame(rafId);
+    setStatus('Paused');
+  }
+
+  function stop() {
+    if (sourceNode) {
+      try { sourceNode.stop(); } catch(e){}
+      sourceNode.disconnect();
+      sourceNode = null;
+    }
+    isPlaying = false;
+    pauseOffset = 0;
+    playBtn.textContent = 'Play';
+    playBtn.classList.remove('active');
+    cancelAnimationFrame(rafId);
+    updatePlayhead();
+    setStatus('Stopped');
+  }
+
+  function updatePlayhead() {
+    const current = isPlaying ? pauseOffset + audioCtx.currentTime - startTime : pauseOffset;
+    const pct = duration ? (current / duration) * 100 : 0;
+    playhead.style.left = pct + '%';
+    timeDisplay.textContent = `${formatTime(current)} / ${formatTime(duration)}`;
+  }
+
+  function tick() {
+    if (!isPlaying) return;
+    updatePlayhead();
+    modules.forEach(m => m.tick());
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function drawWaveform() {
+    const canvas = waveformCanvas;
+    const ctx = waveformCtx;
+    const w = canvas.width = canvas.clientWidth * 2;
+    const h = canvas.height = canvas.clientHeight * 2;
+    ctx.clearRect(0, 0, w, h);
+    if (!audioBuffer) return;
+    const data = audioBuffer.getChannelData(0);
+    const step = Math.ceil(data.length / w);
+    ctx.strokeStyle = 'rgba(201,146,42,0.7)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 0; x < w; x += 2) {
+      let min = 0, max = 0;
+      const start = x * step;
+      const end = Math.min(start + step, data.length);
+      for (let i = start; i < end; i++) { min = Math.min(min, data[i]); max = Math.max(max, data[i]); }
+      const yMin = (1 + min) / 2 * h;
+      const yMax = (1 + max) / 2 * h;
+      if (x === 0) ctx.moveTo(x, yMin);
+      ctx.lineTo(x, yMin);
+      ctx.lineTo(x, yMax);
+    }
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
+  }
+
+  function ensureStereoBuffer(ctx, buffer) {
+    if (buffer.numberOfChannels >= 2) return buffer;
+    const stereo = ctx.createBuffer(2, buffer.length, buffer.sampleRate);
+    const mono = buffer.getChannelData(0);
+    stereo.getChannelData(0).set(mono);
+    stereo.getChannelData(1).set(mono);
+    return stereo;
+  }
+
+  async function loadFile(file) {
+    if (!audioCtx) initAudio();
+    setStatus('Loading...');
+    spinner.style.display = 'inline-block';
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const decoded = await audioCtx.decodeAudioData(arrayBuffer);
+      audioBuffer = ensureStereoBuffer(audioCtx, decoded);
+      duration = audioBuffer.duration;
+      pauseOffset = 0;
+      stop();
+      drawWaveform();
+      updatePlayhead();
+      setStatus('Loaded: ' + file.name);
+      await connectChain();
+    } catch (e) {
+      setStatus('Error loading file: ' + e.message);
+      console.error(e);
+    } finally {
+      spinner.style.display = 'none';
+    }
+  }
+
+  function bufferToWave(abuffer, len) {
+    const numOfChan = abuffer.numberOfChannels;
+    const length = len * numOfChan * 2 + 44;
+    const buffer = new ArrayBuffer(length);
+    const view = new DataView(buffer);
+    const channels = [];
+    let sample = 0;
+    let offset = 0;
+    let pos = 0;
+    function writeString(view, offset, string) {
+      for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
+    }
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + len * numOfChan * 2, true);
+    writeString(view, 8, 'WAVE');
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, numOfChan, true);
+    view.setUint32(24, abuffer.sampleRate, true);
+    view.setUint32(28, abuffer.sampleRate * 2 * numOfChan, true);
+    view.setUint16(32, numOfChan * 2, true);
+    view.setUint16(34, 16, true);
+    writeString(view, 36, 'data');
+    view.setUint32(40, len * numOfChan * 2, true);
+    for (let i = 0; i < abuffer.numberOfChannels; i++) channels.push(abuffer.getChannelData(i));
+    offset = 44;
+    while (pos < len) {
+      for (let i = 0; i < numOfChan; i++) {
+        sample = clamp(channels[i][pos] * 0x7fff, -0x7fff, 0x7fff);
+        view.setInt16(offset, sample, true);
+        offset += 2;
+      }
+      pos++;
+    }
+    return new Blob([buffer], { type: 'audio/wav' });
+  }
+
+  async function exportWAV() {
+    if (!audioBuffer) { setStatus('No audio loaded'); return; }
+    setStatus('Rendering...');
+    progress.style.display = 'block';
+    progressBar.style.width = '0%';
+    const sr = audioBuffer.sampleRate;
+    const dur = audioBuffer.duration;
+    const offlineCtx = new OfflineAudioContext(2, Math.ceil(sr * dur), sr);
+    const input = offlineCtx.createGain();
+    const output = offlineCtx.createGain();
+    const src = offlineCtx.createBufferSource();
+    src.buffer = audioBuffer;
+    src.connect(input);
+    let prev = input;
+    for (const m of modules) {
+      const n = await m.createNodes(offlineCtx);
+      m.updateNodes();
+      prev.connect(n.input);
+      prev = n.output;
+    }
+    prev.connect(output);
+    output.connect(offlineCtx.destination);
+    const startAt = offlineCtx.currentTime;
+    src.start();
+    const total = offlineCtx.length;
+    const progressInterval = setInterval(() => {
+      const pct = Math.min(100, (offlineCtx.currentTime / dur) * 100);
+      progressBar.style.width = pct + '%';
+    }, 100);
+    const rendered = await offlineCtx.startRendering();
+    clearInterval(progressInterval);
+    progressBar.style.width = '100%';
+    const blob = bufferToWave(rendered, rendered.length);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'goat-fx-render.wav';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setStatus('Export complete');
+    progress.style.display = 'none';
+    progressBar.style.width = '0%';
+  }
+
+  playBtn.addEventListener('click', () => {
+    initAudio();
+    if (!audioBuffer) { setStatus('Load audio first'); return; }
+    if (isPlaying) pause(); else play();
+  });
+  stopBtn.addEventListener('click', stop);
+  fileInput.addEventListener('change', (e) => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+  exportBtn.addEventListener('click', exportWAV);
+  masterBypassBtn.addEventListener('click', () => {
+    masterBypass = !masterBypass;
+    masterBypassBtn.classList.toggle('active', masterBypass);
+    document.body.classList.toggle('master-bypassed', masterBypass);
+    modules.forEach(m => { if (m.nodes) m.updateNodes(); });
+    setStatus(masterBypass ? 'Master bypassed' : 'Master active');
+  });
+
+  window.addEventListener('dragover', (e) => { e.preventDefault(); dropOverlay.classList.add('active'); });
+  window.addEventListener('dragleave', (e) => { if (e.target === dropOverlay) dropOverlay.classList.remove('active'); });
+  window.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropOverlay.classList.remove('active');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('audio/')) loadFile(file);
+  });
+
+  window.addEventListener('resize', () => { drawWaveform(); modules.forEach(m => m.tick()); });
+
+  createDefaultModules();
+  rebuildRackUI();
+  drawWaveform();
+  setStatus('Ready');
+})();
+
+</script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

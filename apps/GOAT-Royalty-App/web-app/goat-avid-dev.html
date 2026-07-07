@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT · Avid Developer Hub</title>
+<link rel="icon" href="favicon.ico">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060608;--bg2:#0a0a0d;--bg3:#0f0f13;--bg4:#141418;--bg5:#1a1a20;--bg6:#22222a;
+  --gold:#c9922a;--gold-dim:rgba(201,146,42,0.15);--gold-line:rgba(201,146,42,0.22);
+  --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#7c3aed;--cyan:#06b6d4;
+  --avid:#0066cc;--avid-dim:rgba(0,102,204,0.15);--avid-line:rgba(0,102,204,0.3);
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+  --text:#e8e4dd;--text2:#a09a90;--text3:#504a42;
+  --radius:6px;--radius2:4px;
+}
+html,body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:13px;min-height:100vh;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bg6);border-radius:2px}
+
+/* NAV */
+.nav{height:44px;background:rgba(6,6,8,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:2px;position:sticky;top:0;z-index:100;overflow-x:auto}
+.nav::-webkit-scrollbar{display:none}
+.nav-wordmark{font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-right:4px;flex-shrink:0}
+.nav-sub{font-size:11px;font-weight:400;color:var(--text3);margin-right:24px;flex-shrink:0}
+.nav-div{width:1px;height:18px;background:var(--border);margin:0 12px;flex-shrink:0}
+.nav-tab{height:44px;padding:0 14px;font-size:11px;font-weight:500;color:var(--text3);cursor:pointer;white-space:nowrap;background:none;border:none;font-family:inherit;display:flex;align-items:center;position:relative;transition:color .15s;flex-shrink:0}
+.nav-tab::after{content:'';position:absolute;bottom:0;left:14px;right:14px;height:1px;background:var(--avid);transform:scaleX(0);transition:transform .2s}
+.nav-tab:hover{color:var(--text2)}
+.nav-tab.act{color:var(--text)}
+.nav-tab.act::after{transform:scaleX(1)}
+.nav-spacer{flex:1}
+.nav-badge{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:2px;background:var(--avid-dim);color:var(--avid);border:1px solid var(--avid-line);flex-shrink:0}
+.nav-btn{padding:6px 14px;border-radius:var(--radius2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid var(--border2);background:var(--bg4);color:var(--text2);transition:all .15s;white-space:nowrap;flex-shrink:0}
+.nav-btn:hover{background:var(--bg5);color:var(--text)}
+
+/* SECTIONS */
+.section{display:none;padding:28px 28px 60px;max-width:1400px;margin:0 auto}
+.section.act{display:block}
+
+/* SECTION HEADER */
+.sec-hdr{margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.sec-hdr-label{font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.sec-hdr-title{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.5px}
+.sec-hdr-desc{font-size:12px;color:var(--text2);margin-top:6px;line-height:1.6}
+
+/* CAT LABEL */
+.cat{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:28px 0 12px;display:flex;align-items:center;gap:12px}
+.cat::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* DOWNLOAD GRID */
+.dl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:8px}
+.dl-card{background:var(--bg3);padding:16px 18px;transition:background .15s;position:relative;overflow:hidden}
+.dl-card:hover{background:var(--bg4)}
+.dl-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--avid);opacity:0;transition:opacity .15s}
+.dl-card:hover::before{opacity:1}
+.dl-name{font-size:12px;font-weight:600;color:var(--text);letter-spacing:-.1px;margin-bottom:4px;line-height:1.4}
+.dl-meta{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.dl-size{font-size:10px;color:var(--text3);font-weight:500}
+.dl-platform{font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:2px 6px;border-radius:2px;border:1px solid var(--border2);color:var(--text3)}
+.dl-platform.mac{border-color:rgba(0,102,204,0.3);color:var(--avid)}
+.dl-platform.win{border-color:rgba(59,130,246,0.3);color:var(--blue)}
+.dl-platform.both{border-color:rgba(124,58,237,0.3);color:var(--purple)}
+.dl-platform.pdf{border-color:rgba(239,68,68,0.3);color:var(--red)}
+.dl-platform.beta{border-color:rgba(201,146,42,0.3);color:var(--gold)}
+.dl-actions{display:flex;gap:6px;flex-wrap:wrap}
+.dl-btn{padding:5px 12px;border-radius:var(--radius2);font-size:10px;font-weight:600;letter-spacing:.2px;cursor:pointer;font-family:inherit;transition:all .15s;border:1px solid var(--border2);background:var(--bg5);color:var(--text2)}
+.dl-btn:hover{background:var(--bg6);color:var(--text)}
+.dl-btn.primary{border-color:var(--avid-line);background:var(--avid-dim);color:var(--avid)}
+.dl-btn.primary:hover{background:rgba(0,102,204,0.25)}
+.dl-btn.gold{border-color:var(--gold-line);background:var(--gold-dim);color:var(--gold)}
+.dl-btn.gold:hover{background:rgba(201,146,42,0.25)}
+
+/* STATUS ROW */
+.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px}
+.status-card{background:var(--bg3);padding:14px 16px}
+.status-label{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.status-val{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.3px}
+.status-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.status-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:6px}
+.dot-green{background:var(--green);box-shadow:0 0 6px var(--green)}
+.dot-gold{background:var(--gold);box-shadow:0 0 6px var(--gold)}
+.dot-red{background:var(--red);box-shadow:0 0 6px var(--red)}
+
+/* SCRIPTING PANEL */
+.script-layout{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px}
+.script-panel{background:var(--bg3);padding:20px}
+.script-panel-title{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text2);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.cmd-list{display:flex;flex-direction:column;gap:6px}
+.cmd-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius2);border:1px solid var(--border);background:var(--bg4);cursor:pointer;transition:all .15s}
+.cmd-row:hover{border-color:var(--border2);background:var(--bg5)}
+.cmd-row.active-cmd{border-color:var(--avid-line);background:var(--avid-dim)}
+.cmd-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .15s}
+.cmd-row:hover .cmd-dot{background:var(--avid)}
+.cmd-row.active-cmd .cmd-dot{background:var(--avid)}
+.cmd-name{font-size:11px;font-weight:600;color:var(--text2);flex:1}
+.cmd-row:hover .cmd-name,.cmd-row.active-cmd .cmd-name{color:var(--text)}
+.cmd-key{font-size:10px;color:var(--text3);font-family:'SF Mono',monospace}
+.script-output{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:12px;font-size:11px;font-family:'SF Mono','Courier New',monospace;color:var(--green);min-height:120px;white-space:pre-wrap;line-height:1.6;margin-bottom:10px;overflow-y:auto;max-height:200px}
+.script-input-row{display:flex;gap:8px}
+.script-input{flex:1;background:var(--bg4);border:1px solid var(--border);color:var(--text);border-radius:var(--radius2);padding:8px 12px;font-family:'SF Mono','Courier New',monospace;font-size:11px;transition:border-color .15s}
+.script-input:focus{outline:none;border-color:var(--avid-line)}
+.script-input::placeholder{color:var(--text3)}
+.script-run{padding:8px 16px;background:var(--avid);border:none;border-radius:var(--radius2);color:#fff;font-weight:700;font-size:11px;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.script-run:hover{opacity:.85}
+
+/* AAX BUILDER */
+.aax-grid{display:grid;grid-template-columns:240px 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px;min-height:400px}
+.aax-sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:16px}
+.aax-sidebar-label{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.aax-type-list{display:flex;flex-direction:column;gap:4px}
+.aax-type{padding:8px 10px;border-radius:var(--radius2);font-size:11px;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s;border:1px solid transparent}
+.aax-type:hover{background:var(--bg4);color:var(--text2)}
+.aax-type.sel{background:var(--avid-dim);border-color:var(--avid-line);color:var(--avid)}
+.aax-main{background:var(--bg3);padding:20px;overflow-y:auto}
+.aax-form-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px;letter-spacing:-.2px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.form-item{display:flex;flex-direction:column;gap:5px}
+.form-item.full{grid-column:1/-1}
+.form-label{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3)}
+.form-input,.form-select{background:var(--bg4);border:1px solid var(--border);color:var(--text);border-radius:var(--radius2);padding:8px 10px;font-family:inherit;font-size:12px;transition:border-color .15s}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--avid-line)}
+.form-input::placeholder{color:var(--text3)}
+.form-select option{background:var(--bg4)}
+.code-preview{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:14px;font-family:'SF Mono','Courier New',monospace;font-size:11px;color:#a8d8a8;line-height:1.7;overflow-x:auto;margin-top:12px;white-space:pre}
+.aax-actions{display:flex;gap:8px;margin-top:14px}
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-wordmark">GOAT</div>
+  <div class="nav-sub">· Avid Dev</div>
+  <div class="nav-div"></div>
+  <button class="nav-tab act" onclick="showTab('overview',this)">Overview</button>
+  <button class="nav-tab" onclick="showTab('downloads',this)">Downloads</button>
+  <button class="nav-tab" onclick="showTab('scripting',this)">PT Scripting</button>
+  <button class="nav-tab" onclick="showTab('aax',this)">AAX Builder</button>
+  <button class="nav-tab" onclick="showTab('sdk',this)">SDK Docs</button>
+  <div class="nav-spacer"></div>
+  <div class="nav-badge">Avid Audio Developer Partner</div>
+  <div class="nav-div"></div>
+  <button class="nav-btn" onclick="window.location.href='goat-production-hub.html'">Production Hub</button>
+</nav>
+
+<!-- ── OVERVIEW ── -->
+<div class="section act" id="tab-overview">
+  <div class="sec-hdr">
+    <div class="sec-hdr-label">Avid Audio Developer Partner Program</div>
+    <div class="sec-hdr-title">Developer Hub</div>
+    <div class="sec-hdr-desc">Full access to AAX SDK, Pro Tools scripting, developer builds (2025–2026 beta), HD drivers, and plugin dev tools. All assets catalogued below.</div>
+  </div>
+
+  <div class="status-grid">
+    <div class="status-card">
+      <div class="status-label">Partner Status</div>
+      <div class="status-val"><span class="status-dot dot-green"></span>Active</div>
+      <div class="status-sub">Avid Audio Developer Partner</div>
+    </div>
+    <div class="status-card">
+      <div class="status-label">AAX SDK</div>
+      <div class="status-val"><span class="status-dot dot-green"></span>2.9.0</div>
+      <div class="status-sub">Latest · 2.8.0, 2.8.1, 2.9.0 available</div>
+    </div>
+    <div class="status-card">
+      <div class="status-label">Pro Tools</div>
+      <div class="status-val"><span class="status-dot dot-gold"></span>2026 Beta</div>
+      <div class="status-sub">2026.R1.0.165 · Latest beta build</div>
+    </div>
+    <div class="status-card">
+      <div class="status-label">Dev Build</div>
+      <div class="status-val"><span class="status-dot dot-green"></span>2026.4.0</div>
+      <div class="status-sub">Arm + Intel Mac · Windows</div>
+    </div>
+    <div class="status-card">
+      <div class="status-label">PT Scripting</div>
+      <div class="status-val"><span class="status-dot dot-green"></span>Available</div>
+      <div class="status-sub">Scripting SDK Toolkit included</div>
+    </div>
+    <div class="status-card">
+      <div class="status-label">HD Driver</div>
+      <div class="status-val"><span class="status-dot dot-green"></span>2024.10</div>
+      <div class="status-sub">Mac DMG + Win ZIP</div>
+    </div>
+  </div>
+
+  <div class="cat">What you can build</div>
+  <div class="dl-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+    <div class="dl-card">
+      <div class="dl-name">AAX Native Plugins</div>
+      <div class="dl-meta"><span class="dl-platform mac">AAX SDK 2.9.0</span></div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">Build real-time effects and virtual instruments that run inside Pro Tools. EQ, compression, reverb, synths — anything you can code in C++ becomes an AAX plugin.</div>
+      <div class="dl-actions" style="margin-top:10px">
+        <button class="dl-btn gold" onclick="showTab('aax',document.querySelector('[onclick*=aax]'))">Open AAX Builder</button>
+      </div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools Remote Control</div>
+      <div class="dl-meta"><span class="dl-platform mac">Scripting SDK</span></div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">Control Pro Tools transport, tracks, mixing, and session management from GOAT using the Scripting SDK. Play, record, solo, mute — all from this interface.</div>
+      <div class="dl-actions" style="margin-top:10px">
+        <button class="dl-btn gold" onclick="showTab('scripting',document.querySelector('[onclick*=scripting]'))">Open PT Scripting</button>
+      </div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">JUCE AAX Integration</div>
+      <div class="dl-meta"><span class="dl-platform both">JUCE 5.4.1 · AAX</span></div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">The included JUCE-to-AAX DSP example shows how to wrap GOAT's WebAudio processing into a real AAX plugin. Build once, run in Pro Tools.</div>
+      <div class="dl-actions" style="margin-top:10px">
+        <button class="dl-btn primary" onclick="launch('JUCE')">Launch JUCE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DOWNLOADS ── -->
+<div class="section" id="tab-downloads">
+  <div class="sec-hdr">
+    <div class="sec-hdr-label">Avid Partner Portal</div>
+    <div class="sec-hdr-title">Downloads & Assets</div>
+    <div class="sec-hdr-desc">All assets from your Avid Audio Developer Partner account. Click Install to launch the downloaded installer.</div>
+  </div>
+
+  <div class="cat">Pro Tools — Latest Release</div>
+  <div class="dl-grid">
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools 2025.12</div>
+      <div class="dl-meta"><span class="dl-size">6.3 GB</span><span class="dl-platform mac">Mac</span></div>
+      <div class="dl-actions">
+        <button class="dl-btn primary" onclick="launch('Pro Tools')">Launch PT</button>
+        <button class="dl-btn" onclick="openPortal()">Portal</button>
+      </div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools 2025.12</div>
+      <div class="dl-meta"><span class="dl-size">4.29 GB</span><span class="dl-platform win">Win</span></div>
+      <div class="dl-actions">
+        <button class="dl-btn primary" onclick="launch('Pro Tools')">Launch PT</button>
+        <button class="dl-btn" onclick="openPortal()">Portal</button>
+      </div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools Demo Session — Low Roar</div>
+      <div class="dl-meta"><span class="dl-size">1.14 GB</span><span class="dl-platform both">Session</span></div>
+      <div class="dl-actions">
+        <button class="dl-btn primary" onclick="openPTSession('LowRoar')">Open in PT</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat">Pro Tools — Beta Builds</div>
+  <div class="dl-grid">
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools 2026.R1.0.165 Beta</div>
+      <div class="dl-meta"><span class="dl-size">6.35 GB</span><span class="dl-platform mac">Mac</span><span class="dl-platform beta">Latest Beta</span></div>
+      <div class="dl-actions">
+        <button class="dl-btn gold" onclick="launch('Pro Tools')">Launch</button>
+        <button class="dl-btn" onclick="openPortal()">Portal</button>
+      </div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools 2026.R1.0.165 Beta</div>
+      <div class="dl-meta"><span class="dl-size">4.34 GB</span><span class="dl-platform win">Win</span><span class="dl-platform beta">Latest Beta</span></div>
+      <div class="dl-actions"><button class="dl-btn gold" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools 2026.R1.0.158 Beta</div>
+      <div class="dl-meta"><span class="dl-size">6.32 GB</span><span class="dl-platform mac">Mac</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools 2026.R1.0.150 Beta</div>
+      <div class="dl-meta"><span class="dl-size">6.32 GB</span><span class="dl-platform mac">Mac</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools 2025.R3.0.117 Beta</div>
+      <div class="dl-meta"><span class="dl-size">6.3 GB</span><span class="dl-platform mac">Mac</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools 2025.R3.0.117 Beta</div>
+      <div class="dl-meta"><span class="dl-size">4.29 GB</span><span class="dl-platform win">Win</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+  </div>
+
+  <div class="cat">Pro Tools — Developer Builds</div>
+  <div class="dl-grid">
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools Dev 2026.4.0</div>
+      <div class="dl-meta"><span class="dl-size">2.33 GB</span><span class="dl-platform mac">Mac Arm</span><span class="dl-platform beta">Dev</span></div>
+      <div class="dl-actions">
+        <button class="dl-btn primary" onclick="launch('Pro Tools')">Launch</button>
+        <button class="dl-btn" onclick="openPortal()">Portal</button>
+      </div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools Dev 2026.4.0</div>
+      <div class="dl-meta"><span class="dl-size">2.35 GB</span><span class="dl-platform mac">Mac Intel</span><span class="dl-platform beta">Dev</span></div>
+      <div class="dl-actions"><button class="dl-btn primary" onclick="launch('Pro Tools')">Launch</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools Dev 2026.4.0</div>
+      <div class="dl-meta"><span class="dl-size">2.18 GB</span><span class="dl-platform win">Win</span><span class="dl-platform beta">Dev</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools Dev 2026.R1.0.1 Beta Arm</div>
+      <div class="dl-meta"><span class="dl-size">2.3 GB</span><span class="dl-platform mac">Mac Arm</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools Dev 2025.12.0 Arm</div>
+      <div class="dl-meta"><span class="dl-size">2.29 GB</span><span class="dl-platform mac">Mac Arm</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools Dev 2025.6.0 Arm</div>
+      <div class="dl-meta"><span class="dl-size">2.45 GB</span><span class="dl-platform mac">Mac Arm</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools Dev 2025.R3.0.4 Beta Arm</div>
+      <div class="dl-meta"><span class="dl-size">2.29 GB</span><span class="dl-platform mac">Mac Arm</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools Dev 2025.12.0 Win</div>
+      <div class="dl-meta"><span class="dl-size">2.15 GB</span><span class="dl-platform win">Win</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+  </div>
+
+  <div class="cat">AAX Developer Tools</div>
+  <div class="dl-grid">
+    <div class="dl-card">
+      <div class="dl-name">AAX SDK 2.9.0</div>
+      <div class="dl-meta"><span class="dl-size">41.28 MB</span><span class="dl-platform both">Latest</span></div>
+      <div class="dl-actions">
+        <button class="dl-btn gold" onclick="showTab('aax',null)">AAX Builder</button>
+        <button class="dl-btn" onclick="openPortal()">Portal</button>
+      </div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">AAX SDK 2.8.1</div>
+      <div class="dl-meta"><span class="dl-size">40.36 MB</span><span class="dl-platform both">SDK</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">AAX SDK 2.8.0</div>
+      <div class="dl-meta"><span class="dl-size">41.69 MB</span><span class="dl-platform both">SDK</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">AAX Developer Tools Beta 22.9.0.1</div>
+      <div class="dl-meta"><span class="dl-size">295 MB</span><span class="dl-platform mac">Mac x86_64</span></div>
+      <div class="dl-actions"><button class="dl-btn primary" onclick="launchApp('/Applications/AAX Developer Tools.app')">Launch</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">AAX Developer Tools Beta 22.R4.0.1</div>
+      <div class="dl-meta"><span class="dl-size">192 MB</span><span class="dl-platform mac">Mac arm64</span></div>
+      <div class="dl-actions"><button class="dl-btn primary" onclick="launchApp('/Applications/AAX Developer Tools.app')">Launch</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">JUCE to AAX DSP Example Plug-In</div>
+      <div class="dl-meta"><span class="dl-size">236 KB</span><span class="dl-platform both">JUCE 5.4.1</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">AAX Plug-In Page Table Editor 24.6</div>
+      <div class="dl-meta"><span class="dl-size">82.74 MB</span><span class="dl-platform mac">Mac Intel</span></div>
+      <div class="dl-actions"><button class="dl-btn primary" onclick="launchApp('/Applications/AAX Plug-In Page Table Editor.app')">Launch</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">AAX Plug-In Page Table Editor 24.6</div>
+      <div class="dl-meta"><span class="dl-size">79.51 MB</span><span class="dl-platform mac">Mac Arm</span></div>
+      <div class="dl-actions"><button class="dl-btn primary" onclick="launchApp('/Applications/AAX Plug-In Page Table Editor.app')">Launch</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">DigiShell and AAX Validator 24.6</div>
+      <div class="dl-meta"><span class="dl-size">310 MB</span><span class="dl-platform mac">Mac Intel</span></div>
+      <div class="dl-actions"><button class="dl-btn primary" onclick="launchApp('/Applications/DigiShell.app')">DigiShell</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">DigiShell and AAX Validator 24.6</div>
+      <div class="dl-meta"><span class="dl-size">298 MB</span><span class="dl-platform mac">Mac Arm</span></div>
+      <div class="dl-actions"><button class="dl-btn primary" onclick="launchApp('/Applications/DigiShell.app')">DigiShell</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">DigiShell and AAX Validator 24.6</div>
+      <div class="dl-meta"><span class="dl-size">233 MB</span><span class="dl-platform win">Win Intel</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools kTrace Capture Tool v13</div>
+      <div class="dl-meta"><span class="dl-size">135 KB</span><span class="dl-platform mac">Mac</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools WPR Capture Tool v0.9</div>
+      <div class="dl-meta"><span class="dl-size">603 KB</span><span class="dl-platform win">Win</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">AAX Plugin Test Plan (Jan 2024)</div>
+      <div class="dl-meta"><span class="dl-size">664 KB</span><span class="dl-platform pdf">PDF</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+  </div>
+
+  <div class="cat">Drivers & Services</div>
+  <div class="dl-grid">
+    <div class="dl-card">
+      <div class="dl-name">HD Driver 2024.10</div>
+      <div class="dl-meta"><span class="dl-size">541 MB</span><span class="dl-platform mac">Mac DMG</span></div>
+      <div class="dl-actions"><button class="dl-btn primary" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">HD Driver 2024.10</div>
+      <div class="dl-meta"><span class="dl-size">337 MB</span><span class="dl-platform win">Win ZIP</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Avid Cloud Client Services 22.10</div>
+      <div class="dl-meta"><span class="dl-size">78 MB</span><span class="dl-platform mac">Mac DMG</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Avid Cloud Client Services 22.10</div>
+      <div class="dl-meta"><span class="dl-size">52 MB</span><span class="dl-platform win">Win ZIP</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+  </div>
+
+  <div class="cat">Sibelius Developer</div>
+  <div class="dl-grid">
+    <div class="dl-card">
+      <div class="dl-name">Sibelius Sound Set Editor 1.5.1</div>
+      <div class="dl-meta"><span class="dl-size">2.19 MB</span><span class="dl-platform both">Sibelius Dev</span></div>
+      <div class="dl-actions">
+        <button class="dl-btn primary" onclick="launchApp('/Applications/Sibelius Sound Set Editor.app')">Launch</button>
+        <button class="dl-btn" onclick="openPortal()">Portal</button>
+      </div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools Scripting SDK Toolkit</div>
+      <div class="dl-meta"><span class="dl-platform both">Scripting SDK</span></div>
+      <div class="dl-actions">
+        <button class="dl-btn gold" onclick="showTab('scripting',null)">PT Scripting</button>
+        <button class="dl-btn" onclick="openPortal()">Portal</button>
+      </div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Pro Tools Documentation</div>
+      <div class="dl-meta"><span class="dl-platform pdf">User Guides</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+  </div>
+
+  <div class="cat">Legacy</div>
+  <div class="dl-grid">
+    <div class="dl-card">
+      <div class="dl-name">TDM/RTAS Plug-In SDK 9.0</div>
+      <div class="dl-meta"><span class="dl-size">15.36 MB</span><span class="dl-platform both">Legacy</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">DigiTraceDecryptor 12.7.676</div>
+      <div class="dl-meta"><span class="dl-size">165 KB</span><span class="dl-platform both">Legacy</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Avid Crash Reader 0.2.8</div>
+      <div class="dl-meta"><span class="dl-size">418 KB</span><span class="dl-platform mac">Mac</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+    <div class="dl-card">
+      <div class="dl-name">Spot-To-Region Event Documentation</div>
+      <div class="dl-meta"><span class="dl-size">37 KB</span><span class="dl-platform pdf">PDF</span></div>
+      <div class="dl-actions"><button class="dl-btn" onclick="openPortal()">Portal</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PT SCRIPTING ── -->
+<div class="section" id="tab-scripting">
+  <div class="sec-hdr">
+    <div class="sec-hdr-label">Pro Tools Scripting SDK</div>
+    <div class="sec-hdr-title">Pro Tools Remote Control</div>
+    <div class="sec-hdr-desc">Control a running Pro Tools session from GOAT via the Scripting SDK socket bridge. Pro Tools must be open and the scripting server enabled.</div>
+  </div>
+
+  <div class="script-layout">
+    <div class="script-panel">
+      <div class="script-panel-title">Quick Commands</div>
+      <div class="cmd-list">
+        <div class="cmd-row" onclick="runPTCmd('transport/play')">
+          <div class="cmd-dot"></div>
+          <div class="cmd-name">Play</div>
+          <div class="cmd-key">transport/play</div>
+        </div>
+        <div class="cmd-row" onclick="runPTCmd('transport/stop')">
+          <div class="cmd-dot"></div>
+          <div class="cmd-name">Stop</div>
+          <div class="cmd-key">transport/stop</div>
+        </div>
+        <div class="cmd-row" onclick="runPTCmd('transport/record')">
+          <div class="cmd-dot"></div>
+          <div class="cmd-name">Record</div>
+          <div class="cmd-key">transport/record</div>
+        </div>
+        <div class="cmd-row" onclick="runPTCmd('transport/rewind')">
+          <div class="cmd-dot"></div>
+          <div class="cmd-name">Return to Zero</div>
+          <div class="cmd-key">transport/rewind</div>
+        </div>
+        <div class="cmd-row" onclick="runPTCmd('session/new')">
+          <div class="cmd-dot"></div>
+          <div class="cmd-name">New Session</div>
+          <div class="cmd-key">session/new</div>
+        </div>
+        <div class="cmd-row" onclick="runPTCmd('session/save')">
+          <div class="cmd-dot"></div>
+          <div class="cmd-name">Save Session</div>
+          <div class="cmd-key">session/save</div>
+        </div>
+        <div class="cmd-row" onclick="runPTCmd('session/close')">
+          <div class="cmd-dot"></div>
+          <div class="cmd-name">Close Session</div>
+          <div class="cmd-key">session/close</div>
+        </div>
+        <div class="cmd-row" onclick="runPTCmd('track/new_audio')">
+          <div class="cmd-dot"></div>
+          <div class="cmd-name">New Audio Track</div>
+          <div class="cmd-key">track/new_audio</div>
+        </div>
+        <div class="cmd-row" onclick="runPTCmd('track/new_instrument')">
+          <div class="cmd-dot"></div>
+          <div class="cmd-name">New Instrument Track</div>
+          <div class="cmd-key">track/new_instrument</div>
+        </div>
+        <div class="cmd-row" onclick="runPTCmd('bounce/to_disk')">
+          <div class="cmd-dot"></div>
+          <div class="cmd-name">Bounce to Disk</div>
+          <div class="cmd-key">bounce/to_disk</div>
+        </div>
+        <div class="cmd-row" onclick="importToPT()">
+          <div class="cmd-dot"></div>
+          <div class="cmd-name">Import Beat Maker Audio</div>
+          <div class="cmd-key">import from GOAT</div>
+        </div>
+      </div>
+    </div>
+    <div class="script-panel">
+      <div class="script-panel-title">Script Console</div>
+      <div class="script-output" id="ptOutput">Ready. Type a command or click a quick command to send to Pro Tools.
+
+Pro Tools must be running with the scripting server enabled:
+  Setup > Preferences > Scripting > Enable
+
+Intel server bridges GOAT → Pro Tools at http://127.0.0.1:5500/protools
+</div>
+      <div class="script-input-row">
+        <input class="script-input" id="ptInput" placeholder="e.g. transport/play  or  track/mute?name=Drums" onkeydown="if(event.key==='Enter')runPTCmdCustom()">
+        <button class="script-run" onclick="runPTCmdCustom()">Send</button>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="dl-btn primary" onclick="checkPTConnection()">Check PT Connection</button>
+        <button class="dl-btn" onclick="document.getElementById('ptOutput').textContent='Cleared.\n'">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── AAX BUILDER ── -->
+<div class="section" id="tab-aax">
+  <div class="sec-hdr">
+    <div class="sec-hdr-label">AAX SDK 2.9.0</div>
+    <div class="sec-hdr-title">AAX Plugin Builder</div>
+    <div class="sec-hdr-desc">Configure and scaffold a new AAX plugin project using the SDK. Generates the boilerplate C++ code ready to open in Xcode or Visual Studio.</div>
+  </div>
+
+  <div class="aax-grid">
+    <div class="aax-sidebar">
+      <div class="aax-sidebar-label">Plugin Type</div>
+      <div class="aax-type-list">
+        <div class="aax-type sel" onclick="selectAAXType(this,'effect')">Audio Effect (AAX Native)</div>
+        <div class="aax-type" onclick="selectAAXType(this,'instrument')">Virtual Instrument</div>
+        <div class="aax-type" onclick="selectAAXType(this,'midi')">MIDI Effect</div>
+        <div class="aax-type" onclick="selectAAXType(this,'dsp')">AAX DSP (HDX)</div>
+        <div class="aax-type" onclick="selectAAXType(this,'juce')">JUCE Plugin (AAX)</div>
+      </div>
+      <div class="aax-sidebar-label" style="margin-top:20px">SDK Version</div>
+      <div class="aax-type-list">
+        <div class="aax-type sel" onclick="selectSDK(this,'2.9.0')">AAX SDK 2.9.0</div>
+        <div class="aax-type" onclick="selectSDK(this,'2.8.1')">AAX SDK 2.8.1</div>
+        <div class="aax-type" onclick="selectSDK(this,'2.8.0')">AAX SDK 2.8.0</div>
+      </div>
+    </div>
+    <div class="aax-main">
+      <div class="aax-form-title">Plugin Configuration</div>
+      <div class="form-grid">
+        <div class="form-item">
+          <div class="form-label">Plugin Name</div>
+          <input class="form-input" id="aaxName" value="GOAT EQ" oninput="updateAAXPreview()">
+        </div>
+        <div class="form-item">
+          <div class="form-label">Manufacturer Name</div>
+          <input class="form-input" id="aaxMfr" value="GOAT FORCE" oninput="updateAAXPreview()">
+        </div>
+        <div class="form-item">
+          <div class="form-label">Plugin ID (4 chars)</div>
+          <input class="form-input" id="aaxId" value="GOAT" maxlength="4" oninput="updateAAXPreview()">
+        </div>
+        <div class="form-item">
+          <div class="form-label">Version</div>
+          <input class="form-input" id="aaxVer" value="1.0.0" oninput="updateAAXPreview()">
+        </div>
+        <div class="form-item">
+          <div class="form-label">Category</div>
+          <select class="form-select" id="aaxCat" onchange="updateAAXPreview()">
+            <option>EQ</option>
+            <option>Dynamics</option>
+            <option>Reverb</option>
+            <option>Delay</option>
+            <option>Modulation</option>
+            <option>Harmonic</option>
+            <option>Noise Reduction</option>
+            <option>Instrument</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <div class="form-label">Inputs / Outputs</div>
+          <select class="form-select" id="aaxIO" onchange="updateAAXPreview()">
+            <option>Mono → Mono</option>
+            <option selected>Stereo → Stereo</option>
+            <option>Mono → Stereo</option>
+            <option>Multi-channel</option>
+          </select>
+        </div>
+        <div class="form-item full">
+          <div class="form-label">Parameters (comma-separated)</div>
+          <input class="form-input" id="aaxParams" value="Gain, Frequency, Q, Bypass" oninput="updateAAXPreview()">
+        </div>
+      </div>
+      <div class="form-label">Generated AAX Plugin Scaffold</div>
+      <div class="code-preview" id="aaxPreview">// Loading preview...</div>
+      <div class="aax-actions">
+        <button class="dl-btn gold" onclick="copyAAXCode()">Copy Code</button>
+        <button class="dl-btn primary" onclick="openXcode()">Open in Xcode</button>
+        <button class="dl-btn" onclick="openPortal()">AAX SDK Portal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SDK DOCS ── -->
+<div class="section" id="tab-sdk">
+  <div class="sec-hdr">
+    <div class="sec-hdr-label">Avid Developer Documentation</div>
+    <div class="sec-hdr-title">SDK Reference</div>
+    <div class="sec-hdr-desc">Quick reference for AAX SDK, Pro Tools Scripting API, and EUCON. Full docs in the downloaded SDK packages.</div>
+  </div>
+
+  <div class="cat">AAX SDK 2.9.0 — Key Classes</div>
+  <div class="dl-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+    <div class="dl-card"><div class="dl-name">AAX_IEffectParameters</div><div style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:4px">Core interface for all plugin parameter management. Override GetChunkSize, GetChunk, SetChunk for preset management.</div></div>
+    <div class="dl-card"><div class="dl-name">AAX_CEffectGUI</div><div style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:4px">Base class for building plugin UI. Use with VSTGUI or custom drawing. SetViewSize, Draw, HandleEvent.</div></div>
+    <div class="dl-card"><div class="dl-name">AAX_CMonoEffectParameters</div><div style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:4px">Simplified parameters class for mono/stereo effects. Most common starting point for audio effects.</div></div>
+    <div class="dl-card"><div class="dl-name">AAX_IComponentDescriptor</div><div style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:4px">Describes the plugin's audio processing component — channel configs, latency, bypass.</div></div>
+    <div class="dl-card"><div class="dl-name">AAX_IPropertyMap</div><div style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:4px">Set plugin properties: category, stem format, manufacturer/product IDs, page table.</div></div>
+    <div class="dl-card"><div class="dl-name">AAX_CParameter</div><div style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:4px">Typed parameter class. Use AAX_CLinearTaperDelegate for linear, AAX_CLogTaperDelegate for log scaling.</div></div>
+  </div>
+
+  <div class="cat">Pro Tools Scripting — Common Commands</div>
+  <div class="dl-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+    <div class="dl-card"><div class="dl-name">transport/play</div><div style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:4px">Start playback from current cursor position. No parameters required.</div></div>
+    <div class="dl-card"><div class="dl-name">transport/stop</div><div style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:4px">Stop playback or recording.</div></div>
+    <div class="dl-card"><div class="dl-name">track/set_solo?name=X</div><div style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:4px">Solo track by name. Add &state=true/false to toggle.</div></div>
+    <div class="dl-card"><div class="dl-name">track/set_mute?name=X</div><div style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:4px">Mute/unmute a specific track by name.</div></div>
+    <div class="dl-card"><div class="dl-name">session/set_bpm?bpm=140</div><div style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:4px">Set session tempo. Requires conductor ruler to be active.</div></div>
+    <div class="dl-card"><div class="dl-name">bounce/to_disk?format=wav</div><div style="font-size:11px;color:var(--text2);line-height:1.6;margin-top:4px">Bounce session to disk. Params: format (wav/aiff/mp3), bit_depth, sample_rate.</div></div>
+  </div>
+</div>
+
+<script>
+const INTEL = 'http://127.0.0.1:5500';
+
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('act'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('act'));
+  const sec = document.getElementById('tab-' + id);
+  if (sec) sec.classList.add('act');
+  if (btn) btn.classList.add('act');
+  else {
+    // find by onclick
+    document.querySelectorAll('.nav-tab').forEach(t => {
+      if (t.getAttribute('onclick') && t.getAttribute('onclick').includes(id)) t.classList.add('act');
+    });
+  }
+  if (id === 'aax') updateAAXPreview();
+}
+
+function launch(appName) {
+  fetch(`${INTEL}/launch`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({app: appName})
+  }).catch(() => {});
+}
+
+function launchApp(path) {
+  fetch(`${INTEL}/launch-app`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({path})
+  }).catch(() => {});
+}
+
+function openPortal() {
+  window.open('https://developer.avid.com', '_blank');
+}
+
+function openPTSession(name) {
+  log(`Opening Pro Tools session: ${name}`);
+  fetch(`${INTEL}/protools/session/open?name=${name}`).catch(() => log('Intel server not running'));
+}
+
+function openXcode() {
+  fetch(`${INTEL}/launch`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({app: 'Xcode'})
+  }).catch(() => {});
+}
+
+// ── PT SCRIPTING ─────────────────────────────────────────────────────────────
+function log(msg) {
+  const out = document.getElementById('ptOutput');
+  const ts = new Date().toLocaleTimeString();
+  out.textContent += `\n[${ts}] ${msg}`;
+  out.scrollTop = out.scrollHeight;
+}
+
+async function runPTCmd(cmd) {
+  document.querySelectorAll('.cmd-row').forEach(r => r.classList.remove('active-cmd'));
+  event?.currentTarget?.classList.add('active-cmd');
+  log(`→ Sending: ${cmd}`);
+  try {
+    const res = await fetch(`${INTEL}/protools/${cmd}`, { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    log(`← ${JSON.stringify(data)}`);
+  } catch (e) {
+    log(`← Error: ${e.message}`);
+    log('  Make sure: 1) Intel server is running  2) Pro Tools is open  3) Scripting is enabled in PT Preferences');
+  }
+}
+
+function runPTCmdCustom() {
+  const input = document.getElementById('ptInput');
+  const cmd = input.value.trim();
+  if (!cmd) return;
+  runPTCmd(cmd);
+  input.value = '';
+}
+
+async function checkPTConnection() {
+  log('Checking Pro Tools connection...');
+  try {
+    const res = await fetch(`${INTEL}/protools/status`, { signal: AbortSignal.timeout(3000) });
+    const data = await res.json();
+    log(`PT Status: ${JSON.stringify(data)}`);
+  } catch {
+    log('Cannot reach intel server. Run: cd goat-intel-server && python3 goat_intel.py');
+  }
+}
+
+async function importToPT() {
+  const beat = localStorage.getItem('goatImportBeat');
+  if (!beat) { log('No beat to import. Generate one in AI Beats first.'); return; }
+  log('Importing GOAT beat into Pro Tools...');
+  try {
+    const res = await fetch(`${INTEL}/protools/import`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: beat,
+      signal: AbortSignal.timeout(8000)
+    });
+    const data = await res.json();
+    log(`Import result: ${JSON.stringify(data)}`);
+  } catch (e) {
+    log(`Import error: ${e.message}`);
+  }
+}
+
+// ── AAX BUILDER ──────────────────────────────────────────────────────────────
+let aaxType = 'effect';
+let aaxSDK  = '2.9.0';
+
+function selectAAXType(el, type) {
+  document.querySelectorAll('.aax-type').forEach(t => t.classList.remove('sel'));
+  el.classList.add('sel');
+  aaxType = type;
+  updateAAXPreview();
+}
+
+function selectSDK(el, ver) {
+  aaxSDK = ver;
+  updateAAXPreview();
+}
+
+function updateAAXPreview() {
+  const name    = document.getElementById('aaxName')?.value   || 'GOAT Plugin';
+  const mfr     = document.getElementById('aaxMfr')?.value    || 'GOAT FORCE';
+  const id      = document.getElementById('aaxId')?.value     || 'GOAT';
+  const ver     = document.getElementById('aaxVer')?.value    || '1.0.0';
+  const cat     = document.getElementById('aaxCat')?.value    || 'EQ';
+  const io      = document.getElementById('aaxIO')?.value     || 'Stereo → Stereo';
+  const params  = (document.getElementById('aaxParams')?.value || 'Gain').split(',').map(p => p.trim());
+
+  const className = name.replace(/\s+/g, '_');
+  const paramDefs = params.map(p =>
+    `  mPlugInParameterList.push_back( new AAX_CLinearTaperParameter<float>(\n    "${p}", "${p.toLowerCase().replace(/\s/g,'_')}", 0.5f, 0.0f, 1.0f, AAX_eParameterType_Continuous) );`
+  ).join('\n\n');
+
+  const code = `// ${name} — AAX Plugin (SDK ${aaxSDK})
+// Generated by GOAT Avid Developer Hub
+// Manufacturer: ${mfr}  |  Plugin ID: '${id.padEnd(4)}'
+// Category: ${cat}  |  I/O: ${io}
+
+#include "AAX_CEffectParameters.h"
+#include "AAX_IEffectDescriptor.h"
+#include "AAX_IComponentDescriptor.h"
+#include "AAX_IPropertyMap.h"
+#include "AAX_CLinearTaperDelegate.h"
+
+// ── Parameters ──────────────────────────────────────────
+class ${className}_Parameters : public AAX_CMonoEffectParameters {
+public:
+  static AAX_CEffectParameters* AAX_CALLBACK Create() {
+    return new ${className}_Parameters();
+  }
+
+  AAX_Result EffectInit() override {
+${paramDefs}
+    return AAX_SUCCESS;
+  }
+
+  AAX_Result ResetFieldData(AAX_CFieldIndex index,
+                            void* data, uint32_t size) const override {
+    // Reset DSP state here
+    return AAX_SUCCESS;
+  }
+};
+
+// ── Algorithm / DSP ─────────────────────────────────────
+void ${className}_AlgorithmProcessFunction(
+  ${className}_TParamValList const* const  inParams,
+  T_${className}_Alg_Block* const          ioBlock)
+{
+  const int32_t numSamples = ioBlock->mInputPP[0]->mBufferLength;
+  float* const  inBufL     = ioBlock->mInputPP[0]->mBuffer;
+  float* const  inBufR     = ioBlock->mInputPP[1]->mBuffer;
+  float* const  outBufL    = ioBlock->mOutputPP[0]->mBuffer;
+  float* const  outBufR    = ioBlock->mOutputPP[1]->mBuffer;
+
+  for (int32_t i = 0; i < numSamples; ++i) {
+    // TODO: Insert ${name} DSP processing here
+    outBufL[i] = inBufL[i];
+    outBufR[i] = inBufR[i];
+  }
+}
+
+// ── Describe ────────────────────────────────────────────
+AAX_Result GetEffectDescriptions(AAX_ICollection* outCollection) {
+  AAX_CheckedResult err;
+  AAX_IEffectDescriptor*    effectDesc = outCollection->NewDescriptor();
+  AAX_IComponentDescriptor* compDesc   = effectDesc->NewComponentDescriptor();
+
+  // Plugin identity
+  effectDesc->AddName("${name}");
+  effectDesc->AddCategory(AAX_ePlugInCategory_${cat.replace(/\s/g,'_')});
+
+  // Manufacturer / Product IDs
+  AAX_IPropertyMap* props = effectDesc->NewPropertyMap();
+  props->AddProperty(AAX_eProperty_ManufacturerID, '${(mfr.substring(0,4)).padEnd(4)}');
+  props->AddProperty(AAX_eProperty_ProductID,      '${id.padEnd(4)}');
+  effectDesc->SetProperties(props);
+
+  // Parameters
+  effectDesc->AddProcPtr((void*)${className}_Parameters::Create,
+                          kAAX_ProcPtrID_Create_EffectParameters);
+
+  outCollection->AddEffect("com.${mfr.toLowerCase().replace(/\s/g,'')}.${name.toLowerCase().replace(/\s/g,'')}", effectDesc);
+  return err;
+}`;
+
+  const el = document.getElementById('aaxPreview');
+  if (el) el.textContent = code;
+}
+
+function copyAAXCode() {
+  const code = document.getElementById('aaxPreview').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = event.target;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy Code', 1500);
+  });
+}
+
+// Init
+updateAAXPreview();
+
+// Auto-open tab from URL hash (e.g. goat-avid-dev.html#scripting)
+(function() {
+  const hash = location.hash.replace('#','');
+  const tabMap = {scripting:'scripting', downloads:'downloads', aax:'aax', sdk:'sdk', overview:'overview'};
+  if (hash && tabMap[hash]) {
+    showTab(hash, document.querySelector(`.nav-tab[onclick*="${hash}"]`));
+  }
+})();
+</script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

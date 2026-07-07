@@ -199,12 +199,18 @@ function exportCatalogCSV() {
     return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
 }
 
-// API Keys Configuration (embedded for local use)
+// API Keys Configuration
+// WARNING: this file is served over HTTP (port 8090) — keep only non-secret keys here.
+// Supabase service/management keys, server credentials, and Google AI keys
+// must ONLY live in .env / backend server — NOT in any web-app file.
+// Use goat-intel server (port 5500) or a backend route to proxy requests that need secrets.
 const API_CONFIG = {
+    // Hostinger token is server-management only — moved to backend .env
+    // superninja, fashionApp — non-critical local app tokens, kept here for local use only
     superninja: 'CUTSsX7.UBvzlbTUCFb8zQJm6j-8_X-5zy8p5QEsuYRENK1ONKE',
-    hostinger: 'VK2DgV31mpN5c6e8gJK50LJR1QgPwcyMYKthc7Gl8f14e176',
-    supabase: 'sbp_073f78daede405731dc30abb4eab334429203c2c',
-    googleAI: 'AIzaSyBNrZ-P8-n5NxzsceYDZUwrrkPSd3LtEks',
+    hostinger: '', // MOVED TO BACKEND — load from process.env.HOSTINGER_API_TOKEN
+    supabase: '', // SERVICE KEY REMOVED — use anon key from supabase-client.js for browser ops
+    googleAI: '', // MOVED TO BACKEND — load from process.env.GOOGLE_API_KEY
     fashionApp: 'D7Vqj4g.t6ljK678nBb5z90vd8-thJf3A5BCCQ8kg-Shz2D5g5c'
 };
 

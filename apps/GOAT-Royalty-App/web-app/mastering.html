@@ -3,10 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💎 GOAT Mastering — AI Mastering Suite</title>
+<title>GOAT Mastering Console — Lurssen + Vanessa AI</title>
 <link rel="stylesheet" href="css/goat-brand.css">
 <link rel="icon" type="image/png" href="img/goat-hero-icon.png">
 <style>
+/* ── LURSSEN-STYLE CONSOLE LAYOUT ── */
+:root{
+  --lur-bg:#0c0c0c;--lur-panel:#111;--lur-border:#1e1e1e;
+  --lur-gold:#d4a03c;--lur-green:#2ecc71;--lur-red:#e74c3c;
+  --lur-blue:#3b82f6;--lur-purple:#8b5cf6;--lur-sub:#666;
+}
+#master-shell{display:flex;height:calc(100vh - 60px);overflow:hidden;background:var(--lur-bg)}
+/* Console main */
+#console-main{flex:1;overflow-y:auto;min-width:0}
+#console-main::-webkit-scrollbar{width:4px}
+#console-main::-webkit-scrollbar-thumb{background:var(--lur-border)}
+/* Vanessa sidebar */
+#vanessa-panel{
+  width:320px;flex-shrink:0;background:#0e0e0e;
+  border-left:1px solid var(--lur-border);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+/* Lurssen header strip */
+.lurssen-header{
+  background:linear-gradient(180deg,#1a1a1a,#111);
+  border-bottom:2px solid var(--lur-gold);
+  padding:14px 20px;display:flex;align-items:center;gap:16px;
+}
+.lurssen-logo{
+  font-size:13px;font-weight:900;letter-spacing:3px;
+  text-transform:uppercase;color:var(--lur-gold);
+}
+.lurssen-sub{font-size:9px;color:var(--lur-sub);letter-spacing:2px;margin-top:2px}
+.lurssen-launch-btn{
+  margin-left:auto;padding:7px 16px;
+  background:linear-gradient(135deg,var(--lur-gold),#c49030);
+  border:none;border-radius:6px;color:#000;font-size:11px;font-weight:800;
+  cursor:pointer;font-family:inherit;letter-spacing:.5px;transition:all .2s;
+}
+.lurssen-launch-btn:hover{transform:scale(1.04);box-shadow:0 4px 16px rgba(212,160,60,0.35)}
+
+/* Console sections */
+.con-section{
+  background:#111;border:1px solid #1e1e1e;border-radius:12px;
+  margin:14px 16px;overflow:hidden;
+}
+.con-section-hdr{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;background:#141414;border-bottom:1px solid #1e1e1e;
+}
+.con-section-hdr h3{font-size:12px;font-weight:700;color:var(--lur-gold);letter-spacing:.5px;text-transform:uppercase;margin:0;flex:1}
+.con-toggle{width:38px;height:20px;border-radius:10px;background:#222;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.con-toggle::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#444;top:3px;left:3px;transition:all .2s}
+.con-toggle.on{background:rgba(46,204,113,0.3);border:1px solid var(--lur-green)}
+.con-toggle.on::after{background:var(--lur-green);left:21px}
+.con-body{padding:16px}
+
+/* EQ / KNOB ROWS */
+.eq-row{display:flex;gap:8px;align-items:flex-end;overflow-x:auto;padding-bottom:4px}
+.eq-band{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:60px}
+.eq-label{font-size:9px;color:var(--lur-sub);text-transform:uppercase;letter-spacing:.5px}
+.eq-freq{font-size:10px;color:var(--lur-gold);font-weight:700}
+.eq-gain{font-size:10px;color:#aaa;text-align:center}
+.knob-wrap{position:relative;width:48px;height:48px}
+.knob-canvas{cursor:pointer;display:block}
+.fader-col{display:flex;flex-direction:column;align-items:center;gap:4px}
+.fader-label{font-size:9px;color:var(--lur-sub);text-transform:uppercase;letter-spacing:.5px;text-align:center}
+.fader-val{font-size:10px;color:var(--lur-gold);font-weight:700}
+input[type=range]{accent-color:var(--lur-gold)}
+input[type=range].vert{
+  writing-mode:vertical-lr;direction:rtl;
+  width:28px;height:80px;cursor:pointer;
+}
+
+/* Preset buttons — Lurssen style */
+.preset-row{display:flex;flex-wrap:wrap;gap:8px}
+.lurssen-preset{
+  padding:8px 16px;border-radius:6px;font-size:11px;font-weight:700;
+  border:1px solid #2a2a2a;background:#181818;color:#888;
+  cursor:pointer;font-family:inherit;letter-spacing:.5px;
+  text-transform:uppercase;transition:all .2s;
+}
+.lurssen-preset:hover,.lurssen-preset.act{
+  background:rgba(212,160,60,0.12);border-color:var(--lur-gold);color:var(--lur-gold);
+}
+
+/* LUFS meter */
+.lufs-display{
+  background:#000;border:1px solid #2a2a2a;border-radius:8px;
+  padding:14px 18px;display:flex;align-items:center;gap:20px;
+}
+.lufs-val{font-size:36px;font-weight:900;color:var(--lur-green);font-family:monospace;line-height:1}
+.lufs-label{font-size:10px;color:var(--lur-sub);letter-spacing:1px;text-transform:uppercase}
+.lufs-meter-bar{flex:1;height:16px;background:#1a1a1a;border-radius:4px;overflow:hidden;border:1px solid #2a2a2a}
+.lufs-meter-fill{height:100%;border-radius:4px;transition:width .3s ease;background:linear-gradient(90deg,var(--lur-green),var(--lur-gold),var(--lur-red))}
+
+/* Fingerprint section */
+.fp-card{
+  background:#141414;border:1px solid #1e1e1e;border-radius:10px;
+  padding:14px;margin-bottom:10px;transition:border-color .2s;
+}
+.fp-card:hover{border-color:rgba(212,160,60,0.3)}
+.fp-risk{padding:4px 10px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.5px}
+.fp-risk.clear{background:rgba(46,204,113,0.15);color:var(--lur-green);border:1px solid rgba(46,204,113,0.3)}
+.fp-risk.warn{background:rgba(243,156,18,0.15);color:#f39c12;border:1px solid rgba(243,156,18,0.3)}
+.fp-risk.block{background:rgba(231,76,60,0.15);color:var(--lur-red);border:1px solid rgba(231,76,60,0.3)}
+
+/* Vanessa sidebar */
+.van-header{
+  padding:14px 16px 10px;border-bottom:1px solid var(--lur-border);
+  background:#111;flex-shrink:0;
+}
+.van-avatar{width:40px;height:40px;border-radius:12px;background:rgba(236,72,153,0.15);display:flex;align-items:center;justify-content:center;font-size:20px}
+.van-name{font-size:13px;font-weight:700;color:#fff}
+.van-role{font-size:10px;color:var(--lur-sub)}
+.van-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.van-msgs::-webkit-scrollbar{width:3px}
+.van-msgs::-webkit-scrollbar-thumb{background:#2a2a2a}
+.van-bubble{padding:10px 13px;border-radius:10px;font-size:12px;line-height:1.6;background:#191919;border:1px solid #2a2a2a;color:#ccc;white-space:pre-wrap}
+.van-bubble.user{background:rgba(212,160,60,0.08);border-color:rgba(212,160,60,0.2);color:#f0ece4;margin-left:20px}
+.van-input-zone{padding:10px 12px;border-top:1px solid var(--lur-border);flex-shrink:0}
+.van-input-row{display:flex;gap:8px}
+.van-input{flex:1;background:#141414;border:1px solid #2a2a2a;color:#f0ece4;border-radius:8px;padding:9px 12px;font-family:inherit;font-size:12px;resize:none}
+.van-input:focus{outline:none;border-color:rgba(236,72,153,0.5)}
+.van-send{width:36px;height:36px;border-radius:8px;background:rgba(236,72,153,0.8);border:none;color:#fff;font-size:14px;cursor:pointer;font-weight:700;transition:all .2s;flex-shrink:0}
+.van-send:hover{background:#ec4899;transform:scale(1.05)}
+.van-qp{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.van-q{padding:4px 10px;border-radius:12px;border:1px solid #2a2a2a;background:transparent;color:#666;font-size:10px;cursor:pointer;font-family:inherit;transition:all .2s}
+.van-q:hover{border-color:rgba(236,72,153,0.5);color:#ec4899}
+.thinking{display:flex;gap:4px;padding:10px 13px}
+.thinking span{width:6px;height:6px;border-radius:50%;background:#444;animation:tbounce .9s infinite ease}
+.thinking span:nth-child(2){animation-delay:.15s}
+.thinking span:nth-child(3){animation-delay:.3s}
+@keyframes tbounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
   .master-wrap { max-width: 1400px; margin: 0 auto; padding: 20px; }
   .file-drop {
     border: 2px dashed rgba(193,18,31,0.5);
@@ -177,7 +306,10 @@
   }
   #fileName { color: var(--goat-gold); font-weight: 700; }
 </style>
-<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
 </head>
 <body class="bg-icon">
 
@@ -197,7 +329,222 @@
   </div>
 </nav>
 
-<div class="master-wrap">
+<!-- ═══ LURSSEN CONSOLE SHELL ═══ -->
+<div id="master-shell">
+
+  <!-- ── LEFT: CONSOLE ── -->
+  <div id="console-main">
+
+    <!-- Lurssen Header -->
+    <div class="lurssen-header">
+      <div>
+        <div class="lurssen-logo">Lurssen Mastering Console</div>
+        <div class="lurssen-sub">GOAT Force Edition · AI-Powered · LUFS Ready</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-left:auto">
+        <div id="lufs-live" style="font-size:22px;font-weight:900;color:var(--lur-green);font-family:monospace">-14.0</div>
+        <div style="font-size:9px;color:var(--lur-sub);letter-spacing:1px">LUFS<br>INTEGRATED</div>
+        <button class="lurssen-launch-btn" onclick="openLurssen()">Open Lurssen App ↗</button>
+        <button class="lurssen-launch-btn" style="background:rgba(118,185,0,0.15);color:#76b900;border:1px solid rgba(118,185,0,0.4)" onclick="openNVIDIA()">NVIDIA Workbench ↗</button>
+      </div>
+    </div>
+
+    <!-- File Drop + Transport -->
+    <div style="margin:14px 16px">
+      <div id="dropZone" style="border:2px dashed rgba(212,160,60,0.3);border-radius:10px;padding:24px;text-align:center;background:#0d0d0d;cursor:pointer;transition:all .2s" ondragover="event.preventDefault();this.style.borderColor='#d4a03c'" ondragleave="this.style.borderColor='rgba(212,160,60,0.3)'" ondrop="handleDrop(event)">
+        <div style="font-size:32px;margin-bottom:8px">🎵</div>
+        <div style="font-size:13px;font-weight:700;color:var(--lur-gold);margin-bottom:4px">Drop audio to master</div>
+        <div style="font-size:11px;color:var(--lur-sub)">WAV · MP3 · FLAC · M4A · or <span style="color:var(--lur-gold);cursor:pointer" onclick="document.getElementById('fileInput').click()">browse</span></div>
+        <input type="file" id="fileInput" accept="audio/*" style="display:none" onchange="loadFile(this)">
+        <div id="fileName" style="margin-top:8px;font-size:11px;color:var(--lur-gold)"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:10px;background:#111;border:1px solid #1e1e1e;border-radius:8px;padding:10px 14px">
+        <button id="playBtn" onclick="togglePlay()" style="width:38px;height:38px;border-radius:50%;background:rgba(212,160,60,0.15);border:1px solid rgba(212,160,60,0.4);color:var(--lur-gold);font-size:16px;cursor:pointer">▶</button>
+        <button onclick="stopAudio()" style="width:38px;height:38px;border-radius:50%;background:#1a1a1a;border:1px solid #2a2a2a;color:#666;font-size:16px;cursor:pointer">■</button>
+        <div style="flex:1;height:6px;background:#1a1a1a;border-radius:3px;cursor:pointer;position:relative" id="seekBar" onclick="seek(event)">
+          <div id="seekFill" style="height:100%;background:var(--lur-gold);border-radius:3px;width:0%;transition:width .1s"></div>
+        </div>
+        <span id="timeDisplay" style="font-family:monospace;color:var(--lur-gold);font-size:12px;min-width:90px;text-align:right">0:00 / 0:00</span>
+        <button onclick="exportMaster()" style="padding:8px 16px;background:linear-gradient(135deg,var(--lur-gold),#c49030);border:none;border-radius:6px;color:#000;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">💾 Export</button>
+      </div>
+    </div>
+
+    <!-- TARGET PRESETS (Lurssen style) -->
+    <div class="con-section">
+      <div class="con-section-hdr">
+        <h3>🎯 Target Preset</h3>
+        <button onclick="vanessaQuick('What mastering preset should I use for trap music?')" style="padding:4px 10px;background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.3);border-radius:5px;color:#ec4899;font-size:10px;cursor:pointer;font-family:inherit">Ask Vanessa</button>
+      </div>
+      <div class="con-body">
+        <div class="preset-row" id="presetChips">
+          <button class="lurssen-preset act" onclick="applyPreset('Streaming',this)">Streaming</button>
+          <button class="lurssen-preset" onclick="applyPreset('Vinyl',this)">Vinyl</button>
+          <button class="lurssen-preset" onclick="applyPreset('CD',this)">CD</button>
+          <button class="lurssen-preset" onclick="applyPreset('Trap',this)">Trap</button>
+          <button class="lurssen-preset" onclick="applyPreset('R&B',this)">R&amp;B</button>
+          <button class="lurssen-preset" onclick="applyPreset('Hip-Hop',this)">Hip-Hop</button>
+          <button class="lurssen-preset" onclick="applyPreset('Pop',this)">Pop</button>
+          <button class="lurssen-preset" onclick="applyPreset('EDM',this)">EDM</button>
+          <button class="lurssen-preset" onclick="applyPreset('Jazz',this)">Jazz</button>
+          <button class="lurssen-preset" onclick="applyPreset('Film Score',this)">Film Score</button>
+        </div>
+        <div class="lufs-display" style="margin-top:14px">
+          <div>
+            <div class="lufs-val" id="lufsVal">-14.0</div>
+            <div class="lufs-label">LUFS Target</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <button onclick="chLufs(0.5)" style="background:none;border:none;color:var(--lur-gold);cursor:pointer;font-size:12px">▲</button>
+            <button onclick="chLufs(-0.5)" style="background:none;border:none;color:var(--lur-gold);cursor:pointer;font-size:12px">▼</button>
+          </div>
+          <div class="lufs-meter-bar">
+            <div class="lufs-meter-fill" id="lufsMeterFill" style="width:60%"></div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:11px;color:#aaa">Spotify: −14</div>
+            <div style="font-size:11px;color:#aaa">Apple: −16</div>
+            <div style="font-size:11px;color:#aaa">YouTube: −14</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EQ -->
+    <div class="con-section">
+      <div class="con-section-hdr">
+        <h3>1 · EQ — 8-Band Parametric</h3>
+        <button class="con-toggle on" onclick="this.classList.toggle('on')" title="Bypass"></button>
+      </div>
+      <div class="con-body">
+        <div class="eq-row" id="eqRow"></div>
+      </div>
+    </div>
+
+    <!-- COMPRESSION -->
+    <div class="con-section">
+      <div class="con-section-hdr">
+        <h3>2 · Compression</h3>
+        <button class="con-toggle on" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="con-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:14px" id="compRow"></div>
+      </div>
+    </div>
+
+    <!-- LIMITER -->
+    <div class="con-section">
+      <div class="con-section-hdr">
+        <h3>3 · Limiter / Clipper</h3>
+        <button class="con-toggle on" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="con-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:14px" id="limitRow"></div>
+      </div>
+    </div>
+
+    <!-- STEREO WIDTH -->
+    <div class="con-section">
+      <div class="con-section-hdr">
+        <h3>4 · Stereo Width</h3>
+        <button class="con-toggle on" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="con-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+          <div class="fader-col"><div class="fader-label">Bass Mono</div><input type="range" min="0" max="300" value="120" oninput="this.nextElementSibling.textContent=this.value+'%'"><div class="fader-val">120%</div></div>
+          <div class="fader-col"><div class="fader-label">Mid Width</div><input type="range" min="0" max="200" value="100" oninput="this.nextElementSibling.textContent=this.value+'%'"><div class="fader-val">100%</div></div>
+          <div class="fader-col"><div class="fader-label">High Width</div><input type="range" min="0" max="200" value="130" oninput="this.nextElementSibling.textContent=this.value+'%'"><div class="fader-val">130%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FINGERPRINTING -->
+    <div class="con-section">
+      <div class="con-section-hdr">
+        <h3>🔬 Audio Fingerprinting — Copyright Detection</h3>
+        <button onclick="vanessaQuick('Analyze my track for copyright issues and fingerprinting risks')" style="padding:4px 10px;background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.3);border-radius:5px;color:#ec4899;font-size:10px;cursor:pointer;font-family:inherit">Ask Vanessa</button>
+      </div>
+      <div class="con-body">
+        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <button onclick="runFingerprint()" style="padding:9px 20px;background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(59,130,246,0.05));border:1px solid rgba(59,130,246,0.4);border-radius:8px;color:var(--lur-blue);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🔍 Scan Track</button>
+          <button onclick="runACR()" style="padding:9px 20px;background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(139,92,246,0.05));border:1px solid rgba(139,92,246,0.4);border-radius:8px;color:var(--lur-purple);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🎤 ACR Detect</button>
+          <button onclick="checkPlatforms()" style="padding:9px 20px;background:linear-gradient(135deg,rgba(46,204,113,0.15),rgba(46,204,113,0.03));border:1px solid rgba(46,204,113,0.3);border-radius:8px;color:var(--lur-green);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📡 Platform Check</button>
+        </div>
+        <div id="fpStatus" style="font-size:11px;color:var(--lur-sub);margin-bottom:12px">Load a track and run scan to detect copyright conflicts.</div>
+        <div id="fpResults"></div>
+
+        <!-- Platform fingerprint status -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:14px">
+          <div class="fp-card" style="text-align:center"><div style="font-size:18px;margin-bottom:6px">🎵</div><div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:6px">Spotify</div><div class="fp-risk clear" id="fp-spotify">CLEAR</div></div>
+          <div class="fp-card" style="text-align:center"><div style="font-size:18px;margin-bottom:6px">🎵</div><div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:6px">Apple Music</div><div class="fp-risk clear" id="fp-apple">CLEAR</div></div>
+          <div class="fp-card" style="text-align:center"><div style="font-size:18px;margin-bottom:6px">▶</div><div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:6px">YouTube</div><div class="fp-risk warn" id="fp-youtube">CHECK</div></div>
+          <div class="fp-card" style="text-align:center"><div style="font-size:18px;margin-bottom:6px">☁</div><div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:6px">SoundCloud</div><div class="fp-risk clear" id="fp-sc">CLEAR</div></div>
+          <div class="fp-card" style="text-align:center"><div style="font-size:18px;margin-bottom:6px">🎵</div><div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:6px">TikTok</div><div class="fp-risk clear" id="fp-tt">CLEAR</div></div>
+          <div class="fp-card" style="text-align:center"><div style="font-size:18px;margin-bottom:6px">📻</div><div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:6px">Amazon</div><div class="fp-risk clear" id="fp-amz">CLEAR</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI MASTER -->
+    <div class="con-section" style="margin-bottom:20px">
+      <div class="con-section-hdr">
+        <h3>🤖 AI Auto-Master</h3>
+      </div>
+      <div class="con-body">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button onclick="aiAnalyze()" style="padding:10px 22px;background:linear-gradient(135deg,var(--lur-gold),#c49030);border:none;border-radius:8px;color:#000;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">🧠 AI Analyze</button>
+          <button onclick="aiApplyMaster()" style="padding:10px 22px;background:linear-gradient(135deg,rgba(46,204,113,0.2),rgba(46,204,113,0.05));border:1px solid rgba(46,204,113,0.4);border-radius:8px;color:var(--lur-green);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">⚡ Apply AI Master</button>
+          <button onclick="abCompare()" style="padding:10px 22px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#888;font-size:12px;cursor:pointer;font-family:inherit">A/B Compare</button>
+        </div>
+        <div id="aiStatus" style="margin-top:12px;font-size:12px;color:var(--lur-sub);font-family:monospace">Ready. Load a track to begin.</div>
+      </div>
+    </div>
+
+  </div><!-- end #console-main -->
+
+  <!-- ── RIGHT: VANESSA AI ── -->
+  <div id="vanessa-panel">
+    <div class="van-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="van-avatar">📢</div>
+        <div>
+          <div class="van-name">Vanessa</div>
+          <div class="van-role">Marketing · Campaigns · Mastering Strategy</div>
+        </div>
+        <div style="width:7px;height:7px;border-radius:50%;background:var(--lur-green);margin-left:auto"></div>
+      </div>
+    </div>
+
+    <div class="van-msgs" id="vanMsgs">
+      <div class="van-bubble">Hey DJ Speedy! I'm Vanessa — your marketing and mastering strategy AI.
+
+I can help you:
+• Optimize masters for each DSP platform
+• Detect copyright &amp; fingerprinting risks
+• Plan the release campaign for your track
+• Advise on LUFS targets per genre
+
+Load a track and let's make it hit! 🎯</div>
+    </div>
+
+    <div class="van-input-zone">
+      <div class="van-input-row">
+        <textarea class="van-input" id="vanInput" rows="1" placeholder="Ask Vanessa about mastering, campaigns..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();vanessaSend()}" oninput="this.style.height='';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+        <button class="van-send" onclick="vanessaSend()">↑</button>
+      </div>
+      <div class="van-qp">
+        <button class="van-q" onclick="vanessaQuick(this.textContent)">Best LUFS for Spotify?</button>
+        <button class="van-q" onclick="vanessaQuick(this.textContent)">Trap mastering tips</button>
+        <button class="van-q" onclick="vanessaQuick(this.textContent)">Release campaign plan</button>
+        <button class="van-q" onclick="vanessaQuick(this.textContent)">Copyright risk check</button>
+        <button class="van-q" onclick="vanessaQuick(this.textContent)">Streaming promo strategy</button>
+      </div>
+    </div>
+  </div><!-- end #vanessa-panel -->
+
+</div><!-- end #master-shell -->
+
+<!-- old wrap kept for compat, hidden -->
+<div class="master-wrap" style="display:none">
   <section class="goat-hero" style="padding: 30px 0;">
     <h1 style="font-size: 44px; margin: 0 0 8px;">💎 GOAT MASTERING</h1>
     <p class="subtitle">AI-Powered mastering suite · Ozone-killer · FabFilter-precision · LUFS-ready</p>
@@ -1061,5 +1408,7 @@ function drawEQCurve() {
 }
 setInterval(drawEQCurve, 100);
 </script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
 </body>
 </html>

@@ -55,14 +55,31 @@ def load_nvidia_key():
 # ============================================================
 #  ENGINE 1: OLLAMA (LOCAL)
 # ============================================================
-def call_ollama(messages, system_prompt, model="gemma3:4b"):
-    """Call local Ollama server. User must have `ollama serve` running."""
+def call_ollama(messages, system_prompt, model=None):
+    """Call local Ollama server — auto-picks best available model from drive."""
+    # Power model first — DJ Speedy has llama3.1:70b + all big models on drive
+    preferred = [
+        "llama3.1:70b", "llama3.3:70b", "qwen3:32b", "qwen2.5:32b",
+        "deepseek-r1:32b", "qwen3:14b", "qwen2.5:14b", "llama3.1:8b",
+        "qwen3:8b", "qwen2.5:7b", "mistral:7b", "llama3.2:3b"
+    ]
     try:
-        ping = requests.get(f"{OLLAMA_URL}/api/tags", timeout=2)
+        ping = requests.get(f"{OLLAMA_URL}/api/tags", timeout=3)
         if not ping.ok:
             return None, "ollama_unavailable"
+        if model is None:
+            available = [m["name"] for m in ping.json().get("models", [])]
+            for p in preferred:
+                if p in available:
+                    model = p
+                    break
+            if not model and available:
+                model = available[0]
     except Exception:
         return None, "ollama_unavailable"
+
+    if not model:
+        model = "llama3.1:8b"
 
     msgs = []
     if system_prompt:
@@ -72,11 +89,15 @@ def call_ollama(messages, system_prompt, model="gemma3:4b"):
     try:
         r = requests.post(
             f"{OLLAMA_URL}/api/chat",
-            json={"model": model, "messages": msgs, "stream": False, "options": {"temperature": 0.8}},
-            timeout=60,
+            json={"model": model, "messages": msgs, "stream": False,
+                  "think": False, "options": {"temperature": 0.8, "num_predict": 2048, "num_ctx": 4096}},
+            timeout=180,
         )
         if r.ok:
-            return r.json().get("message", {}).get("content", ""), None
+            text = r.json().get("message", {}).get("content", "")
+            if not text:
+                text = r.json().get("message", {}).get("thinking", "")
+            return (text.strip() or None), (None if text.strip() else "empty_response")
         return None, f"ollama_err_{r.status_code}"
     except Exception as e:
         return None, f"ollama_exc_{e}"
@@ -167,50 +188,31 @@ def goat_brain(messages, system_prompt="", task_type="chat"):
     """
     errors = []
 
+    # ── STEP 1: Always try Ollama first (local, no API key, 56 models on drive) ──
+    if task_type != "private":
+        text, err = call_ollama(messages, system_prompt)
+        if text:
+            return {"ok": True, "reply": text, "engine": "Ollama/Local"}
+        errors.append(f"ollama:{err}")
+
     if task_type == "private":
         text, err = call_ollama(messages, system_prompt)
         if text:
             return {"ok": True, "reply": text, "engine": "Ollama (local, private)"}
-        return {"ok": False, "error": f"Local Ollama not running. Start with: ollama serve && ollama pull gemma3:4b. ({err})"}
+        return {"ok": False, "error": f"Local Ollama not running. ({err})"}
 
-    if task_type == "reason":
-        text, err = call_gemini(messages, system_prompt, model=GEMINI_SMART)
-        if text:
-            return {"ok": True, "reply": text, "engine": "Gemini 2.5 Pro"}
-        errors.append(f"gemini-pro:{err}")
-        text, err = call_gemini(messages, system_prompt, model=GEMINI_FAST)
-        if text:
-            return {"ok": True, "reply": text, "engine": "Gemini 2.5 Flash (fallback)"}
-        errors.append(f"gemini-flash:{err}")
+    # ── STEP 2: NVIDIA cloud (if key set) ──
+    text, err = call_nvidia(messages, system_prompt)
+    if text:
+        return {"ok": True, "reply": text, "engine": "NVIDIA Llama"}
+    errors.append(f"nvidia:{err}")
 
-    elif task_type == "code":
-        text, err = call_nvidia(messages, system_prompt, model="meta/llama-3.3-70b-instruct")
-        if text:
-            return {"ok": True, "reply": text, "engine": "NVIDIA Llama 3.3 70B"}
-        errors.append(f"nvidia:{err}")
-        text, err = call_gemini(messages, system_prompt, model=GEMINI_SMART)
-        if text:
-            return {"ok": True, "reply": text, "engine": "Gemini 2.5 Pro"}
-        errors.append(f"gemini-pro:{err}")
-
-    else:  # "chat" or "creative" default
-        # Try local first for speed + privacy
-        text, err = call_ollama(messages, system_prompt)
-        if text:
-            return {"ok": True, "reply": text, "engine": "Ollama (local)"}
-        errors.append(f"ollama:{err}")
-
-        # NVIDIA cloud fallback
-        text, err = call_nvidia(messages, system_prompt)
-        if text:
-            return {"ok": True, "reply": text, "engine": "NVIDIA Llama"}
-        errors.append(f"nvidia:{err}")
-
-        # Gemini Flash final fallback (always works with key)
-        text, err = call_gemini(messages, system_prompt, model=GEMINI_FAST)
-        if text:
-            return {"ok": True, "reply": text, "engine": "Gemini 2.5 Flash"}
-        errors.append(f"gemini:{err}")
+    # ── STEP 3: Gemini fallback (if key set) ──
+    gemini_model = GEMINI_SMART if task_type in ("reason", "code") else GEMINI_FAST
+    text, err = call_gemini(messages, system_prompt, model=gemini_model)
+    if text:
+        return {"ok": True, "reply": text, "engine": f"Gemini ({gemini_model})"}
+    errors.append(f"gemini:{err}")
 
     return {"ok": False, "error": " | ".join(errors)}
 
@@ -250,6 +252,6 @@ if __name__ == "__main__":
     print("\n🧪 Test chat:")
     result = goat_brain(
         [{"role": "user", "content": "One line: hype DJ Speedy + Waka Flocka."}],
-        system_prompt="You are Moneypenny, GOAT Force Records' marketing AI.",
+        system_prompt="You are Ms. Money Penny, GOAT Force Records' marketing AI.",
     )
     print(json.dumps(result, indent=2))

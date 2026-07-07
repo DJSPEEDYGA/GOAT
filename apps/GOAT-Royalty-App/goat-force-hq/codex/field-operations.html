@@ -180,10 +180,52 @@
             0% { transform: scale(1); opacity: 1; }
             75%, 100% { transform: scale(2); opacity: 0; }
         }
+
+        .hq-nav {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; position: relative; z-index: 10;
+        }
+        .hq-nav a {
+            padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(0,255,136,0.25);
+            color: #9ca3af; text-decoration: none; font-size: 13px; font-weight: 600;
+            transition: all 0.2s;
+        }
+        .hq-nav a:hover { color: #00FF88; border-color: #00FF88; background: rgba(0,255,136,0.08); }
+
+        .codex-console { display: flex; flex-direction: column; min-height: 320px; }
+        .console-messages {
+            flex: 1; overflow-y: auto; max-height: 280px; padding: 12px;
+            background: rgba(0,0,0,0.35); border-radius: 12px; margin-bottom: 12px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .console-msg { font-size: 13px; line-height: 1.5; padding: 10px 12px; border-radius: 10px; }
+        .console-msg.user { align-self: flex-end; background: rgba(0,255,136,0.2); border: 1px solid rgba(0,255,136,0.35); max-width: 92%; }
+        .console-msg.bot { align-self: flex-start; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); max-width: 96%; }
+        .console-msg.sys { color: #6b7280; font-size: 12px; text-align: center; }
+        .console-input-row { display: flex; gap: 8px; }
+        .console-input {
+            flex: 1; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(0,255,136,0.3);
+            background: rgba(0,0,0,0.4); color: #fff; font-family: inherit; font-size: 14px;
+        }
+        .console-input:focus { outline: none; border-color: #00FF88; }
+        .status-pill { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); }
+        .status-pill.ok { border-color: #00FF88; color: #00FF88; }
+        .status-pill.warn { border-color: #f59e0b; color: #f59e0b; }
+        .status-pill.off { border-color: #6b7280; color: #6b7280; }
+        .agent-row { cursor: pointer; }
     </style>
-<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+<script src="/js/goat-bridge.js"></script>
 </head>
 <body class="p-4 md:p-8">
+    <nav class="hq-nav">
+        <a href="../../index.html">GOAT Store</a>
+        <a href="../nexus/home.html">Nexus</a>
+        <a href="../../sir-codex-launcher.html">Sir Codex Launcher</a>
+        <a href="../../ai-assistants/sir-codex.html">Sir Codex Home</a>
+        <a href="../../money-penny-codex.html">Money Penny + Codex Hub</a>
+        <a href="../../moneypenny.html?mode=codex">Intel Codex Chat</a>
+        <a href="../../intel.html">Intel</a>
+        <a href="http://127.0.0.1:3333" target="_blank" rel="noopener">Lexi Studio (creative + evidence)</a>
+    </nav>
     <!-- Floating Scrolls -->
     <div class="floating-scrolls" id="scrolls"></div>
     
@@ -201,13 +243,15 @@
                     <p class="text-gray-400">Field Operations | Intelligence & Archives</p>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <div class="w-3 h-3 rounded-full status-active"></div>
-                <span class="text-green-400 font-semibold">SCANNING</span>
-                <span class="text-gray-500">|</span>
-                <span class="text-gray-400">Global Active</span>
+            <div class="flex items-center gap-2 flex-wrap">
+                <span id="pillIntel" class="status-pill off">Intel …</span>
+                <span id="pillLexi" class="status-pill off">Lexi …</span>
+                <span id="pillCodex" class="status-pill off">Codex …</span>
+                <button type="button" class="btn-codex" style="padding:8px 14px;font-size:11px" onclick="enableLexiCodexParity()">⚡ Lexi Codex Power (Waka baby creative)</button>
+                <button type="button" class="btn-codex" style="padding:8px 14px;font-size:11px;background:linear-gradient(135deg,#eab308,#00CED1)" onclick="loadSirCodexProfile()">📜 Load Sir Codex</button>
             </div>
         </div>
+        <p class="text-xs text-gray-500 mt-2 relative z-10">GOAT lanes only — not Waves CODEX Stereo plugin or OpenAI CODEX.app</p>
     </header>
     
     <!-- Main Grid -->
@@ -238,6 +282,17 @@
                 </div>
             </div>
             
+            <!-- Codex Lanes -->
+            <div class="card p-6">
+                <h2 class="font-orbitron text-xl mb-4 glow-gold">📚 CODEX LANES</h2>
+                <div class="space-y-2 text-sm">
+                    <a class="block p-3 bg-gray-900/50 rounded-xl hover:border-green-400 border border-transparent" href="../../sir-codex-launcher.html">🛡️ Sir Codex Launcher — docs &amp; QA crew</a>
+                    <a class="block p-3 bg-gray-900/50 rounded-xl hover:border-green-400 border border-transparent" href="../../ai-assistants/sir-codex.html">📜 Sir Codex Home — knowledge keeper</a>
+                    <a class="block p-3 bg-gray-900/50 rounded-xl hover:border-green-400 border border-transparent" href="../../money-penny-codex.html">💎 Money Penny + Codex Hub</a>
+                    <a class="block p-3 bg-gray-900/50 rounded-xl hover:border-green-400 border border-transparent" href="http://127.0.0.1:3333" target="_blank" rel="noopener">🦊 Lexi Studio (Waka's baby) — run · draw · patch · evidence</a>
+                </div>
+            </div>
+
             <!-- Active Missions -->
             <div class="card p-6">
                 <h2 class="font-orbitron text-xl mb-4 glow-gold">🎯 ACTIVE MISSIONS</h2>
@@ -300,25 +355,24 @@
                 </div>
             </div>
             
+            <!-- Codex Command Console -->
+            <div class="card p-6 codex-console">
+                <h2 class="font-orbitron text-xl mb-2 glow-gold">💻 CODEX COMMAND</h2>
+                <p class="text-xs text-gray-500 mb-3">Live Intel AI · missions · code · royalties · GOAT stack</p>
+                <div id="consoleMessages" class="console-messages"></div>
+                <div class="console-input-row">
+                    <input id="consoleInput" class="console-input" type="text" placeholder="Ask Codex — architecture, royalty hunt, catalog scan…" autocomplete="off">
+                    <button type="button" class="btn-codex" style="padding:12px 18px" onclick="sendCodexMessage()">Send</button>
+                </div>
+            </div>
+
             <!-- Mission Log -->
             <div class="card p-6">
                 <h2 class="font-orbitron text-xl mb-4 glow-gold">📜 MISSION LOG</h2>
-                <div class="space-y-2 max-h-48 overflow-y-auto">
+                <div id="missionLog" class="space-y-2 max-h-48 overflow-y-auto">
                     <div class="mission-card">
-                        <div class="text-sm font-semibold text-green-400">Royalty Claim Filed</div>
-                        <div class="text-xs text-gray-500">ASCAP #438 - 2 hours ago</div>
-                    </div>
-                    <div class="mission-card">
-                        <div class="text-sm font-semibold text-teal-400">Catalog Updated</div>
-                        <div class="text-xs text-gray-500">344 titles synced - 5 hours ago</div>
-                    </div>
-                    <div class="mission-card">
-                        <div class="text-sm font-semibold text-yellow-400">New Platform Detected</div>
-                        <div class="text-xs text-gray-500">TikTok Music - 1 day ago</div>
-                    </div>
-                    <div class="mission-card">
-                        <div class="text-sm font-semibold text-purple-400">MLC Match Found</div>
-                        <div class="text-xs text-gray-500">12 new works - 2 days ago</div>
+                        <div class="text-sm font-semibold text-teal-400">Console ready</div>
+                        <div class="text-xs text-gray-500">Connect Intel + run a mission</div>
                     </div>
                 </div>
             </div>
@@ -364,40 +418,32 @@
             <div class="card p-6">
                 <h2 class="font-orbitron text-xl mb-4 glow-gold">🐐 FORCE NETWORK</h2>
                 <div class="space-y-3">
-                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                            🎧
-                        </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl agent-row" onclick="location.href='../dj-speedy/command-center.html'">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">🎧</div>
                         <div class="flex-1">
                             <div class="font-semibold">DJ Speedy</div>
                             <div class="text-xs text-gray-400">Command Center</div>
                         </div>
                         <div class="w-2 h-2 rounded-full status-online"></div>
                     </div>
-                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center">
-                            👑
-                        </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl agent-row" onclick="location.href='../waka-flocka/operations-hub.html'">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center">👑</div>
                         <div class="flex-1">
                             <div class="font-semibold">Waka Flocka</div>
                             <div class="text-xs text-gray-400">Operations Hub</div>
                         </div>
                         <div class="w-2 h-2 rounded-full status-online"></div>
                     </div>
-                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
-                            💎
-                        </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl agent-row" onclick="location.href='../money-penny/integration-panel.html'">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">💎</div>
                         <div class="flex-1">
                             <div class="font-semibold">Money Penny</div>
                             <div class="text-xs text-gray-400">Integration Panel</div>
                         </div>
                         <div class="w-2 h-2 rounded-full status-online"></div>
                     </div>
-                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
-                            💜
-                        </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-xl agent-row" onclick="location.href='../nexus/home.html'">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">💜</div>
                         <div class="flex-1">
                             <div class="font-semibold">Nexus</div>
                             <div class="text-xs text-gray-400">AI Core</div>
@@ -462,7 +508,17 @@
     </footer>
     
     <script>
-        // Create floating scrolls
+        let bridge = { intel: 'http://127.0.0.1:5500', lexi: 'http://127.0.0.1:3333', agent007: 'http://127.0.0.1:3333' /* AGENT007 creative endpoint (Licence to Build or Destroy). Lexi is crew (Waka baby). No Oscar anywhere in the GOAT Royalty App / AGENT007 + MONEY PENNY toolkit. */ };
+        let chatHistory = [];
+        let codexBusy = false;
+
+        const MISSION_PROMPTS = {
+            royalty: 'Run a royalty recovery hunt briefing for GOAT Force: unclaimed sync, MLC, SoundExchange, ASCAP — top 5 actions this week.',
+            catalog: 'Catalog deep scan summary: works count, pending registrations, duplicate titles risk, next sync steps.',
+            market: 'Market intelligence snapshot: streaming trends, top territories, 3 partnership opportunities for hip-hop catalog.',
+            releases: 'New release tracker: recent drops, performance vs catalog average, distribution checklist.'
+        };
+
         function createScrolls() {
             const container = document.getElementById('scrolls');
             for (let i = 0; i < 15; i++) {
@@ -476,23 +532,153 @@
             }
         }
         createScrolls();
-        
-        // Mission functions
-        function viewRoyaltyHunt() {
-            alert('💰 ROYALTY RECOVERY HUNT\n\n🔍 Scanning 45+ platforms...\n📊 Processing 500M+ data points...\n\nPotential recovery: $2.7B+\nActive claims: 67\nPending matches: 234\n\nMission status: ACTIVE');
+
+        function setPill(id, text, state) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = text;
+            el.className = 'status-pill ' + (state || 'off');
         }
-        
-        function viewCatalogScan() {
-            alert('📋 CATALOG DEEP SCAN\n\n✅ ASCAP Works: 438\n✅ Unique Titles: 344\n✅ Accepted: 339 (77.4%)\n⏳ Pending: 99\n\nLast scan: Today\nNext scan: Tomorrow 3 AM');
+
+        function appendConsole(role, text) {
+            const box = document.getElementById('consoleMessages');
+            const div = document.createElement('div');
+            div.className = 'console-msg ' + role;
+            div.textContent = text;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
         }
-        
-        function viewMarketIntel() {
-            alert('📊 MARKET INTELLIGENCE\n\n🎵 Streaming trends: +15%\n💰 Royalty rates: Stable\n🌍 Top markets: US, UK, DE, FR, JP\n\nNew opportunities detected: 7\nPotential partnerships: 3');
+
+        function appendMission(title, detail) {
+            const log = document.getElementById('missionLog');
+            const card = document.createElement('div');
+            card.className = 'mission-card';
+            card.innerHTML = '<div class="text-sm font-semibold text-green-400">' + title + '</div><div class="text-xs text-gray-500">' + detail + '</div>';
+            log.insertBefore(card, log.firstChild);
+            while (log.children.length > 8) log.removeChild(log.lastChild);
         }
-        
-        function viewNewReleases() {
-            alert('🎵 NEW RELEASE TRACKER\n\n📀 Recent releases: 12\n📈 Performance: Above average\n🌍 Reach: 150+ countries\n\nNext scheduled: TBA\nCollaboration opportunities: 5');
+
+        async function refreshBridge() {
+            if (typeof GoatBridge === 'undefined') {
+                setPill('pillIntel', 'Intel offline', 'off');
+                setPill('pillLexi', 'Lexi offline', 'off');
+                setPill('pillCodex', 'Bridge JS missing', 'warn');
+                return;
+            }
+            bridge = await GoatBridge.resolve();
+            if (bridge.intelHealth) {
+                setPill('pillIntel', 'Intel online', 'ok');
+            } else {
+                setPill('pillIntel', 'Intel offline', 'off');
+            }
+            if (bridge.lexiParity) {
+                const on = bridge.lexiParity.codexParityReady;
+                setPill('pillLexi', on ? 'Lexi Codex ON' : 'Lexi up', on ? 'ok' : 'warn');
+            } else if (bridge.lexi) {
+                setPill('pillLexi', 'Lexi offline', 'off');
+            } else if (bridge.agent007) {
+                setPill('pillLexi', 'Lexi (legacy oscar url)', 'warn');
+            }
+            setPill('pillCodex', bridge.intelHealth ? 'Codex ready' : 'Need Intel', bridge.intelHealth ? 'ok' : 'off');
         }
+
+        async function sendCodexMessage(forcedText) {
+            const input = document.getElementById('consoleInput');
+            const message = (forcedText || input.value || '').trim();
+            if (!message || codexBusy) return;
+            input.value = '';
+            appendConsole('user', message);
+            chatHistory.push({ role: 'user', content: message });
+            codexBusy = true;
+            appendConsole('sys', 'Codex thinking…');
+
+            try {
+                const r = await fetch(bridge.intel.replace(/\/$/, '') + '/ai/codex', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, history: chatHistory.slice(-10) }),
+                    signal: AbortSignal.timeout(60000)
+                });
+                const d = await r.json();
+                const msgs = document.getElementById('consoleMessages');
+                if (msgs.lastChild && msgs.lastChild.classList.contains('sys')) msgs.removeChild(msgs.lastChild);
+
+                if (d.ok && d.reply) {
+                    appendConsole('bot', d.reply);
+                    chatHistory.push({ role: 'assistant', content: d.reply });
+                    appendMission('Codex reply', new Date().toLocaleTimeString());
+                } else {
+                    appendConsole('bot', d.error || 'Intel returned no reply. Start goat_intel.py on port 5500 or use VPS store.');
+                }
+            } catch (e) {
+                const msgs = document.getElementById('consoleMessages');
+                if (msgs.lastChild && msgs.lastChild.classList.contains('sys')) msgs.removeChild(msgs.lastChild);
+                appendConsole('bot', 'Could not reach Intel at ' + bridge.intel + '. Studio: cd goat-intel-server && python goat_intel.py');
+            }
+            codexBusy = false;
+        }
+
+        function viewRoyaltyHunt() { runMission('royalty', 'Royalty Recovery Hunt'); }
+        function viewCatalogScan() { runMission('catalog', 'Catalog Deep Scan'); }
+        function viewMarketIntel() { runMission('market', 'Market Intelligence'); }
+        function viewNewReleases() { runMission('releases', 'New Release Tracker'); }
+
+        function runMission(key, label) {
+            appendMission(label, 'Mission dispatched');
+            sendCodexMessage(MISSION_PROMPTS[key]);
+        }
+
+        async function loadSirCodexProfile() {
+            try {
+                const r = await fetch((bridge.lexi || bridge.agent007).replace(/\/$/, '') + '/api/sir-codex/profile', {
+                    signal: AbortSignal.timeout(8000)
+                });
+                const d = await r.json();
+                if (d.ok && (d.profile || d.content || d.summary)) {
+                    const text = d.profile || d.content || d.summary || JSON.stringify(d).slice(0, 1200);
+                    appendConsole('bot', 'Sir Codex profile loaded into Field Ops:\n\n' + String(text).slice(0, 2000));
+                    appendMission('Sir Codex profile', 'USB BackupVault');
+                } else if (d.ok) {
+                    appendConsole('sys', 'Sir Codex profile OK — open Lexi client (http://127.0.0.1:3333) and click Load Sir Codex for full memory. (Lexi is crew for Waka baby; Raspy separate on daddy computer. No Oscar in the GOAT Royalty App.)');
+                    appendMission('Sir Codex', 'Profile endpoint OK');
+                } else {
+                    appendConsole('sys', d.error || 'Sir Codex profile unavailable');
+                }
+            } catch (e) {
+                appendConsole('sys', 'Sir Codex lives on Lexi :3333 (crew client) — start Lexi runtime (the USB client or Thor), then retry. Raspy separate on daddy computer. AGENT007 + MONEY PENNY toolkit only.');
+            }
+            refreshBridge();
+        }
+
+        async function enableLexiCodexParity() {
+            try {
+                const endpoint = (bridge.lexi || bridge.agent007 || 'http://127.0.0.1:3333').replace(/\/$/, '');
+                const r = await fetch(endpoint + '/api/lexi/enable-codex-parity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: '{}',
+                    signal: AbortSignal.timeout(8000)
+                });
+                const d = await r.json();
+                if (d.ok) {
+                    appendConsole('sys', 'Lexi Codex Parity enabled — open Lexi Studio/client for tools & artwork (evidence guardian + creative). AGENT007 + MONEY PENNY own the core toolkit.');
+                    appendMission('Codex Parity ON', 'Lexi tool mode');
+                } else {
+                    appendConsole('sys', d.error || 'Lexi parity failed');
+                }
+            } catch (e) {
+                appendConsole('sys', 'Lexi not reachable at ' + (bridge.lexi || bridge.agent007) + ' — use client http://127.0.0.1:3333 or the Lexi-Client-Test-USB-v1 on MONEY PENNY / Thor. AGENT007 + MONEY PENNY + GOAT Royalty App only.');
+            }
+            refreshBridge();
+        }
+
+        document.getElementById('consoleInput').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') sendCodexMessage();
+        });
+
+        appendConsole('bot', 'Codex Field Operations online. Intel powers chat; Lexi Studio (crew client for Waka baby) handles Codex parity + creative + evidence (run, draw, patch, protect drives). AGENT007 (Licence to Build or Destroy) + MONEY PENNY own the personal core. Their AI Tool Kit = THE GOAT ROYALTY APP. Raspy separate on daddy computer. No Oscar here. Pick a mission or type below.');
+        refreshBridge();
+        setInterval(refreshBridge, 45000);
     </script>
 </body>
 </html>

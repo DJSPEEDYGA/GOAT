@@ -66,7 +66,7 @@ const SERVERS = {
         services: ['ollama', 'ai-inference', 'voice'],
         ports: {
             app: 3000,
-            ollama: 11434
+            ollama: 11435
         }
     },
     
@@ -160,8 +160,8 @@ function getServerConfig(role = null) {
             provider: currentRole === 'jetson' ? 'ollama' : 'remote',
             model: 'qwen2.5:32b-instruct-q4',
             endpoint: currentRole === 'jetson' 
-                ? 'http://localhost:11434' 
-                : `http://${SERVERS.jetson.host}:11434`
+                ? 'http://localhost:11435' 
+                : `http://${SERVERS.jetson.host}:11435`
         },
         
         // Data Paths

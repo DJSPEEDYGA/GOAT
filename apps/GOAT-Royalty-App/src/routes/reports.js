@@ -40,7 +40,7 @@ router.get('/dashboard',
     ] = await Promise.all([
       // Royalty statistics
       Royalty.aggregate([
-        { $match: { ...artistMatch, ...(dateMatch.periodStart && { periodStart: dateMatch }) } },
+        { $match: { ...artistMatch, ...(Object.keys(dateMatch).length && { periodStart: dateMatch }) } },
         {
           $group: {
             _id: null,
@@ -55,7 +55,7 @@ router.get('/dashboard',
       
       // Payment statistics
       Payment.aggregate([
-        { $match: { ...artistMatch, ...(dateMatch.paymentDate && { paymentDate: dateMatch }) } },
+        { $match: { ...artistMatch, ...(Object.keys(dateMatch).length && { paymentDate: dateMatch }) } },
         {
           $group: {
             _id: null,

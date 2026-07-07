@@ -5,7 +5,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const { protect: authenticate } = require('../middleware/auth');
 const ChatService = require('../services/chatService');
 
 // Initialize chat service

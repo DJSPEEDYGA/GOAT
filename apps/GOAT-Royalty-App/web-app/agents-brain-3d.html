@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Force — Agent Brain 3D</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'SF Mono','Fira Code',monospace;}
+
+#canvas-container{position:fixed;inset:0;z-index:0;}
+canvas{display:block;width:100%!important;height:100%!important;}
+
+/* HUD */
+#hud{position:fixed;inset:0;z-index:10;pointer-events:none;}
+
+/* Top bar */
+#topbar{
+  position:absolute;top:0;left:0;right:0;
+  height:52px;
+  background:linear-gradient(180deg,rgba(0,0,0,0.85),transparent);
+  display:flex;align-items:center;padding:0 24px;gap:16px;
+  pointer-events:all;
+}
+.tb-logo{font-size:20px;font-weight:900;color:#d4a03c;letter-spacing:-.02em;text-shadow:0 0 20px rgba(212,160,60,0.6);}
+.tb-sub{font-size:10px;color:rgba(212,160,60,0.6);text-transform:uppercase;letter-spacing:.1em;}
+.tb-spacer{flex:1;}
+.tb-btn{
+  padding:5px 12px;border-radius:5px;border:1px solid rgba(212,160,60,0.3);
+  background:rgba(212,160,60,0.08);color:#d4a03c;font-size:10px;font-weight:700;
+  cursor:pointer;transition:all .2s;letter-spacing:.05em;
+  font-family:'SF Mono','Fira Code',monospace;
+}
+.tb-btn:hover{background:rgba(212,160,60,0.2);border-color:#d4a03c;box-shadow:0 0 12px rgba(212,160,60,0.3);}
+.tb-btn.active{background:rgba(212,160,60,0.25);border-color:#d4a03c;}
+
+/* Status pills */
+.status-row{display:flex;gap:8px;align-items:center;}
+.spill{
+  display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;
+  font-size:9px;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);
+}
+.spill.on{border-color:rgba(46,204,113,0.4);color:#2ecc71;background:rgba(46,204,113,0.08);}
+.sdot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+
+/* Agent info panel */
+#agent-panel{
+  position:absolute;top:60px;right:20px;
+  width:260px;
+  background:rgba(5,3,2,0.92);
+  border:1px solid rgba(212,160,60,0.25);
+  border-radius:12px;overflow:hidden;
+  backdrop-filter:blur(16px);
+  transform:translateX(300px);
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+  pointer-events:all;
+}
+#agent-panel.open{transform:translateX(0);}
+.ap-header{
+  padding:12px 14px;
+  background:linear-gradient(135deg,rgba(212,160,60,0.12),rgba(212,160,60,0.04));
+  border-bottom:1px solid rgba(212,160,60,0.15);
+  display:flex;align-items:center;gap:10px;
+}
+.ap-icon{font-size:26px;}
+.ap-name{font-size:13px;font-weight:800;color:#fff;}
+.ap-codename{font-size:9px;color:#d4a03c;text-transform:uppercase;letter-spacing:.1em;margin-top:1px;}
+.ap-num{margin-left:auto;font-size:16px;font-weight:900;color:rgba(212,160,60,0.5);font-family:'SF Mono',monospace;}
+.ap-body{padding:12px 14px;}
+.ap-stat{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.ap-stat:last-child{border:none;}
+.ap-stat-label{font-size:9px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.06em;}
+.ap-stat-val{font-size:10px;color:#fff;font-weight:700;}
+.ap-role{font-size:10px;color:rgba(255,255,255,0.5);line-height:1.5;margin:8px 0;}
+.ap-btns{display:flex;gap:6px;margin-top:10px;}
+.ap-btn{
+  flex:1;padding:6px;border-radius:5px;font-size:10px;font-weight:700;
+  cursor:pointer;transition:all .15s;text-align:center;
+  border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);
+  color:rgba(255,255,255,0.5);font-family:'SF Mono','Fira Code',monospace;
+}
+.ap-btn.primary{border-color:var(--agent-color,#d4a03c);color:var(--agent-color,#d4a03c);background:rgba(212,160,60,0.06);}
+.ap-btn.primary:hover{background:var(--agent-color,#d4a03c);color:#000;}
+.ap-btn:hover{background:rgba(255,255,255,0.1);color:#fff;}
+
+/* Agent roster bottom */
+#roster{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(0deg,rgba(0,0,0,0.9) 60%,transparent);
+  padding:12px 20px 16px;
+  display:flex;gap:6px;overflow-x:auto;
+  pointer-events:all;
+}
+#roster::-webkit-scrollbar{height:2px;}
+#roster::-webkit-scrollbar-thumb{background:rgba(212,160,60,0.3);border-radius:1px;}
+.r-pill{
+  flex-shrink:0;display:flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:20px;
+  border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.6);
+  cursor:pointer;transition:all .2s;backdrop-filter:blur(8px);
+}
+.r-pill:hover,.r-pill.sel{border-color:var(--c,#d4a03c);background:rgba(0,0,0,0.8);box-shadow:0 0 12px rgba(212,160,60,0.2);}
+.r-icon{font-size:14px;}
+.r-name{font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);white-space:nowrap;}
+.r-num{font-size:8px;color:var(--c,#d4a03c);font-family:'SF Mono',monospace;}
+.r-dot{width:5px;height:5px;border-radius:50%;background:var(--c,#d4a03c);box-shadow:0 0 4px var(--c,#d4a03c);}
+
+/* Close btn */
+#close-panel{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.4);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:all;}
+#close-panel:hover{background:rgba(255,0,0,0.2);color:#fff;}
+
+/* Controls hint */
+#controls-hint{
+  position:absolute;bottom:70px;left:20px;
+  font-size:9px;color:rgba(255,255,255,0.25);line-height:1.8;
+  pointer-events:none;
+}
+
+/* Perf counter */
+#perf{position:absolute;top:56px;left:20px;font-size:9px;color:rgba(212,160,60,0.3);}
+</style>
+</head>
+<body>
+
+<div id="canvas-container"><canvas id="c"></canvas></div>
+
+<div id="hud">
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div>
+      <div class="tb-logo">🧠 GOAT FORCE BRAIN</div>
+      <div class="tb-sub">15 Agents · Live Neural Network · 3D</div>
+    </div>
+    <div class="tb-spacer"></div>
+    <div class="status-row" id="statusRow">
+      <div class="spill" id="sp1"><span class="sdot"></span>Intel</div>
+      <div class="spill" id="sp2"><span class="sdot"></span>Ollama</div>
+      <div class="spill" id="sp3"><span class="sdot"></span>Web</div>
+    </div>
+    <button class="tb-btn" id="btnRotate" onclick="toggleRotate()">⟳ Rotate</button>
+    <button class="tb-btn" onclick="toggleConnections()">🔗 Links</button>
+    <button class="tb-btn" onclick="explodeNodes()">💥 Explode</button>
+    <button class="tb-btn" onclick="resetCamera()">⌖ Reset</button>
+    <button class="tb-btn" onclick="window.open('http://127.0.0.1:8090/waka-crew-launcher.html','_blank')">← Launcher</button>
+  </div>
+
+  <!-- PERF -->
+  <div id="perf">FPS: <span id="fps">--</span> · Nodes: 15 · Connections: <span id="connCount">--</span></div>
+
+  <!-- AGENT PANEL -->
+  <div id="agent-panel">
+    <button id="close-panel" onclick="closePanel()">✕</button>
+    <div class="ap-header">
+      <div class="ap-icon" id="ap-icon">💎</div>
+      <div>
+        <div class="ap-name" id="ap-name">Ms. Money Penny</div>
+        <div class="ap-codename" id="ap-codename">THE OG — BOSS LADY</div>
+      </div>
+      <div class="ap-num" id="ap-num">00</div>
+    </div>
+    <div class="ap-body">
+      <div class="ap-role" id="ap-role">Intelligence Director. Coding momma. Built first. ALL agents born from her.</div>
+      <div class="ap-stat"><span class="ap-stat-label">Status</span><span class="ap-stat-val" id="ap-status" style="color:#2ecc71;">● ONLINE</span></div>
+      <div class="ap-stat"><span class="ap-stat-label">Model</span><span class="ap-stat-val" id="ap-model">llama3.1:70b</span></div>
+      <div class="ap-stat"><span class="ap-stat-label">Connections</span><span class="ap-stat-val" id="ap-conns">14</span></div>
+      <div class="ap-stat"><span class="ap-stat-label">Memory</span><span class="ap-stat-val" id="ap-mem">Active</span></div>
+      <div class="ap-btns" id="ap-btns">
+        <button class="ap-btn primary" id="ap-open">Open</button>
+        <button class="ap-btn" onclick="closePanel()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLS HINT -->
+  <div id="controls-hint">
+    Drag to rotate · Scroll to zoom · Click node to inspect
+  </div>
+
+  <!-- ROSTER -->
+  <div id="roster"></div>
+</div>
+
+<!-- THREE.JS from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ── AGENT DATA ────────────────────────────────────────────────────────────────
+const AGENTS = [
+  {id:'money-penny', name:'Ms. Money Penny', codename:'THE OG — BOSS LADY', num:'00', icon:'💎', role:'Intelligence Director. Coding momma. Built first. ALL other agents born from her. DJ Speedy\'s right hand.', color:0x58a6ff, size:1.6, url:'http://127.0.0.1:8090/money-penny-launcher.html'},
+  {id:'the-goat',    name:'THE GOAT',        codename:'Supreme Commander',   num:'001',icon:'🐐', role:'Empire-level strategy. Commands all agents. Answers only to DJ Speedy & Waka.', color:0xd4a03c, size:1.4, url:'http://127.0.0.1:8090/the-goat-launcher.html'},
+  {id:'oscar',       name:'Master Oscar',    codename:'The Dealmaker',        num:'002',icon:'🤝', role:'Operations & deals. Contracts, negotiations, business intelligence.', color:0x2ecc71, size:1.1, url:'http://127.0.0.1:8090/master-oscar-launcher.html'},
+  {id:'vanessa',     name:'Ms. Vanessa',     codename:'The Icon',             num:'003',icon:'🎙️', role:'Marketing, PR, brand voice. GOAT Force public face.', color:0xa855f7, size:1.0, url:'http://127.0.0.1:8090/vanessa-launcher.html'},
+  {id:'nexus',       name:'Nexus',           codename:'The Oracle',           num:'004',icon:'🔗', role:'Network & distribution. 282 DSPs. Intelligence & trends.', color:0x14b8a6, size:1.1, url:'http://127.0.0.1:8090/nexus-launcher.html'},
+  {id:'lexi',        name:'Lexi — THE SPARK',codename:"Waka's Personal AI",  num:'005',icon:'⚡', role:'Creative Director & Lyrics. Hooks, verses, song structure, legal compliance.', color:0xe91e8c, size:1.0, url:'http://127.0.0.1:8090/lexi-launcher.html'},
+  {id:'codex',       name:'Sir Codex',       codename:'The Sentinel',         num:'006',icon:'🤖', role:'Tech & infrastructure. Code, servers, automation, system architecture.', color:0xf97316, size:1.0, url:'http://127.0.0.1:8090/sir-codex-launcher.html'},
+  {id:'devin',       name:'Dr. Devin',       codename:"What's Up Doc",        num:'007',icon:'🩺', role:'Chief AI strategist. Coordinates all 15 agents. Sees the full chessboard.', color:0x58a6ff, size:1.1, url:'http://127.0.0.1:8090/dr-devin.html'},
+  {id:'gonbrazy',    name:'GONBRAZY',        codename:'Studio Boss',          num:'—',  icon:'🎛️', role:'Mixing, mastering, session boss. Hard Liquor / Backroad Baptism.', color:0x2ecc71, size:0.9, url:'http://127.0.0.1:8090/gonbrazy-launcher.html'},
+  {id:'wooh',        name:'Wooh Da Kid',     codename:'Tony Starks',          num:'—',  icon:'🎹', role:'Beat maestro, production buddy to DJ Speedy, studio manager & tech guru.', color:0xf97316, size:0.9, url:'http://127.0.0.1:8090/wooh-da-kid-launcher.html'},
+  {id:'hannah',      name:'Hannah Miller',   codename:'Amigo Alley Keeper',   num:'—',  icon:'🌎', role:'Latin crossover web keeper. Bilingual, reggaeton flow, Amigo Alley.', color:0x14b8a6, size:0.85,url:'http://127.0.0.1:8090/hannah-miller-launcher.html'},
+  {id:'ar',          name:'A&R Scout',       codename:'Talent Intelligence',  num:'012',icon:'🎯', role:'Talent discovery, trend analysis, artist scouting across all platforms.', color:0x58a6ff, size:0.85,url:'http://127.0.0.1:8090/ar-scout-launcher.html'},
+  {id:'cfo',         name:'CFO Brain',       codename:'Revenue Strategy',     num:'013',icon:'📊', role:'Financial intelligence, royalty strategy, revenue across 282 DSPs.', color:0xd4a03c, size:0.9, url:'http://127.0.0.1:8090/cfo-brain-launcher.html'},
+  {id:'legal',       name:'Legal Eagle',     codename:'$3.3B Protector',      num:'014',icon:'⚖️', role:'Legal defense, $3.3B lawsuit protection. Contract review.', color:0xc1121f, size:0.9, url:'http://127.0.0.1:8090/legal-eagle-launcher.html'},
+  {id:'autopilot',   name:'Autopilot',       codename:'Always On',            num:'015',icon:'🛸', role:'24/7 autonomous monitoring. Keeps all systems running while crew sleeps.', color:0xa855f7, size:0.85,url:'http://127.0.0.1:8090/autopilot-launcher.html'},
+];
+
+// ── THREE.JS SETUP ────────────────────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000, 1);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.set(0, 0, 28);
+
+// Fog
+scene.fog = new THREE.FogExp2(0x000000, 0.018);
+
+// ── LIGHTING ──────────────────────────────────────────────────────────────────
+const ambientLight = new THREE.AmbientLight(0x111111, 1);
+scene.add(ambientLight);
+
+const pointLight1 = new THREE.PointLight(0xd4a03c, 2, 60);
+pointLight1.position.set(10, 10, 10);
+scene.add(pointLight1);
+
+const pointLight2 = new THREE.PointLight(0x58a6ff, 1.5, 60);
+pointLight2.position.set(-10, -10, -10);
+scene.add(pointLight2);
+
+const pointLight3 = new THREE.PointLight(0xe91e8c, 1, 40);
+pointLight3.position.set(0, 15, -5);
+scene.add(pointLight3);
+
+// ── STARFIELD ─────────────────────────────────────────────────────────────────
+const starGeo = new THREE.BufferGeometry();
+const starCount = 2000;
+const starPos = new Float32Array(starCount * 3);
+for (let i = 0; i < starCount * 3; i++) starPos[i] = (Math.random() - 0.5) * 400;
+starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+const starMat = new THREE.PointsMaterial({color:0xffffff, size:0.15, transparent:true, opacity:0.6});
+scene.add(new THREE.Points(starGeo, starMat));
+
+// ── OUTER BRAIN SPHERE WIREFRAME ──────────────────────────────────────────────
+const brainGeo = new THREE.IcosahedronGeometry(13, 2);
+const brainMat = new THREE.MeshBasicMaterial({
+  color:0xd4a03c, wireframe:true, transparent:true, opacity:0.04
+});
+const brainMesh = new THREE.Mesh(brainGeo, brainMat);
+scene.add(brainMesh);
+
+// Inner pulse sphere
+const innerGeo = new THREE.SphereGeometry(7, 24, 24);
+const innerMat = new THREE.MeshBasicMaterial({
+  color:0x58a6ff, wireframe:true, transparent:true, opacity:0.03
+});
+const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+scene.add(innerMesh);
+
+// ── POSITION AGENTS ON A SPHERE ───────────────────────────────────────────────
+function spherePoint(i, total, radius) {
+  const phi   = Math.acos(-1 + (2 * i) / total);
+  const theta = Math.sqrt(total * Math.PI) * phi;
+  return new THREE.Vector3(
+    radius * Math.cos(theta) * Math.sin(phi),
+    radius * Math.sin(theta) * Math.sin(phi),
+    radius * Math.cos(phi)
+  );
+}
+
+const RADIUS = 9;
+const nodeObjects = [];
+const nodeMeshes  = [];
+const glowMeshes  = [];
+const ringMeshes  = [];
+const labelSprites = [];
+
+AGENTS.forEach((agent, i) => {
+  const pos = spherePoint(i, AGENTS.length, RADIUS);
+
+  // Core sphere
+  const geo  = new THREE.SphereGeometry(agent.size * 0.55, 20, 20);
+  const mat  = new THREE.MeshPhongMaterial({
+    color: agent.color, emissive: agent.color, emissiveIntensity: 0.35,
+    shininess: 80, transparent: true, opacity: 0.92
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.copy(pos);
+  mesh.userData = {agentIndex: i};
+  scene.add(mesh);
+  nodeMeshes.push(mesh);
+
+  // Glow aura
+  const glowGeo = new THREE.SphereGeometry(agent.size * 0.95, 16, 16);
+  const glowMat = new THREE.MeshBasicMaterial({
+    color: agent.color, transparent: true, opacity: 0.07, side: THREE.BackSide
+  });
+  const glow = new THREE.Mesh(glowGeo, glowMat);
+  glow.position.copy(pos);
+  scene.add(glow);
+  glowMeshes.push(glow);
+
+  // Ring for special agents
+  if (i < 3) {
+    const ringGeo = new THREE.TorusGeometry(agent.size * 0.85, 0.04, 8, 32);
+    const ringMat = new THREE.MeshBasicMaterial({color: agent.color, transparent:true, opacity:0.5});
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.position.copy(pos);
+    ring.rotation.x = Math.random() * Math.PI;
+    ring.rotation.y = Math.random() * Math.PI;
+    scene.add(ring);
+    ringMeshes.push({mesh:ring, agentIndex:i});
+  }
+
+  // Label canvas sprite
+  const lCanvas = document.createElement('canvas');
+  lCanvas.width = 256; lCanvas.height = 64;
+  const ctx = lCanvas.getContext('2d');
+  ctx.clearRect(0,0,256,64);
+  ctx.fillStyle = '#' + agent.color.toString(16).padStart(6,'0');
+  ctx.font = 'bold 22px SF Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(agent.name.length > 14 ? agent.name.substring(0,13)+'…' : agent.name, 128, 26);
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '14px SF Mono, monospace';
+  ctx.fillText(agent.num !== '—' ? '#'+agent.num : agent.codename.substring(0,18), 128, 48);
+  const lTex = new THREE.CanvasTexture(lCanvas);
+  const lMat = new THREE.SpriteMaterial({map:lTex, transparent:true, opacity:0.9});
+  const sprite = new THREE.Sprite(lMat);
+  sprite.position.copy(pos);
+  sprite.position.y += agent.size * 0.7 + 0.8;
+  sprite.scale.set(3.5, 0.9, 1);
+  scene.add(sprite);
+  labelSprites.push(sprite);
+
+  nodeObjects.push({agent, mesh, glow, pos: pos.clone()});
+});
+
+// ── CONNECTIONS / NEURAL LINES ────────────────────────────────────────────────
+let connectionLines = [];
+let showConnections = true;
+
+function buildConnections() {
+  connectionLines.forEach(l => scene.remove(l));
+  connectionLines = [];
+  if (!showConnections) return;
+
+  // Money Penny (00) connects to ALL — she's the parent
+  for (let j = 1; j < AGENTS.length; j++) {
+    addLine(0, j, 0x58a6ff, 0.6);
+  }
+  // THE GOAT connects to numbered agents
+  for (let j = 2; j < 8; j++) addLine(1, j, 0xd4a03c, 0.4);
+  // Studio cluster
+  addLine(8, 9, 0x2ecc71, 0.5);  // GONBRAZY ↔ Wooh
+  addLine(8, 6, 0xf97316, 0.3);  // GONBRAZY ↔ Codex
+  addLine(9, 6, 0xf97316, 0.3);  // Wooh ↔ Codex
+  // Lexi ↔ Waka project agents
+  addLine(5, 9, 0xe91e8c, 0.35); // Lexi ↔ Wooh
+  addLine(5, 8, 0xe91e8c, 0.3);  // Lexi ↔ GONBRAZY
+  // Nexus distribution
+  addLine(4, 12, 0x14b8a6, 0.35);// Nexus ↔ CFO
+  addLine(4, 11, 0x14b8a6, 0.3); // Nexus ↔ A&R
+  // Legal
+  addLine(13, 1, 0xc1121f, 0.4); // Legal ↔ GOAT
+  addLine(13, 2, 0xc1121f, 0.3); // Legal ↔ Oscar
+  // Autopilot monitors all
+  addLine(14, 7, 0xa855f7, 0.25);// Autopilot ↔ Devin
+  addLine(14, 6, 0xa855f7, 0.25);// Autopilot ↔ Codex
+  // Dr. Devin ↔ strategic
+  addLine(7, 1, 0x58a6ff, 0.3);
+  addLine(7, 4, 0x58a6ff, 0.25);
+  // Hannah ↔ Vanessa
+  addLine(10, 3, 0x14b8a6, 0.3);
+
+  document.getElementById('connCount').textContent = connectionLines.length;
+}
+
+function addLine(a, b, color, opacity) {
+  const pts = [nodeObjects[a].pos, nodeObjects[b].pos];
+  const geo = new THREE.BufferGeometry().setFromPoints(pts);
+  const mat = new THREE.LineBasicMaterial({color, transparent:true, opacity, linewidth:1});
+  const line = new THREE.Line(geo, mat);
+  scene.add(line);
+  connectionLines.push(line);
+}
+
+buildConnections();
+
+// ── PULSE PARTICLES ON CONNECTIONS ───────────────────────────────────────────
+const pulseParticles = [];
+const PULSE_PAIRS = [[0,1],[0,2],[0,5],[1,7],[4,12],[8,9],[5,9],[13,1]];
+const pulseMat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true});
+
+PULSE_PAIRS.forEach(([a,b]) => {
+  const geo = new THREE.SphereGeometry(0.08, 6, 6);
+  const mat = pulseMat.clone();
+  mat.color.setHex(AGENTS[a].color);
+  const mesh = new THREE.Mesh(geo, mat);
+  scene.add(mesh);
+  pulseParticles.push({mesh, a, b, t:Math.random(), speed: 0.004 + Math.random()*0.004});
+});
+
+// ── ORBIT CONTROL (manual) ────────────────────────────────────────────────────
+let isDragging = false, prevMouse = {x:0,y:0};
+let spherical = {theta: 0, phi: Math.PI/2, radius: 28};
+let autoRotate = true;
+const pivot = new THREE.Object3D();
+scene.add(pivot);
+
+canvas.addEventListener('mousedown', e => { isDragging=true; prevMouse={x:e.clientX,y:e.clientY}; });
+canvas.addEventListener('mouseup',   () => isDragging=false);
+canvas.addEventListener('mouseleave',() => isDragging=false);
+canvas.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const dx = e.clientX - prevMouse.x;
+  const dy = e.clientY - prevMouse.y;
+  spherical.theta -= dx * 0.008;
+  spherical.phi   = Math.max(0.3, Math.min(Math.PI-0.3, spherical.phi + dy*0.008));
+  prevMouse = {x:e.clientX, y:e.clientY};
+});
+canvas.addEventListener('wheel', e => {
+  spherical.radius = Math.max(10, Math.min(60, spherical.radius + e.deltaY * 0.05));
+});
+
+// Touch
+canvas.addEventListener('touchstart', e => {
+  if (e.touches.length===1) {isDragging=true; prevMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};}
+});
+canvas.addEventListener('touchend',   () => isDragging=false);
+canvas.addEventListener('touchmove',  e => {
+  if (!isDragging||e.touches.length!==1) return;
+  const dx=e.touches[0].clientX-prevMouse.x, dy=e.touches[0].clientY-prevMouse.y;
+  spherical.theta-=dx*0.008; spherical.phi=Math.max(0.3,Math.min(Math.PI-0.3,spherical.phi+dy*0.008));
+  prevMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};
+});
+
+function updateCamera() {
+  camera.position.x = spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+  camera.position.y = spherical.radius * Math.cos(spherical.phi);
+  camera.position.z = spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+  camera.lookAt(0,0,0);
+}
+
+// ── RAYCASTER / CLICK ─────────────────────────────────────────────────────────
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let clickTimeout;
+
+canvas.addEventListener('click', e => {
+  // Debounce to not fire on drag end
+  clearTimeout(clickTimeout);
+  clickTimeout = setTimeout(() => {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(nodeMeshes);
+    if (hits.length > 0) {
+      const idx = hits[0].object.userData.agentIndex;
+      openAgentPanel(idx);
+    }
+  }, 150);
+});
+
+// ── AGENT PANEL ───────────────────────────────────────────────────────────────
+let selectedAgent = null;
+
+function openAgentPanel(idx) {
+  const a = AGENTS[idx];
+  selectedAgent = idx;
+  document.getElementById('ap-icon').textContent    = a.icon;
+  document.getElementById('ap-name').textContent    = a.name;
+  document.getElementById('ap-codename').textContent= a.codename;
+  document.getElementById('ap-num').textContent     = a.num;
+  document.getElementById('ap-role').textContent    = a.role;
+  document.getElementById('ap-model').textContent   = 'llama3.1:70b';
+  document.getElementById('ap-conns').textContent   = idx===0 ? '14 (all)' : idx<3 ? '8' : '3-5';
+  const col = '#'+a.color.toString(16).padStart(6,'0');
+  document.getElementById('agent-panel').style.setProperty('--agent-color', col);
+  const openBtn = document.getElementById('ap-open');
+  openBtn.onclick = () => window.open(a.url,'_blank');
+  document.getElementById('agent-panel').classList.add('open');
+  // Pulse the selected node
+  pulseNode(idx);
+  // Highlight roster pill
+  document.querySelectorAll('.r-pill').forEach((p,i) => p.classList.toggle('sel', i===idx));
+}
+
+function closePanel() {
+  document.getElementById('agent-panel').classList.remove('open');
+  selectedAgent = null;
+  document.querySelectorAll('.r-pill').forEach(p => p.classList.remove('sel'));
+}
+
+function pulseNode(idx) {
+  const node = nodeObjects[idx];
+  let t = 0;
+  const orig = node.mesh.scale.x;
+  const iv = setInterval(() => {
+    t += 0.15;
+    const s = orig + Math.sin(t)*0.4;
+    node.mesh.scale.setScalar(s);
+    node.glow.scale.setScalar(s*1.1);
+    if (t > Math.PI*3) { node.mesh.scale.setScalar(orig); node.glow.scale.setScalar(1); clearInterval(iv); }
+  }, 16);
+}
+
+// ── ROSTER PILLS ──────────────────────────────────────────────────────────────
+const roster = document.getElementById('roster');
+AGENTS.forEach((a, i) => {
+  const pill = document.createElement('div');
+  pill.className = 'r-pill';
+  pill.style.setProperty('--c', '#'+a.color.toString(16).padStart(6,'0'));
+  pill.innerHTML = `<span class="r-icon">${a.icon}</span><div><div class="r-name">${a.name.length>14?a.name.substring(0,13)+'…':a.name}</div><div class="r-num">${a.num!=='—'?'#'+a.num:''}</div></div><span class="r-dot"></span>`;
+  pill.onclick = () => openAgentPanel(i);
+  roster.appendChild(pill);
+});
+
+// ── CONTROLS ─────────────────────────────────────────────────────────────────
+function toggleRotate() {
+  autoRotate = !autoRotate;
+  document.getElementById('btnRotate').classList.toggle('active', autoRotate);
+}
+function toggleConnections() {
+  showConnections = !showConnections;
+  buildConnections();
+}
+function explodeNodes() {
+  nodeObjects.forEach((n, i) => {
+    const target = spherePoint(i, AGENTS.length, RADIUS * 2.2);
+    let t = 0;
+    const orig = n.mesh.position.clone();
+    const iv = setInterval(() => {
+      t = Math.min(1, t+0.03);
+      const eased = t<0.5 ? 2*t*t : -1+(4-2*t)*t;
+      n.mesh.position.lerpVectors(orig, target, eased);
+      n.glow.position.copy(n.mesh.position);
+      labelSprites[i].position.copy(n.mesh.position);
+      labelSprites[i].position.y += 0.8;
+      if (t>=1) {
+        setTimeout(() => {
+          let t2=0;
+          const iv2=setInterval(()=>{
+            t2=Math.min(1,t2+0.025);
+            const e2=t2<0.5?2*t2*t2:-1+(4-2*t2)*t2;
+            n.mesh.position.lerpVectors(target,n.pos,e2);
+            n.glow.position.copy(n.mesh.position);
+            labelSprites[i].position.copy(n.mesh.position);
+            labelSprites[i].position.y+=0.8;
+            if(t2>=1){n.mesh.position.copy(n.pos);clearInterval(iv2);}
+          },16);
+        }, 1000);
+        clearInterval(iv);
+      }
+    }, 16);
+  });
+}
+function resetCamera() {
+  spherical = {theta:0, phi:Math.PI/2, radius:28};
+}
+
+// ── SERVICE CHECK ─────────────────────────────────────────────────────────────
+async function checkServices() {
+  const checks = [
+    {id:'sp1', url:'http://127.0.0.1:5500/health', label:'Intel'},
+    {id:'sp2', url:'http://127.0.0.1:11435/api/tags', label:'Ollama'},
+    {id:'sp3', url:'http://127.0.0.1:8090/', label:'Web'},
+  ];
+  for (const c of checks) {
+    const el = document.getElementById(c.id);
+    try {
+      await fetch(c.url, {signal:AbortSignal.timeout(2000)});
+      el.className = 'spill on';
+      el.innerHTML = `<span class="sdot"></span>${c.label}`;
+    } catch(e) {}
+  }
+}
+setTimeout(checkServices, 1000);
+
+// ── RESIZE ────────────────────────────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ── ANIMATE ───────────────────────────────────────────────────────────────────
+let frameCount = 0, lastFpsTime = performance.now();
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const elapsed = clock.getElapsedTime();
+
+  // Auto rotate brain shell
+  brainMesh.rotation.y = elapsed * 0.04;
+  brainMesh.rotation.x = elapsed * 0.015;
+  innerMesh.rotation.y = -elapsed * 0.06;
+  innerMesh.rotation.z = elapsed * 0.02;
+
+  // Auto rotate scene
+  if (autoRotate && !isDragging) {
+    spherical.theta += 0.002;
+  }
+  updateCamera();
+
+  // Pulsing nodes
+  nodeObjects.forEach((n, i) => {
+    const pulse = 1 + Math.sin(elapsed * 1.5 + i * 0.7) * 0.08;
+    if (selectedAgent !== i) {
+      n.mesh.scale.setScalar(pulse);
+      n.glow.scale.setScalar(pulse * 1.15);
+    }
+    // Emissive intensity breathing
+    n.mesh.material.emissiveIntensity = 0.25 + Math.sin(elapsed*1.2 + i*0.5)*0.15;
+  });
+
+  // Pulse rings
+  ringMeshes.forEach((r, i) => {
+    r.mesh.rotation.x += 0.008 + i*0.003;
+    r.mesh.rotation.y += 0.012 - i*0.002;
+    const s = 1 + Math.sin(elapsed*2+i)*0.06;
+    r.mesh.scale.setScalar(s);
+  });
+
+  // Move pulse particles along connections
+  pulseParticles.forEach(p => {
+    p.t = (p.t + p.speed) % 1;
+    const from = nodeObjects[p.a].mesh.position;
+    const to   = nodeObjects[p.b].mesh.position;
+    p.mesh.position.lerpVectors(from, to, p.t);
+    p.mesh.material.opacity = Math.sin(p.t * Math.PI) * 0.9;
+  });
+
+  // Animate connection opacity
+  connectionLines.forEach((line, i) => {
+    line.material.opacity = (0.2 + Math.sin(elapsed*0.5 + i*0.3)*0.15) * (showConnections?1:0);
+  });
+
+  // Point lights orbit
+  pointLight1.position.x = Math.cos(elapsed*0.3) * 15;
+  pointLight1.position.z = Math.sin(elapsed*0.3) * 15;
+  pointLight2.position.x = Math.cos(elapsed*0.2+2) * 12;
+  pointLight2.position.z = Math.sin(elapsed*0.2+2) * 12;
+
+  renderer.render(scene, camera);
+
+  // FPS
+  frameCount++;
+  const now = performance.now();
+  if (now - lastFpsTime > 1000) {
+    document.getElementById('fps').textContent = frameCount;
+    frameCount = 0; lastFpsTime = now;
+  }
+}
+
+animate();
+</script>
+</body>
+</html>

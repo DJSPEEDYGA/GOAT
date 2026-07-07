@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐐 THE GOAT — Supreme Commander · GOAT Royalty App</title>
+<link rel="icon" href="img/goat-hero-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ── */
+:root {
+  --goat-red:   #c1121f;
+  --goat-red2:  #8b0000;
+  --goat-gold:  #FFD700;
+  --goat-gold2: #f0c040;
+  --goat-gold3: #d4a03c;
+  --bg:         #080808;
+  --bg-1:       #0f0f0f;
+  --bg-2:       #161616;
+  --border:     rgba(193,18,31,0.18);
+  --border-med: rgba(193,18,31,0.35);
+  --text:       #f5e6c8;
+  --text-2:     #e0d0b0;
+  --muted:      #888;
+  --font-mono:  'JetBrains Mono', 'SF Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Animated background ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 15%, rgba(193,18,31,0.22) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 85%, rgba(255,215,0,0.08) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Nav ── */
+.goat-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 58px;
+  background: rgba(8,8,8,0.96);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px; padding: 0 20px;
+}
+.goat-nav .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.goat-nav .nav-brand img { height: 36px; border-radius: 8px; filter: drop-shadow(0 0 10px rgba(193,18,31,0.7)); }
+.goat-nav .nav-brand span { font-size: 15px; font-weight: 900; color: var(--goat-gold); letter-spacing: 0.5px; }
+.goat-nav .nav-links { display: flex; gap: 4px; flex-wrap: wrap; margin-left: 8px; }
+.goat-nav .nav-links a {
+  color: #e0e0e0; text-decoration: none; padding: 6px 11px;
+  border-radius: 7px; font-size: 12px; font-weight: 600;
+  transition: all 0.2s; white-space: nowrap;
+}
+.goat-nav .nav-links a:hover { background: rgba(193,18,31,0.22); color: var(--goat-gold); }
+.goat-nav .nav-links a.active { background: linear-gradient(135deg,#c1121f,#8b0000); color: #fff; box-shadow: 0 0 18px rgba(193,18,31,0.5); }
+
+/* ── Layout ── */
+.ai-layout {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  min-height: calc(100vh - 58px);
+  margin-top: 58px;
+  position: relative; z-index: 1;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  box-shadow: 0 0 80px rgba(193,18,31,0.12), 0 0 30px rgba(255,215,0,0.04);
+}
+
+/* ── Sidebar ── */
+.ai-sidebar {
+  background: rgba(10,10,10,0.98);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+  max-height: calc(100vh - 58px);
+  position: sticky; top: 58px;
+}
+.ai-logo {
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px 14px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.ai-logo img { width: 42px; height: 42px; border-radius: 10px; filter: drop-shadow(0 0 12px rgba(193,18,31,0.6)); }
+.ai-logo span { font-size: 13px; font-weight: 900; color: #fff; letter-spacing: 0.4px; }
+
+/* ── Commander badge ── */
+.commander-badge {
+  margin: 12px 14px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(193,18,31,0.1));
+  border: 1px solid rgba(255,215,0,0.35);
+  border-radius: 10px;
+  text-align: center;
+}
+.commander-badge .crown { font-size: 22px; }
+.commander-badge .badge-title { font-size: 11px; font-weight: 900; color: var(--goat-gold); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 4px; }
+.commander-badge .badge-sub { font-size: 10px; color: #888; margin-top: 2px; }
+
+.section-title {
+  font-size: 10px; font-weight: 800; color: #555;
+  text-transform: uppercase; letter-spacing: 1.2px;
+  padding: 10px 14px 4px;
+}
+
+/* ── Agent roster buttons ── */
+.roster { padding: 0 10px 10px; }
+.roster-btn {
+  width: 100%; display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; border-radius: 9px; margin-bottom: 3px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: transparent; color: #999;
+  cursor: pointer; text-align: left; font-family: inherit;
+  font-size: 12px; font-weight: 600; transition: all 0.2s;
+  text-decoration: none;
+}
+.roster-btn:hover { background: rgba(255,255,255,0.05); color: #fff; border-color: rgba(255,215,0,0.25); }
+.roster-btn.active {
+  background: linear-gradient(135deg, rgba(255,215,0,0.12) 0%, rgba(193,18,31,0.08) 100%);
+  border-color: var(--goat-gold); color: var(--goat-gold);
+  box-shadow: 0 0 14px rgba(255,215,0,0.12);
+}
+.roster-btn .agent-num { font-size: 9px; color: #555; margin-left: auto; font-family: var(--font-mono); }
+
+/* ── Ops buttons ── */
+.ops-section { padding: 6px 10px 10px; }
+.ops-btn {
+  width: 100%; display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px; border-radius: 9px; margin-bottom: 3px;
+  border: 1px solid rgba(255,215,0,0.15);
+  background: rgba(255,215,0,0.05);
+  color: #e5e5e5; cursor: pointer; text-align: left;
+  font-family: inherit; font-size: 12px; font-weight: 600; transition: all 0.2s;
+}
+.ops-btn:hover { background: rgba(255,215,0,0.12); border-color: var(--goat-gold); color: var(--goat-gold); transform: translateX(2px); }
+
+/* ── Quick prompts ── */
+.quick-prompts { padding: 10px 10px; flex: 1; overflow-y: auto; }
+.quick-prompts h4 { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 2px; }
+.quick-btn {
+  width: 100%; padding: 8px 10px; border-radius: 7px; margin-bottom: 4px;
+  border: 1px solid rgba(255,255,255,0.05); background: transparent;
+  color: #777; cursor: pointer; text-align: left;
+  font-family: inherit; font-size: 11px; line-height: 1.4; transition: all 0.2s;
+}
+.quick-btn:hover { border-color: var(--goat-gold); color: #fff; background: rgba(255,215,0,0.06); }
+
+/* ── Status bar ── */
+.status-bar {
+  padding: 10px 14px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: #888;
+}
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--goat-gold); box-shadow: 0 0 8px var(--goat-gold);
+  animation: pulseDot 2s infinite;
+  flex-shrink: 0;
+}
+@keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.45} }
+
+/* ── Chat area ── */
+.chat-area {
+  display: flex; flex-direction: column;
+  background: rgba(8,8,8,0.99);
+  min-height: calc(100vh - 58px);
+}
+
+/* ── Chat header ── */
+.chat-header {
+  padding: 18px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 16px;
+  background: linear-gradient(90deg, rgba(255,215,0,0.05) 0%, rgba(8,8,8,0.99) 60%);
+  flex-wrap: wrap; gap: 12px;
+}
+.chat-header .persona-avatar {
+  width: 54px; height: 54px; border-radius: 50%; object-fit: cover;
+  border: 2px solid var(--goat-gold);
+  box-shadow: 0 0 24px rgba(255,215,0,0.35);
+}
+.chat-header .agent-title h2 { font-size: 20px; margin: 0 0 2px; color: var(--goat-gold); letter-spacing: -0.3px; font-weight: 900; }
+.chat-header .agent-title p  { font-size: 12px; margin: 0; color: #777; }
+.codename-tag {
+  font-size: 10px; padding: 4px 10px; border-radius: 20px; font-weight: 700;
+  background: rgba(255,215,0,0.12); border: 1px solid rgba(255,215,0,0.4);
+  color: var(--goat-gold); letter-spacing: 0.5px;
+}
+.engine-tag {
+  font-size: 9px; padding: 3px 8px; border-radius: 12px; font-weight: 700;
+  background: rgba(193,18,31,0.15); border: 1px solid rgba(193,18,31,0.35);
+  color: #c1121f; letter-spacing: 0.3px; font-family: var(--font-mono);
+}
+
+/* ── Messages ── */
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 14px;
+  min-height: 300px;
+}
+.msg { display: flex; flex-direction: column; max-width: 82%; }
+.msg.user { align-self: flex-end; }
+.msg.assistant { align-self: flex-start; }
+.msg-bubble {
+  padding: 13px 17px; border-radius: 16px;
+  font-size: 14px; line-height: 1.65; word-break: break-word;
+}
+.msg.user .msg-bubble {
+  background: linear-gradient(135deg, #c1121f 0%, #8b0000 100%);
+  color: #fff; border-bottom-right-radius: 4px;
+}
+.msg.assistant .msg-bubble {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,215,0,0.1);
+  color: var(--text-2); border-bottom-left-radius: 4px;
+}
+.msg-meta { font-size: 10px; color: #444; padding: 2px 4px; }
+.msg.assistant .msg-meta { color: #555; }
+
+/* ── Typing indicator ── */
+.typing-indicator {
+  display: none; align-self: flex-start;
+  padding: 13px 17px; background: rgba(255,255,255,0.04);
+  border-radius: 16px; border-bottom-left-radius: 4px;
+  border: 1px solid rgba(255,215,0,0.1);
+}
+.typing-indicator.visible { display: flex; gap: 6px; align-items: center; }
+.typing-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--goat-gold);
+  animation: typingPulse 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingPulse { 0%,60%,100%{transform:scale(1);opacity:0.4} 30%{transform:scale(1.3);opacity:1} }
+
+/* ── Input area ── */
+.chat-input-area {
+  padding: 16px 22px;
+  border-top: 1px solid var(--border);
+  background: rgba(8,8,8,0.99);
+}
+.chat-input-row { display: flex; gap: 10px; align-items: flex-end; }
+.chat-textarea {
+  flex: 1; padding: 12px 16px; border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: #fff; font-size: 13px; font-family: inherit;
+  resize: none; min-height: 50px; max-height: 160px;
+  line-height: 1.5; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.chat-textarea:focus { outline: none; border-color: var(--goat-gold); box-shadow: 0 0 0 3px rgba(255,215,0,0.1); }
+.chat-textarea::placeholder { color: #444; }
+.send-btn {
+  width: 50px; height: 50px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--goat-gold) 0%, var(--goat-gold3) 100%);
+  border: none; color: #000; font-size: 20px; cursor: pointer;
+  transition: all 0.2s; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 22px rgba(255,215,0,0.4); font-weight: 900;
+}
+.send-btn:hover { filter: brightness(1.15); transform: scale(1.06); box-shadow: 0 0 30px rgba(255,215,0,0.6); }
+.send-btn:disabled { background: #2a2a2a; cursor: not-allowed; transform: none; box-shadow: none; color: #555; }
+.chat-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.chat-action-btn {
+  padding: 6px 14px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent; color: #555;
+  font-size: 11px; font-family: inherit; cursor: pointer; transition: all 0.2s;
+}
+.chat-action-btn:hover { border-color: var(--goat-gold); color: var(--goat-gold); background: rgba(255,215,0,0.06); }
+
+/* ── Deck panels ── */
+.deck-panel {
+  display: none; position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.deck-panel.open { display: flex; }
+.deck-box {
+  background: rgba(11,11,11,0.99);
+  border: 1px solid rgba(255,215,0,0.25);
+  border-radius: 16px; padding: 28px; width: 100%; max-width: 700px;
+  max-height: 88vh; overflow-y: auto;
+  box-shadow: 0 0 60px rgba(255,215,0,0.1);
+}
+.deck-close { float: right; font-size: 24px; color: #666; cursor: pointer; margin-top: -4px; }
+.deck-close:hover { color: #fff; }
+.deck-box h2 { margin: 0 0 20px; font-size: 20px; color: var(--goat-gold); display: flex; align-items: center; gap: 10px; }
+.deck-section { margin-bottom: 20px; }
+.deck-section h4 { margin: 0 0 10px; font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+
+/* ── Terminal ── */
+.terminal-wrap { background: #050505; border: 1px solid rgba(255,215,0,0.25); border-radius: 12px; overflow: hidden; font-family: var(--font-mono); }
+.terminal-titlebar { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: rgba(255,215,0,0.08); border-bottom: 1px solid rgba(255,215,0,0.15); }
+.terminal-dot { width: 11px; height: 11px; border-radius: 50%; }
+.terminal-dot.red { background: #e74c3c; }
+.terminal-dot.yellow { background: #f0c040; }
+.terminal-dot.green { background: #2ecc71; }
+.terminal-output { padding: 14px; min-height: 200px; max-height: 320px; overflow-y: auto; font-size: 12px; line-height: 1.6; color: #c8f7a0; white-space: pre-wrap; word-break: break-all; }
+.terminal-output::-webkit-scrollbar { width: 4px; }
+.terminal-output::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.25); border-radius: 4px; }
+.terminal-line { margin: 0; }
+.terminal-line.cmd { color: var(--goat-gold); }
+.terminal-line.err { color: #e74c3c; }
+.terminal-line.sys { color: #666; font-style: italic; }
+.terminal-line.warn { color: #f59e0b; }
+.terminal-input-row { display: flex; align-items: center; padding: 10px 14px; border-top: 1px solid rgba(255,215,0,0.15); background: rgba(0,0,0,0.5); gap: 10px; }
+.terminal-prompt { color: var(--goat-gold); font-size: 12px; white-space: nowrap; font-family: var(--font-mono); font-weight: 700; }
+.terminal-input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 12px; font-family: var(--font-mono); caret-color: var(--goat-gold); }
+.terminal-run-btn { padding: 5px 14px; border-radius: 8px; border: 1px solid rgba(255,215,0,0.4); background: rgba(255,215,0,0.1); color: var(--goat-gold); font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: var(--font-mono); }
+.terminal-run-btn:hover { background: rgba(255,215,0,0.22); }
+.terminal-agent-select { padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #aaa; font-size: 11px; font-family: var(--font-mono); cursor: pointer; }
+.terminal-confirm-bar { display: none; padding: 10px 14px; background: rgba(240,192,64,0.08); border-top: 1px solid rgba(240,192,64,0.25); font-size: 12px; color: #f0c040; gap: 10px; align-items: center; }
+.terminal-confirm-bar.visible { display: flex; }
+.terminal-confirm-bar .btn-yes { padding: 4px 14px; border-radius: 6px; border: 1px solid #f0c040; background: rgba(240,192,64,0.15); color: #f0c040; cursor: pointer; font-size: 11px; font-family: var(--font-mono); }
+.terminal-confirm-bar .btn-no  { padding: 4px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #888; cursor: pointer; font-size: 11px; font-family: var(--font-mono); }
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .ai-layout { grid-template-columns: 1fr; }
+  .ai-sidebar { border-right: none; border-bottom: 1px solid var(--border); max-height: 380px; overflow-y: auto; position: static; }
+  .chat-messages { min-height: 400px; }
+  .chat-header { flex-wrap: wrap; }
+  .goat-nav .nav-links { display: none; }
+}
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="goat-nav">
+  <a href="index.html" class="nav-brand">
+    <img src="img/goat-hero-icon.png" alt="GOAT">
+    <span>🐐 THE GOAT</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="moneypenny.html">Ms. Money Penny</a>
+    <a href="dr-devin.html">Dr. Devin</a>
+    <a href="the-goat.html" class="active">THE GOAT</a>
+    <a href="agents.html">All Agents</a>
+    <a href="goat-royalty/">Royalty App</a>
+    <a href="goat-console.html">Console</a>
+    <a href="goat-casino.html">🎰 Casino</a>
+  </div>
+</nav>
+
+<!-- MAIN LAYOUT -->
+<div class="ai-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="ai-sidebar">
+    <div class="ai-logo">
+      <img src="img/goat-hero-icon.png" alt="THE GOAT">
+      <span>THE GOAT · Supreme Command</span>
+    </div>
+
+    <!-- Commander badge -->
+    <div class="commander-badge">
+      <div class="crown">🏆</div>
+      <div class="badge-title">SUPREME COMMANDER</div>
+      <div class="badge-sub">Above all agents · Final authority</div>
+    </div>
+
+    <!-- Agent Roster -->
+    <div class="section-title">🐐 Agent Roster</div>
+    <div class="roster">
+      <button class="roster-btn active" onclick="setPersona('the-goat')">
+        🐐 THE GOAT <span class="agent-num">000</span>
+      </button>
+      <a class="roster-btn" href="moneypenny.html">
+        💼 Ms. Money Penny <span class="agent-num">002</span>
+      </a>
+      <a class="roster-btn" href="moneypenny.html?mode=oscar">
+        🤝 Master Oscar <span class="agent-num">001</span>
+      </a>
+      <a class="roster-btn" href="moneypenny.html?mode=vanessa">
+        🌟 Ms. Vanessa <span class="agent-num">003</span>
+      </a>
+      <a class="roster-btn" href="moneypenny.html?mode=nexus">
+        📡 Nexus <span class="agent-num">004</span>
+      </a>
+      <a class="roster-btn" href="moneypenny.html?mode=lexi">
+        🎤 Lexi <span class="agent-num">005</span>
+      </a>
+      <a class="roster-btn" href="moneypenny.html?mode=devin">
+        🤖 Dr. Devin <span class="agent-num">007</span>
+      </a>
+    </div>
+
+    <!-- Command Ops -->
+    <div class="section-title">⚡ Command Ops</div>
+    <div class="ops-section">
+      <button class="ops-btn" onclick="openTerminalPanel()">
+        <span>💻</span> Live Terminal
+      </button>
+      <button class="ops-btn" onclick="quickSend('Deploy all agents: give me a full GOAT Force status report — what is each agent working on and what are our top priorities right now?')">
+        <span>🚀</span> Deploy All Agents
+      </button>
+      <button class="ops-btn" onclick="quickSend('Audit everything: royalties owed, catalog status, distribution performance across 282 DSPs, and pending deals. Full GOAT Force report.')">
+        <span>📊</span> Full Empire Audit
+      </button>
+      <button class="ops-btn" onclick="quickSend('What is the 12-month domination plan for GOAT Force Records? Give me a complete strategy across all departments.')">
+        <span>🏆</span> Domination Plan
+      </button>
+      <button class="ops-btn" onclick="clearChat()">
+        <span>🗑</span> Clear Chat
+      </button>
+    </div>
+
+    <!-- Quick Prompts -->
+    <div class="quick-prompts">
+      <h4>🎯 Mission Briefs</h4>
+      <div id="quickPromptsList"></div>
+    </div>
+
+    <!-- Status -->
+    <div class="status-bar">
+      <div class="status-dot"></div>
+      <span>THE GOAT · 000 · Supreme Command</span>
+    </div>
+  </aside>
+
+  <!-- CHAT AREA -->
+  <div class="chat-area">
+    <div class="chat-header">
+      <img class="persona-avatar" src="img/goat-hero-icon.png" alt="THE GOAT" id="personaAvatar">
+      <div class="agent-title">
+        <h2 id="personaName">THE GOAT</h2>
+        <p id="personaRole">Supreme Commander · GOAT Royalty App · GOAT Force Records</p>
+      </div>
+      <span class="codename-tag" id="codenameTag">CODENAME: THE GOAT</span>
+      <span class="engine-tag" id="engineTag">Multi-Model</span>
+    </div>
+
+    <div class="chat-messages" id="chatMessages"></div>
+
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <span style="font-size:12px;color:#777;margin-left:6px;" id="typingText">THE GOAT is thinking...</span>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-row">
+        <textarea
+          class="chat-textarea"
+          id="chatInput"
+          rows="2"
+          placeholder="Command THE GOAT — supreme intelligence for GOAT Force Records..."
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send">▶</button>
+      </div>
+      <div class="chat-actions">
+        <button class="chat-action-btn" onclick="quickSend('What is the current state of the GOAT Force empire?')">Empire Status</button>
+        <button class="chat-action-btn" onclick="quickSend('What are the biggest opportunities for GOAT Force right now?')">Opportunities</button>
+        <button class="chat-action-btn" onclick="quickSend('What threats does GOAT Force need to defend against?')">Threat Intel</button>
+        <button class="chat-action-btn" onclick="clearChat()">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE TERMINAL PANEL -->
+<div class="deck-panel" id="terminalPanel" onclick="if(event.target.id==='terminalPanel') closeTerminalPanel()">
+  <div class="deck-box" style="max-width:860px;">
+    <div class="deck-close" onclick="closeTerminalPanel()">&times;</div>
+    <h2>💻 THE GOAT — Live Terminal</h2>
+    <div class="deck-section">
+      <h4>Agent Context</h4>
+      <select class="terminal-agent-select" id="terminalAgentSelect" style="width:100%;">
+        <option value="the-goat">000 — THE GOAT (Supreme)</option>
+        <option value="moneypenny">002 — Ms. Money Penny</option>
+        <option value="drdevin">007 — Dr. Devin</option>
+        <option value="oscar">001 — Master Oscar</option>
+        <option value="nexus">004 — Nexus</option>
+        <option value="lexi">005 — Lexi</option>
+        <option value="vanessa">003 — Ms. Vanessa</option>
+      </select>
+    </div>
+    <div class="deck-section">
+      <h4>Terminal</h4>
+      <div class="terminal-wrap">
+        <div class="terminal-titlebar">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span style="margin-left:6px;font-size:11px;color:#666;">GOAT Force — Supreme Command Terminal</span>
+          <button onclick="clearTerminal()" style="margin-left:auto;background:transparent;border:none;color:#555;cursor:pointer;font-size:11px;font-family:'JetBrains Mono',monospace;">clear</button>
+        </div>
+        <div class="terminal-output" id="terminalOutput">
+          <p class="terminal-line sys">THE GOAT Terminal — SUPREME COMMAND Online</p>
+          <p class="terminal-line sys">Commands classified: readonly · dangerous (confirm) · forbidden (blocked)</p>
+          <p class="terminal-line sys">────────────────────────────────────────────</p>
+        </div>
+        <div class="terminal-confirm-bar" id="terminalConfirmBar">
+          <span id="terminalConfirmMsg">⚠️ Dangerous command — confirm?</span>
+          <button class="btn-yes" id="terminalConfirmYes">Run It</button>
+          <button class="btn-no" onclick="cancelTerminalConfirm()">Cancel</button>
+        </div>
+        <div class="terminal-input-row">
+          <span class="terminal-prompt">000@goat-force $</span>
+          <input class="terminal-input" id="terminalInput" type="text"
+            placeholder="ls -la / git status / ollama list ..."
+            autocomplete="off" autocorrect="off" spellcheck="false"
+            onkeydown="handleTerminalKey(event)">
+          <button class="terminal-run-btn" onclick="runTerminalCommand()">RUN</button>
+        </div>
+      </div>
+    </div>
+    <div class="deck-section">
+      <h4>Quick Commands</h4>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="chat-action-btn" onclick="terminalQuick('ls -la')">ls -la</button>
+        <button class="chat-action-btn" onclick="terminalQuick('pwd')">pwd</button>
+        <button class="chat-action-btn" onclick="terminalQuick('ollama list')">ollama list</button>
+        <button class="chat-action-btn" onclick="terminalQuick('git status')">git status</button>
+        <button class="chat-action-btn" onclick="terminalQuick('df -h')">disk space</button>
+        <button class="chat-action-btn" onclick="terminalQuick('curl -s http://localhost:5500/health')">intel health</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────
+const INTEL = 'http://localhost:5500';
+let chatHistory = [];
+let isTyping    = false;
+
+// ── THE GOAT quick prompts ────────────────────────────────────
+const GOAT_PROMPTS = [
+  '🏆 Give me a full GOAT Force empire status report',
+  '💰 What royalties is DJ Speedy owed right now?',
+  '📊 Analyze our 282 DSP performance across all platforms',
+  '🤝 What is the best deal structure for Waka Flocka collab?',
+  '🚀 12-month domination plan for GOAT Force Records',
+  '🎵 Coordinate all agents: new album release strategy',
+  '🌍 Amigo Alley — Latin market domination strategy',
+  '🔐 Full security audit of GOAT Force digital assets',
+  '📡 What intelligence does Nexus have on music trends?',
+  '🎤 Have Lexi write a GOAT anthem — bars about owning masters',
+  '🌟 What should our brand look like in 5 years?',
+  '⚖️ Review our legal position across all active deals',
+];
+
+// ── Render quick prompts ──────────────────────────────────────
+function renderQuickPrompts() {
+  document.getElementById('quickPromptsList').innerHTML = GOAT_PROMPTS.map(p =>
+    `<button class="quick-btn" onclick="quickSend('${p.replace(/'/g,"\\'")}')">${p}</button>`
+  ).join('');
+}
+
+// ── Welcome message ───────────────────────────────────────────
+function showWelcome() {
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = `
+    <div class="msg assistant">
+      <div class="msg-bubble">🐐 THE GOAT IS IN THE BUILDING.<br><br>
+Supreme Commander online. I am the highest authority in the GOAT Force Intelligence Division — above all 7 agents. I see the full chessboard.<br><br>
+DJ Speedy. Waka Flocka Flame. GOAT Force Records. 282 DSPs. This is the empire — and I run it.<br><br>
+What's the mission, Boss?</div>
+      <div class="msg-meta">THE GOAT · Supreme Command · Now</div>
+    </div>`;
+}
+
+// ── escapeHtml ────────────────────────────────────────────────
+function escapeHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// ── addMessage ────────────────────────────────────────────────
+function addMessage(role, content, engine) {
+  const container = document.getElementById('chatMessages');
+  const time = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const name = role === 'user' ? 'You' : ('THE GOAT' + (engine ? ` · ${engine}` : ''));
+  const div  = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `<div class="msg-bubble">${escapeHtml(content)}</div><div class="msg-meta">${name} · ${time}</div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+// ── setTyping ────────────────────────────────────────────────
+function setTyping(v) {
+  isTyping = v;
+  const el  = document.getElementById('typingIndicator');
+  const btn = document.getElementById('sendBtn');
+  el.className = 'typing-indicator' + (v ? ' visible' : '');
+  btn.disabled = v;
+  if (v) el.scrollIntoView({behavior:'smooth'});
+}
+
+// ── sendMessage ───────────────────────────────────────────────
+async function sendMessage() {
+  const input   = document.getElementById('chatInput');
+  const message = input.value.trim();
+  if (!message || isTyping) return;
+  input.value = ''; input.style.height = 'auto';
+  addMessage('user', message);
+  chatHistory.push({role:'user', content: message});
+  setTyping(true);
+  try {
+    const r = await fetch(INTEL + '/ai/the-goat', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({message, history: chatHistory.slice(-10)}),
+      signal: AbortSignal.timeout(45000)
+    });
+    const d = await r.json();
+    setTyping(false);
+    if (d.ok && d.reply) {
+      addMessage('assistant', d.reply, d.engine);
+      chatHistory.push({role:'assistant', content: d.reply});
+    } else {
+      const err = d.error || 'Response failed';
+      if (err.includes('key') || err.includes('API')) {
+        addMessage('assistant', `⚠️ AI key issue: ${err}\n\nClick "🔐 API Keys" in Ms. Money Penny's Command Deck to add your key.`, 'System');
+      } else {
+        addMessage('assistant', `⚠️ ${err}`, 'System');
+      }
+    }
+  } catch (e) {
+    setTyping(false);
+    if (e.name === 'TimeoutError') {
+      addMessage('assistant', '⏱ THE GOAT took too long to respond. The AI server may be under load. Try again.', 'System');
+    } else {
+      addMessage('assistant', `⚠️ Could not reach Intel Server at ${INTEL}\n\nMake sure it's running:\n→ cd goat-intel-server\n→ python3 goat_intel.py`, 'System');
+    }
+  }
+}
+
+function quickSend(text) { document.getElementById('chatInput').value = text; sendMessage(); }
+function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight,160)+'px'; }
+function clearChat() { chatHistory = []; showWelcome(); }
+function setPersona() { /* THE GOAT only has one persona */ }
+
+// ── Terminal ──────────────────────────────────────────────────
+let _terminalPendingCmd = null;
+
+function openTerminalPanel() {
+  document.getElementById('terminalPanel').classList.add('open');
+  setTimeout(() => document.getElementById('terminalInput').focus(), 100);
+}
+function closeTerminalPanel() { document.getElementById('terminalPanel').classList.remove('open'); cancelTerminalConfirm(); }
+function clearTerminal() { document.getElementById('terminalOutput').innerHTML = '<p class="terminal-line sys">Terminal cleared. Ready.</p>'; }
+function terminalPrint(text, cls) {
+  const out = document.getElementById('terminalOutput');
+  const p = document.createElement('p');
+  p.className = 'terminal-line' + (cls ? ' ' + cls : '');
+  p.textContent = text; out.appendChild(p); out.scrollTop = out.scrollHeight;
+}
+function handleTerminalKey(e) { if (e.key === 'Enter') runTerminalCommand(); }
+function terminalQuick(cmd) { document.getElementById('terminalInput').value = cmd; runTerminalCommand(); }
+
+async function runTerminalCommand(confirmed) {
+  const input = document.getElementById('terminalInput');
+  const cmd = (confirmed || input.value).trim();
+  if (!cmd) return;
+  const agentId = document.getElementById('terminalAgentSelect').value;
+  if (confirmed) cancelTerminalConfirm();
+  terminalPrint('$ ' + cmd, 'cmd');
+  input.value = '';
+  const result = await Patch.terminalExec(cmd, { agentId, confirm: !!confirmed });
+  if (!result.ok && result.classification && result.classification.class === 'forbidden') {
+    terminalPrint('BLOCKED: ' + result.classification.reason, 'err'); return;
+  }
+  if (result.needs_confirm) {
+    _terminalPendingCmd = cmd;
+    document.getElementById('terminalConfirmMsg').textContent = `⚠️ Dangerous: "${cmd}" — confirm?`;
+    document.getElementById('terminalConfirmBar').classList.add('visible');
+    document.getElementById('terminalConfirmYes').onclick = () => runTerminalCommand(cmd);
+    return;
+  }
+  if (result.stdout) terminalPrint(result.stdout, '');
+  if (result.stderr) terminalPrint(result.stderr, 'err');
+  if (!result.ok && result.error) {
+    if (result.error.includes('fetch') || result.error.includes('NetworkError') || result.error.includes('Failed to fetch')) {
+      terminalPrint('Terminal proxy offline.', 'warn');
+      terminalPrint('  cd goat-intel-server && python3 goat_terminal_proxy.py', 'sys');
+    } else {
+      terminalPrint('Error: ' + result.error, 'err');
+    }
+  }
+  if (result.returncode !== null && result.returncode !== undefined) {
+    terminalPrint('[exit ' + result.returncode + ']', 'sys');
+  }
+}
+function cancelTerminalConfirm() {
+  _terminalPendingCmd = null;
+  document.getElementById('terminalConfirmBar').classList.remove('visible');
+}
+
+// ── Init ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderQuickPrompts();
+  showWelcome();
+});
+</script>
+<script src="lib/agents/patch/patch-core.js"></script>
+<script src="lib/agents/patch/patch-widget.js" data-agent="the-goat"></script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

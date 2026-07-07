@@ -194,7 +194,7 @@ export type Options = {
 	}
 	```
 	*/
-	readonly signal?: AbortSignal;
+	readonly signal?: AbortSignal | undefined;
 
 	/**
 	Prevents retry timeouts from keeping the process alive.

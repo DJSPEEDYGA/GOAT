@@ -5,16 +5,27 @@
 ║  This is what makes the GOAT Royalty App the GREATEST:         ║
 ║  Autopilot doesn't just chat — it EXECUTES.                    ║
 ║                                                                ║
-║  Available tools:                                              ║
+║  Business tools:                                               ║
 ║    - scrape_tiktok(url)         → real profile data           ║
 ║    - get_spotify_artist(id)     → live follower counts        ║
 ║    - search_youtube(query)      → trending tracks             ║
 ║    - add_fan(email,name,artist) → grow the mailing list       ║
 ║    - create_smart_link(slug,urls) → legal Linktree            ║
-║    - generate_campaign(topic)   → email copy via Moneypenny   ║
+║    - generate_campaign(topic)   → email copy via Ms. Money Penny   ║
 ║    - lookup_itunes(artist)      → catalog data                ║
 ║    - get_billboard_charts()     → chart positions             ║
 ║    - fan_stats()                → database counts             ║
+║                                                                ║
+║  Self-healing / Computer Control (Ms. Money Penny first):      ║
+║    - run_shell(cmd)             → safe shell execution        ║
+║    - read_file(path)            → read project files          ║
+║    - write_file(path,content)   → patch files (auto-backup)   ║
+║    - check_servers()            → status of all GOAT servers  ║
+║    - restart_intel()            → self-heal Intel server      ║
+║    - open_app(app_name)         → launch Mac applications     ║
+║    - open_url(url)              → open URL in Chrome          ║
+║    - notify(title,message)      → Mac desktop notification    ║
+║    - git_status()               → repo status & recent commits║
 ║                                                                ║
 ║  How it works:                                                 ║
 ║    1. User gives Autopilot a goal                             ║
@@ -24,6 +35,7 @@
 ╚═══════════════════════════════════════════════════════════════╝
 """
 import os, json, re, time, sqlite3, requests
+import subprocess, platform, shutil, glob
 from goat_brain import goat_brain, load_keys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -167,11 +179,11 @@ def tool_fan_stats():
 
 
 def tool_generate_campaign(topic, artist="GOAT Force"):
-    """Use Moneypenny to generate email copy"""
+    """Use Ms. Money Penny to generate email copy"""
     prompt = f"Write a 3-paragraph email campaign for {artist} about: {topic}. Include subject line, CTA button text, and P.S. Keep it sharp and authentic."
     result = goat_brain(
         [{"role": "user", "content": prompt}],
-        system_prompt="You are Moneypenny. Write compelling marketing copy.",
+        system_prompt="You are Ms. Money Penny. Write compelling marketing copy.",
         task_type="creative"
     )
     if result.get("ok"):
@@ -201,6 +213,170 @@ def tool_create_smart_link(slug, spotify="", apple="", youtube="", title=""):
         return {"ok": False, "summary": f"Smart link failed: {e}", "data": None}
 
 
+# ── SELF-HEALING / COMPUTER CONTROL TOOLS ──────────────────────────────────
+
+def tool_run_shell(cmd, **_):
+    """Run a safe shell command and return output. Blocks dangerous commands."""
+    FORBIDDEN = ["rm -rf", "format", "shutdown", "reboot", "dd if=", "mkfs",
+                 "sudo rm", "chmod 777", ":(){", "fork bomb"]
+    cmd_lower = cmd.lower()
+    for bad in FORBIDDEN:
+        if bad in cmd_lower:
+            return {"error": f"Blocked dangerous command: {bad}"}
+    try:
+        result = subprocess.run(
+            cmd, shell=True, capture_output=True, text=True, timeout=30,
+            cwd=os.path.expanduser("~/GOAT-Royalty-App")
+        )
+        return {
+            "stdout": result.stdout[-3000:] if result.stdout else "",
+            "stderr": result.stderr[-1000:] if result.stderr else "",
+            "returncode": result.returncode
+        }
+    except subprocess.TimeoutExpired:
+        return {"error": "Command timed out after 30s"}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def tool_read_file(path, **_):
+    """Read a file from the GOAT system. Restricted to project dirs."""
+    ALLOWED_ROOTS = [
+        os.path.expanduser("~/GOAT-Royalty-App"),
+        "/Volumes/i2i 1/Agent-007-GOAT",
+        "/tmp"
+    ]
+    abs_path = os.path.abspath(os.path.expanduser(path))
+    if not any(abs_path.startswith(r) for r in ALLOWED_ROOTS):
+        return {"error": f"Access denied: {path} is outside allowed directories"}
+    try:
+        with open(abs_path, "r", errors="ignore") as f:
+            content = f.read(8000)
+        return {"content": content, "path": abs_path, "truncated": len(content) == 8000}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def tool_write_file(path, content, **_):
+    """Write/patch a file. Restricted to project dirs. Creates backup first."""
+    ALLOWED_ROOTS = [
+        os.path.expanduser("~/GOAT-Royalty-App"),
+        "/tmp"
+    ]
+    abs_path = os.path.abspath(os.path.expanduser(path))
+    if not any(abs_path.startswith(r) for r in ALLOWED_ROOTS):
+        return {"error": f"Write denied: {path} is outside allowed directories"}
+    try:
+        # Backup first
+        if os.path.exists(abs_path):
+            backup = abs_path + ".bak"
+            shutil.copy2(abs_path, backup)
+        os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+        with open(abs_path, "w") as f:
+            f.write(content)
+        return {"ok": True, "path": abs_path, "bytes_written": len(content)}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def tool_check_servers(**_):
+    """Check status of all GOAT servers — Intel, web server, Ollama."""
+    import urllib.request
+    results = {}
+    checks = {
+        "intel_server": "http://127.0.0.1:5500/health",
+        "web_server":   "http://127.0.0.1:8090",
+        "ollama":       "http://127.0.0.1:11434/api/tags",
+        "oscar":        "http://127.0.0.1:3333",
+        "agent007":     "http://127.0.0.1:3335",
+    }
+    for name, url in checks.items():
+        try:
+            urllib.request.urlopen(url, timeout=3)
+            results[name] = "✅ online"
+        except Exception as e:
+            results[name] = f"❌ offline ({str(e)[:50]})"
+    return results
+
+
+def tool_restart_intel_server(**_):
+    """Self-heal: restart the Intel server if it's down."""
+    server_script = os.path.expanduser("~/GOAT-Royalty-App/goat-intel-server/goat_intel.py")
+    if not os.path.exists(server_script):
+        return {"error": "Intel server script not found"}
+    # Kill existing
+    subprocess.run("lsof -ti :5500 | xargs kill -9", shell=True, capture_output=True)
+    time.sleep(1)
+    # Restart
+    env = os.environ.copy()
+    env["OLLAMA_MODELS"] = "/Volumes/i2i 1/Agent-007-GOAT/Shared/models/ollama_data"
+    proc = subprocess.Popen(
+        ["python3", server_script],
+        cwd=os.path.dirname(server_script),
+        env=env,
+        stdout=open("/tmp/goat-intel-restart.log", "w"),
+        stderr=subprocess.STDOUT
+    )
+    time.sleep(3)
+    return {"ok": True, "pid": proc.pid, "message": "Intel server restarted"}
+
+
+def tool_open_app(app_name, **_):
+    """Open a Mac application by name."""
+    ALLOWED_APPS = [
+        "Google Chrome", "Safari", "Terminal", "Finder",
+        "Pro Tools", "Logic Pro", "GarageBand", "FL Studio",
+        "Ableton Live", "Activity Monitor", "System Preferences",
+        "System Settings", "Notes", "TextEdit"
+    ]
+    if app_name not in ALLOWED_APPS:
+        return {"error": f"App '{app_name}' not in allowed list. Allowed: {ALLOWED_APPS}"}
+    try:
+        subprocess.Popen(["open", "-a", app_name])
+        return {"ok": True, "opened": app_name}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def tool_open_url(url, **_):
+    """Open a URL in Chrome."""
+    if not url.startswith(("http://", "https://", "file://")):
+        return {"error": "Invalid URL — must start with http/https/file"}
+    try:
+        subprocess.Popen(["open", "-a", "Google Chrome", url])
+        return {"ok": True, "url": url}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def tool_system_notify(title, message, **_):
+    """Send a Mac desktop notification."""
+    try:
+        script = f'display notification "{message}" with title "{title}"'
+        subprocess.run(["osascript", "-e", script], capture_output=True, timeout=5)
+        return {"ok": True, "notified": True}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def tool_git_status(**_):
+    """Get git status of the GOAT Royalty App repo."""
+    repo = os.path.expanduser("~/GOAT-Royalty-App")
+    result = subprocess.run(
+        ["git", "status", "--short"],
+        capture_output=True, text=True, cwd=repo, timeout=10
+    )
+    log = subprocess.run(
+        ["git", "log", "--oneline", "-5"],
+        capture_output=True, text=True, cwd=repo, timeout=10
+    )
+    return {
+        "status": result.stdout or "Clean",
+        "recent_commits": log.stdout,
+        "repo": repo
+    }
+
+
 # ═══════════════════════════════════════════════════════════════
 #  TOOL REGISTRY
 # ═══════════════════════════════════════════════════════════════
@@ -213,6 +389,16 @@ TOOLS = {
     "fan_stats":          {"fn": tool_fan_stats,          "args": [],                        "desc": "Get fan DB stats"},
     "generate_campaign":  {"fn": tool_generate_campaign,  "args": ["topic","artist"],        "desc": "Generate email marketing copy"},
     "create_smart_link":  {"fn": tool_create_smart_link,  "args": ["slug","spotify","apple","youtube","title"], "desc": "Create a shareable smart link"},
+    # ── Self-healing / Computer Control (Ms. Money Penny) ──────────────────
+    "run_shell":          {"fn": tool_run_shell,           "args": ["cmd"],                                     "desc": "Run a safe shell command on this Mac"},
+    "read_file":          {"fn": tool_read_file,           "args": ["path"],                                    "desc": "Read a file from the GOAT project"},
+    "write_file":         {"fn": tool_write_file,          "args": ["path", "content"],                         "desc": "Write/patch a file in the GOAT project (auto-backup)"},
+    "check_servers":      {"fn": tool_check_servers,       "args": [],                                          "desc": "Check status of all GOAT servers"},
+    "restart_intel":      {"fn": tool_restart_intel_server,"args": [],                                          "desc": "Self-heal: restart the Intel server"},
+    "open_app":           {"fn": tool_open_app,            "args": ["app_name"],                                "desc": "Open a Mac application"},
+    "open_url":           {"fn": tool_open_url,            "args": ["url"],                                     "desc": "Open a URL in Chrome"},
+    "notify":             {"fn": tool_system_notify,       "args": ["title", "message"],                        "desc": "Send a Mac desktop notification"},
+    "git_status":         {"fn": tool_git_status,          "args": [],                                          "desc": "Get git status of the GOAT Royalty App repo"},
 }
 
 

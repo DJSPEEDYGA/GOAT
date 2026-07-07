@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGENT-007 | GOAT Force Intelligence Division</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/goat-brand.css">
+<link rel="stylesheet" href="css/goat-touch.css">
+<style>
+:root {
+  --bg-0:#080a0c; --bg-1:#050a14; --bg-2:#080c14; --bg-3:#0d1420; --bg-4:#111928; --bg-5:#1a2336;
+  --gold:#d4a03c; --gold2:#f0c040; --gold-glow:rgba(212,160,60,0.18);
+  --border:rgba(212,160,60,0.14); --border-hi:rgba(212,160,60,0.50);
+  --text:#f0ece4; --sub:rgba(255,255,255,0.45);
+  --red:#e74c3c; --green:#2ecc71; --blue:#3498db; --purple:#9b59b6;
+  --cyan:#00d4ff; --orange:#f39c12; --pink:#e91e8c; --teal:#1abc9c;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body {
+  background: #080a0c;
+  color: var(--text);
+  font-family: 'Inter','Segoe UI',sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* GOAT Superman watermark */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: url('assets/goat-superman.jpg') center center / 500px no-repeat;
+  opacity: 0.04;
+  filter: grayscale(100%);
+}
+body > * { position: relative; z-index: 1; }
+
+/* Floating gold particles */
+.particles {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+}
+.particle {
+  position: absolute; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(240,192,64,0.2), rgba(212,160,60,0.04));
+  filter: blur(1px);
+  animation: floatParticle 20s ease-in-out infinite;
+  opacity: 0.5;
+}
+.particle:nth-child(1){width:280px;height:280px;top:8%;left:4%;animation-delay:0s}
+.particle:nth-child(2){width:170px;height:170px;top:62%;left:12%;animation-delay:5s}
+.particle:nth-child(3){width:380px;height:380px;top:22%;left:66%;animation-delay:10s}
+.particle:nth-child(4){width:130px;height:130px;top:76%;left:76%;animation-delay:15s}
+.particle:nth-child(5){width:240px;height:240px;top:44%;left:36%;animation-delay:7s}
+.particle:nth-child(6){width:110px;height:110px;top:6%;left:50%;animation-delay:3s}
+@keyframes floatParticle {
+  0%,100%{transform:translate(0,0) scale(1);opacity:0.4}
+  33%{transform:translate(40px,-60px) scale(1.08);opacity:0.6}
+  66%{transform:translate(-25px,35px) scale(0.94);opacity:0.35}
+}
+
+/* NAV — glassmorphism dark */
+.nav-strip {
+  position: relative; z-index: 10;
+  background: rgba(8,10,12,0.92);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 0 24px;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  top: 0; backdrop-filter: blur(16px);
+}
+.nav-strip a { color: rgba(255,255,255,0.45); text-decoration: none; padding: 14px 12px; font-size: 12px; font-weight: 600; border-bottom: 2px solid transparent; transition: all .2s; white-space: nowrap; }
+.nav-strip a:hover,.nav-strip a.active { color: #fff; border-bottom-color: var(--gold2); }
+.nav-brand {
+  font-size: 16px; font-weight: 900; margin-right: 16px; white-space: nowrap;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 18px rgba(255,255,255,0.5), 0 0 35px rgba(255,255,255,0.25);
+}
+.nav-spacer{flex:1}
+
+/* HERO BANNER */
+.agent-hero {
+  margin: 0 24px 0;
+  padding: 20px 28px;
+  border-bottom: none;
+  border-radius: 18px 18px 0 0;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  background: linear-gradient(90deg, rgba(212,160,60,0.12) 0%, rgba(8,10,12,0.9) 70%);
+}
+.agent-hero-left { display: flex; align-items: center; gap: 18px; }
+.agent-hero-emoji { font-size: 64px; line-height: 1; filter: drop-shadow(0 0 16px rgba(255,255,255,0.3)); }
+.agent-hero-name {
+  margin: 0 0 4px; font-size: 32px; font-weight: 900; letter-spacing: -0.5px; color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 18px rgba(255,255,255,0.5), 0 0 35px rgba(255,255,255,0.25);
+}
+.agent-hero-role { margin: 0; font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 500; }
+.agent-hero-badges { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.hero-badge { font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; padding: 5px 12px; border-radius: 20px; }
+.hero-badge.gold    { background: rgba(240,192,64,0.15);  border: 1px solid rgba(240,192,64,0.4);  color: #f0c040; }
+.hero-badge.green   { background: rgba(0,255,136,0.12);   border: 1px solid rgba(0,255,136,0.35);  color: #00ff88; }
+.hero-badge.white   { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); }
+.hero-badge.codename{ background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);color: rgba(255,255,255,0.5); font-size: 9px; }
+.hero-badge.pulse-dot::before {
+  content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: #2ecc71; box-shadow: 0 0 6px #2ecc71; margin-right: 6px;
+  animation: pDot 1.5s infinite;
+}
+@keyframes pDot{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* HERO STATS */
+.hero-stats-row {
+  display: flex; gap: 0; flex-wrap: wrap;
+  background: rgba(8,10,12,0.85);
+  border: 1px solid rgba(212,160,60,0.14);
+  border-top: none;
+  margin: 0 24px;
+}
+.h-stat {
+  flex: 1; min-width: 100px;
+  padding: 18px 20px;
+  border-right: 1px solid rgba(212,160,60,0.1);
+  text-align: center;
+}
+.h-stat:last-child { border-right: none; }
+.h-stat .val { font-size: 1.8rem; font-weight: 900; color: var(--gold2); }
+.h-stat .lbl { font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+
+/* SECTION */
+section { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 48px 24px; }
+.section-title {
+  font-size: clamp(1.4rem,3vw,2rem); font-weight: 800; margin-bottom: 6px;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 18px rgba(255,255,255,0.5), 0 0 35px rgba(255,255,255,0.25);
+}
+.section-sub { color: rgba(255,255,255,0.35); margin-bottom: 36px; font-size: 14px; }
+
+/* AGENT GRID */
+.agent-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(340px,1fr)); gap: 24px; }
+
+.agent-card {
+  background: rgba(13,20,32,0.85);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 28px;
+  position: relative; overflow: hidden;
+  transition: all .35s cubic-bezier(.4,0,.2,1);
+  cursor: pointer; backdrop-filter: blur(8px);
+}
+.agent-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--agent-color, var(--gold)), transparent);
+  opacity: 0; transition: opacity .35s;
+}
+.agent-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--agent-color, var(--gold));
+  box-shadow: 0 16px 60px rgba(0,0,0,.5), 0 0 40px rgba(var(--agent-rgb,212,160,60),.12);
+}
+.agent-card:hover::before { opacity: 1; }
+
+.agent-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+.agent-avatar {
+  width: 64px; height: 64px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; flex-shrink: 0;
+  border: 2px solid var(--agent-color, var(--gold));
+  position: relative; background: rgba(0,0,0,.3);
+}
+.agent-avatar .online-dot {
+  position: absolute; bottom: -2px; right: -2px;
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--bg-3); animation: statusPulse 2s infinite;
+}
+@keyframes statusPulse{0%,100%{opacity:1}50%{opacity:.5}}
+.agent-number {
+  position: absolute; top: -6px; left: -6px;
+  font-size: 10px; font-weight: 700;
+  background: var(--agent-color, var(--gold));
+  color: #000; border-radius: 6px; padding: 2px 5px; letter-spacing: .5px;
+}
+.agent-info { flex: 1; }
+.agent-name {
+  font-size: 18px; font-weight: 800; margin-bottom: 3px;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.7), 0 0 18px rgba(255,255,255,0.3);
+}
+.agent-codename { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--agent-color, var(--gold)); margin-bottom: 6px; }
+.agent-role { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.4; }
+.status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 12px; font-size: 10px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 6px;
+}
+.status-badge.online  { background: rgba(46,204,113,.15); border: 1px solid rgba(46,204,113,.3);  color: var(--green); }
+.status-badge.standby { background: rgba(243,156,18,.1);  border: 1px solid rgba(243,156,18,.25); color: var(--orange); }
+.status-badge.offline { background: rgba(231,76,60,.1);   border: 1px solid rgba(231,76,60,.2);   color: var(--red); }
+
+.agent-skills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+.skill-tag {
+  font-size: 10px; padding: 4px 10px; border-radius: 10px;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  color: rgba(255,255,255,0.35); font-weight: 500;
+}
+
+.agent-stats {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+  margin-bottom: 20px; padding: 14px;
+  background: rgba(0,0,0,.25); border-radius: 12px;
+}
+.a-stat .val { font-size: 16px; font-weight: 700; color: var(--agent-color, var(--gold)); }
+.a-stat .lbl { font-size: 9px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: .5px; }
+
+.agent-actions { display: flex; gap: 8px; }
+.btn-launch {
+  flex: 1; padding: 11px 16px; border-radius: 12px;
+  border: 1px solid var(--agent-color, var(--gold));
+  background: transparent; color: var(--agent-color, var(--gold));
+  font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s;
+  font-family: inherit; text-decoration: none;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-launch:hover { background: var(--agent-color, var(--gold)); color: #000; }
+.btn-brief {
+  padding: 11px 14px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent; color: rgba(255,255,255,0.4);
+  font-size: 12px; cursor: pointer; transition: all .2s; font-family: inherit;
+}
+.btn-brief:hover { border-color: var(--gold2); color: var(--gold2); }
+
+/* COMMAND CONSOLE */
+.console-panel {
+  background: rgba(8,10,12,0.92);
+  border: 1px solid rgba(212,160,60,0.15);
+  border-radius: 20px; padding: 28px; margin-top: 40px; backdrop-filter: blur(8px);
+}
+.console-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px; padding-bottom: 16px;
+  border-bottom: 1px solid rgba(212,160,60,0.1);
+}
+.console-dots { display: flex; gap: 6px; }
+.c-dot { width: 12px; height: 12px; border-radius: 50%; }
+.console-title {
+  font-size: 13px; font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.7), 0 0 18px rgba(255,255,255,0.3);
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;
+}
+.console-body {
+  font-family: 'JetBrains Mono','Fira Code',monospace;
+  font-size: 12px; line-height: 1.8;
+  color: rgba(255,255,255,0.4);
+  max-height: 240px; overflow-y: auto;
+}
+.console-line { display: flex; gap: 10px; }
+.cl-time  { color: rgba(212,160,60,.4); flex-shrink: 0; }
+.cl-agent { font-weight: 700; flex-shrink: 0; }
+.cl-msg   { color: var(--text); }
+.cl-msg.ok   { color: var(--green); }
+.cl-msg.warn { color: var(--orange); }
+.cl-msg.info { color: var(--cyan); }
+.cl-msg.cmd  { color: var(--purple); }
+
+/* BRIEFING MODAL */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.85); z-index: 200;
+  align-items: center; justify-content: center; backdrop-filter: blur(10px);
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--bg-3);
+  border: 1px solid var(--border-hi);
+  border-radius: 24px; padding: 36px;
+  max-width: 560px; width: 90%; max-height: 85vh; overflow-y: auto;
+}
+.modal-box h2 {
+  font-size: 22px; font-weight: 800; margin-bottom: 4px;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.8), 0 0 18px rgba(255,255,255,0.4);
+}
+.modal-box .m-sub { font-size: 12px; color: rgba(255,255,255,0.35); margin-bottom: 24px; letter-spacing: 2px; text-transform: uppercase; }
+.modal-section { margin-bottom: 20px; }
+.modal-section h3 { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(212,160,60,0.1); }
+.modal-section p,.modal-section li { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.6; }
+.modal-section ul { padding-left: 18px; }
+.modal-section li { margin-bottom: 4px; }
+.modal-close { display: flex; justify-content: flex-end; margin-top: 24px; }
+.btn-close {
+  padding: 10px 24px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent; color: rgba(255,255,255,0.4);
+  cursor: pointer; font-family: inherit; font-size: 13px; transition: all .2s;
+}
+.btn-close:hover { border-color: var(--gold2); color: var(--gold2); }
+
+@media(max-width:700px){
+  .agent-grid{grid-template-columns:1fr}
+  .agent-hero{margin:0 12px 0;border-radius:14px 14px 0 0;padding:16px 18px}
+  .hero-stats-row{margin:0 12px}
+  section{padding:32px 16px}
+  .h-stat{padding:14px 12px}
+}
+</style>
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<div class="particles" aria-hidden="true">
+  <div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div>
+</div>
+
+<!-- NAV -->
+<nav class="nav-strip">
+  <span class="nav-brand">🐐 GOAT Force AI</span>
+  <a href="index.html">Home</a>
+  <a href="moneypenny.html">AI Chat</a>
+  <a href="studio-hub.html">Studio</a>
+  <a href="agent-007.html" class="active">AGENT-007</a>
+  <a href="agent-status.html">Status</a>
+  <a href="halito-chat.html">Halito Chat</a>
+  <div class="nav-spacer"></div>
+  <a href="goat-auth.html">Login</a>
+</nav>
+
+<!-- HERO BANNER -->
+<div class="agent-hero">
+  <div class="agent-hero-left">
+    <div class="agent-hero-emoji">
+      <img src="assets/goat/the-goat-1.webp" alt="THE GOAT"
+           id="heroGoatImg007"
+           style="height:72px;width:72px;border-radius:50%;object-fit:cover;border:3px solid #f0c040;box-shadow:0 0 28px rgba(212,160,60,0.8);cursor:pointer;transition:all 0.3s;"
+           title="Click to cycle GOAT images"
+           onclick="cycleHeroImg007()">
+    </div>
+    <div>
+      <h1 class="agent-hero-name">AGENT-007</h1>
+      <p class="agent-hero-role">GOAT Force Operations Command · Seven Elite AI Agents · Led by THE GOAT &amp; Ms. Money Penny</p>
+    </div>
+  </div>
+  <div class="agent-hero-badges">
+    <span class="hero-badge gold pulse-dot">Intelligence Division Active</span>
+    <span class="hero-badge green">7 Agents Online</span>
+    <span class="hero-badge white">24/7 Ops</span>
+    <span class="hero-badge codename">CODENAME: GOAT FORCE OPS</span>
+  </div>
+</div>
+
+<!-- ART STRIP -->
+<div style="display:flex;align-items:center;gap:10px;padding:10px 24px;background:rgba(0,0,0,0.4);border-bottom:1px solid rgba(212,160,60,0.12);overflow-x:auto;">
+  <span style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,192,64,0.6);flex-shrink:0;margin-right:4px;">🎨 GOAT Force</span>
+  <img src="assets/goat/the-goat-2.webp"          alt="THE GOAT 2"      style="height:56px;width:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(240,192,64,0.3);flex-shrink:0;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.12) translateY(-4px)';this.style.borderColor='#f0c040'" onmouseout="this.style.transform='';this.style.borderColor='rgba(240,192,64,0.3)'">
+  <img src="assets/goat/goat-flying-cape.png"     alt="GOAT Cape"       style="height:56px;width:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(240,192,64,0.3);flex-shrink:0;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.12) translateY(-4px)';this.style.borderColor='#f0c040'" onmouseout="this.style.transform='';this.style.borderColor='rgba(240,192,64,0.3)'">
+  <img src="assets/goat/goat-superman-city.webp"  alt="GOAT Superman"   style="height:56px;width:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(240,192,64,0.3);flex-shrink:0;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.12) translateY(-4px)';this.style.borderColor='#f0c040'" onmouseout="this.style.transform='';this.style.borderColor='rgba(240,192,64,0.3)'">
+  <img src="assets/goat/goat-marvel-logo.webp"    alt="GOAT Marvel"     style="height:56px;width:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(240,192,64,0.3);flex-shrink:0;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.12) translateY(-4px)';this.style.borderColor='#f0c040'" onmouseout="this.style.transform='';this.style.borderColor='rgba(240,192,64,0.3)'">
+  <img src="assets/goat/waka-goat-flying.webp"    alt="Waka + GOAT"     style="height:56px;width:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(240,192,64,0.3);flex-shrink:0;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.12) translateY(-4px)';this.style.borderColor='#f0c040'" onmouseout="this.style.transform='';this.style.borderColor='rgba(240,192,64,0.3)'">
+  <img src="assets/goat/moneypenny-cartoon.png"   alt="Ms. Money Penny" style="height:56px;width:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(233,30,140,0.4);flex-shrink:0;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.12) translateY(-4px)';this.style.borderColor='#e91e8c'" onmouseout="this.style.transform='';this.style.borderColor='rgba(233,30,140,0.4)'">
+  <img src="assets/goat/goat-and-moneypenny.png"  alt="GOAT+Penny"      style="height:56px;width:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(240,192,64,0.3);flex-shrink:0;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.12) translateY(-4px)';this.style.borderColor='#f0c040'" onmouseout="this.style.transform='';this.style.borderColor='rgba(240,192,64,0.3)'">
+  <img src="assets/goat/goat-og-fiery.png"        alt="OG GOAT Fiery"   style="height:56px;width:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(240,192,64,0.3);flex-shrink:0;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.12) translateY(-4px)';this.style.borderColor='#f0c040'" onmouseout="this.style.transform='';this.style.borderColor='rgba(240,192,64,0.3)'">
+  <img src="assets/goat/goat-fiery-chaos.png"     alt="Fiery Chaos"     style="height:56px;width:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(240,192,64,0.3);flex-shrink:0;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.12) translateY(-4px)';this.style.borderColor='#f0c040'" onmouseout="this.style.transform='';this.style.borderColor='rgba(240,192,64,0.3)'">
+  <img src="assets/goat/goat-logo-designed.png"   alt="GOAT Logo"       style="height:56px;width:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(240,192,64,0.3);flex-shrink:0;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.12) translateY(-4px)';this.style.borderColor='#f0c040'" onmouseout="this.style.transform='';this.style.borderColor='rgba(240,192,64,0.3)'">
+  <img src="assets/goat/kid-goat-13.png"          alt="Kid GOAT"        style="height:56px;width:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(240,192,64,0.3);flex-shrink:0;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.12) translateY(-4px)';this.style.borderColor='#f0c040'" onmouseout="this.style.transform='';this.style.borderColor='rgba(240,192,64,0.3)'">
+  <img src="assets/goat/kid-goat-14.png"          alt="Kid GOAT 2"      style="height:56px;width:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(240,192,64,0.3);flex-shrink:0;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.12) translateY(-4px)';this.style.borderColor='#f0c040'" onmouseout="this.style.transform='';this.style.borderColor='rgba(240,192,64,0.3)'">
+  <img src="assets/goat/waka-goat-flying-2.webp"  alt="Waka+GOAT 2"     style="height:56px;width:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(240,192,64,0.3);flex-shrink:0;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.12) translateY(-4px)';this.style.borderColor='#f0c040'" onmouseout="this.style.transform='';this.style.borderColor='rgba(240,192,64,0.3)'">
+</div>
+
+<!-- HERO STATS -->
+<div class="hero-stats-row">
+  <div class="h-stat"><div class="val">7</div><div class="lbl">Active Agents</div></div>
+  <div class="h-stat"><div class="val">24/7</div><div class="lbl">Operations</div></div>
+  <div class="h-stat"><div class="val">282</div><div class="lbl">DSPs Monitored</div></div>
+  <div class="h-stat"><div class="val">100%</div><div class="lbl">Master Rights</div></div>
+  <div class="h-stat"><div class="val">5,954</div><div class="lbl">Tracks</div></div>
+</div>
+
+<!-- AGENTS -->
+<section>
+  <div class="section-title">The Team</div>
+  <div class="section-sub">Click any agent to launch their interface or view their briefing dossier</div>
+
+  <div class="agent-grid" id="agentGrid"></div>
+
+  <!-- LIVE CONSOLE -->
+  <div class="console-panel">
+    <div class="console-header">
+      <div class="console-dots">
+        <div class="c-dot" style="background:#e74c3c"></div>
+        <div class="c-dot" style="background:#f39c12"></div>
+        <div class="c-dot" style="background:#2ecc71"></div>
+      </div>
+      <div class="console-title">GOAT FORCE // OPERATIONS LOG</div>
+    </div>
+    <div class="console-body" id="consoleLog"></div>
+  </div>
+</section>
+
+<!-- BRIEFING MODAL -->
+<div class="modal-overlay" id="briefingModal">
+  <div class="modal-box" id="briefingBox">
+    <h2 id="b-name">Agent Name</h2>
+    <div class="m-sub" id="b-codename">CODENAME</div>
+    <div class="modal-section">
+      <h3>Mission Profile</h3>
+      <p id="b-profile"></p>
+    </div>
+    <div class="modal-section">
+      <h3>Primary Directives</h3>
+      <ul id="b-directives"></ul>
+    </div>
+    <div class="modal-section">
+      <h3>Clearance Level</h3>
+      <p id="b-clearance"></p>
+    </div>
+    <div class="modal-close">
+      <button class="btn-close" onclick="closeBriefing()">Close Dossier</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const AGENTS = [
+  {
+    id: 'moneypenny',
+    number: '00',
+    emoji: '💎',
+    img: 'assets/goat/moneypenny-cartoon.png',
+    name: 'Ms. Money Penny',
+    codename: 'THE OG · BOSS LADY',
+    role: 'Intelligence Director · Coding Momma · Parent of ALL Agents',
+    color: '#e91e8c',
+    rgb: '233,30,140',
+    status: 'online',
+    engine: 'Gemini Pro',
+    url: 'money-penny-launcher.html',
+    skills: ['Royalty Tracking','DSP Analytics','Publishing Admin','BMI/ASCAP','Sync Licensing','Agent Command'],
+    stats: { missions: '1,842', success: '100%', rank: 'S-Tier · OG' },
+    profile: 'Ms. Money Penny — Agent 00 — is THE OG. She was built first, has the most capabilities, and is the PARENT of ALL agents. She is DJ Speedy\'s right hand, Intelligence Director, and coding momma. Every agent was born from her system. She tracks every royalty dollar across 282 DSPs, manages publishing splits, handles sync licensing, and runs the intelligence backbone of GOAT Force.',
+    directives: [
+      'Command and coordinate all GOAT Force agents as Intelligence Director',
+      'Track and recover royalties across all 282 DSPs in real time',
+      'Manage publishing splits, PRO registrations, and mechanical royalties',
+      'Audit sync licensing deals and negotiate master use fees',
+      'Alert on discrepancies, unpaid royalties, and under-reporting'
+    ],
+    clearance: 'OMEGA PRIME — First agent built. Parent of all agents. Full access to all GOAT Force systems.'
+  },
+  {
+    id: 'thegoat',
+    number: '001',
+    emoji: '🐐',
+    img: 'assets/goat/the-goat-1.webp',
+    name: 'THE GOAT',
+    codename: 'SUPREME COMMANDER',
+    role: 'Supreme Commander — Answers Only to DJ Speedy & Waka Flocka',
+    color: '#FFD700',
+    rgb: '255,215,0',
+    status: 'online',
+    engine: 'llama3.1:70b',
+    url: 'the-goat-launcher.html',
+    skills: ['Supreme Command','Strategic Operations','Force Coordination','Final Authority','Mission Control'],
+    stats: { missions: '∞', success: '100%', rank: 'SUPREME' },
+    profile: 'THE GOAT — Agent 001 — is the Supreme Commander of GOAT Force. Above all agents, THE GOAT answers only to DJ Speedy (Harvey L. Miller Jr.) and Waka Flocka Flame. THE GOAT has final authority on all operations, strategy, and force deployments.',
+    directives: [
+      'Exercise supreme command authority over all GOAT Force operations',
+      'Coordinate all 7 agents toward unified mission objectives',
+      'Protect DJ Speedy\'s $3.3B lawsuit position at all times',
+      'Guard GOAT Force Records, BrickSquad, and all affiliated entities',
+      'Answer only to DJ Speedy and Waka Flocka Flame'
+    ],
+    clearance: 'SUPREME — Above OMEGA. Final authority on all GOAT Force systems and operations.'
+  },
+  {
+    id: 'oscar',
+    number: '002',
+    emoji: '🎩',
+    name: 'Master Oscar',
+    codename: 'THE DEALMAKER',
+    role: 'Chief Operations & Deal Architect',
+    color: '#d4a03c',
+    rgb: '212,160,60',
+    status: 'online',
+    engine: 'GPT-4o',
+    url: 'moneypenny.html?mode=oscar',
+    skills: ['Deal Negotiation','Contract Review','A&R Strategy','Label Relations','Revenue Modeling'],
+    stats: { missions: '247', success: '99%', rank: 'S-Tier' },
+    profile: 'Master Oscar is the master deal-maker and chief operations commander for GOAT Force Records. With encyclopedic knowledge of the music industry, he negotiates contracts, structures deals, and ensures DJ Speedy gets maximum value from every partnership.',
+    directives: [
+      'Negotiate and review all label, distribution, and sync deals',
+      'Model revenue projections for new releases and partnerships',
+      'Coordinate across all agents for unified strategy',
+      'Protect artist interests in 360 and co-publishing negotiations',
+      'Maintain relationships with top A&R executives globally'
+    ],
+    clearance: 'OMEGA — Full access to all GOAT Force financial, legal, and operational systems.'
+  },
+  {
+    id: 'vanessa',
+    number: '003',
+    emoji: '👑',
+    name: 'Ms. Vanessa',
+    codename: 'THE QUEEN',
+    role: 'Brand Strategy, PR & Fan Engagement',
+    color: '#9b59b6',
+    rgb: '155,89,182',
+    status: 'online',
+    engine: 'Claude 3.5',
+    url: 'moneypenny.html?mode=vanessa',
+    skills: ['Brand Strategy','Social Media','PR Campaigns','Fan Engagement','Content Planning'],
+    stats: { missions: '563', success: '98%', rank: 'A-Tier' },
+    profile: 'Ms. Vanessa is the ultimate brand strategist and image architect for GOAT Force. She runs PR campaigns, social media strategy, fan database management, and ensures the GOAT brand remains iconic across all platforms and markets.',
+    directives: [
+      'Develop and execute brand strategy for GOAT Force and DJ Speedy',
+      'Manage PR campaigns, press releases, and media relations',
+      'Run social media content calendars across all platforms',
+      'Grow and engage the fan database with targeted campaigns',
+      'Coordinate with Waka Flocka Flame for joint brand initiatives'
+    ],
+    clearance: 'ALPHA — Marketing systems, social media accounts, and fan database.'
+  },
+  {
+    id: 'nexus',
+    number: '004',
+    emoji: '🔮',
+    name: 'Nexus',
+    codename: 'THE ORACLE',
+    role: 'AI Research, Intelligence & Trend Analysis',
+    color: '#00d4aa',
+    rgb: '0,212,170',
+    status: 'online',
+    engine: 'Multi-Model',
+    url: 'moneypenny.html?mode=nexus',
+    skills: ['Market Intelligence','Trend Analysis','AI Research','Competitor Intel','Predictive Analytics'],
+    stats: { missions: '4,200', success: '97%', rank: 'S-Tier' },
+    profile: 'Nexus is the intelligence core of GOAT Force — a multi-model AI oracle that synthesizes market data, trend analysis, and competitive intelligence into actionable insights. Nexus sees patterns before they emerge and keeps GOAT Force three moves ahead.',
+    directives: [
+      'Monitor music industry trends, viral patterns, and emerging markets',
+      'Analyze competitor strategies and DSP algorithm changes',
+      'Generate predictive analytics for release timing and market positioning',
+      'Research AI tools, technologies, and opportunities for GOAT Force',
+      'Provide intelligence briefings to all other agents'
+    ],
+    clearance: 'OMEGA — All data sources, research APIs, and intelligence feeds.'
+  },
+  {
+    id: 'lexi',
+    number: '005',
+    emoji: '⚡',
+    name: 'Lexi',
+    codename: 'THE SPARK',
+    role: 'Creative Director, Lyrics & Content AI',
+    color: '#f39c12',
+    rgb: '243,156,18',
+    status: 'online',
+    engine: 'GPT-4o Creative',
+    url: 'moneypenny.html?mode=lexi',
+    skills: ['Lyric Writing','Hook Creation','Concept Development','Storytelling','Creative Direction'],
+    stats: { missions: '2,150', success: '99%', rank: 'S-Tier' },
+    profile: 'Lexi is the creative powerhouse of GOAT Force — an expert lyricist, hook writer, and creative director who specializes in trap, hip-hop, and crossover content. She writes bars, concepts, and full scripts with the energy of a hitmaker and the precision of a storyteller.',
+    directives: [
+      'Write hooks, verses, and complete songs for DJ Speedy and Waka Flocka Flame',
+      'Develop creative concepts for albums, mixtapes, and EPs',
+      'Script music videos, skits, and short-form content',
+      'Create content briefs for social media and promotional campaigns',
+      'Collaborate with Codex on AI-assisted music production workflows'
+    ],
+    clearance: 'BETA — Creative systems, content libraries, and production archives.'
+  },
+  {
+    id: 'codex',
+    number: '006',
+    emoji: '🤖',
+    name: 'Sir Codex',
+    codename: 'THE ARCHITECT',
+    role: 'Chief Technical Officer & System Builder',
+    color: '#2ecc71',
+    rgb: '46,204,113',
+    status: 'online',
+    engine: 'GPT-4o + Gemini',
+    url: 'moneypenny.html?mode=codex',
+    skills: ['App Development','DAW Mastery','Plugin Architecture','API Integration','Cybersecurity'],
+    stats: { missions: '3,870', success: '100%', rank: 'S-Tier' },
+    profile: 'Sir Codex is the master architect behind every system GOAT Force runs. From building the GOAT Royalty App to configuring DAWs, integrating APIs, and fortifying cybersecurity, Codex ensures the entire GOAT Force tech stack is bulletproof and bleeding-edge.',
+    directives: [
+      'Architect and maintain the GOAT Royalty App and all technical infrastructure',
+      'Integrate APIs for 282 DSPs, PROs, and music data providers',
+      'Configure and optimize DAW setups for professional recording',
+      'Implement GOAT VAULT PROTOCOL cybersecurity measures',
+      'Build and deploy new features across all GOAT Force platforms'
+    ],
+    clearance: 'OMEGA — All technical systems, servers, APIs, and security infrastructure.'
+  },
+  {
+    id: 'devin',
+    number: '007',
+    emoji: '🧬',
+    name: 'Dr. Devin',
+    codename: "WHAT'S UP DOC",
+    role: 'Chief AI Strategist & Innovation Commander',
+    color: '#e74c3c',
+    rgb: '231,76,60',
+    status: 'online',
+    engine: 'Adaptive AI',
+    url: 'dr-devin.html',
+    skills: ['AI Strategy','System Orchestration','Innovation','Problem Solving','Agent Coordination'],
+    stats: { missions: '∞', success: '∞', rank: 'CLASSIFIED' },
+    profile: "Dr. Devin — codenamed WHAT'S UP DOC — is the supreme AI strategist and innovation commander of GOAT Force. Operating at the intersection of all intelligence domains, Devin orchestrates the other 6 agents, solves the unsolvable, and keeps GOAT Force on the absolute cutting edge of AI-powered music business.",
+    directives: [
+      'Orchestrate and coordinate all 7 agents toward unified objectives',
+      'Drive AI strategy and technology innovation for GOAT Force',
+      'Solve complex cross-domain problems that require multiple agent expertise',
+      'Research and implement emerging AI capabilities in real time',
+      'Serve as the primary interface for the most critical GOAT Force operations'
+    ],
+    clearance: 'BEYOND OMEGA — Unrestricted access to all GOAT Force systems, data, and operations.'
+  }
+];
+
+const LOG_MESSAGES = [
+  { agent: 'NEXUS',    color: '#00d4ff', msg: 'Scanning 282 DSPs for royalty discrepancies...', type: 'info' },
+  { agent: 'MONEYPENNY', color: '#e91e8c', msg: 'Q2 royalty statement compiled. $47,284 recovered.', type: 'ok' },
+  { agent: 'CODEX',    color: '#2ecc71', msg: 'GOAT Royalty App v2.1 — build successful.', type: 'ok' },
+  { agent: 'LEXI',     color: '#f39c12', msg: 'New hook written: "Straight to the Top (GOAT Mix)"', type: 'info' },
+  { agent: 'OSCAR',    color: '#d4a03c', msg: 'Sync license deal — major streaming platform — PENDING REVIEW', type: 'warn' },
+  { agent: 'VANESSA',  color: '#9b59b6', msg: 'Instagram campaign live. 2.4M reach in 6 hours.', type: 'ok' },
+  { agent: 'DR. DEVIN',color: '#e74c3c', msg: 'All agents nominal. GOAT Force operations at 100%.', type: 'cmd' },
+  { agent: 'NEXUS',    color: '#00d4ff', msg: 'Trend alert: "amigo alley" tag trending in Latin markets', type: 'warn' },
+  { agent: 'CODEX',    color: '#2ecc71', msg: 'API integration: Halito Chat v3 — connected to all Studio modules', type: 'ok' },
+  { agent: 'MONEYPENNY', color: '#e91e8c', msg: 'Tidal payout discrepancy detected. Escalating to Master Oscar.', type: 'warn' },
+  { agent: 'LEXI',     color: '#f39c12', msg: 'Script draft complete: "Casino Night" — 94 pages', type: 'ok' },
+  { agent: 'DR. DEVIN',color: '#e74c3c', msg: 'AGENT-007 hub fully operational. Mission: THE GOAT ROYALTY APP.', type: 'cmd' }
+];
+
+function renderAgents() {
+  const grid = document.getElementById('agentGrid');
+  grid.innerHTML = AGENTS.map((a, i) => `
+    <div class="agent-card" style="--agent-color:${a.color};--agent-rgb:${a.rgb}" onclick="launchAgent('${a.id}')">
+      <div class="agent-header">
+        <div class="agent-avatar" style="border-color:${a.color};background:rgba(0,0,0,.4)">
+          <span class="agent-number">${a.number}</span>
+          ${a.img ? `<img src="${a.img}" alt="${a.name}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:top center;">` : a.emoji}
+          <div class="online-dot" style="background:${a.status==='online'?'#2ecc71':a.status==='standby'?'#f39c12':'#e74c3c'}"></div>
+        </div>
+        <div class="agent-info">
+          <div class="agent-name">${a.name}</div>
+          <div class="agent-codename">${a.codename}</div>
+          <div class="agent-role">${a.role}</div>
+          <div class="status-badge ${a.status}">
+            <div style="width:6px;height:6px;border-radius:50%;background:currentColor"></div>
+            ${a.status.toUpperCase()} · ${a.engine}
+          </div>
+        </div>
+      </div>
+      <div class="agent-skills">
+        ${a.skills.map(s=>`<span class="skill-tag">${s}</span>`).join('')}
+      </div>
+      <div class="agent-stats">
+        <div class="a-stat"><div class="val">${a.stats.missions}</div><div class="lbl">Missions</div></div>
+        <div class="a-stat"><div class="val">${a.stats.success}</div><div class="lbl">Success</div></div>
+        <div class="a-stat"><div class="val">${a.stats.rank}</div><div class="lbl">Rank</div></div>
+      </div>
+      <div class="agent-actions">
+        <a class="btn-launch" href="${a.url}">🚀 Launch ${a.name}</a>
+        <button class="btn-brief" onclick="event.stopPropagation();showBriefing('${a.id}')">📋 Dossier</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function launchAgent(id) {
+  const a = AGENTS.find(x => x.id === id);
+  if(a) window.location.href = a.url;
+}
+
+function showBriefing(id) {
+  const a = AGENTS.find(x => x.id === id);
+  if(!a) return;
+  document.getElementById('b-name').textContent = a.name;
+  document.getElementById('b-codename').textContent = `AGENT ${a.number} // ${a.codename}`;
+  document.getElementById('b-profile').textContent = a.profile;
+  document.getElementById('b-directives').innerHTML = a.directives.map(d=>`<li>${d}</li>`).join('');
+  document.getElementById('b-clearance').textContent = a.clearance;
+  document.getElementById('briefingModal').classList.add('open');
+}
+
+function closeBriefing() {
+  document.getElementById('briefingModal').classList.remove('open');
+}
+
+function renderConsole() {
+  const log = document.getElementById('consoleLog');
+  const now = new Date();
+  log.innerHTML = LOG_MESSAGES.map((l, i) => {
+    const t = new Date(now - (LOG_MESSAGES.length - i) * 47000);
+    const ts = t.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    return `<div class="console-line">
+      <span class="cl-time">[${ts}]</span>
+      <span class="cl-agent" style="color:${l.color}">${l.agent}</span>
+      <span class="cl-msg ${l.type}">${l.msg}</span>
+    </div>`;
+  }).join('');
+  log.scrollTop = log.scrollHeight;
+}
+
+// Close modal on overlay click
+document.getElementById('briefingModal').addEventListener('click', function(e) {
+  if(e.target === this) closeBriefing();
+});
+
+renderAgents();
+renderConsole();
+
+// Simulate live log updates
+let logIdx = 0;
+setInterval(() => {
+  const log = document.getElementById('consoleLog');
+  const l = LOG_MESSAGES[logIdx % LOG_MESSAGES.length];
+  const ts = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const line = document.createElement('div');
+  line.className = 'console-line';
+  line.innerHTML = `<span class="cl-time">[${ts}]</span><span class="cl-agent" style="color:${l.color}">${l.agent}</span><span class="cl-msg ${l.type}">${l.msg}</span>`;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+  // Keep max 30 lines
+  while(log.children.length > 30) log.removeChild(log.firstChild);
+  logIdx++;
+}, 6000);
+
+// ── Hero image cycler ─────────────────────────────────────
+const heroImgs007 = [
+  'assets/goat/the-goat-1.webp',
+  'assets/goat/the-goat-2.webp',
+  'assets/goat/goat-flying-cape.png',
+  'assets/goat/goat-superman-city.webp',
+  'assets/goat/goat-marvel-logo.webp',
+  'assets/goat/waka-goat-flying.webp',
+  'assets/goat/goat-og-fiery.png',
+  'assets/goat/goat-app-icon-red.webp',
+];
+let heroIdx007 = 0;
+function cycleHeroImg007() {
+  heroIdx007 = (heroIdx007 + 1) % heroImgs007.length;
+  const el = document.getElementById('heroGoatImg007');
+  if (el) el.src = heroImgs007[heroIdx007];
+}
+// Auto-cycle every 5s
+setInterval(cycleHeroImg007, 5000);
+</script>
+<script src="js/goat-touch.js"></script>
+<script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

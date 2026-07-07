@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DJ Speedy's Command Center — GOAT Force Owner</title>
+<style>
+:root {
+  --bg: #050304;
+  --bg-card: #0d0b09;
+  --bg-hover: #161210;
+  --border: #1e1a14;
+  --gold: #d4a03c;
+  --gold2: #f0c040;
+  --gold-glow: rgba(212,160,60,0.3);
+  --red: #c1121f;
+  --green: #2ecc71;
+  --blue: #58a6ff;
+  --orange: #f97316;
+  --purple: #a855f7;
+  --teal: #14b8a6;
+  --pink: #e91e8c;
+  --fg: #d4c9b8;
+  --fg-dim: #665c4a;
+  --font: system-ui, -apple-system, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--fg); min-height: 100vh; overflow-x: hidden; }
+
+/* Gold grid background */
+body::after {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image: linear-gradient(rgba(212,160,60,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(212,160,60,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+/* Superman watermark */
+body::before {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background: url('assets/goat-superman.jpg') center center / 700px no-repeat;
+  opacity: 0.04; filter: grayscale(100%);
+}
+
+/* Particles */
+.particles { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+.particle {
+  position:absolute; border-radius:50%;
+  background: radial-gradient(circle, rgba(212,160,60,0.35), transparent);
+  filter:blur(3px); animation:float 25s ease-in-out infinite; opacity:0.35;
+}
+.particle:nth-child(1){width:500px;height:500px;top:-10%;left:-5%;animation-delay:0s;}
+.particle:nth-child(2){width:300px;height:300px;top:60%;left:85%;animation-delay:8s;}
+.particle:nth-child(3){width:250px;height:250px;top:30%;left:60%;animation-delay:14s;}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1);opacity:0.25;}50%{transform:translate(20px,-30px) scale(1.08);opacity:0.45;}}
+
+body > * { position:relative; z-index:1; }
+
+/* ── HEADER ── */
+.header {
+  padding: 0 32px;
+  height: 72px;
+  border-bottom: 1px solid rgba(212,160,60,0.2);
+  background: rgba(5,3,4,0.97);
+  backdrop-filter: blur(24px);
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  box-shadow: 0 1px 0 rgba(212,160,60,0.1), 0 4px 24px rgba(0,0,0,0.5);
+}
+.header-left { display:flex; align-items:center; gap:16px; }
+.owner-badge {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: linear-gradient(135deg, #1a1000, #2d1e00);
+  border: 2px solid var(--gold);
+  display:flex; align-items:center; justify-content:center;
+  font-size: 30px;
+  box-shadow: 0 0 28px var(--gold-glow), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.header-title h1 { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -.03em; }
+.header-title p { font-size: 11px; color: var(--gold); letter-spacing: .12em; text-transform: uppercase; margin-top: 3px; }
+.owner-tag {
+  padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 800;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: #000; letter-spacing: .06em; text-transform: uppercase;
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.status-bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.status-pill {
+  display:flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px;
+  font-size:11px; font-family:var(--font-mono);
+  border:1px solid var(--border); color:var(--fg-dim); cursor:pointer; transition:all .2s;
+}
+.status-pill.online { border-color:rgba(46,204,113,0.4); color:var(--green); background:rgba(46,204,113,0.08); }
+.status-pill.warn   { border-color:rgba(212,160,60,0.4); color:var(--gold); background:rgba(212,160,60,0.08); }
+.status-dot { width:6px; height:6px; border-radius:50%; background:currentColor; animation:pulse 2s infinite; }
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+.header-actions { display:flex; gap:8px; align-items:center; }
+.action-btn {
+  padding:7px 16px; border-radius:6px; font-size:12px; font-weight:700;
+  cursor:pointer; letter-spacing:.04em; transition:all .2s; white-space:nowrap;
+  border: 1.5px solid var(--gold);
+  background: linear-gradient(135deg, rgba(212,160,60,0.15), rgba(212,160,60,0.05));
+  color: var(--gold);
+}
+.action-btn:hover { background: linear-gradient(135deg, rgba(212,160,60,0.3), rgba(212,160,60,0.15)); box-shadow: 0 0 20px var(--gold-glow); }
+.action-btn.red { border-color:var(--red); color:var(--red); background:rgba(193,18,31,0.08); }
+.action-btn.red:hover { background:rgba(193,18,31,0.2); box-shadow:0 0 20px rgba(193,18,31,0.3); }
+
+/* ── EMPIRE BANNER ── */
+.empire-banner {
+  background: linear-gradient(135deg, rgba(212,160,60,0.08), rgba(212,160,60,0.03));
+  border-bottom: 1px solid rgba(212,160,60,0.15);
+  padding: 10px 32px;
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+}
+.empire-stat { display:flex; flex-direction:column; align-items:center; }
+.empire-stat .val { font-size:18px; font-weight:800; color:var(--gold2); letter-spacing:-.02em; }
+.empire-stat .lbl { font-size:9px; color:var(--fg-dim); text-transform:uppercase; letter-spacing:.08em; margin-top:1px; }
+.empire-divider { width:1px; height:32px; background:rgba(212,160,60,0.15); }
+
+/* ── MAIN LAYOUT ── */
+.main { display:flex; gap:0; min-height:calc(100vh - 72px - 53px); }
+
+/* ── LEFT SIDEBAR — DJ SPEEDY TOOLS ── */
+.sidebar {
+  width: 260px; flex-shrink:0;
+  border-right: 1px solid rgba(212,160,60,0.12);
+  background: rgba(13,11,9,0.8);
+  padding: 20px 0;
+  overflow-y: auto;
+}
+.sidebar-section { margin-bottom: 24px; }
+.sidebar-title {
+  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .14em; color: var(--fg-dim);
+  padding: 0 16px 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px; cursor: pointer; transition: all .15s;
+  border-left: 2px solid transparent;
+  text-decoration: none; color: var(--fg-dim); font-size: 12px;
+}
+.sidebar-link:hover { background: rgba(212,160,60,0.06); color: var(--fg); border-left-color: var(--gold); }
+.sidebar-link.active { background: rgba(212,160,60,0.1); color: var(--gold); border-left-color: var(--gold); }
+.sidebar-link .sl-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+.sidebar-link .sl-badge { margin-left: auto; font-size: 9px; padding: 1px 6px; border-radius: 8px; background: rgba(212,160,60,0.15); color: var(--gold); font-family:var(--font-mono); }
+
+/* ── CONTENT ── */
+.content { flex:1; padding: 28px 32px; overflow-y: auto; }
+
+/* ── SECTION ── */
+.section { margin-bottom: 32px; }
+.section-header {
+  display:flex; align-items:center; gap:10px;
+  margin-bottom:14px; padding-bottom:10px;
+  border-bottom: 1px solid rgba(212,160,60,0.12);
+}
+.section-accent { width:28px; height:2px; border-radius:1px; background:var(--gold); }
+.section-label { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.12em; color:var(--fg-dim); }
+.section-count { font-size:10px; color:var(--fg-dim); margin-left:auto; font-family:var(--font-mono); }
+
+/* ── GRID ── */
+.agent-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; }
+
+/* ── AGENT CARD ── */
+.agent-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px;
+  cursor: pointer; transition: all .2s;
+  display: flex; flex-direction: column; gap: 11px;
+  position: relative; overflow: hidden;
+}
+.agent-card::before {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(135deg, var(--accent-color,transparent) 0%, transparent 50%);
+  opacity:0; transition:opacity .2s;
+}
+.agent-card:hover { border-color:var(--accent-color,var(--gold)); background:var(--bg-hover); transform:translateY(-2px); box-shadow:0 10px 30px rgba(0,0,0,0.5); }
+.agent-card:hover::before { opacity:0.07; }
+
+/* OG card — special Money Penny treatment */
+.agent-card.og-card {
+  border-color: rgba(88,166,255,0.5);
+  background: linear-gradient(135deg, rgba(88,166,255,0.06), rgba(13,11,9,0.9));
+  box-shadow: 0 0 24px rgba(88,166,255,0.1);
+}
+.agent-card.og-card:hover { box-shadow: 0 0 40px rgba(88,166,255,0.2); }
+
+.card-top { display:flex; align-items:center; gap:12px; }
+.card-icon {
+  width:46px; height:46px; border-radius:11px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:24px; flex-shrink:0;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.card-info { flex:1; min-width:0; }
+.card-name { font-size:13px; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.card-codename { font-size:10px; color:var(--accent-color,var(--fg-dim)); text-transform:uppercase; letter-spacing:.08em; margin-top:2px; }
+.card-num { font-size:11px; color:var(--fg-dim); font-family:var(--font-mono); margin-left:auto; flex-shrink:0; }
+.card-role { font-size:11px; color:var(--fg-dim); line-height:1.45; }
+.card-actions { display:flex; gap:6px; }
+.card-btn {
+  flex:1; padding:6px 8px; border-radius:5px; font-size:10px; font-weight:700;
+  cursor:pointer; border:1px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.04); color:var(--fg-dim); transition:all .15s;
+}
+.card-btn.primary { border-color:var(--accent-color,var(--gold)); background:rgba(255,255,255,0.06); color:var(--accent-color,var(--gold)); }
+.card-btn:hover { background:rgba(255,255,255,0.1); color:#fff; }
+.card-btn.primary:hover { background:var(--accent-color,var(--gold)); color:#000; }
+
+.online-dot { position:absolute; top:12px; right:12px; width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); display:none; }
+.online-dot.on { display:block; }
+
+/* ── OWNER TOOLS GRID ── */
+.tools-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; }
+.tool-card {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:14px 16px; cursor:pointer; transition:all .15s;
+  display:flex; align-items:center; gap:12px;
+}
+.tool-card:hover { border-color:var(--gold); background:var(--bg-hover); transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,0.4); }
+.tool-icon { font-size:22px; flex-shrink:0; }
+.tool-name { font-size:12px; font-weight:700; color:#fff; }
+.tool-desc { font-size:10px; color:var(--fg-dim); margin-top:2px; }
+
+/* ── BRAIN EMBED ── */
+.brain-embed {
+  border:1px solid rgba(212,160,60,0.2); border-radius:10px; overflow:hidden;
+  background:#080c14; position:relative;
+}
+.brain-embed iframe { display:block; width:100%; height:500px; border:none; }
+.brain-overlay-btn {
+  position:absolute; top:10px; right:10px; z-index:10;
+  padding:5px 12px; border-radius:5px; font-size:11px; font-weight:700;
+  background:rgba(212,160,60,0.15); border:1px solid var(--gold); color:var(--gold);
+  cursor:pointer; transition:all .15s; backdrop-filter:blur(4px);
+}
+.brain-overlay-btn:hover { background:var(--gold); color:#000; }
+
+/* ── LOG ── */
+.launch-log {
+  background:#050304; border:1px solid var(--border); border-radius:8px;
+  padding:12px 16px; font-family:var(--font-mono); font-size:11px;
+  color:var(--fg-dim); max-height:100px; overflow-y:auto; margin-top:20px;
+}
+.log-line { padding:1px 0; }
+.log-line.ok { color:var(--green); }
+.log-line.warn { color:var(--gold); }
+.log-line.err { color:#f48771; }
+
+/* ── FOOTER ── */
+.footer {
+  text-align:center; padding:20px 32px; color:var(--fg-dim);
+  font-size:11px; border-top:1px solid rgba(212,160,60,0.12);
+}
+.footer span { color:var(--gold); font-weight:700; }
+
+/* scrollbar */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#2a2010; border-radius:2px; }
+</style>
+</head>
+<body>
+
+<div class="particles">
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+</div>
+
+<!-- ── HEADER ── -->
+<header class="header">
+  <div class="header-left">
+    <div class="owner-badge">👑</div>
+    <div class="header-title">
+      <h1>DJ Speedy's Command Center</h1>
+      <p>Harvey L. Miller Jr. — Owner — GOAT Force Records</p>
+    </div>
+    <span class="owner-tag">OWNER</span>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+    <div class="status-bar" id="statusBar">
+      <div class="status-pill warn" id="pillWeb"   onclick="checkServices()"><span class="status-dot"></span>Web :8090</div>
+      <div class="status-pill warn" id="pillIntel" onclick="checkServices()"><span class="status-dot"></span>Intel :5500</div>
+      <div class="status-pill warn" id="pillOscar" onclick="checkServices()"><span class="status-dot"></span>Oscar :3333</div>
+      <div class="status-pill warn" id="pillOllama"onclick="checkServices()"><span class="status-dot"></span>Ollama :11435</div>
+    </div>
+    <div class="header-actions">
+      <button class="action-btn" onclick="launchAll()">⚡ All Agents</button>
+      <button class="action-btn" onclick="window.open('http://127.0.0.1:8090/waka-crew-launcher.html','_blank')">🎤 Waka's View</button>
+      <button class="action-btn red" onclick="window.open('http://127.0.0.1:8090/agents-brain.html','_blank')">🧠 Brain</button>
+    </div>
+  </div>
+</header>
+
+<!-- ── EMPIRE BANNER ── -->
+<div class="empire-banner">
+  <div class="empire-stat"><div class="val">5,954</div><div class="lbl">Tracks</div></div>
+  <div class="empire-divider"></div>
+  <div class="empire-stat"><div class="val">282</div><div class="lbl">DSPs</div></div>
+  <div class="empire-divider"></div>
+  <div class="empire-stat"><div class="val" style="color:#c1121f;">$3.3B</div><div class="lbl">Lawsuit</div></div>
+  <div class="empire-divider"></div>
+  <div class="empire-stat"><div class="val" id="modelCount">56</div><div class="lbl">AI Models</div></div>
+  <div class="empire-divider"></div>
+  <div class="empire-stat"><div class="val">15</div><div class="lbl">Agents</div></div>
+  <div class="empire-divider"></div>
+  <div class="empire-stat"><div class="val">7</div><div class="lbl">Entities</div></div>
+  <div class="empire-divider"></div>
+  <div class="empire-stat"><div class="val">Speedy</div><div class="lbl">Productions Inc</div></div>
+  <div class="empire-divider"></div>
+  <div class="empire-stat"><div class="val">GOAT Force</div><div class="lbl">Records</div></div>
+  <div class="empire-divider"></div>
+  <div class="empire-stat"><div class="val">BrickSquad</div><div class="lbl">Mondos</div></div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Command</div>
+      <a class="sidebar-link active" onclick="scrollTo(0,0)"><span class="sl-icon">🏛️</span> All Agents</a>
+      <a class="sidebar-link" onclick="showSection('brain-section')"><span class="sl-icon">🧠</span> Agent Brain</a>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/waka-crew-launcher.html','_blank')"><span class="sl-icon">🎤</span> Waka's Launcher</a>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/goat-launcher-hub.html','_blank')"><span class="sl-icon">🐐</span> GOAT Hub</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Business</div>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/catalog.html','_blank')"><span class="sl-icon">🎵</span> Catalog <span class="sl-badge">5,954</span></a>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/money-penny-launcher.html','_blank')"><span class="sl-icon">💎</span> Money Penny <span class="sl-badge">00</span></a>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/master-oscar-launcher.html','_blank')"><span class="sl-icon">🤝</span> Master Oscar <span class="sl-badge">002</span></a>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/cfo-brain-launcher.html','_blank')"><span class="sl-icon">📊</span> CFO Brain</a>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/ar-scout-launcher.html','_blank')"><span class="sl-icon">🎯</span> A&R Scout</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Studio</div>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/gonbrazy-launcher.html','_blank')"><span class="sl-icon">🎛️</span> GONBRAZY</a>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/wooh-da-kid-launcher.html','_blank')"><span class="sl-icon">🎹</span> Wooh Da Kid</a>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/studio-hub.html','_blank')"><span class="sl-icon">🎚️</span> Studio Hub</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Projects</div>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/lexi-launcher.html','_blank')"><span class="sl-icon">⚡</span> Lexi / Waka</a>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/hannah-miller-launcher.html','_blank')"><span class="sl-icon">🌎</span> Amigo Alley</a>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/goat-city-rp.html','_blank')"><span class="sl-icon">🎮</span> GOAT City RP</a>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/moneypenny.html','_blank')"><span class="sl-icon">👑</span> GOAT Store</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Infrastructure</div>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/dr-devin.html','_blank')"><span class="sl-icon">🩺</span> Dr. Devin <span class="sl-badge">007</span></a>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/sir-codex-launcher.html','_blank')"><span class="sl-icon">🤖</span> Sir Codex <span class="sl-badge">006</span></a>
+      <a class="sidebar-link" onclick="window.open('http://127.0.0.1:8090/agent-status.html','_blank')"><span class="sl-icon">📡</span> Status Board</a>
+      <a class="sidebar-link" onclick="checkServices()"><span class="sl-icon">🔄</span> Ping All Services</a>
+    </div>
+  </nav>
+
+  <!-- ── CONTENT ── -->
+  <div class="content">
+
+    <!-- AGENT BRAIN EMBED -->
+    <div class="section" id="brain-section">
+      <div class="section-header">
+        <div class="section-accent"></div>
+        <span class="section-label">Agent Brain — Live Neural Network</span>
+        <button class="brain-overlay-btn" style="position:static;margin-left:auto;" onclick="window.open('http://127.0.0.1:8090/agents-brain.html','_blank')">⛶ Full Screen</button>
+      </div>
+      <div class="brain-embed">
+        <iframe id="brainFrame" src="http://127.0.0.1:8090/agents-brain.html"
+          frameborder="0" allowfullscreen></iframe>
+        <button class="brain-overlay-btn" onclick="document.getElementById('brainFrame').src='http://127.0.0.1:8090/agents-brain.html?v='+Date.now()">↺ Reload</button>
+      </div>
+    </div>
+
+    <!-- CORE SQUAD -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-accent"></div>
+        <span class="section-label">Core Squad — Your Agents</span>
+        <span class="section-count">9 agents</span>
+      </div>
+      <div class="agent-grid">
+
+        <!-- MONEY PENNY — AGENT 00 — THE OG -->
+        <div class="agent-card og-card" style="--accent-color:#58a6ff;" onclick="launch('http://127.0.0.1:8090/money-penny-launcher.html','Ms. Money Penny')">
+          <div class="online-dot on" id="dot_mp"></div>
+          <div class="card-top">
+            <div class="card-icon" style="background:rgba(88,166,255,0.12);border-color:rgba(88,166,255,0.3);">💎</div>
+            <div class="card-info">
+              <div class="card-name">Ms. Money Penny</div>
+              <div class="card-codename" style="color:#58a6ff;">THE OG · BOSS LADY · Your Right Hand</div>
+            </div>
+            <span class="card-num" style="color:#58a6ff;font-size:14px;font-weight:800;">00</span>
+          </div>
+          <div class="card-role">Intelligence Director. Coding momma. Built first. Has the most capabilities. ALL agents born from her. DJ Speedy's right hand from day one. The parent of everything.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/money-penny-launcher.html','Ms. Money Penny')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('Ms. Money Penny — BOSS LADY')">App</button>
+            <button class="card-btn" onclick="event.stopPropagation();launch('http://127.0.0.1:3333/','Oscar Chat')">Chat</button>
+          </div>
+        </div>
+
+        <div class="agent-card" style="--accent-color:#d4a03c;" onclick="launch('http://127.0.0.1:8090/the-goat-launcher.html','THE GOAT')">
+          <div class="card-top">
+            <div class="card-icon">🐐</div>
+            <div class="card-info"><div class="card-name">THE GOAT</div><div class="card-codename">Supreme Commander</div></div>
+            <span class="card-num">001</span>
+          </div>
+          <div class="card-role">Empire-level strategy. Commands all agents. Answers only to you.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/the-goat-launcher.html','THE GOAT')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('THE GOAT — SUPREME COMMANDER')">App</button>
+          </div>
+        </div>
+
+        <div class="agent-card" style="--accent-color:#2ecc71;" onclick="launch('http://127.0.0.1:8090/master-oscar-launcher.html','Master Oscar')">
+          <div class="card-top">
+            <div class="card-icon">🤝</div>
+            <div class="card-info"><div class="card-name">Master Oscar</div><div class="card-codename">The Dealmaker</div></div>
+            <span class="card-num">002</span>
+          </div>
+          <div class="card-role">Operations & deals. Contracts, negotiations, business intelligence.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/master-oscar-launcher.html','Master Oscar')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('Master Oscar — DEALMAKER')">App</button>
+          </div>
+        </div>
+
+        <div class="agent-card" style="--accent-color:#a855f7;" onclick="launch('http://127.0.0.1:8090/vanessa-launcher.html','Ms. Vanessa')">
+          <div class="card-top">
+            <div class="card-icon">🎙️</div>
+            <div class="card-info"><div class="card-name">Ms. Vanessa</div><div class="card-codename">The Icon</div></div>
+            <span class="card-num">003</span>
+          </div>
+          <div class="card-role">Marketing, PR, brand voice. GOAT Force public face.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/vanessa-launcher.html','Ms. Vanessa')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('Ms. Vanessa — ICON')">App</button>
+          </div>
+        </div>
+
+        <div class="agent-card" style="--accent-color:#14b8a6;" onclick="launch('http://127.0.0.1:8090/nexus-launcher.html','Nexus')">
+          <div class="card-top">
+            <div class="card-icon">🔗</div>
+            <div class="card-info"><div class="card-name">Nexus</div><div class="card-codename">The Oracle</div></div>
+            <span class="card-num">004</span>
+          </div>
+          <div class="card-role">Network & distribution. 282 DSPs. Intelligence & trends.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/nexus-launcher.html','Nexus')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('Nexus — ORACLE')">App</button>
+          </div>
+        </div>
+
+        <div class="agent-card" style="--accent-color:#e91e8c;" onclick="launch('http://127.0.0.1:8090/lexi-launcher.html','Lexi')">
+          <div class="card-top">
+            <div class="card-icon">⚡</div>
+            <div class="card-info"><div class="card-name">Lexi — THE SPARK</div><div class="card-codename">Waka's Personal AI</div></div>
+            <span class="card-num">005</span>
+          </div>
+          <div class="card-role">Creative & lyrics for Waka. Hooks, verses, song structure, legal compliance.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/lexi-launcher.html','Lexi')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('Lexi — THE SPARK')">App</button>
+          </div>
+        </div>
+
+        <div class="agent-card" style="--accent-color:#f97316;" onclick="launch('http://127.0.0.1:8090/sir-codex-launcher.html','Sir Codex')">
+          <div class="card-top">
+            <div class="card-icon">🤖</div>
+            <div class="card-info"><div class="card-name">Sir Codex</div><div class="card-codename">The Sentinel</div></div>
+            <span class="card-num">006</span>
+          </div>
+          <div class="card-role">Tech & infrastructure. Code, servers, automation, system architecture.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/sir-codex-launcher.html','Sir Codex')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('Sir Codex — SENTINEL')">App</button>
+          </div>
+        </div>
+
+        <div class="agent-card" style="--accent-color:#58a6ff;" onclick="launch('http://127.0.0.1:8090/dr-devin.html','Dr. Devin')">
+          <div class="card-top">
+            <div class="card-icon">🩺</div>
+            <div class="card-info"><div class="card-name">Dr. Devin</div><div class="card-codename">What's Up Doc</div></div>
+            <span class="card-num">007</span>
+          </div>
+          <div class="card-role">Chief AI strategist. Coordinates all 15 agents. Sees the full chessboard.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/dr-devin.html','Dr. Devin')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('Dr. Devin — WHAT\'S UP DOC')">App</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- STUDIO CREW -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-accent" style="background:#2ecc71;"></div>
+        <span class="section-label">Studio Crew</span>
+        <span class="section-count">2 agents</span>
+      </div>
+      <div class="agent-grid">
+        <div class="agent-card" style="--accent-color:#2ecc71;" onclick="launch('http://127.0.0.1:8090/gonbrazy-launcher.html','GONBRAZY')">
+          <div class="card-top">
+            <div class="card-icon">🎛️</div>
+            <div class="card-info"><div class="card-name">GONBRAZY</div><div class="card-codename">Studio Boss</div></div>
+          </div>
+          <div class="card-role">Mixing, mastering, session boss. Hard Liquor / Backroad Baptism.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/gonbrazy-launcher.html','GONBRAZY')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('GONBRAZY — STUDIO BOSS')">App</button>
+          </div>
+        </div>
+        <div class="agent-card" style="--accent-color:#f97316;" onclick="launch('http://127.0.0.1:8090/wooh-da-kid-launcher.html','Wooh Da Kid')">
+          <div class="card-top">
+            <div class="card-icon">🎹</div>
+            <div class="card-info"><div class="card-name">Wooh Da Kid</div><div class="card-codename">Tony Starks — Gangsta Nerd</div></div>
+          </div>
+          <div class="card-role">Beat maestro, your personal production buddy, studio manager & tech guru.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/wooh-da-kid-launcher.html','Wooh Da Kid')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('Wooh Da Kid — TONY STARKS')">App</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OWNER TOOLS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-accent" style="background:#c1121f;"></div>
+        <span class="section-label">Owner Tools — DJ Speedy Only</span>
+        <span class="section-count">12 tools</span>
+      </div>
+      <div class="tools-grid">
+        <div class="tool-card" onclick="launch('http://127.0.0.1:8090/catalog.html','Catalog')">
+          <div class="tool-icon">🎵</div><div><div class="tool-name">Royalty Catalog</div><div class="tool-desc">5,954 tracks · 282 DSPs</div></div>
+        </div>
+        <div class="tool-card" onclick="launch('http://127.0.0.1:8090/agent-status.html','Status')">
+          <div class="tool-icon">📡</div><div><div class="tool-name">Status Board</div><div class="tool-desc">All agents live health</div></div>
+        </div>
+        <div class="tool-card" onclick="launch('http://127.0.0.1:8090/goat-casino.html','Casino')">
+          <div class="tool-icon">🎰</div><div><div class="tool-name">GOAT Casino</div><div class="tool-desc">GOAT City entertainment</div></div>
+        </div>
+        <div class="tool-card" onclick="launch('http://127.0.0.1:8090/goat-city-rp.html','GOAT City RP')">
+          <div class="tool-icon">🎮</div><div><div class="tool-name">GOAT City RP</div><div class="tool-desc">FiveM · BrickSquaD-Rp</div></div>
+        </div>
+        <div class="tool-card" onclick="launch('http://127.0.0.1:8090/goat-celebrity-lounge.html','Celebrity Lounge')">
+          <div class="tool-icon">🌟</div><div><div class="tool-name">Celebrity Lounge</div><div class="tool-desc">VIP access</div></div>
+        </div>
+        <div class="tool-card" onclick="launch('http://127.0.0.1:8090/goat-production-hub.html','Production Hub')">
+          <div class="tool-icon">🎬</div><div><div class="tool-name">Production Hub</div><div class="tool-desc">Video · FCP · Unreal</div></div>
+        </div>
+        <div class="tool-card" onclick="launch('http://127.0.0.1:8090/music-studio.html','Music Studio')">
+          <div class="tool-icon">🎚️</div><div><div class="tool-name">Music Studio</div><div class="tool-desc">Pro Tools · FL · Logic</div></div>
+        </div>
+        <div class="tool-card" onclick="launch('http://127.0.0.1:8090/beat-maker.html','Beat Maker')">
+          <div class="tool-icon">🥁</div><div><div class="tool-name">Beat Maker</div><div class="tool-desc">Live beat creation</div></div>
+        </div>
+        <div class="tool-card" onclick="launch('http://127.0.0.1:8090/moneypenny.html','GOAT Store')">
+          <div class="tool-icon">👑</div><div><div class="tool-name">GOAT Store</div><div class="tool-desc">AI Tools · Life Imitates Art</div></div>
+        </div>
+        <div class="tool-card" onclick="launch('http://127.0.0.1:8090/hannah-miller-launcher.html','Amigo Alley')">
+          <div class="tool-icon">🌎</div><div><div class="tool-name">Amigo Alley</div><div class="tool-desc">Latin crossover · Hannah Miller</div></div>
+        </div>
+        <div class="tool-card" onclick="launch('http://127.0.0.1:5500/health','Intel Server')">
+          <div class="tool-icon">🖥️</div><div><div class="tool-name">Intel Server</div><div class="tool-desc">localhost:5500 · health check</div></div>
+        </div>
+        <div class="tool-card" onclick="window.open('http://127.0.0.1:40120','_blank')">
+          <div class="tool-icon">🏙️</div><div><div class="tool-name">txAdmin</div><div class="tool-desc">GTA RP Server Control</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG -->
+    <div class="launch-log" id="launchLog">
+      <div class="log-line" style="color:#443322;">// DJ Speedy's Command Center — GOAT Force Owner View</div>
+      <div class="log-line" style="color:#443322;">// Harvey L. Miller Jr. — Speedy Productions Inc — GOAT Force Records</div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<footer class="footer">
+  <span>Speedy Productions Inc</span> &nbsp;·&nbsp; <span>GOAT Force Records</span> &nbsp;·&nbsp; <span>BrickSquad Mondos</span> &nbsp;·&nbsp; <span>FastAssMan Publishing</span> &nbsp;·&nbsp; Life Imitates Art Inc &nbsp;·&nbsp; HarveyMillerMusic Inc &nbsp;·&nbsp; Brick Squad Music LLC &nbsp;·&nbsp; <span style="color:#c1121f;">$3.3B protected</span>
+</footer>
+
+<script>
+const INTEL = 'http://127.0.0.1:5500';
+let _logEl;
+
+function log(msg, type='') {
+  if (!_logEl) _logEl = document.getElementById('launchLog');
+  const d = document.createElement('div');
+  d.className = 'log-line' + (type ? ' '+type : '');
+  d.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+  _logEl.appendChild(d);
+  _logEl.scrollTop = _logEl.scrollHeight;
+}
+
+function launch(url, name) {
+  log('Opening ' + name + '...', 'ok');
+  window.open(url, '_blank');
+}
+
+function openApp(appName) {
+  log('Launching ' + appName + '...', 'ok');
+  fetch(INTEL + '/terminal/exec', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({command: 'open "/Applications/' + appName + '.app"'}),
+    signal: AbortSignal.timeout(5000)
+  }).catch(() => log('Could not open ' + appName, 'warn'));
+}
+
+function launchAll() {
+  log('Launching all core agents...', 'ok');
+  const agents = [
+    {name:'Ms. Money Penny', url:'http://127.0.0.1:8090/money-penny-launcher.html'},
+    {name:'THE GOAT',        url:'http://127.0.0.1:8090/the-goat-launcher.html'},
+    {name:'Master Oscar',   url:'http://127.0.0.1:8090/master-oscar-launcher.html'},
+    {name:'Lexi',           url:'http://127.0.0.1:8090/lexi-launcher.html'},
+    {name:'GONBRAZY',       url:'http://127.0.0.1:8090/gonbrazy-launcher.html'},
+    {name:'Dr. Devin',      url:'http://127.0.0.1:8090/dr-devin.html'},
+  ];
+  agents.forEach((a,i) => setTimeout(() => { window.open(a.url,'_blank'); log('Opened '+a.name,'ok'); }, i*350));
+}
+
+function showSection(id) {
+  document.getElementById(id).scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+async function checkServices() {
+  const checks = [
+    {id:'pillWeb',    url:'http://127.0.0.1:8090/',              label:'Web :8090'},
+    {id:'pillIntel',  url:'http://127.0.0.1:5500/health',        label:'Intel :5500'},
+    {id:'pillOscar',  url:'http://127.0.0.1:3333/',              label:'Oscar :3333'},
+    {id:'pillOllama', url:'http://127.0.0.1:11435/api/tags',     label:'Ollama :11435'},
+  ];
+  for (const c of checks) {
+    const el = document.getElementById(c.id);
+    try {
+      const r = await fetch(c.url, {signal: AbortSignal.timeout(2500)});
+      if (r.ok || r.status < 500) {
+        el.className = 'status-pill online';
+        el.innerHTML = '<span class="status-dot"></span>' + c.label;
+        log(c.label + ' online', 'ok');
+      } else throw new Error();
+    } catch(e) {
+      el.className = 'status-pill warn';
+      el.innerHTML = '<span class="status-dot"></span>' + c.label;
+    }
+  }
+  // Update model count
+  try {
+    const r = await fetch('http://127.0.0.1:11435/api/tags', {signal:AbortSignal.timeout(3000)});
+    const d = await r.json();
+    const el = document.getElementById('modelCount');
+    if (el) el.textContent = (d.models||[]).length;
+  } catch(e) {}
+}
+
+window.addEventListener('load', () => {
+  setTimeout(checkServices, 800);
+  log('DJ Speedy\'s Command Center loaded. Empire standing by.', 'ok');
+});
+</script>
+</body>
+</html>

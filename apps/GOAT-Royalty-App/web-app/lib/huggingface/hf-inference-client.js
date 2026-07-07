@@ -255,7 +255,7 @@ class HFInferenceClient {
             },
             ollama: {
                 name: 'Ollama',
-                baseUrl: process.env.OLLAMA_URL || 'http://localhost:11434',
+                baseUrl: process.env.OLLAMA_URL || 'http://localhost:11435',
                 apiKeyEnv: null,
                 icon: '🦙',
                 color: '#22c55e',

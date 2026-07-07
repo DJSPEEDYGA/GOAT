@@ -124,6 +124,8 @@ async function onAttemptFailure({error, attemptNumber, retriesConsumed, startTim
 	const delayTime = calculateDelay(retriesConsumed, options);
 	const finalDelay = Math.min(delayTime, remainingTime);
 
+	options.signal?.throwIfAborted();
+
 	if (finalDelay > 0) {
 		await new Promise((resolve, reject) => {
 			const onAbort = () => {

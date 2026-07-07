@@ -39,7 +39,7 @@ class AvatarManager extends EventEmitter {
             },
             moneypenny: {
                 id: 'moneypenny',
-                name: 'MoneyPenny',
+                name: 'Ms. Money Penny',
                 type: 'assistant',
                 model: '/avatars/moneypenny.glb',
                 thumbnail: '/avatars/moneypenny-thumb.png',

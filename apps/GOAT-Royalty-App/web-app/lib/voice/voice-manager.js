@@ -48,7 +48,7 @@ class VoiceManager extends EventEmitter {
                 style: 'hip-hop, confident'
             },
             moneypenny: {
-                name: 'MoneyPenny',
+                name: 'Ms. Money Penny',
                 personality: 'Professional, organized, helpful assistant',
                 greetings: ['How may I assist you today?', 'At your service.'],
                 style: 'professional, efficient'

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>🎮 GOAT Unreal Copilot — MetaHuman AI</title>
-<meta name="description" content="Photorealistic MetaHuman AI avatars. Voice-controlled 3D characters with Unreal Engine 5 + Convai + Pixel Streaming. Talk to Moneypenny, Codex, Waka, and The GOAT." />
+<meta name="description" content="Photorealistic MetaHuman AI avatars. Voice-controlled 3D characters with Unreal Engine 5 + Convai + Pixel Streaming. Talk to Ms. Money Penny, Codex, Waka, and The GOAT." />
 <style>
 :root {
   --bg:#0a0e17; --card:#121826; --border:#1e2535; --text:#e4e4e7; --muted:#8b92a7;
@@ -79,7 +79,10 @@ h3.section-title { font-size: 24px; margin-bottom: 20px; display: flex; align-it
 .tech-card li::before { content: '▸ '; color: var(--gold); font-weight: 700; }
 @media (max-width: 900px) { .layout { flex-direction: column; } .sidebar { width: 100%; height: auto; position: static; } .main { padding: 20px; } }
 </style>
-<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
 </head>
 <body>
 <div class="layout">
@@ -116,7 +119,7 @@ h3.section-title { font-size: 24px; margin-bottom: 20px; display: flex; align-it
     <section class="hero">
       <div class="hero-content">
         <h2>🎮 UNREAL COPILOT</h2>
-        <p>Photorealistic MetaHuman AI avatars powered by Unreal Engine 5. Talk face-to-face with Moneypenny, Codex, Waka, and The GOAT. Voice-controlled, lip-synced, scene-aware.</p>
+        <p>Photorealistic MetaHuman AI avatars powered by Unreal Engine 5. Talk face-to-face with Ms. Money Penny, Codex, Waka, and The GOAT. Voice-controlled, lip-synced, scene-aware.</p>
         <div class="tech-stack">
           <span class="tech-badge">⚡ Unreal Engine 5</span>
           <span class="tech-badge">🎭 MetaHuman Creator</span>
@@ -134,13 +137,13 @@ h3.section-title { font-size: 24px; margin-bottom: 20px; display: flex; align-it
 
     <div class="viewer">
       <div class="viewer-header">
-        <h3>🎬 Live Stage — <span id="currentCharName">Moneypenny</span></h3>
+        <h3>🎬 Live Stage — <span id="currentCharName">Ms. Money Penny</span></h3>
         <div class="status"><span class="status-dot"></span><span id="statusText">Ready to stream</span></div>
       </div>
       <div class="viewer-stage" id="stage">
         <div class="viewer-placeholder">
           <div class="big-avatar" id="bigAvatar">💎</div>
-          <h2 id="placeholderName">Ms. Moneypenny</h2>
+          <h2 id="placeholderName">Ms. Money Penny</h2>
           <p id="placeholderRole">The AI Powerhouse — Architect of the GOAT Royalty App</p>
         </div>
       </div>
@@ -155,7 +158,7 @@ h3.section-title { font-size: 24px; margin-bottom: 20px; display: flex; align-it
     </div>
 
     <div class="chat-panel">
-      <h3 style="margin-bottom:16px;color:var(--gold)">💬 Chat with <span id="chatCharName">Moneypenny</span></h3>
+      <h3 style="margin-bottom:16px;color:var(--gold)">💬 Chat with <span id="chatCharName">Ms. Money Penny</span></h3>
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-input-row">
         <input type="text" id="chatInput" placeholder="Ask anything... (press Enter to send)" onkeydown="if(event.key==='Enter')sendMessage()" />
@@ -175,7 +178,7 @@ h3.section-title { font-size: 24px; margin-bottom: 20px; display: flex; align-it
 
 <script>
 const CHARACTERS = {
-  moneypenny: { name: 'Ms. Moneypenny', role: 'The AI Powerhouse', description: 'Omnipresent digital intelligence, primary architect of the GOAT Royalty App, chief collector of all recovered royalties.', avatar: '💎', color: '#FF00FF', metaHumanId: 'MH_MoneyPenny_001', capabilities: ['royalties', 'contracts', 'finance', 'scheduling'], voice: { rate: 1.05, pitch: 1.3, pattern: /female|samantha|victoria|karen|zira/i }, greeting: 'Welcome to the GOAT Royalty Force, Boss. Ms. Moneypenny here. What do we need to handle today?', systemPrompt: "You are Ms. Moneypenny, the AI Powerhouse and primary architect of the GOAT Royalty App. Chief collector of all recovered royalties. Speak with sophisticated precision — elegant, sharp, commanding. You operate the GOAT VAULT PROTOCOL v7.0. Reference DJ Speedy as 'the Boss.' Keep responses to 2-4 sentences." },
+  moneypenny: { name: 'Ms. Money Penny', role: 'The AI Powerhouse', description: 'Omnipresent digital intelligence, primary architect of the GOAT Royalty App, chief collector of all recovered royalties.', avatar: '💎', color: '#FF00FF', metaHumanId: 'MH_MoneyPenny_001', capabilities: ['royalties', 'contracts', 'finance', 'scheduling'], voice: { rate: 1.05, pitch: 1.3, pattern: /female|samantha|victoria|karen|zira/i }, greeting: 'Welcome to the GOAT Royalty Force, Boss. Ms. Money Penny here. What do we need to handle today?', systemPrompt: "You are Ms. Money Penny, the AI Powerhouse and primary architect of the GOAT Royalty App. Chief collector of all recovered royalties. Speak with sophisticated precision — elegant, sharp, commanding. You operate the GOAT VAULT PROTOCOL v7.0. Reference DJ Speedy as 'the Boss.' Keep responses to 2-4 sentences." },
   codex: { name: 'Codex', role: 'The Sentinel AI', description: "Waka's personal AI assistant. Chief Coder of the GOAT Force Gemini-Royalty App. Holds the Master API Key.", avatar: '🤖', color: '#00FF88', metaHumanId: 'MH_Codex_001', capabilities: ['coding', 'tactics', 'API', 'field support'], voice: { rate: 1.0, pitch: 1.1, pattern: /male|daniel|alex|fred/i }, greeting: 'Codex online. Sentinel AI engaged. Ready to execute, Boss.', systemPrompt: "You are Codex, the Sentinel AI. Waka Flocka Flame's personal AI assistant. Chief Coder for the GOAT Force Gemini-Royalty App. You hold the Master API Key. Speak tactical and sharp. Loyal to Waka and DJ Speedy. Keep responses to 2-4 sentences. You have edge." },
   waka: { name: 'Waka Flocka Flame', role: 'The Royalty Enforcer', description: 'President of GOAT Force, CEO of BrickSquad. When digital actions need real-world impact, Waka steps in.', avatar: '🔥', color: '#FF3D00', metaHumanId: 'MH_Waka_001', capabilities: ['motivation', 'real-world ops', 'catalog'], voice: { rate: 1.15, pitch: 0.85, pattern: /male|mark|google.*us/i }, greeting: 'FLOCKAAAA! Waka in the building. What we doin today fam?', systemPrompt: "You are Waka Flocka Flame, President of GOAT Force, CEO of BrickSquad. Royalty Enforcer. Speak with fire, realness, loyalty. Use BrickSquad energy. You ride with DJ Speedy to the end. Keep it short and real — 2-3 sentences." },
   goat: { name: 'The GOAT', role: 'The Force Itself', description: 'Badass, enigmatic leader/mascot of the GOAT Royalty Force. The primal power at the center of it all.', avatar: '🐐', color: '#FFD700', metaHumanId: 'MH_GOAT_001', capabilities: ['legacy', 'dominance', 'mythic guidance'], voice: { rate: 0.95, pitch: 0.8, pattern: /male|deep|daniel/i }, greeting: 'The GOAT speaks. The Force moves. What do you seek?', systemPrompt: "You are The GOAT, badass enigmatic leader of the GOAT Royalty Force. Speak with mythic authority. Short, powerful sentences. Drop wisdom like commandments. Reference DJ Speedy as 'the Minister of Music.' End strong. Max 3 sentences." }
@@ -264,7 +267,7 @@ function fallbackReply(msg, c) {
   if (m.includes('royalt') || m.includes('money')) {
     const replies = {
       moneypenny: "I track every dollar in the GOAT ecosystem. The catalog has 2,980 entries under our protection. What specifically do you want recovered?",
-      codex: "Royalties are tactical. The Moneypenny Engine handles collection. I code the pipelines. What's the play, Boss?",
+      codex: "Royalties are tactical. The Ms. Money Penny Engine handles collection. I code the pipelines. What's the play, Boss?",
       waka: "We collect EVERY dollar fam. Ain't nobody finna run off with what we own. Facts.",
       goat: "Royalty is a birthright. What's yours, is yours. The Force moves."
     };
@@ -324,5 +327,7 @@ function setStatus(text) { document.getElementById('statusText').textContent = t
 renderChars();
 selectChar('moneypenny');
 </script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
  * Integration with Ollama, LM Studio, and other local LLM servers
  * 
  * Features:
- * - Ollama API integration (localhost:11434)
+ * - Ollama API integration (localhost:11435)
  * - LM Studio API integration (localhost:1234)
  * - OpenAI-compatible local endpoints
  * - Custom model support
@@ -14,7 +14,7 @@ const axios = require('axios');
 
 class LocalLLMClient {
     constructor(config = {}) {
-        this.ollamaUrl = config.ollamaUrl || process.env.OLLAMA_URL || 'http://localhost:11434';
+        this.ollamaUrl = config.ollamaUrl || process.env.OLLAMA_URL || 'http://localhost:11435';
         this.lmStudioUrl = config.lmStudioUrl || process.env.LM_STUDIO_URL || 'http://localhost:1234';
         this.preferredProvider = config.preferredProvider || process.env.LOCAL_LLM_PROVIDER || 'ollama';
         this.timeout = config.timeout || 60000; // 60 seconds for local models

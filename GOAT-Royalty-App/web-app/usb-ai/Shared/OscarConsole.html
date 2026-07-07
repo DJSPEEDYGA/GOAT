@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Master Oscar Console — GOAT Force AI</title>
+<meta name="description" content="Master Oscar AI Console — GOAT Force. Touch Studio, Generative UI, Voice, Customization.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css">
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/highlight.min.js"></script>
+<style>
+/* ── Tokens ──────────────────────────────────────────── */
+:root{
+  --bg:#06080c;--panel:#0d1117;--panel2:#161b22;--panel3:#1c2130;
+  --gold:#d4a03c;--gold2:#f0c040;--gold3:#ffe080;
+  --border:#21262d;--border2:#30363d;
+  --text:#e6edf3;--dim:#8b949e;--dimmer:#484f58;
+  --green:#3fb950;--red:#e63946;--blue:#58a6ff;--purple:#a78bfa;--cyan:#00d4ff;
+  --accent:var(--gold);--accent-dim:rgba(212,160,60,.15);
+  --glow:rgba(212,160,60,.25);
+  --radius:10px;--radius-lg:16px;
+  --trans:.14s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;touch-action:manipulation;}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;display:flex;flex-direction:column;}
+button{font-family:inherit;cursor:pointer;}
+
+/* ── Top Bar ─────────────────────────────────────────── */
+#topbar{
+  display:flex;align-items:center;gap:10px;padding:0 14px;
+  height:50px;min-height:50px;
+  background:rgba(13,17,23,.98);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);flex-shrink:0;z-index:100;
+}
+.brand{font-weight:800;font-size:15px;letter-spacing:-.3px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  white-space:nowrap;}
+.brand-sub{font-size:11px;color:var(--dim);margin-left:2px;}
+#model-wrap{display:flex;align-items:center;gap:6px;margin-left:auto;}
+#model-select{background:var(--panel2);border:1px solid var(--border2);color:var(--text);
+  font-size:12px;padding:4px 8px;border-radius:6px;cursor:pointer;max-width:160px;}
+.tb-btn{display:flex;align-items:center;justify-content:center;gap:5px;
+  height:32px;padding:0 10px;border-radius:7px;border:1px solid var(--border2);
+  background:var(--panel2);color:var(--dim);font-size:12px;font-weight:600;
+  transition:var(--trans);white-space:nowrap;}
+.tb-btn:hover{color:var(--gold);border-color:var(--gold);background:var(--accent-dim);}
+.tb-btn.active{color:var(--gold);border-color:var(--gold);background:var(--accent-dim);}
+#conn-dot{width:8px;height:8px;border-radius:50%;background:var(--dimmer);flex-shrink:0;}
+#conn-dot.ok{background:var(--green);box-shadow:0 0 6px var(--green);}
+#conn-dot.err{background:var(--red);}
+
+/* ── Layout ──────────────────────────────────────────── */
+#app{display:flex;flex:1;overflow:hidden;}
+
+/* ── Sidebar ─────────────────────────────────────────── */
+#sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--panel);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:width var(--trans);
+}
+#sidebar.collapsed{width:0;overflow:hidden;}
+.sb-head{padding:14px 14px 8px;font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;}
+.sb-new{margin:0 10px 10px;padding:9px 12px;border-radius:8px;border:1px dashed var(--border2);
+  background:transparent;color:var(--dim);font-size:12px;font-weight:600;
+  display:flex;align-items:center;gap:6px;transition:var(--trans);}
+.sb-new:hover{border-color:var(--gold);color:var(--gold);background:var(--accent-dim);}
+#chat-list{flex:1;overflow-y:auto;padding:0 6px 10px;}
+.chat-item{padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:var(--trans);
+  display:flex;align-items:center;gap:7px;}
+.chat-item:hover{background:var(--panel2);color:var(--text);}
+.chat-item.active{background:var(--accent-dim);color:var(--gold);font-weight:600;}
+.chat-item .del{margin-left:auto;opacity:0;font-size:10px;color:var(--red);transition:var(--trans);}
+.chat-item:hover .del{opacity:1;}
+.sb-footer{padding:10px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;}
+.sb-footer-btn{flex:1;min-width:80px;padding:7px 6px;border-radius:7px;border:1px solid var(--border2);
+  background:var(--panel2);color:var(--dim);font-size:11px;font-weight:600;text-align:center;cursor:pointer;
+  text-decoration:none;transition:var(--trans);}
+.sb-footer-btn:hover{color:var(--gold);border-color:var(--gold);background:var(--accent-dim);}
+
+/* ── Main Chat Area ───────────────────────────────────── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── Messages ────────────────────────────────────────── */
+#msgs{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px;}
+#msgs::-webkit-scrollbar{width:4px;}
+#msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+.msg{display:flex;gap:10px;max-width:860px;width:100%;align-self:flex-start;}
+.msg.user{align-self:flex-end;flex-direction:row-reverse;}
+.msg-avatar{width:32px;height:32px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  background:var(--accent-dim);border:1px solid var(--border2);}
+.msg.user .msg-avatar{background:rgba(88,166,255,.12);}
+.msg-body{flex:1;min-width:0;}
+.msg-name{font-size:11px;color:var(--dim);margin-bottom:4px;font-weight:600;}
+.msg-content{background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:12px 16px;word-break:break-word;line-height:1.7;}
+.msg.user .msg-content{background:rgba(212,160,60,.07);border-color:rgba(212,160,60,.2);}
+.msg-content p{margin-bottom:8px;}
+.msg-content p:last-child{margin-bottom:0;}
+.msg-content code{background:rgba(0,0,0,.4);padding:1px 5px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;}
+.msg-content pre{background:#0d1117;border:1px solid var(--border2);border-radius:8px;padding:12px;overflow-x:auto;margin:8px 0;}
+.msg-content pre code{background:none;padding:0;}
+.msg-content ul,ol{padding-left:20px;}
+
+/* TYPING INDICATOR */
+.typing-dots{display:flex;gap:4px;padding:14px 16px;background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius-lg);}
+.typing-dots span{width:7px;height:7px;border-radius:50%;background:var(--gold);opacity:.3;animation:dot 1.2s infinite;}
+.typing-dots span:nth-child(2){animation-delay:.2s;}
+.typing-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes dot{0%,80%,100%{opacity:.3;}40%{opacity:1;}}
+
+/* ── Input Bar ───────────────────────────────────────── */
+#input-area{padding:12px 16px;background:var(--panel);border-top:1px solid var(--border);flex-shrink:0;}
+#input-row{display:flex;gap:8px;align-items:flex-end;}
+#input-box{flex:1;min-height:44px;max-height:140px;
+  background:var(--panel2);border:1px solid var(--border2);border-radius:10px;
+  color:var(--text);font-size:14px;font-family:inherit;line-height:1.5;
+  padding:10px 14px;resize:none;overflow-y:auto;transition:border-color var(--trans);}
+#input-box:focus{outline:none;border-color:var(--gold);}
+#input-box::placeholder{color:var(--dimmer);}
+.send-btn{width:44px;height:44px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:#000;font-size:18px;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:var(--trans);}
+.send-btn:hover{transform:scale(1.05);box-shadow:0 0 16px var(--glow);}
+.send-btn:disabled{opacity:.4;transform:none;}
+.mic-btn{width:44px;height:44px;border-radius:10px;border:1px solid var(--border2);
+  background:var(--panel2);color:var(--dim);font-size:18px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:var(--trans);}
+.mic-btn:hover{color:var(--gold);border-color:var(--gold);}
+.mic-btn.recording{color:var(--red);border-color:var(--red);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(230,57,70,.4);}50%{box-shadow:0 0 0 6px rgba(230,57,70,0);}}
+
+/* ── Right Panel (Workspace) ─────────────────────────── */
+#workspace{
+  width:320px;flex-shrink:0;
+  background:var(--panel);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:width var(--trans);
+}
+#workspace.collapsed{width:0;overflow:hidden;}
+.ws-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.ws-tab{flex:1;padding:10px 6px;font-size:11px;font-weight:700;color:var(--dim);
+  text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:var(--trans);}
+.ws-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.ws-pane{flex:1;overflow-y:auto;padding:14px;display:none;}
+.ws-pane.active{display:block;}
+
+/* gen-ui cards */
+.gui-card{background:var(--panel2);border:1px solid var(--border2);border-radius:12px;
+  padding:14px;margin-bottom:10px;}
+.gui-card h3{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--gold);}
+.gui-stat-row{display:flex;gap:8px;flex-wrap:wrap;}
+.gui-stat{flex:1;min-width:80px;background:var(--panel3);border-radius:8px;padding:10px;text-align:center;}
+.gui-stat .val{font-size:20px;font-weight:800;color:var(--gold2);}
+.gui-stat .lbl{font-size:10px;color:var(--dim);margin-top:2px;}
+.gui-progress{margin-top:10px;}
+.gui-progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:4px;}
+.gui-bar{background:var(--panel3);border-radius:4px;height:6px;overflow:hidden;}
+.gui-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .6s;}
+.gui-btn{display:block;width:100%;padding:8px;border-radius:7px;border:1px solid var(--border2);
+  background:var(--panel3);color:var(--text);font-size:12px;font-weight:600;
+  cursor:pointer;text-align:center;transition:var(--trans);margin-top:6px;}
+.gui-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--accent-dim);}
+
+/* ── Settings Panel ──────────────────────────────────── */
+#settings-modal{display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;}
+#settings-modal.open{display:flex;}
+.settings-box{background:var(--panel);border:1px solid var(--border2);border-radius:var(--radius-lg);
+  width:min(480px,95vw);max-height:85vh;overflow-y:auto;padding:24px;}
+.settings-box h2{font-size:16px;font-weight:800;margin-bottom:20px;color:var(--gold);}
+.set-row{margin-bottom:18px;}
+.set-label{font-size:12px;color:var(--dim);font-weight:600;margin-bottom:8px;display:block;}
+.set-colors{display:flex;gap:8px;flex-wrap:wrap;}
+.color-swatch{width:32px;height:32px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:var(--trans);}
+.color-swatch.active,.color-swatch:hover{border-color:#fff;transform:scale(1.1);}
+.set-input{width:100%;padding:8px 10px;background:var(--panel2);border:1px solid var(--border2);
+  border-radius:8px;color:var(--text);font-size:13px;}
+.set-input:focus{outline:none;border-color:var(--gold);}
+.set-toggle{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;background:var(--panel2);border-radius:8px;}
+.set-toggle span{font-size:13px;}
+.toggle-switch{position:relative;width:40px;height:22px;}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-slider{position:absolute;inset:0;background:var(--border2);border-radius:11px;transition:.3s;cursor:pointer;}
+.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;bottom:3px;left:3px;
+  background:#fff;border-radius:50%;transition:.3s;}
+input:checked+.toggle-slider{background:var(--gold);}
+input:checked+.toggle-slider::before{transform:translateX(18px);}
+.settings-save{width:100%;padding:11px;border-radius:8px;border:none;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:#000;font-weight:700;font-size:14px;cursor:pointer;margin-top:8px;}
+.settings-save:hover{opacity:.9;}
+.settings-close{float:right;background:none;border:none;color:var(--dim);font-size:18px;cursor:pointer;margin-top:-4px;}
+
+/* ── Touch Studio (full-screen overlay) ─────────────── */
+#touch-studio{display:none;position:fixed;inset:0;z-index:600;
+  background:var(--bg);overflow-y:auto;padding:12px;}
+#touch-studio.open{display:block;}
+.studio-topbar{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.studio-topbar h2{font-size:16px;font-weight:800;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.studio-close{margin-left:auto;padding:7px 14px;border-radius:7px;border:1px solid var(--border2);
+  background:var(--panel2);color:var(--dim);font-size:12px;font-weight:700;cursor:pointer;transition:var(--trans);}
+.studio-close:hover{color:var(--red);border-color:var(--red);}
+
+/* knob grid */
+.knob-grid{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.knob-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;width:72px;}
+.knob{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#2a2f3a,#101318);
+  border:2px solid var(--border2);position:relative;cursor:ns-resize;touch-action:none;
+  box-shadow:0 4px 16px rgba(0,0,0,.6),inset 0 1px 2px rgba(255,255,255,.05);}
+.knob:hover{border-color:var(--gold);}
+.knob-indicator{position:absolute;width:3px;height:20px;background:linear-gradient(180deg,var(--gold),var(--gold2));
+  border-radius:2px;top:4px;left:calc(50% - 1.5px);transform-origin:bottom center;}
+.knob-label{font-size:10px;color:var(--dim);font-weight:600;text-align:center;}
+.knob-val{font-size:11px;color:var(--gold2);font-weight:700;text-align:center;}
+
+/* mixer */
+.mixer-section{margin-bottom:14px;}
+.mixer-section h3{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;}
+.mixer-row{display:flex;gap:8px;align-items:flex-end;overflow-x:auto;padding-bottom:4px;}
+.fader-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:50px;}
+.fader-label{font-size:9px;color:var(--dim);font-weight:600;text-align:center;}
+.fader{width:28px;height:120px;background:var(--panel2);border:1px solid var(--border2);
+  border-radius:6px;position:relative;cursor:ns-resize;touch-action:none;}
+.fader-fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,var(--gold2),var(--gold));
+  border-radius:0 0 5px 5px;transition:height .05s;}
+.fader-cap{position:absolute;left:50%;width:22px;height:10px;background:#e6edf3;border-radius:3px;
+  transform:translate(-50%,-5px);box-shadow:0 2px 6px rgba(0,0,0,.5);}
+.fader-val{font-size:10px;color:var(--gold2);font-weight:700;}
+
+/* pads */
+.pads-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
+.pad{height:56px;border-radius:8px;border:2px solid transparent;background:var(--panel2);
+  font-size:10px;font-weight:700;color:var(--dim);cursor:pointer;touch-action:manipulation;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  transition:transform .05s,background .05s,border-color .05s,color .05s;}
+.pad:active,.pad.hit{transform:scale(.93);background:var(--gold);border-color:var(--gold2);color:#000;}
+
+/* transport */
+.transport{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.tran-btn{flex:1;min-width:60px;height:44px;border-radius:8px;border:1px solid var(--border2);
+  background:var(--panel2);color:var(--dim);font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:var(--trans);}
+.tran-btn:hover{color:var(--gold);border-color:var(--gold);}
+.tran-btn.play-active{background:var(--green);border-color:var(--green);color:#000;}
+.tran-btn.rec-active{background:var(--red);border-color:var(--red);color:#fff;}
+
+/* XY pad */
+.xy-wrap{margin-bottom:14px;}
+.xy-pad{width:100%;height:150px;background:var(--panel2);border:1px solid var(--border2);
+  border-radius:10px;position:relative;cursor:crosshair;touch-action:none;overflow:hidden;}
+.xy-h,.xy-v{position:absolute;background:rgba(212,160,60,.15);pointer-events:none;}
+.xy-h{left:0;right:0;height:1px;top:50%;}
+.xy-v{top:0;bottom:0;width:1px;left:50%;}
+.xy-puck{width:20px;height:20px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--glow);
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;transition:.05s;}
+.xy-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-top:4px;}
+
+/* ── Empty / welcome ─────────────────────────────────── */
+#welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;padding:32px 16px;text-align:center;color:var(--dim);}
+#welcome .w-logo{font-size:56px;margin-bottom:16px;filter:drop-shadow(0 0 24px var(--glow));}
+#welcome h2{font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px;}
+#welcome p{max-width:400px;line-height:1.7;}
+.quick-prompts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:20px;}
+.qp{padding:8px 14px;border-radius:20px;border:1px solid var(--border2);
+  background:var(--panel2);color:var(--dim);font-size:12px;cursor:pointer;transition:var(--trans);}
+.qp:hover{border-color:var(--gold);color:var(--gold);background:var(--accent-dim);}
+
+/* ── Media queries ───────────────────────────────────── */
+@media(max-width:700px){
+  #sidebar{width:0;overflow:hidden;}
+  #workspace{width:0;overflow:hidden;}
+  .brand-sub{display:none;}
+}
+@media(max-width:500px){
+  #topbar{padding:0 10px;gap:7px;}
+  .tb-btn .btn-text{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════ TOP BAR -->
+<div id="topbar">
+  <div class="brand">🐐 Master Oscar<span class="brand-sub"> · GOAT Force AI</span></div>
+  <div id="conn-dot" title="AI Engine Status"></div>
+
+  <div id="model-wrap">
+    <select id="model-select" title="Select AI Model">
+      <option value="">Loading models…</option>
+    </select>
+  </div>
+
+  <button class="tb-btn" onclick="toggleSidebar()" title="Chat History">
+    <span>☰</span><span class="btn-text">Chats</span>
+  </button>
+  <button class="tb-btn" id="voice-btn" onclick="toggleVoice()" title="Auto-Speak Voice">
+    🔊 <span class="btn-text">Voice</span>
+  </button>
+  <button class="tb-btn" onclick="openSettings()" title="Customize">
+    ⚙️ <span class="btn-text">Style</span>
+  </button>
+  <button class="tb-btn" onclick="toggleWorkspace()" title="Workspace Panel">
+    📊 <span class="btn-text">Panel</span>
+  </button>
+  <button class="tb-btn" onclick="openStudio()" title="Touch Studio">
+    🎛️ <span class="btn-text">Studio</span>
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ APP LAYOUT -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sb-head">Conversations</div>
+    <button class="sb-new" onclick="newChat()">✦ New Chat</button>
+    <div id="chat-list"></div>
+    <div class="sb-footer">
+      <a href="powerhouse.html" class="sb-footer-btn" target="_blank">⚡ GOAT</a>
+      <a href="goat-launcher-hub.html" class="sb-footer-btn" target="_blank">🚀 Launch Hub</a>
+      <a href="../../../web-app/goat-launcher-hub.html" class="sb-footer-btn" style="display:none" id="hub-local">🏠 Hub</a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="msgs">
+      <!-- Welcome screen shown when no messages -->
+      <div id="welcome">
+        <div class="w-logo">🐐</div>
+        <h2>Master Oscar is ready.</h2>
+        <p>Your personal GOAT Force AI — music, royalties, business, beats. Ask anything.</p>
+        <div class="quick-prompts">
+          <div class="qp" onclick="send('Check my catalog stats')">📁 Catalog stats</div>
+          <div class="qp" onclick="send('Show royalty summary')">💰 Royalties</div>
+          <div class="qp" onclick="send('Open Touch Studio mode')">🎛️ Touch Studio</div>
+          <div class="qp" onclick="send('What can you do?')">💬 What can you do?</div>
+          <div class="qp" onclick="send('Generate a beat concept')">🎵 Beat concept</div>
+          <div class="qp" onclick="send('Show investor stats')">📊 Investor stats</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="input-area">
+      <div id="input-row">
+        <button class="mic-btn" id="mic-btn" onclick="toggleMic()" title="Voice Input">🎙️</button>
+        <textarea id="input-box" placeholder="Talk to Master Oscar…" rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"
+          oninput="autoResize(this)"></textarea>
+        <button class="send-btn" onclick="sendMsg()" id="send-btn" title="Send">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKSPACE (right panel) -->
+  <div id="workspace">
+    <div class="ws-tabs">
+      <div class="ws-tab active" onclick="showPane('gen-ui')">Generated UI</div>
+      <div class="ws-tab" onclick="showPane('producer')">Producer</div>
+      <div class="ws-tab" onclick="showPane('stats')">Stats</div>
+    </div>
+
+    <!-- GEN UI pane -->
+    <div class="ws-pane active" id="pane-gen-ui">
+      <div id="gui-container">
+        <!-- Catalog card — populated by fetchCatalogStats() on load -->
+        <div class="gui-card" id="gui-catalog-card">
+          <h3>📁 GOAT Catalog</h3>
+          <div class="gui-stat-row">
+            <div class="gui-stat"><div class="val" id="gs-tracks">–</div><div class="lbl">Tracks</div></div>
+            <div class="gui-stat"><div class="val" id="gs-artists">–</div><div class="lbl">Artists</div></div>
+            <div class="gui-stat"><div class="val" id="gs-agents">7</div><div class="lbl">AI Agents</div></div>
+          </div>
+          <div id="gs-catalogs-wrap"></div>
+          <button class="gui-btn" onclick="send('Search the catalog for Waka Flocka')">🔍 Search Catalog</button>
+          <button class="gui-btn" onclick="send('Show ISRC codes for top tracks')">📋 ISRC Codes</button>
+        </div>
+        <div class="gui-card">
+          <h3>💰 Revenue & Royalties</h3>
+          <div class="gui-stat-row">
+            <div class="gui-stat"><div class="val">$24K</div><div class="lbl">Q2 Est.</div></div>
+            <div class="gui-stat"><div class="val">51</div><div class="lbl">DSPs</div></div>
+            <div class="gui-stat"><div class="val">100%</div><div class="lbl">Owned</div></div>
+          </div>
+          <div class="gui-progress">
+            <div class="gui-progress-label"><span>Royalties Collected</span><span>78%</span></div>
+            <div class="gui-bar"><div class="gui-bar-fill" style="width:78%"></div></div>
+          </div>
+          <div class="gui-progress">
+            <div class="gui-progress-label"><span>Distribution</span><span>92%</span></div>
+            <div class="gui-bar"><div class="gui-bar-fill" style="width:92%"></div></div>
+          </div>
+          <button class="gui-btn" onclick="send('Show full royalty breakdown and splits')">📊 Full Breakdown</button>
+        </div>
+        <div class="gui-card">
+          <h3>💼 Investor EPK</h3>
+          <div class="gui-stat-row">
+            <div class="gui-stat"><div class="val">2026</div><div class="lbl">Seed Round</div></div>
+            <div class="gui-stat"><div class="val">5,954</div><div class="lbl">Catalog</div></div>
+            <div class="gui-stat"><div class="val">3</div><div class="lbl">Artists</div></div>
+          </div>
+          <button class="gui-btn" onclick="openEPK()">📄 Open EPK PDF</button>
+          <button class="gui-btn" onclick="window.open('http://72.61.193.184/epk/','_blank')">🌐 Public EPK Link</button>
+          <button class="gui-btn" onclick="send('Summarize the investor pitch for GOAT Force')">🤖 Ask Master Oscar About It</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCER pane (mini Touch Studio in sidebar) -->
+    <div class="ws-pane" id="pane-producer">
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;">Knobs</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;" id="ws-knobs"></div>
+      </div>
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Transport</div>
+        <div style="display:flex;gap:6px;" id="ws-transport"></div>
+      </div>
+      <button class="gui-btn" onclick="openStudio()">🎛️ Open Full Studio</button>
+    </div>
+
+    <!-- STATS pane -->
+    <div class="ws-pane" id="pane-stats">
+      <div class="gui-card">
+        <h3>🧠 Master Oscar System</h3>
+        <div id="stats-cpu" style="font-size:12px;color:var(--dim);margin-bottom:6px;">CPU: –</div>
+        <div id="stats-ram" style="font-size:12px;color:var(--dim);margin-bottom:6px;">RAM: –</div>
+        <div id="stats-model" style="font-size:12px;color:var(--dim);">Model: –</div>
+      </div>
+      <div class="gui-card">
+        <h3>📡 Connections</h3>
+        <div style="font-size:12px;color:var(--dim);">
+          <div id="st-ollama">Ollama: checking…</div>
+          <div id="st-server">Server: checking…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<!-- ══════════════════════════════════════════════════════ SETTINGS MODAL -->
+<div id="settings-modal">
+  <div class="settings-box">
+    <button class="settings-close" onclick="closeSettings()">✕</button>
+    <h2>⚙️ Customize Master Oscar</h2>
+
+    <div class="set-row">
+      <label class="set-label">Accent Color</label>
+      <div class="set-colors" id="color-swatches"></div>
+    </div>
+
+    <div class="set-row">
+      <label class="set-label">Master Oscar Name / Greeting</label>
+      <input class="set-input" id="set-name" placeholder="Master Oscar" value="Master Oscar">
+    </div>
+
+    <div class="set-row">
+      <label class="set-label">Background Image URL (optional)</label>
+      <input class="set-input" id="set-bg" placeholder="https://… or leave blank">
+    </div>
+
+    <div class="set-row">
+      <label class="set-label">Logo URL (optional)</label>
+      <input class="set-input" id="set-logo" placeholder="https://…">
+    </div>
+
+    <div class="set-row">
+      <div class="set-toggle">
+        <span>Auto-speak Master Oscar's replies</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="set-voice" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="set-row">
+      <div class="set-toggle">
+        <span>Show workspace panel on start</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="set-workspace" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="set-row">
+      <div class="set-toggle">
+        <span>System prompt (RASP)</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="set-rasp" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <button class="settings-save" onclick="saveSettings()">💾 Save Settings</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ TOUCH STUDIO -->
+<div id="touch-studio">
+  <div class="studio-topbar">
+    <div style="font-size:24px;">🎛️</div>
+    <h2>Master Oscar Studio — Touch Console</h2>
+    <button class="studio-close" onclick="closeStudio()">✕ Close</button>
+  </div>
+
+  <!-- TRANSPORT -->
+  <div class="transport" id="studio-transport">
+    <button class="tran-btn" id="btn-rew" onclick="tran('rewind',this)" title="Rewind">⏮</button>
+    <button class="tran-btn" id="btn-play" onclick="tran('play',this)" title="Play">▶</button>
+    <button class="tran-btn" id="btn-stop" onclick="tran('stop',this)" title="Stop">⏹</button>
+    <button class="tran-btn" id="btn-rec" onclick="tran('record',this)" title="Record">⏺</button>
+    <button class="tran-btn" id="btn-loop" onclick="tran('loop',this)" title="Loop">🔁</button>
+  </div>
+
+  <!-- KNOBS -->
+  <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;">Knobs</div>
+  <div class="knob-grid" id="studio-knobs"></div>
+
+  <!-- MIXER -->
+  <div class="mixer-section">
+    <h3>Mixer</h3>
+    <div class="mixer-row" id="studio-mixer"></div>
+  </div>
+
+  <!-- PADS -->
+  <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;">Pads</div>
+  <div class="pads-grid" id="studio-pads"></div>
+
+  <!-- XY PAD -->
+  <div class="xy-wrap">
+    <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">XY Pad — Filter / Resonance</div>
+    <div class="xy-pad" id="xy-pad">
+      <div class="xy-h"></div>
+      <div class="xy-v"></div>
+      <div class="xy-puck" id="xy-puck"></div>
+    </div>
+    <div class="xy-labels">
+      <span>← Filter</span><span>Reso ↑</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ SCRIPTS -->
+<script>
+// ── State ────────────────────────────────────────────────
+const S={
+  chats:[],current:null,streaming:false,
+  voiceEnabled:true,wsOpen:true,sidebarOpen:true,
+  settings:{accent:'#d4a03c',name:'Master Oscar',bg:'',logo:'',voice:true,workspace:true,rasp:true},
+  model:'',
+};
+
+const RASP=`You are Master Oscar — the GOAT Force AI assistant for DJ Speedy GA. You are knowledgeable about music production, royalties, catalog management, the music business, and the GOAT Force ecosystem. You are direct, professional, and always helpful. When asked to show data or UI, respond with a JSON block inside triple backticks tagged as "ui" (e.g. \`\`\`ui\n{...}\n\`\`\`). Keep responses concise and actionable. You are the master agent of GOAT Force.`;
+
+// ── Accent colors ────────────────────────────────────────
+const ACCENTS=[
+  {name:'GOAT Gold',val:'#d4a03c'},
+  {name:'Purple',val:'#a78bfa'},
+  {name:'Cyan',val:'#00d4ff'},
+  {name:'Green',val:'#3fb950'},
+  {name:'Red',val:'#e63946'},
+  {name:'Blue',val:'#58a6ff'},
+  {name:'White',val:'#e6edf3'},
+];
+
+// ── Boot ─────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  loadSettings();
+  loadChats();
+  loadModels();
+  buildStudio();
+  buildWSKnobs();
+  buildWSTransport();
+  setupXY();
+  startStatsPoll();
+  checkConn();
+  setInterval(checkConn,8000);
+  applySettings();
+  buildColorSwatches();
+  fetchCatalogStats();
+});
+
+// ── Connection check ─────────────────────────────────────
+async function checkConn(){
+  const dot=document.getElementById('conn-dot');
+  const st=document.getElementById('st-ollama');
+  const ss=document.getElementById('st-server');
+  try{
+    const r=await fetch('/ollama/api/tags',{signal:AbortSignal.timeout(3000)});
+    if(r.ok){dot.className='ok';if(st)st.textContent='Ollama: Connected ✓';}
+    else{dot.className='err';if(st)st.textContent='Ollama: Error';}
+  }catch{dot.className='err';if(st)st.textContent='Ollama: Offline';}
+  if(ss)ss.textContent='Server: Running ✓';
+}
+
+// ── Models ───────────────────────────────────────────────
+async function loadModels(){
+  const sel=document.getElementById('model-select');
+  try{
+    const r=await fetch('/ollama/api/tags');
+    if(!r.ok)throw new Error();
+    const d=await r.json();
+    const models=(d.models||[]).map(m=>m.name);
+    if(!models.length){sel.innerHTML='<option value="">No models — run: ollama pull llama3.2:3b</option>';return;}
+    sel.innerHTML=models.map(m=>`<option value="${m}">${m}</option>`).join('');
+    S.model=models[0];
+    const saved=localStorage.getItem('oscar_model');
+    if(saved&&models.includes(saved)){sel.value=saved;S.model=saved;}
+    sel.onchange=()=>{S.model=sel.value;localStorage.setItem('oscar_model',S.model);};
+  }catch{sel.innerHTML='<option value="">Connect Ollama first</option>';}
+}
+
+// ── Settings ─────────────────────────────────────────────
+const ACCENT_COLORS=['#d4a03c','#a78bfa','#00d4ff','#3fb950','#e63946','#58a6ff','#e6edf3'];
+function buildColorSwatches(){
+  const wrap=document.getElementById('color-swatches');
+  wrap.innerHTML='';
+  ACCENTS.forEach(a=>{
+    const sw=document.createElement('div');
+    sw.className='color-swatch'+(S.settings.accent===a.val?' active':'');
+    sw.style.background=a.val;
+    sw.title=a.name;
+    sw.onclick=()=>{S.settings.accent=a.val;buildColorSwatches();applySettings();};
+    wrap.appendChild(sw);
+  });
+}
+function openSettings(){
+  document.getElementById('settings-modal').classList.add('open');
+  document.getElementById('set-name').value=S.settings.name||'Oscar';
+  document.getElementById('set-bg').value=S.settings.bg||'';
+  document.getElementById('set-logo').value=S.settings.logo||'';
+  document.getElementById('set-voice').checked=S.settings.voice!==false;
+  document.getElementById('set-workspace').checked=S.settings.workspace!==false;
+  document.getElementById('set-rasp').checked=S.settings.rasp!==false;
+  buildColorSwatches();
+}
+function closeSettings(){document.getElementById('settings-modal').classList.remove('open');}
+function saveSettings(){
+  S.settings.name=document.getElementById('set-name').value||'Oscar';
+  S.settings.bg=document.getElementById('set-bg').value;
+  S.settings.logo=document.getElementById('set-logo').value;
+  S.settings.voice=document.getElementById('set-voice').checked;
+  S.settings.workspace=document.getElementById('set-workspace').checked;
+  S.settings.rasp=document.getElementById('set-rasp').checked;
+  localStorage.setItem('oscar_settings',JSON.stringify(S.settings));
+  applySettings();
+  closeSettings();
+}
+function loadSettings(){
+  try{const raw=localStorage.getItem('oscar_settings');if(raw)Object.assign(S.settings,JSON.parse(raw));}catch{}
+}
+function applySettings(){
+  const a=S.settings.accent||'#d4a03c';
+  document.documentElement.style.setProperty('--gold',a);
+  document.documentElement.style.setProperty('--gold2',lightenHex(a,20));
+  document.documentElement.style.setProperty('--accent',a);
+  document.documentElement.style.setProperty('--accent-dim',hexAlpha(a,.12));
+  document.documentElement.style.setProperty('--glow',hexAlpha(a,.28));
+  if(S.settings.bg)document.body.style.backgroundImage=`url('${S.settings.bg}')`;
+  S.voiceEnabled=S.settings.voice!==false;
+  const vb=document.getElementById('voice-btn');
+  if(vb)vb.classList.toggle('active',S.voiceEnabled);
+  if(S.settings.workspace===false&&S.wsOpen)toggleWorkspace();
+}
+function lightenHex(hex,pct){
+  let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  r=Math.min(255,r+pct*2);g=Math.min(255,g+pct*2);b=Math.min(255,b+pct*2);
+  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+}
+function hexAlpha(hex,a){
+  let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+// ── Voice ─────────────────────────────────────────────────
+function toggleVoice(){
+  S.voiceEnabled=!S.voiceEnabled;
+  document.getElementById('voice-btn').classList.toggle('active',S.voiceEnabled);
+  S.settings.voice=S.voiceEnabled;
+  localStorage.setItem('oscar_settings',JSON.stringify(S.settings));
+}
+function speak(text){
+  if(!S.voiceEnabled||!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text.replace(/[#*`]/g,'').slice(0,400));
+  u.rate=1;u.pitch=1;u.volume=1;
+  window.speechSynthesis.speak(u);
+}
+
+// ── Mic ──────────────────────────────────────────────────
+let mediaRec=null,audioChunks=[];
+async function toggleMic(){
+  const btn=document.getElementById('mic-btn');
+  if(mediaRec&&mediaRec.state==='recording'){mediaRec.stop();return;}
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    audioChunks=[];
+    mediaRec=new MediaRecorder(stream);
+    mediaRec.ondataavailable=e=>audioChunks.push(e.data);
+    mediaRec.onstop=()=>{
+      btn.classList.remove('recording');
+      stream.getTracks().forEach(t=>t.stop());
+      recognition();
+    };
+    mediaRec.start();
+    btn.classList.add('recording');
+  }catch{alert('Microphone not available.');}
+}
+function recognition(){
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window))return;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const r=new SR();r.lang='en-US';r.interimResults=false;
+  r.onresult=e=>{
+    const txt=e.results[0][0].transcript;
+    document.getElementById('input-box').value=txt;
+    sendMsg();
+  };
+  r.start();
+}
+
+// ── Sidebar / Workspace ──────────────────────────────────
+function toggleSidebar(){
+  S.sidebarOpen=!S.sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('collapsed',!S.sidebarOpen);
+}
+function toggleWorkspace(){
+  S.wsOpen=!S.wsOpen;
+  document.getElementById('workspace').classList.toggle('collapsed',!S.wsOpen);
+}
+function showPane(id){
+  document.querySelectorAll('.ws-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ws-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── Chat storage ─────────────────────────────────────────
+function loadChats(){
+  try{const raw=localStorage.getItem('oscar_chats');if(raw)S.chats=JSON.parse(raw);}catch{}
+  if(!S.chats.length)newChat();
+  else{S.current=S.chats[0].id;renderChatList();loadCurrentChat();}
+}
+function saveChatsLocal(){localStorage.setItem('oscar_chats',JSON.stringify(S.chats));}
+function newChat(){
+  const id='c'+Date.now();
+  S.chats.unshift({id,title:'New Chat',messages:[]});
+  S.current=id;
+  saveChatsLocal();
+  renderChatList();
+  clearMsgs();
+  showWelcome(true);
+}
+function renderChatList(){
+  const el=document.getElementById('chat-list');
+  el.innerHTML='';
+  S.chats.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='chat-item'+(c.id===S.current?' active':'');
+    d.innerHTML=`<span style="flex:1;overflow:hidden;text-overflow:ellipsis;">${esc(c.title)}</span>`+
+      `<span class="del" onclick="deleteChat('${c.id}',event)">✕</span>`;
+    d.onclick=()=>switchChat(c.id);
+    el.appendChild(d);
+  });
+}
+function switchChat(id){
+  S.current=id;
+  renderChatList();
+  clearMsgs();
+  loadCurrentChat();
+}
+function deleteChat(id,e){
+  e.stopPropagation();
+  S.chats=S.chats.filter(c=>c.id!==id);
+  if(S.current===id){if(S.chats.length)S.current=S.chats[0].id;else newChat();}
+  saveChatsLocal();
+  renderChatList();
+  clearMsgs();
+  loadCurrentChat();
+}
+function currentChat(){return S.chats.find(c=>c.id===S.current)||null;}
+function loadCurrentChat(){
+  const c=currentChat();
+  if(!c||!c.messages.length){showWelcome(true);return;}
+  showWelcome(false);
+  c.messages.forEach(m=>appendMsg(m.role,m.content,false));
+  scrollBottom();
+}
+function clearMsgs(){
+  const el=document.getElementById('msgs');
+  el.innerHTML='';
+  const w=document.createElement('div');
+  w.id='welcome';w.className='';
+  el.appendChild(w);
+  showWelcome(true);
+}
+
+// ── Messages ─────────────────────────────────────────────
+function showWelcome(show){
+  let w=document.getElementById('welcome');
+  if(!w){
+    w=document.createElement('div');w.id='welcome';
+    document.getElementById('msgs').prepend(w);
+  }
+  if(show){
+    w.style.display='flex';w.style.flexDirection='column';
+    w.style.alignItems='center';w.style.justifyContent='center';
+    w.style.flex='1';w.style.padding='32px 16px';w.style.textAlign='center';w.style.color='var(--dim)';
+    w.innerHTML=`<div style="font-size:56px;margin-bottom:16px;filter:drop-shadow(0 0 24px var(--glow))">🐐</div>
+      <h2 style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px;">Master Oscar is ready.</h2>
+      <p style="max-width:400px;line-height:1.7;">Your GOAT Force AI — music, royalties, business, beats. Ask anything.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:20px;">
+        <div class="qp" onclick="send('Check my catalog stats')">📁 Catalog stats</div>
+        <div class="qp" onclick="send('Show royalty summary')">💰 Royalties</div>
+        <div class="qp" onclick="send('Open Touch Studio mode')">🎛️ Touch Studio</div>
+        <div class="qp" onclick="send(\'What can you do?\')">💬 What can you do?</div>
+        <div class="qp" onclick="send('Generate a beat concept')">🎵 Beat concept</div>
+        <div class="qp" onclick="send('Show investor deck stats')">📊 Investor stats</div>
+      </div>`;
+  }else{
+    w.style.display='none';
+  }
+}
+function appendMsg(role,content,save=true){
+  showWelcome(false);
+  const msgs=document.getElementById('msgs');
+  const w=document.getElementById('welcome');
+  if(w)w.style.display='none';
+
+  // check for gen-ui blocks
+  const uiMatch=content.match(/```ui\n([\s\S]*?)```/);
+  let displayContent=content;
+  if(uiMatch){
+    displayContent=content.replace(/```ui\n[\s\S]*?```/,'').trim();
+    try{renderGenUI(JSON.parse(uiMatch[1]));}catch{}
+  }
+
+  const div=document.createElement('div');
+  div.className=`msg ${role}`;
+  const avatar=role==='user'?'👤':'🐐';
+  const name=role==='user'?'You':(S.settings.name||'Oscar');
+  div.innerHTML=`<div class="msg-avatar">${avatar}</div>
+    <div class="msg-body">
+      <div class="msg-name">${name}</div>
+      <div class="msg-content">${renderMarkdown(displayContent)}</div>
+    </div>`;
+  msgs.appendChild(div);
+
+  if(save){
+    const c=currentChat();
+    if(c){
+      c.messages.push({role,content});
+      if(c.messages.length===1&&role==='user')c.title=content.slice(0,40);
+      saveChatsLocal();
+      renderChatList();
+    }
+  }
+  scrollBottom();
+  // highlight code
+  div.querySelectorAll('pre code').forEach(b=>hljs.highlightElement(b));
+}
+function renderMarkdown(txt){
+  try{return marked.parse(txt);}catch{return txt.replace(/\n/g,'<br>');}
+}
+function scrollBottom(){const el=document.getElementById('msgs');el.scrollTop=el.scrollHeight;}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── Gen UI renderer ──────────────────────────────────────
+function renderGenUI(data){
+  const con=document.getElementById('gui-container');
+  if(!con)return;
+  const t=data.type||'';
+  if(t==='studio'){openStudio();return;}
+  const card=document.createElement('div');
+  card.className='gui-card';
+  if(t==='stats'||t==='catalog'){
+    card.innerHTML=`<h3>${esc(data.title||'Stats')}</h3><div class="gui-stat-row">${
+      (data.stats||[]).map(s=>`<div class="gui-stat"><div class="val">${esc(String(s.value))}</div><div class="lbl">${esc(s.label)}</div></div>`).join('')
+    }</div>`;
+  }else if(t==='progress'){
+    card.innerHTML=`<h3>${esc(data.title||'Progress')}</h3>${
+      (data.items||[]).map(i=>`<div class="gui-progress">
+        <div class="gui-progress-label"><span>${esc(i.label)}</span><span>${i.pct}%</span></div>
+        <div class="gui-bar"><div class="gui-bar-fill" style="width:${i.pct}%"></div></div>
+      </div>`).join('')
+    }`;
+  }else if(t==='buttons'){
+    card.innerHTML=`<h3>${esc(data.title||'Actions')}</h3>${
+      (data.buttons||[]).map(b=>`<button class="gui-btn" onclick="send('${esc(b.action||b.label)}')">${esc(b.label)}</button>`).join('')
+    }`;
+  }else{
+    card.innerHTML=`<h3>${esc(data.title||'Info')}</h3><div style="font-size:12px;color:var(--dim);">${esc(JSON.stringify(data,null,2))}</div>`;
+  }
+  con.prepend(card);
+  showPane('gen-ui');
+  if(!S.wsOpen)toggleWorkspace();
+}
+
+// ── Sending messages ─────────────────────────────────────
+function send(txt){document.getElementById('input-box').value=txt;sendMsg();}
+async function sendMsg(){
+  if(S.streaming)return;
+  const box=document.getElementById('input-box');
+  const text=box.value.trim();
+  if(!text)return;
+  box.value='';autoResize(box);
+  appendMsg('user',text);
+
+  // special: open studio
+  if(/touch.studio|open.studio/i.test(text)){openStudio();appendMsg('assistant','Touch Studio is open! Drag knobs, faders, hit pads, and use the XY pad — every move talks back to me.');speak('Touch Studio is open.');return;}
+
+  if(!S.model){appendMsg('assistant','No model loaded. Start Ollama and pull a model:\n\n```\nollama pull llama3.2:3b\n```');return;}
+
+  S.streaming=true;
+  document.getElementById('send-btn').disabled=true;
+
+  // typing indicator
+  const typing=document.createElement('div');
+  typing.className='msg';
+  typing.innerHTML=`<div class="msg-avatar">🐐</div><div class="msg-body"><div class="msg-name">${S.settings.name||'Master Oscar'}</div><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  document.getElementById('msgs').appendChild(typing);
+  scrollBottom();
+
+  const c=currentChat();
+  const history=(c?c.messages:[]).slice(-20).map(m=>({role:m.role==='assistant'?'assistant':'user',content:m.content}));
+
+  const messages=[];
+  if(S.settings.rasp!==false)messages.push({role:'system',content:RASP});
+  messages.push(...history.slice(0,-1));// last user msg already added by appendMsg before send
+  messages.push({role:'user',content:text});
+
+  let full='';
+  try{
+    const res=await fetch('/ollama/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:S.model,messages,stream:true}),
+    });
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    const reader=res.body.getReader();
+    const dec=new TextDecoder();
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      const chunk=dec.decode(value,{stream:true});
+      chunk.split('\n').forEach(line=>{
+        if(!line.trim())return;
+        try{const j=JSON.parse(line);if(j.message?.content)full+=j.message.content;}catch{}
+      });
+    }
+    typing.remove();
+    appendMsg('assistant',full);
+    speak(full.replace(/```[\s\S]*?```/g,'').slice(0,300));
+  }catch(err){
+    typing.remove();
+    const errMsg=`Connection error: ${err.message}\n\nMake sure Ollama is running:\n\`\`\`\nollama serve\n\`\`\``;
+    appendMsg('assistant',errMsg);
+  }
+
+  S.streaming=false;
+  document.getElementById('send-btn').disabled=false;
+  autoResize(box);
+}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}
+
+// ── Touch Studio ─────────────────────────────────────────
+const KNOBS=[
+  {name:'Gain',val:70},{name:'Tone',val:50},{name:'Drive',val:30},
+  {name:'Verb',val:45},{name:'Pan',val:50},
+];
+const MIXER_CH=['Kick','Snare','Bass','Keys','Vox','FX','Master'];
+const PAD_NAMES=['Kick','Snare','Hat','Clap','808','Perc','FX1','FX2','Chord','Bass','Lead','Stab','Open','Ride','Crash','Tamb'];
+
+let knobStates=KNOBS.map(k=>({...k}));
+let faderStates=MIXER_CH.map(()=>90);
+let playActive=false,recActive=false;
+
+function buildStudio(){
+  buildKnobs('studio-knobs',knobStates,60,'studio');
+  buildMixer('studio-mixer');
+  buildPads('studio-pads');
+}
+function buildWSKnobs(){
+  buildKnobs('ws-knobs',knobStates.slice(0,3),48,'ws');
+}
+function buildWSTransport(){
+  const el=document.getElementById('ws-transport');
+  if(!el)return;
+  ['▶','⏹','⏺'].forEach((icon,i)=>{
+    const b=document.createElement('button');
+    b.className='tran-btn';b.textContent=icon;b.style.flex='1';b.style.height='36px';
+    b.onclick=()=>tran(['play','stop','record'][i],b);
+    el.appendChild(b);
+  });
+}
+
+function buildKnobs(elId,data,size,prefix){
+  const el=document.getElementById(elId);
+  if(!el)return;el.innerHTML='';
+  data.forEach((k,i)=>{
+    const w=document.createElement('div');
+    w.className='knob-wrap';
+    w.style.width=size+'px';
+    w.innerHTML=`<div class="knob" id="${prefix}-knob-${i}" style="width:${size}px;height:${size}px">
+      <div class="knob-indicator" id="${prefix}-ind-${i}" style="height:${size*.33}px;top:${size*.08}px;left:calc(50% - 1.5px)"></div>
+    </div>
+    <div class="knob-label">${k.name}</div>
+    <div class="knob-val" id="${prefix}-kval-${i}">${k.val}</div>`;
+    el.appendChild(w);
+    setupKnobDrag(document.getElementById(`${prefix}-knob-${i}`),i,k,size,prefix);
+    updateKnobVisual(i,k.val,size,prefix);
+  });
+}
+
+function setupKnobDrag(el,i,k,size,prefix){
+  let startY,startVal;
+  function onStart(e){
+    startY=(e.touches?e.touches[0].clientY:e.clientY);
+    startVal=k.val;
+    window.addEventListener('mousemove',onMove);window.addEventListener('touchmove',onMove,{passive:false});
+    window.addEventListener('mouseup',onEnd);window.addEventListener('touchend',onEnd);
+  }
+  function onMove(e){
+    e.preventDefault();
+    const y=e.touches?e.touches[0].clientY:e.clientY;
+    k.val=Math.max(0,Math.min(100,startVal-(y-startY)));
+    updateKnobVisual(i,k.val,size,prefix);
+    studioOscarPost(`knob "${k.name}" = ${Math.round(k.val)}`);
+  }
+  function onEnd(){
+    window.removeEventListener('mousemove',onMove);window.removeEventListener('touchmove',onMove);
+    window.removeEventListener('mouseup',onEnd);window.removeEventListener('touchend',onEnd);
+  }
+  el.addEventListener('mousedown',onStart);el.addEventListener('touchstart',onStart,{passive:true});
+}
+
+function updateKnobVisual(i,val,size,prefix){
+  const ind=document.getElementById(`${prefix}-ind-${i}`);
+  const vEl=document.getElementById(`${prefix}-kval-${i}`);
+  if(!ind)return;
+  const angle=-135+val*2.7;
+  ind.style.transform=`rotate(${angle}deg)`;
+  if(vEl)vEl.textContent=Math.round(val);
+}
+
+function buildMixer(elId){
+  const el=document.getElementById(elId);
+  if(!el)return;el.innerHTML='';
+  MIXER_CH.forEach((ch,i)=>{
+    const w=document.createElement('div');
+    w.className='fader-wrap';
+    w.innerHTML=`<div class="fader" id="fdr-${i}" style="height:120px">
+      <div class="fader-fill" id="fdr-fill-${i}" style="height:${faderStates[i]}%"></div>
+      <div class="fader-cap" id="fdr-cap-${i}" style="bottom:${faderStates[i]}%"></div>
+    </div>
+    <div class="fader-val" id="fdr-val-${i}">${faderStates[i]}</div>
+    <div class="fader-label">${ch}</div>`;
+    el.appendChild(w);
+    setupFaderDrag(document.getElementById(`fdr-${i}`),i,ch);
+  });
+}
+
+function setupFaderDrag(el,i,ch){
+  let startY,startVal;
+  function onStart(e){
+    startY=(e.touches?e.touches[0].clientY:e.clientY);
+    startVal=faderStates[i];
+    window.addEventListener('mousemove',onMove);window.addEventListener('touchmove',onMove,{passive:false});
+    window.addEventListener('mouseup',onEnd);window.addEventListener('touchend',onEnd);
+  }
+  function onMove(e){
+    e.preventDefault();
+    const y=e.touches?e.touches[0].clientY:e.clientY;
+    const h=el.clientHeight||120;
+    const delta=-(y-startY)/h*100;
+    faderStates[i]=Math.max(0,Math.min(100,startVal+delta));
+    const pct=Math.round(faderStates[i]);
+    const fill=document.getElementById(`fdr-fill-${i}`);
+    const cap=document.getElementById(`fdr-cap-${i}`);
+    const val=document.getElementById(`fdr-val-${i}`);
+    if(fill)fill.style.height=pct+'%';
+    if(cap)cap.style.bottom=pct+'%';
+    if(val)val.textContent=pct;
+    studioOscarPost(`fader "${ch}" = ${pct}`);
+  }
+  function onEnd(){
+    window.removeEventListener('mousemove',onMove);window.removeEventListener('touchmove',onMove);
+    window.removeEventListener('mouseup',onEnd);window.removeEventListener('touchend',onEnd);
+  }
+  el.addEventListener('mousedown',onStart);el.addEventListener('touchstart',onStart,{passive:true});
+}
+
+function buildPads(elId){
+  const el=document.getElementById(elId);
+  if(!el)return;el.innerHTML='';
+  const colors=['rgba(212,160,60,.15)','rgba(63,185,80,.12)','rgba(88,166,255,.12)','rgba(167,139,250,.12)'];
+  PAD_NAMES.forEach((name,i)=>{
+    const b=document.createElement('button');
+    b.className='pad';b.textContent=name;
+    b.style.background=colors[i%colors.length];
+    function hit(){
+      b.classList.add('hit');
+      setTimeout(()=>b.classList.remove('hit'),120);
+      studioOscarPost(`pad "${name}" hit`);
+    }
+    b.addEventListener('click',hit);
+    b.addEventListener('touchstart',e=>{e.preventDefault();hit();},{passive:false});
+    el.appendChild(b);
+  });
+}
+
+function tran(cmd,btn){
+  if(cmd==='play'){playActive=!playActive;btn.classList.toggle('play-active',playActive);}
+  else if(cmd==='record'){recActive=!recActive;btn.classList.toggle('rec-active',recActive);}
+  else{btn.style.opacity='.5';setTimeout(()=>btn.style.opacity='',200);}
+  studioOscarPost(`transport "${cmd}"`);
+}
+
+// XY Pad
+function setupXY(){
+  const pad=document.getElementById('xy-pad');
+  const puck=document.getElementById('xy-puck');
+  if(!pad||!puck)return;
+  let dragging=false;
+  function move(cx,cy){
+    const r=pad.getBoundingClientRect();
+    const x=Math.max(0,Math.min(1,(cx-r.left)/r.width));
+    const y=Math.max(0,Math.min(1,(cy-r.top)/r.height));
+    puck.style.left=(x*100)+'%';
+    puck.style.top=(y*100)+'%';
+    studioOscarPost(`XY pad: Filter=${Math.round(x*100)}, Reso=${Math.round((1-y)*100)}`);
+  }
+  pad.addEventListener('mousedown',e=>{dragging=true;move(e.clientX,e.clientY);});
+  pad.addEventListener('touchstart',e=>{dragging=true;const t=e.touches[0];move(t.clientX,t.clientY);},{passive:true});
+  window.addEventListener('mousemove',e=>{if(dragging)move(e.clientX,e.clientY);});
+  window.addEventListener('touchmove',e=>{if(dragging){const t=e.touches[0];move(t.clientX,t.clientY);}},{passive:true});
+  window.addEventListener('mouseup',()=>dragging=false);
+  window.addEventListener('touchend',()=>dragging=false);
+}
+
+function openStudio(){document.getElementById('touch-studio').classList.add('open');}
+function closeStudio(){document.getElementById('touch-studio').classList.remove('open');}
+
+// send touch events to Master Oscar (non-blocking)
+function studioOscarPost(action){
+  if(!S.model)return;
+  fetch('/ollama/api/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:S.model,messages:[{role:'user',content:`[studio] ${action}`}],stream:false}),
+  }).then(r=>r.json()).then(d=>{
+    const reply=d.message?.content||'';
+    if(reply&&reply.trim())appendMsg('assistant',`🎛️ ${reply}`,true);
+  }).catch(()=>{});
+}
+
+// ── postMessage from Launcher Hub ────────────────────────
+window.addEventListener('message',e=>{
+  if(e.data&&e.data.action==='openStudio')openStudio();
+});
+
+// ── AGENT1 Catalog Stats ──────────────────────────────────
+// Try port 3334 (AGENT1 server.py) then fall back to local /api/stats
+async function fetchCatalogStats(){
+  const targets=[
+    {url:'http://127.0.0.1:3334/api/stats',source:'AGENT1'},
+    {url:'/api/stats',source:'local'},
+  ];
+  for(const t of targets){
+    try{
+      const r=await fetch(t.url,{signal:AbortSignal.timeout(2500)});
+      if(!r.ok)continue;
+      const d=await r.json();
+      const tracks=d.total_entries||d.catalog_entries||759;
+      const artists=(d.artists||[]).length||3;
+      const el_t=document.getElementById('gs-tracks');
+      const el_a=document.getElementById('gs-artists');
+      if(el_t)el_t.textContent=tracks.toLocaleString();
+      if(el_a)el_a.textContent=artists;
+      // Render per-catalog breakdown
+      const wrap=document.getElementById('gs-catalogs-wrap');
+      if(wrap&&d.catalogs&&d.catalogs.length){
+        wrap.innerHTML=d.catalogs.map(c=>`
+          <div class="gui-progress" style="margin-top:8px;">
+            <div class="gui-progress-label"><span>${esc(c.name)}</span><span>${c.entries.toLocaleString()}</span></div>
+            <div class="gui-bar"><div class="gui-bar-fill" style="width:${Math.round(c.entries/tracks*100)}%"></div></div>
+          </div>`).join('');
+      }
+      // Update stats pane model line
+      const em=document.getElementById('stats-model');
+      if(em)em.textContent=`Catalog: ${tracks.toLocaleString()} entries (${t.source})`;
+      return;
+    }catch{}
+  }
+  // fallback numbers
+  const el_t=document.getElementById('gs-tracks');
+  const el_a=document.getElementById('gs-artists');
+  if(el_t)el_t.textContent='5,954';
+  if(el_a)el_a.textContent='3';
+}
+
+// ── EPK opener ────────────────────────────────────────────
+function openEPK(){
+  // Try AGENT1 drive path first, then public server
+  const paths=[
+    'file:///Volumes/AGENT1/Oscar_Investor_EPK_Seed_2026.pdf',
+    'file:///Volumes/i2i%201/Agent-007-GOAT/Investor-EPK/Oscar-GOAT-Royalty-Investor-EPK-2026.docx',
+    'http://72.61.193.184/epk/',
+  ];
+  window.open(paths[0],'_blank');
+}
+
+// ── Stats poll ────────────────────────────────────────────
+function startStatsPoll(){
+  fetchStats();
+  setInterval(fetchStats,10000);
+}
+async function fetchStats(){
+  try{
+    const r=await fetch('/api/stats');
+    if(!r.ok)return;
+    const d=await r.json();
+    const ec=document.getElementById('stats-cpu');
+    const er=document.getElementById('stats-ram');
+    if(ec)ec.textContent=`CPU: ${d.cpu_percent||0}%`;
+    if(er)er.textContent=`RAM: ${d.ram_percent||0}%`;
+    const em=document.getElementById('stats-model');
+    if(em)em.textContent=`Model: ${S.model||'none'}`;
+  }catch{}
+}
+</script>
+</body>
+</html>

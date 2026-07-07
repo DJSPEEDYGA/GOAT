@@ -1,20 +1,22 @@
 /**
  * TikTok Integration Service for GOAT Royalty App
- * Uses TikAPI (https://tikapi.io) for TikTok data access
+ * TikTok data access service (currently disabled)
  * 
- * Install: npm install tikapi
- * Env: NEXT_PUBLIC_TIKAPI_KEY=your_api_key
+ * To enable: npm install tikapi and set NEXT_PUBLIC_TIKAPI_KEY
  */
 
-import TikAPI from 'tikapi';
+// TikAPI integration temporarily disabled due to dependency issues
+// import TikAPI from 'tikapi';
 
-let api: ReturnType<typeof TikAPI> | null = null;
+let api: any = null;
 
 /**
  * Initialize the TikAPI client with an API key
  */
 export const initTikAPI = (apiKey: string) => {
-  api = TikAPI(apiKey);
+  // Temporarily disabled - TikAPI dependency has issues
+  console.log('TikAPI integration temporarily disabled');
+  // api = TikAPI(apiKey);
   return api;
 };
 

@@ -7,13 +7,14 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
+const { protect, authorize } = require('../middleware/auth');
 
 let pipelineInstance = null;
 
 /**
  * Initialize pipeline
  */
-router.post('/initialize', async (req, res) => {
+router.post('/initialize', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     const configPath = path.join(__dirname, '../../config/pipeline-config.json');
     const config = require(configPath);
@@ -32,7 +33,7 @@ router.post('/initialize', async (req, res) => {
 /**
  * Start pipeline
  */
-router.post('/start', async (req, res) => {
+router.post('/start', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     if (!pipelineInstance) {
       return res.status(400).json({ success: false, error: 'Pipeline not initialized' });
@@ -49,7 +50,7 @@ router.post('/start', async (req, res) => {
 /**
  * Stop pipeline
  */
-router.post('/stop', async (req, res) => {
+router.post('/stop', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     if (!pipelineInstance) {
       return res.status(400).json({ success: false, error: 'Pipeline not initialized' });
@@ -66,7 +67,7 @@ router.post('/stop', async (req, res) => {
 /**
  * Get pipeline metrics
  */
-router.get('/metrics', async (req, res) => {
+router.get('/metrics', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     if (!pipelineInstance) {
       return res.status(400).json({ success: false, error: 'Pipeline not initialized' });
@@ -83,7 +84,7 @@ router.get('/metrics', async (req, res) => {
 /**
  * Search files
  */
-router.get('/search', async (req, res) => {
+router.get('/search', protect, async (req, res) => {
   try {
     const { query, category, limit } = req.query;
     
@@ -105,7 +106,7 @@ router.get('/search', async (req, res) => {
 /**
  * Get file content
  */
-router.get('/file/:id', async (req, res) => {
+router.get('/file/:id', protect, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -124,7 +125,7 @@ router.get('/file/:id', async (req, res) => {
 /**
  * Sync to Google Drive
  */
-router.post('/sync-to-drive', async (req, res) => {
+router.post('/sync-to-drive', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     const { localPath, remotePath } = req.body;
     
@@ -143,7 +144,7 @@ router.post('/sync-to-drive', async (req, res) => {
 /**
  * Get resources by category
  */
-router.get('/category/:category', async (req, res) => {
+router.get('/category/:category', protect, async (req, res) => {
   try {
     const { category } = req.params;
     

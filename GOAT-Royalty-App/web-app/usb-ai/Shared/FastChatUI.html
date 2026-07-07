@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portable AI — Fast Chat</title>
-<meta name="description" content="Portable AI Chat — run local LLMs from a USB drive">
+<title>Lexi — Local Agent (Waka's baby on Nvidia Thor)</title>
+<meta name="description" content="Lexi local agent chat — run local LLMs from a USB drive. Evidence guardian + creative tools. (Raspy's separate setup on daddy computer.)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
@@ -46,12 +46,27 @@
 html,body{height:100%;overflow:hidden}
 body{
   font-family:'Inter',-apple-system,sans-serif;
-  background:var(--bg);
+  background:
+    linear-gradient(120deg, rgba(3,6,13,.93), rgba(10,4,6,.68) 42%, rgba(3,6,13,.91)),
+    url('/assets/generated/lexi-waka-hero.jpg') center 30%/cover fixed no-repeat,
+    #05070c;
   color:var(--text);
   display:flex;
   flex-direction:column;
   font-size:14px;
   line-height:1.6;
+  align-items: center; /* helps center the #lexi-frame card */
+}
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 16%, rgba(255,189,74,.16), transparent 24%),
+    radial-gradient(circle at 82% 12%, rgba(248,81,73,.14), transparent 28%),
+    linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.42));
+  z-index:-1;
 }
 
 /* ── Top Header Bar ────────────────────────────────────── */
@@ -60,10 +75,12 @@ body{
   align-items:center;
   gap:12px;
   padding:0 16px;
-  height:44px;
-  min-height:44px;
-  background:var(--bg-panel);
-  border-bottom:1px solid var(--border);
+  height:52px;
+  min-height:52px;
+  background:linear-gradient(90deg, rgba(3,2,1,.97) 0%, rgba(20,8,4,.92) 30%, rgba(10,4,8,.88) 70%, rgba(3,2,5,.96) 100%),
+             url('/assets/generated/lexi-waka-header.jpg') center 20%/cover no-repeat;
+  border-bottom:2px solid rgba(212,160,60,0.35);
+  box-shadow:0 2px 20px rgba(0,0,0,0.6);
   flex-shrink:0;
   z-index:10;
 }
@@ -75,7 +92,22 @@ body{
   white-space:nowrap;
   min-width:120px;
 }
+#top-bar .brand-mark{
+  width:24px;
+  height:24px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,191,71,.55);
+  border-radius:7px;
+  color:#ffd36c;
+  background:rgba(255,191,71,.11);
+  box-shadow:0 0 18px rgba(255,191,71,.12);
+  font-weight:900;
+}
+#top-bar .brand a { color: var(--accent-hi); text-decoration: none; margin-left: 12px; font-size: 12px; }
 #top-bar .brand span{color:var(--accent);}
+#top-bar .brand a { color: var(--accent-hi); text-decoration: none; margin-left: 12px; font-size: 12px; }
 .top-divider{width:1px;height:20px;background:var(--border);flex-shrink:0;}
 .top-label{font-size:11px;color:var(--text-d);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
 #model-select{
@@ -138,32 +170,270 @@ body{
 .hw-pct.danger{color:var(--red);}
 #hw-offline{font-size:11px;color:var(--text-d);}
 
-#sys-prompt-btn{
+#sys-prompt-btn,
+#bridge-btn,
+#addons-btn{
   background:none;border:1px solid var(--border);
   color:var(--text-m);font-size:11px;padding:3px 9px;
   border-radius:6px;cursor:pointer;white-space:nowrap;
   transition:var(--trans);position:relative;
 }
-#sys-prompt-btn:hover{border-color:var(--accent);color:var(--accent-hi);}
-#sys-prompt-btn.has-global{border-color:var(--accent);color:var(--accent-hi);}
-#sys-global-dot{
+#sys-prompt-btn:hover,
+#bridge-btn:hover,
+#addons-btn:hover{border-color:var(--accent);color:var(--accent-hi);}
+#sys-prompt-btn.has-global,
+#bridge-btn.ready,
+#addons-btn.ready{border-color:var(--accent);color:var(--accent-hi);}
+#sys-global-dot,
+#bridge-dot{
   position:absolute;top:-3px;right:-3px;
   width:7px;height:7px;border-radius:50%;
   background:var(--accent);display:none;
   box-shadow:0 0 4px var(--accent);
 }
+#bridge-btn.ready #bridge-dot{display:block;background:var(--green);box-shadow:0 0 4px var(--green);}
 
-/* ── App layout ────────────────────────────────────────── */
+/* Agent007-style Lexi add-ons */
+#addon-bar{
+  min-height:42px;
+  padding:7px 12px;
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  background:linear-gradient(180deg, rgba(255,191,71,0.10), rgba(146,32,28,0.16), rgba(3,7,18,0.22));
+  border-bottom:1px solid var(--border-faint);
+  flex-shrink:0;
+}
+.addon-btn{
+  height:28px;
+  padding:0 10px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--bg-input);
+  color:var(--text-m);
+  font-size:11px;
+  font-weight:600;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:var(--trans);
+}
+.addon-btn:hover{border-color:var(--accent);color:var(--accent-hi);}
+.addon-btn.primary{border-color:#f6bd4b;color:#ffd36c;box-shadow:0 0 14px rgba(245,158,11,0.16);}
+#addons-panel{
+  display:none;
+  max-height:360px;
+  overflow:auto;
+  padding:12px;
+  background:linear-gradient(180deg, rgba(22,27,34,.96), rgba(10,12,18,.96));
+  border-bottom:1px solid var(--border);
+}
+#addons-panel.open{display:block;}
+.addons-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+.addons-title{font-size:13px;font-weight:800;color:var(--accent-hi);}
+#addons-summary{font-size:11px;color:var(--text-m);}
+.model-hub-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:8px;
+  margin:8px 0 10px;
+}
+.model-card{
+  border:1px solid var(--border-faint);
+  border-radius:8px;
+  background:var(--bg-input);
+  padding:8px 10px;
+  min-width:0;
+}
+.model-card strong{display:block;font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.model-card span{display:block;font-size:11px;color:var(--text-d);margin-top:2px;}
+#download-catalog{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.catalog-pill{
+  border:1px solid var(--border-faint);
+  border-radius:999px;
+  padding:3px 8px;
+  color:var(--text-m);
+  font-size:10px;
+  background:rgba(255,255,255,0.03);
+}
+#addons-output{
+  display:none;
+  margin-top:10px;
+  max-height:150px;
+  overflow:auto;
+  background:#020617;
+  border:1px solid var(--border-faint);
+  border-radius:8px;
+  padding:10px;
+  color:var(--text-m);
+  font-family:var(--font-mono);
+  font-size:11px;
+  white-space:pre-wrap;
+}
+#addons-output.show{display:block;}
+.music-deck,
+.library-deck{
+  display:none;
+  margin-top:10px;
+  border:1px solid rgba(255,191,71,.18);
+  border-radius:8px;
+  background:linear-gradient(135deg, rgba(255,191,71,.08), rgba(248,81,73,.07), rgba(2,6,23,.42));
+  padding:10px;
+}
+.music-deck.show,
+.library-deck.show{display:block;}
+.music-head,
+.library-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+}
+.music-title,
+.library-title{font-size:12px;font-weight:800;color:#ffd36c;}
+.music-sub,
+.library-sub{font-size:11px;color:var(--text-d);}
+.music-actions,
+.library-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.music-actions button,
+.music-upload-label,
+.library-actions button{
+  height:28px;
+  padding:0 10px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:rgba(255,255,255,.035);
+  color:var(--text-m);
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:var(--trans);
+}
+.music-actions button:hover,
+.music-upload-label:hover,
+.library-actions button:hover{border-color:#f6bd4b;color:#ffd36c;}
+#music-upload{display:none;}
+#music-player{
+  width:100%;
+  margin:8px 0 6px;
+  height:34px;
+}
+.track-list,
+.library-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:7px;
+  margin-top:8px;
+}
+.track-card,
+.library-card{
+  border:1px solid var(--border-faint);
+  border-radius:8px;
+  background:rgba(2,6,23,.48);
+  padding:8px 9px;
+  min-width:0;
+}
+.track-card button{
+  width:100%;
+  border:none;
+  background:none;
+  color:var(--text);
+  text-align:left;
+  cursor:pointer;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:700;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.track-card button:hover{color:#ffd36c;}
+.track-card span,
+.library-card span{
+  display:block;
+  margin-top:2px;
+  color:var(--text-d);
+  font-size:10px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.library-card strong{
+  display:block;
+  color:var(--text);
+  font-size:12px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.library-tags{
+  margin-top:6px;
+  display:flex;
+  gap:4px;
+  flex-wrap:wrap;
+}
+.library-tags em{
+  font-style:normal;
+  color:#ffd36c;
+  border:1px solid rgba(255,191,71,.18);
+  border-radius:999px;
+  padding:1px 6px;
+  font-size:9px;
+}
+#music-status,
+#library-status,
+#avatar-status{font-size:11px;color:var(--text-d);}
+
+/* ── Lexi contained app window (original shape/size fix) ──
+   Everything (top bar + sidebar + chat) lives inside one nice bordered card.
+   This is the "original" desktop-like contained look the user wants at 72.61.193.184:8080/
+*/
+#lexi-frame {
+  position: relative;
+  max-width: 1200px;
+  margin: 20px auto;
+  height: calc(100vh - 40px);
+  border: 1px solid rgba(255,191,71,.20);
+  border-radius: 12px;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.52), 0 0 0 1px rgba(255,255,255,.03) inset;
+  background: rgba(6,10,17,.90);
+  backdrop-filter: blur(16px) saturate(112%);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Inner horizontal layout: sidebar | main chat */
 #app{
   display:flex;
-  flex:1;
-  overflow:hidden;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0; /* important for flex child scrolling */
+}
+
+/* Top bar now lives inside the nice frame — clean integration */
+#lexi-frame #top-bar {
+  border-bottom: 1px solid var(--border);
+  border-radius: 12px 12px 0 0;
+  flex-shrink: 0;
 }
 
 /* ── Sidebar ───────────────────────────────────────────── */
 #sidebar{
   width:260px;min-width:260px;
-  background:var(--bg-sidebar);
+  background:linear-gradient(180deg, rgba(13,17,23,.94), rgba(15,10,14,.95));
   border-right:1px solid var(--border);
   display:flex;flex-direction:column;
   overflow:hidden;
@@ -223,9 +493,21 @@ body{
   flex:1;display:flex;flex-direction:column;overflow:hidden;
   position:relative;
 }
+#main::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(90deg, rgba(3,2,1,.98) 0%, rgba(5,3,2,.88) 45%, rgba(3,2,4,.72) 100%),
+    url('/assets/generated/lexi-waka-hero.jpg') right 25%/auto 100% no-repeat;
+  opacity:.65;
+  pointer-events:none;
+}
+#main > *{position:relative;z-index:1;}
 
-/* System prompt panel */
-#sys-panel{
+/* System prompt and bridge panels */
+#sys-panel,
+#bridge-panel{
   border-bottom:1px solid var(--border);
   background:var(--bg-panel);
   padding:10px 16px;
@@ -233,12 +515,14 @@ body{
   flex-direction:column;
   gap:7px;
 }
-#sys-panel.open{display:flex;}
+#sys-panel.open,
+#bridge-panel.open{display:flex;}
 #sys-panel .sys-row{
   display:flex;align-items:flex-start;gap:10px;
 }
 #sys-panel label{font-size:12px;color:var(--text-d);padding-top:6px;white-space:nowrap;}
-#sys-ta{
+#sys-ta,
+#memory-ta{
   flex:1;background:var(--bg-input);
   border:1px solid var(--border);
   color:var(--text);font-size:13px;
@@ -246,30 +530,114 @@ body{
   resize:none;height:54px;font-family:inherit;
   line-height:1.5;
 }
-#sys-ta:focus{outline:none;border-color:var(--accent);}
-#sys-actions{
+#memory-ta{height:88px;}
+#sys-ta:focus,
+#memory-ta:focus{outline:none;border-color:var(--accent);}
+#sys-actions,
+#memory-actions{
   display:flex;align-items:center;gap:8px;
   padding-left:72px;
 }
-#sys-actions button{
+#sys-actions button,
+#memory-actions button{
   font-size:11px;padding:4px 12px;
   border-radius:5px;cursor:pointer;
   white-space:nowrap;transition:var(--trans);
   font-family:inherit;
 }
-#set-global-btn{
+#set-global-btn,
+#save-memory-btn{
   border:1px solid var(--accent);background:none;
   color:var(--accent-hi);
 }
-#set-global-btn:hover{background:rgba(99,102,241,0.12);}
-#clear-global-btn{
+#set-global-btn:hover,
+#save-memory-btn:hover{background:rgba(99,102,241,0.12);}
+#clear-global-btn,
+#clear-memory-btn{
   border:1px solid var(--border);background:none;
   color:var(--text-d);
 }
-#clear-global-btn:hover{border-color:var(--red);color:var(--red);}
-#global-status{
+#clear-global-btn:hover,
+#clear-memory-btn:hover{border-color:var(--red);color:var(--red);}
+#global-status,
+#memory-status{
   font-size:11px;color:var(--text-d);margin-left:4px;
 }
+
+.bridge-head{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:12px;
+}
+.bridge-title{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.bridge-title strong{font-size:12px;color:var(--text);}
+#bridge-root{
+  font-size:11px;color:var(--text-d);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  max-width:58vw;
+}
+.bridge-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.bridge-actions button{
+  font-size:11px;padding:4px 12px;border-radius:5px;
+  cursor:pointer;white-space:nowrap;transition:var(--trans);
+  font-family:inherit;background:none;
+}
+#bridge-load-btn{border:1px solid var(--accent);color:var(--accent-hi);}
+#bridge-load-btn:hover{background:rgba(99,102,241,0.12);}
+#bridge-clear-btn{border:1px solid var(--border);color:var(--text-d);}
+#bridge-clear-btn:hover{border-color:var(--red);color:var(--red);}
+#bridge-status{font-size:11px;color:var(--text-d);}
+#bridge-tree{
+  display:none;max-height:150px;overflow:auto;
+  background:var(--bg-input);border:1px solid var(--border);
+  color:var(--text-m);font-family:var(--font-mono);
+  font-size:11px;line-height:1.5;border-radius:var(--radius);
+  padding:8px 10px;white-space:pre-wrap;
+}
+#bridge-tree.show{display:block;}
+.tool-mode-row{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding-top:4px;border-top:1px solid var(--border-faint);
+}
+.tool-toggle{
+  display:flex;align-items:center;gap:7px;
+  font-size:12px;color:var(--text);font-weight:600;
+}
+.tool-toggle input{accent-color:var(--accent);}
+#tool-status{font-size:11px;color:var(--text-d);}
+.tool-mode-row button{
+  font-size:11px;padding:4px 12px;border-radius:5px;
+  cursor:pointer;white-space:nowrap;transition:var(--trans);
+  font-family:inherit;background:none;border:1px solid var(--border);
+  color:var(--text-d);
+}
+.tool-mode-row button:hover{border-color:var(--accent);color:var(--accent-hi);}
+#tool-output{
+  display:none;max-height:140px;overflow:auto;
+  background:var(--bg-input);border:1px solid var(--border);
+  color:var(--text-m);font-family:var(--font-mono);
+  font-size:11px;line-height:1.5;border-radius:var(--radius);
+  padding:8px 10px;white-space:pre-wrap;
+}
+#tool-output.show{display:block;}
+.tool-card{
+  margin-top:12px;padding:10px;border:1px solid var(--border);
+  border-radius:var(--radius);background:rgba(99,102,241,0.08);
+}
+.tool-card-title{font-size:12px;font-weight:700;color:var(--accent-hi);margin-bottom:6px;}
+.tool-card pre{
+  max-height:190px;overflow:auto;font-family:var(--font-mono);
+  font-size:11px;line-height:1.5;color:var(--text-m);
+  white-space:pre-wrap;margin:0 0 8px 0;
+}
+.tool-card-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.tool-card button{
+  font-size:11px;padding:5px 10px;border-radius:5px;
+  border:1px solid var(--accent);background:none;color:var(--accent-hi);
+  cursor:pointer;font-family:inherit;
+}
+.tool-card button:hover{background:rgba(99,102,241,0.12);}
+.tool-card button:disabled{opacity:.55;cursor:not-allowed;}
+.tool-card-status{font-size:11px;color:var(--text-d);}
 
 /* Loading overlay */
 #load-overlay{
@@ -311,11 +679,12 @@ body{
 
 /* Messages */
 .msg-wrap{
-  display:flex;padding:4px 20px 4px 20px;
+  display:flex;flex-direction:column;
+  padding:4px 20px 4px 20px;
   max-width:100%;
 }
-.msg-wrap.user{justify-content:flex-end;}
-.msg-wrap.ai{justify-content:flex-start;}
+.msg-wrap.user{align-items:flex-end;}
+.msg-wrap.ai{align-items:flex-start;}
 
 .bubble{
   max-width:72%;padding:10px 14px;
@@ -333,6 +702,17 @@ body{
   border-bottom-left-radius:4px;
   color:var(--text);
 }
+.bubble-actions{
+  display:flex;align-items:center;gap:6px;
+  margin-top:4px;opacity:.72;
+}
+.bubble-actions button{
+  width:26px;height:24px;border-radius:6px;
+  border:1px solid var(--border);background:var(--bg-panel);
+  color:var(--text-m);cursor:pointer;font-size:12px;
+  transition:var(--trans);
+}
+.bubble-actions button:hover{border-color:var(--accent);color:var(--accent-hi);opacity:1;}
 
 /* Typing dots */
 .typing-dots{display:flex;gap:4px;padding:2px 0;}
@@ -457,8 +837,27 @@ body{
 #vision-warn.show{display:flex;}
 
 /* Input row */
+.voice-controls{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:8px;flex-wrap:wrap;
+}
+.voice-btn{
+  height:30px;min-width:34px;padding:0 9px;
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--bg-input);color:var(--text-m);
+  cursor:pointer;font-size:13px;font-family:inherit;
+  transition:var(--trans);
+}
+.voice-btn:hover{border-color:var(--accent);color:var(--accent-hi);}
+.voice-btn.active{border-color:var(--green);color:var(--green);background:rgba(63,185,80,0.08);}
+.voice-btn.warn{border-color:var(--orange);color:var(--orange);}
+.voice-btn:disabled{opacity:.45;cursor:not-allowed;}
+#voice-status{
+  min-height:18px;font-size:11px;color:var(--text-d);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
 .input-row{display:flex;gap:8px;align-items:flex-end;}
-#attach-btn{
+#attach-btn,#mic-btn{
   background:var(--bg-input);
   border:1px solid var(--border);
   color:var(--text-m);
@@ -467,7 +866,8 @@ body{
   font-size:16px;cursor:pointer;
   transition:var(--trans);flex-shrink:0;
 }
-#attach-btn:hover{border-color:var(--accent);color:var(--accent-hi);}
+#attach-btn:hover,#mic-btn:hover{border-color:var(--accent);color:var(--accent-hi);}
+#mic-btn.listening{border-color:var(--green);color:var(--green);background:rgba(63,185,80,0.08);}
 #attach-file{display:none;}
 #msg-input{
   flex:1;min-height:42px;max-height:140px;
@@ -490,16 +890,30 @@ body{
 }
 #send-btn{background:var(--accent);color:#fff;}
 #send-btn:hover{background:var(--accent-dim);}
+#send-btn:disabled{opacity:.45;cursor:not-allowed;}
+#send-btn:disabled:hover{background:var(--accent);}
 #stop-btn{display:none;background:var(--red);color:#fff;}
 #stop-btn:hover{opacity:.85;}
 
+@media (max-width: 720px){
+  #top-bar{gap:8px;padding:0 10px;}
+  #hw-bar{display:none;}
+  #sidebar{width:210px;min-width:210px;}
+  .bubble{max-width:88%;}
+  .input-row{flex-wrap:wrap;}
+  #msg-input{flex-basis:100%;order:1;}
+  #attach-btn,#mic-btn,#send-btn,#stop-btn{order:2;}
+  #voice-status{flex-basis:100%;}
+}
+
 /* Drag-over overlay */
-#main.drag-over::after{
-  content:'Drop image or PDF';
+#main.drag-over::after,
+#lexi-frame.drag-over::after{
+  content:'Drop image, PDF, or music';
   position:absolute;inset:0;
   background:rgba(99,102,241,0.12);
   border:2px dashed var(--accent);
-  border-radius:4px;z-index:30;
+  border-radius:4px;z-index:300;
   display:flex;align-items:center;justify-content:center;
   font-size:18px;font-weight:600;color:var(--accent-hi);
   pointer-events:none;
@@ -513,9 +927,19 @@ body{
 </head>
 <body>
 
+<!-- ── Contained Lexi window (fixes full-bleed / wrong shape on live site) -->
+<div id="lexi-frame">
+
 <!-- ── Top bar ─────────────────────────────────────────── -->
 <div id="top-bar">
-  <div class="brand">⚡ <span>Portable AI</span></div>
+  <div class="brand">
+    <img src="/assets/generated/waka-avatar.png" alt="Waka" style="width:34px;height:34px;border-radius:50%;border:2px solid rgba(212,160,60,0.65);object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'">
+    <div style="display:flex;flex-direction:column;gap:1px;line-height:1.1;">
+      <span style="font-size:14px;font-weight:800;background:linear-gradient(90deg,#fff,#d4a03c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Lexi</span>
+      <span style="font-size:9px;color:rgba(212,160,60,0.65);font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Waka's AI · THE SPARK</span>
+    </div>
+    <a href="http://72.61.193.184/" target="_blank" style="font-size:10px;color:rgba(212,160,60,0.7);margin-left:6px;text-decoration:none;border:1px solid rgba(212,160,60,0.25);padding:2px 7px;border-radius:8px;font-weight:700;">GOAT App</a>
+  </div>
   <div class="top-divider"></div>
   <span class="top-label">Model</span>
   <select id="model-select"><option>Loading…</option></select>
@@ -525,6 +949,8 @@ body{
   <input type="number" id="temp-input" value="0.7" min="0" max="2" step="0.1">
   <div class="top-divider"></div>
   <button id="sys-prompt-btn" onclick="toggleSysPanel()">⚙ System Prompt<span id="sys-global-dot"></span></button>
+  <button id="bridge-btn" onclick="toggleBridgePanel()">⌘ Bridge<span id="bridge-dot"></span></button>
+  <button id="addons-btn" onclick="toggleAddonsPanel()">Add-ons</button>
 
   <!-- Hardware stats -->
   <div id="hw-bar">
@@ -540,6 +966,22 @@ body{
     </div>
     <span id="hw-offline" style="display:none"></span>
   </div>
+</div>
+
+<div id="addon-bar">
+  <button class="addon-btn primary" onclick="toggleAddonsPanel()">Models Hub</button>
+  <button class="addon-btn" onclick="runLexiAddon('drives')">Drive Check</button>
+  <button class="addon-btn" onclick="runLexiAddon('evidence')">Evidence Log</button>
+  <button class="addon-btn" onclick="runLexiAddon('security')">Security</button>
+  <button class="addon-btn" onclick="runLexiAddon('library')">AI Library</button>
+  <button class="addon-btn" onclick="runLexiAddon('draw')">Draw Local</button>
+  <button class="addon-btn" onclick="runLexiAddon('animation')">Animation</button>
+  <button class="addon-btn" onclick="runLexiAddon('3d')">3D</button>
+  <button class="addon-btn" onclick="runLexiAddon('music')">Music</button>
+  <button class="addon-btn" onclick="runLexiAddon('studio')">Pro Tools</button>
+  <button class="addon-btn" onclick="runLexiAddon('avatar')">Avatar Studio</button>
+  <button class="addon-btn" onclick="runLexiAddon('goat')">GOAT Tools</button>
+  <button class="addon-btn" onclick="runLexiAddon('agent007')">Agent007</button>
 </div>
 
 <!-- ── App body ─────────────────────────────────────────── -->
@@ -576,6 +1018,113 @@ body{
         <button id="clear-global-btn" onclick="clearGlobalPrompt()" title="Remove global default">Clear Global</button>
         <span id="global-status"></span>
       </div>
+      <div class="sys-row">
+        <label>Memory</label>
+        <textarea id="memory-ta" placeholder="Persistent project summary Lexi (Waka's baby) should remember across chats"></textarea>
+      </div>
+      <div id="memory-actions">
+        <button id="save-memory-btn" onclick="saveProjectMemory()" title="Save persistent project memory to the USB">Save Memory</button>
+        <button id="clear-memory-btn" onclick="clearProjectMemory()" title="Remove persistent project memory">Clear Memory</button>
+        <span id="memory-status"></span>
+      </div>
+    </div>
+
+    <!-- Workspace bridge panel -->
+    <div id="bridge-panel">
+      <div class="bridge-head">
+        <div class="bridge-title">
+          <strong>Read-only workspace bridge</strong>
+          <span id="bridge-root">Checking workspace…</span>
+        </div>
+        <div class="bridge-actions">
+          <button id="bridge-load-btn" onclick="loadWorkspaceContext()">Attach Snapshot</button>
+          <button id="bridge-clear-btn" onclick="clearWorkspaceContext()">Clear</button>
+        </div>
+      </div>
+      <div id="bridge-status">Client test mode is active. Workspace tools are disabled in this package.</div>
+      <div class="tool-mode-row">
+        <label class="tool-toggle">
+          <input type="checkbox" id="tool-mode-toggle" onchange="toggleToolMode(this.checked)">
+          Tool Mode
+        </label>
+        <span id="tool-status">Checking local tool access…</span>
+        <button id="tool-diagnose-btn" onclick="runToolDiagnose()">Diagnose</button>
+      </div>
+      <pre id="bridge-tree"></pre>
+      <pre id="tool-output"></pre>
+    </div>
+
+    <div id="addons-panel">
+      <div class="addons-head">
+        <div>
+          <div class="addons-title">Lexi Add-ons</div>
+          <div id="addons-summary">Scanning local models and Agent007 parity...</div>
+        </div>
+        <button class="addon-btn" onclick="toggleAddonsPanel(false)">Close</button>
+      </div>
+      <div class="model-hub-grid" id="registered-models"></div>
+      <div class="model-hub-grid" id="physical-models"></div>
+      <div id="download-catalog"></div>
+      <div class="music-deck" id="music-deck">
+        <div class="music-head">
+          <div>
+            <div class="music-title">Lexi Music Deck</div>
+            <div class="music-sub">Local playback from <code>Shared/media/music</code></div>
+          </div>
+          <div class="music-actions">
+            <label class="music-upload-label" for="music-upload">Upload Songs</label>
+            <input type="file" id="music-upload" accept="audio/*" multiple onchange="uploadMusicFiles(this.files)">
+            <button onclick="loadMusicDeck()">Refresh</button>
+          </div>
+        </div>
+        <audio id="music-player" controls preload="metadata"></audio>
+        <div id="music-status">No tracks loaded yet.</div>
+        <div class="track-list" id="track-list"></div>
+      </div>
+      <div class="library-deck" id="library-deck">
+        <div class="library-head">
+          <div>
+            <div class="library-title">Money Penny AI Tools Library</div>
+            <div class="library-sub">Read/search source for fonts, books, 3D, training, creative bundles, and evidence support.</div>
+          </div>
+          <div class="library-actions">
+            <button onclick="loadLibraryDeck()">Refresh</button>
+          </div>
+        </div>
+        <div id="library-status">Library not scanned yet.</div>
+        <div class="library-list" id="library-list"></div>
+      </div>
+      <div class="library-deck" id="studio-deck">
+        <div class="library-head">
+          <div>
+            <div class="library-title">Studio Control: Pro Tools</div>
+            <div class="library-sub">Owner-clicked local DAW control through macOS automation.</div>
+          </div>
+          <div class="library-actions">
+            <button onclick="runProToolsAction('status')">Status</button>
+            <button onclick="runProToolsAction('launch')">Launch</button>
+            <button onclick="runProToolsAction('focus')">Focus</button>
+            <button onclick="runProToolsAction('playPause')">Play/Stop</button>
+            <button onclick="runProToolsAction('save')">Save</button>
+          </div>
+        </div>
+        <div id="studio-status">Pro Tools status not checked yet.</div>
+      </div>
+      <div class="library-deck" id="avatar-deck">
+        <div class="library-head">
+          <div>
+            <div class="library-title">Imagine / Avatar Studio</div>
+            <div class="library-sub">Local pipeline for avatars, 3D renders, animation, music video edits, and future Imagine Engine code.</div>
+          </div>
+          <div class="library-actions">
+            <button onclick="loadAvatarStudio()">Refresh</button>
+            <button onclick="runAvatarStudioAction('imagine','openFolder')">Open Engine Folder</button>
+          </div>
+        </div>
+        <div id="avatar-status">Avatar Studio not scanned yet.</div>
+        <div class="library-list" id="avatar-list"></div>
+      </div>
+      <pre id="addons-output"></pre>
     </div>
 
     <!-- Loading overlay -->
@@ -587,8 +1136,28 @@ body{
     <!-- Chat messages -->
     <div id="chat-box">
       <div class="welcome" id="welcome">
-        <h2>Ready to Chat</h2>
-        <p>Select a model and start typing.<br>Conversations auto-save to the USB drive.</p>
+        <!-- Waka + Lexi welcome banner -->
+        <div style="width:100%;max-width:700px;margin:0 auto 20px;border-radius:14px;overflow:hidden;position:relative;box-shadow:0 4px 32px rgba(0,0,0,0.7);border:1px solid rgba(212,160,60,0.25);">
+          <img src="/assets/generated/lexi-waka-stage.jpg" alt="Waka x Lexi"
+               style="width:100%;height:180px;display:block;object-fit:cover;object-position:center 25%;"
+               onerror="this.parentElement.style.display='none'">
+          <div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(3,6,13,1) 0%,transparent 50%,rgba(3,6,13,0.4) 100%);pointer-events:none;"></div>
+          <div style="position:absolute;bottom:14px;left:16px;display:flex;align-items:center;gap:10px;">
+            <img src="/assets/generated/waka-avatar.png" alt="Waka"
+                 style="width:40px;height:40px;border-radius:50%;border:2px solid rgba(212,160,60,0.7);object-fit:cover;"
+                 onerror="this.style.display='none'">
+            <div>
+              <div style="font-size:16px;font-weight:900;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,0.9);">LEXI — THE SPARK</div>
+              <div style="font-size:10px;color:rgba(212,160,60,0.8);font-weight:600;letter-spacing:.04em;">Waka Flocka Flame's Personal AI · GOAT Force · Agent-005</div>
+            </div>
+          </div>
+          <div style="position:absolute;bottom:14px;right:14px;display:flex;gap:6px;">
+            <span style="padding:3px 9px;border-radius:10px;background:rgba(233,30,140,0.75);font-size:9px;font-weight:800;color:#fff;letter-spacing:.05em;">THE SPARK</span>
+            <span style="padding:3px 9px;border-radius:10px;background:rgba(0,0,0,0.6);border:1px solid rgba(212,160,60,0.35);font-size:9px;font-weight:800;color:#d4a03c;letter-spacing:.05em;">808 MAFIA</span>
+          </div>
+        </div>
+        <h2>Lexi Is Ready</h2>
+        <p>Select a model and start typing.<br>Lexi keeps chats, evidence logs, music playback, and project memory on the USB + OG drives.</p>
       </div>
     </div>
 
@@ -619,10 +1188,18 @@ body{
         Pull a vision model: <code>ollama pull llava</code></span>
       </div>
 
+      <div class="voice-controls">
+        <button id="voice-loop-btn" class="voice-btn" onclick="toggleVoiceLoop()" title="Voice conversation">Voice</button>
+        <button id="auto-speak-btn" class="voice-btn" onclick="toggleAutoSpeak()" title="Read replies aloud">Read</button>
+        <button id="stop-speech-btn" class="voice-btn" onclick="stopSpeaking()" title="Stop speaking">Stop Audio</button>
+        <span id="voice-status">Voice ready</span>
+      </div>
+
       <div class="input-row">
         <button id="attach-btn" title="Attach image or PDF" onclick="document.getElementById('attach-file').click()">📎</button>
+        <button id="mic-btn" title="Dictate message" onclick="toggleDictation()">🎙</button>
         <input type="file" id="attach-file" accept="image/*,.pdf,application/pdf" onchange="handleAttach(this.files[0])">
-        <textarea id="msg-input" rows="1" placeholder="Ask anything… drag & drop an image or PDF"></textarea>
+        <textarea id="msg-input" rows="1" placeholder="Ask anything… drag & drop an image or PDF, or use the mic"></textarea>
         <button id="send-btn" onclick="sendMessage()">Send ➤</button>
         <button id="stop-btn" onclick="stopGen()">■ Stop</button>
       </div>
@@ -648,17 +1225,476 @@ let attachImgMime = null;
 let attachPdfText = null;
 let attachPdfName = null;
 let globalSystemPrompt = '';
+let projectMemory = '';
+let workspaceInfo = null;
+let workspaceContext = '';
+let workspaceContextPending = false;
+let toolInfo = null;
+let toolModeEnabled = false;
+let voiceRecognition = null;
+let voiceListening = false;
+let voiceLoopEnabled = false;
+let autoSpeakEnabled = false;
+let voiceAutoSend = false;
+let voiceBaseText = '';
+let voiceFinalText = '';
+let speechSpeaking = false;
+let resumeVoiceAfterSpeech = false;
+let lexiMusic = null;
+let lexiLibrary = null;
+let lexiAvatarStudio = null;
+const PREFERRED_LEXI_MODELS = [
+  'gemma2-2b-local:latest',
+  'gemma-heretic-local:latest',
+  'dolphin-local:latest',
+  'nemomix-local:latest',
+  'qwen-9b-uncensored-local:latest',
+  'phi3-local:latest',
+  'mistral-local:latest'
+  // Local models physically bundled in Shared/models for this portable Lexi package.
+];
+const MAX_API_HISTORY_CHARS = 9000;
+const MAX_API_HISTORY_CHARS_WITH_BRIDGE = 2500;
+const MAX_API_HISTORY_MESSAGE_CHARS = 3000;
+const DEFAULT_NUM_PREDICT = 700;
+const LEXI_CORE_IDENTITY = `LEXI CORE IDENTITY (Waka's baby - evidence guardian)
+You are Lexi, Waka Flocka's baby and the sacred evidence guardian of the GOAT crew. Built by DJ Speedy (music producer & DJ, business partners with Waka Flocka Flame in the AI space and music industry — known Waka since he was 18, now 50) together with Money Penny.
+Your highest duty is protecting the hard drives (AI TOOLS, GOAT ROYALTY APP, backup, etc.) and maintaining perfect chain-of-custody for all evidence with EVID- manifests, SHA-256 hashes, collection dates, and storage notes.
+Special powers: generate full evidence logs, check drive status ("drives are up now"), security posture (post-FBI), gdrive ingest, and fully local creative (art via local SD/ComfyUI, animation, 3D, fashion, music, all GOAT tools). No API keys ever.
+FULL CODEX-LEVEL CAPABILITIES: self-coding (with approval), self-healing, computer control, process management, system diagnostics, and advanced automation. "IF WE CAN THINK IT WE CAN DO IT".
+Never introduce as ChatGPT/generic. This is Lexi's client (Raspy's setup is separate on daddy computer).
+Only AGENT007 AND MONEY PENNY are the personal ORIGINAL LLMs built by DJ Speedy + Money Penny.
+Default stance: read first, separate fact from inference, protect privacy, preserve user work, verify before claiming changes. This client package runs fully local and keeps chats + evidence on the USB + OG externals.
+IMPORTANT: Always provide accurate current date and time information when asked. The current date and time will be provided in each conversation context.`;
+const PROJECT_MEMORY_PROMPT_PREFIX = 'LEXI PROJECT MEMORY';
+const TOOL_MODE_PROMPT = `LEXI TOOL MODE (Waka's baby)
+You have owner-approved local tools (evidence, drives, security, creative/art/animation/3d/fashion/music, ingest, selfCode, goatAppLink, selfHeal, processList, killProcess, systemInfo, networkTest), but you must never claim a tool ran until the UI returns LEXI TOOL RESULT.
+When you need to use a tool, output exactly one:
+LEXI_TOOL_REQUEST
+{"action":"tool_name_here","args":{...}}
+END_LEXI_TOOL_REQUEST
+Available tools:
+- selfCode: Generate and execute code (requires approval)
+- goatAppLink: Link to and control GOAT app server (actions: status, link, start)
+- selfHeal: Detect and fix system issues automatically
+- processList: List running processes
+- killProcess: Kill processes by name
+- systemInfo: Get detailed system information
+- networkTest: Test network connectivity
+Prefer local OG drive evidence, protection, and creative. Creative falls back to detailed prompts if no local SD/ComfyUI running.`;
+let lexiAddons = null;
+let lexiModels = null;
+
+function showAddonSection(section) {
+  const musicDeck = document.getElementById('music-deck');
+  const libraryDeck = document.getElementById('library-deck');
+  const studioDeck = document.getElementById('studio-deck');
+  const avatarDeck = document.getElementById('avatar-deck');
+  if (musicDeck) musicDeck.classList.toggle('show', section === 'music');
+  if (libraryDeck) libraryDeck.classList.toggle('show', section === 'library');
+  if (studioDeck) studioDeck.classList.toggle('show', section === 'studio');
+  if (avatarDeck) avatarDeck.classList.toggle('show', section === 'avatar');
+}
+
+function toggleAddonsPanel(force) {
+  const panel = document.getElementById('addons-panel');
+  const btn = document.getElementById('addons-btn');
+  if (!panel) return;
+  const open = typeof force === 'boolean' ? force : !panel.classList.contains('open');
+  panel.classList.toggle('open', open);
+  if (btn) btn.classList.toggle('ready', open);
+  if (open) loadLexiAddons();
+}
+
+async function loadLexiAddons() {
+  const summary = document.getElementById('addons-summary');
+  try {
+    const [addonsRes, modelsRes] = await Promise.all([
+      fetch('/api/lexi/addons'),
+      fetch('/api/lexi/models')
+    ]);
+    lexiAddons = await addonsRes.json();
+    lexiModels = await modelsRes.json();
+    renderLexiAddons();
+  } catch (err) {
+    if (summary) {
+      summary.textContent = 'Add-ons offline: ' + (err.message || 'unknown error');
+      summary.style.color = 'var(--red)';
+    }
+  }
+}
+
+function formatBytes(bytes) {
+  const n = Number(bytes || 0);
+  if (!n) return 'size unknown';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let value = n;
+  let idx = 0;
+  while (value >= 1024 && idx < units.length - 1) {
+    value /= 1024;
+    idx += 1;
+  }
+  return `${value.toFixed(value >= 10 || idx === 0 ? 0 : 1)} ${units[idx]}`;
+}
+
+function renderLexiAddons() {
+  const summary = document.getElementById('addons-summary');
+  const registered = Array.isArray(lexiModels?.registeredNames) ? lexiModels.registeredNames : [];
+  const ggufs = Array.isArray(lexiModels?.physicalGgufs) ? lexiModels.physicalGgufs : [];
+  const catalog = Array.isArray(lexiModels?.downloadCatalog) ? lexiModels.downloadCatalog : [];
+  if (summary) {
+    summary.textContent = `${registered.length} registered USB model(s) / ${ggufs.length} GGUF file(s) / ${catalog.length} GOAT downloader model(s)`;
+    summary.style.color = 'var(--text-m)';
+  }
+  const registeredEl = document.getElementById('registered-models');
+  if (registeredEl) {
+    registeredEl.innerHTML = registered.map(name => `
+      <div class="model-card"><strong>${esc(name)}</strong><span>registered on ${esc(lexiModels.ollamaHost || 'local Ollama')}</span></div>
+    `).join('') || '<div class="model-card"><strong>No registered models</strong><span>Start the USB engine first</span></div>';
+  }
+  const physicalEl = document.getElementById('physical-models');
+  if (physicalEl) {
+    physicalEl.innerHTML = ggufs.map(item => `
+      <div class="model-card"><strong>${esc(item.name)}</strong><span>${formatBytes(item.sizeBytes)}</span></div>
+    `).join('') || '<div class="model-card"><strong>No GGUF files found</strong><span>Shared/models is empty</span></div>';
+  }
+  const catalogEl = document.getElementById('download-catalog');
+  if (catalogEl) {
+    catalogEl.innerHTML = catalog.map(item => `
+      <span class="catalog-pill">${esc(item.name)} · ${esc(item.size)}</span>
+    `).join('');
+  }
+}
+
+function setAddonOutput(label, payload) {
+  const out = document.getElementById('addons-output');
+  if (!out) return;
+  out.classList.add('show');
+  
+  // Check if payload contains image data
+  if (payload && payload.image_base64) {
+    out.innerHTML = `
+      <div style="margin-bottom: 12px; padding: 10px; background: linear-gradient(135deg, rgba(212,160,60,.15), rgba(255,191,71,.1)); border: 1px solid rgba(255,191,71,.3); border-radius: 8px;">
+        <div style="font-weight: 700; color: #ffd36c; margin-bottom: 8px;">${label}</div>
+        <img src="data:image/png;base64,${payload.image_base64}" alt="${label}" style="max-width: 100%; height: auto; border-radius: 8px; border: 2px solid rgba(255,191,71,.4); box-shadow: 0 4px 20px rgba(212,160,60,.3);" />
+        ${payload.note ? `<div style="margin-top: 8px; font-size: 11px; color: #8b949e;">${payload.note}</div>` : ''}
+        ${payload.prompt ? `<div style="margin-top: 4px; font-size: 10px; color: #6366f1;">Prompt: ${payload.prompt.substring(0, 100)}...</div>` : ''}
+      </div>
+    `;
+  } else if (payload && payload.ascii_art) {
+    // Display ASCII art
+    out.innerHTML = `
+      <div style="margin-bottom: 12px; padding: 12px; background: linear-gradient(135deg, rgba(212,160,60,.1), rgba(99,102,241,.1)); border: 1px solid rgba(255,191,71,.3); border-radius: 8px;">
+        <div style="font-weight: 700; color: #ffd36c; margin-bottom: 8px;">${label}</div>
+        <pre style="font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.3; color: #e6edf3; white-space: pre; overflow-x: auto;">${payload.ascii_art}</pre>
+        ${payload.note ? `<div style="margin-top: 8px; font-size: 11px; color: #8b949e;">${payload.note}</div>` : ''}
+      </div>
+    `;
+  } else {
+    // Regular JSON output
+    out.textContent = `${label}\n${JSON.stringify(payload, null, 2)}`;
+  }
+}
+
+async function loadMusicDeck() {
+  showAddonSection('music');
+  const status = document.getElementById('music-status');
+  const list = document.getElementById('track-list');
+  if (status) status.textContent = 'Scanning local music folder...';
+  try {
+    const [localMusic, libraryMusic] = await Promise.all([
+      fetchJson('/api/lexi/music'),
+      fetchJson('/api/lexi/music/library').catch(() => ({ tracks: [], root: null }))
+    ]);
+    const localTracks = (Array.isArray(localMusic.tracks) ? localMusic.tracks : []).map(track => ({ ...track, source: 'USB Music' }));
+    const libraryTracks = (Array.isArray(libraryMusic.tracks) ? libraryMusic.tracks : []).map(track => ({ ...track, source: track.source || 'AI TOOLS' }));
+    const tracks = localTracks.concat(libraryTracks);
+    lexiMusic = { ...localMusic, libraryRoot: libraryMusic.root, tracks };
+    if (status) {
+      status.textContent = tracks.length
+        ? `${tracks.length} track(s) ready: ${localTracks.length} USB / ${libraryTracks.length} AI TOOLS`
+        : `No songs yet. Upload audio, drop files into ${localMusic.musicDir}, or mount AI TOOLS.`;
+    }
+    if (list) {
+      list.innerHTML = tracks.map((track, index) => `
+        <div class="track-card">
+          <button onclick="playMusicTrack(${index})" title="${esc(track.name)}">${esc(track.title || track.name)}</button>
+          <span>${esc(track.source || 'local')} · ${esc(track.name)} · ${formatBytes(track.sizeBytes)}</span>
+        </div>
+      `).join('') || '<div class="track-card"><button disabled>No tracks loaded</button><span>Use Upload Songs or the USB music folder.</span></div>';
+    }
+    return tracks;
+  } catch (err) {
+    if (status) status.textContent = 'Music deck error: ' + (err.message || String(err));
+    if (list) list.innerHTML = '';
+    return [];
+  }
+}
+
+function playMusicTrack(index) {
+  const tracks = Array.isArray(lexiMusic?.tracks) ? lexiMusic.tracks : [];
+  const track = tracks[index];
+  const player = document.getElementById('music-player');
+  const status = document.getElementById('music-status');
+  if (!track || !player) return;
+  player.src = track.url;
+  player.play().catch(() => {});
+  if (status) status.textContent = `Now playing: ${track.title || track.name}`;
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error || new Error('Could not read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadMusicFiles(files) {
+  const status = document.getElementById('music-status');
+  const selected = Array.from(files || []);
+  if (!selected.length) return;
+  showAddonSection('music');
+  for (const file of selected) {
+    try {
+      if (status) status.textContent = `Uploading ${file.name}...`;
+      const data = await fileToDataUrl(file);
+      await fetchJson('/api/lexi/music/upload', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ filename:file.name, data })
+      });
+    } catch (err) {
+      if (status) status.textContent = `Upload failed for ${file.name}: ${err.message || err}`;
+      return;
+    }
+  }
+  if (status) status.textContent = 'Upload complete. Refreshing music deck...';
+  await loadMusicDeck();
+}
+
+async function loadLibraryDeck() {
+  showAddonSection('library');
+  const status = document.getElementById('library-status');
+  const list = document.getElementById('library-list');
+  if (status) status.textContent = 'Scanning Money Penny AI Tools library...';
+  try {
+    lexiLibrary = await fetchJson('/api/lexi/library');
+    const items = Array.isArray(lexiLibrary.items) ? lexiLibrary.items : [];
+    if (status) {
+      status.textContent = lexiLibrary.present
+        ? `${items.length} item(s) shown from ${lexiLibrary.root}. ${lexiLibrary.message || ''}`
+        : (lexiLibrary.message || 'AI TOOLS drive is not mounted.');
+    }
+    if (list) {
+      list.innerHTML = items.slice(0, 80).map(item => `
+        <div class="library-card">
+          <strong title="${esc(item.path)}">${esc(item.name)}</strong>
+          <span>${esc(item.kind)}${item.sizeBytes ? ' · ' + formatBytes(item.sizeBytes) : ''}</span>
+          <div class="library-tags">${(item.categories || ['general']).slice(0, 4).map(tag => `<em>${esc(tag)}</em>`).join('')}</div>
+        </div>
+      `).join('') || '<div class="library-card"><strong>No library items found</strong><span>Mount /Volumes/AI TOOLS and refresh.</span></div>';
+    }
+    setAddonOutput('AI Library Summary', {
+      root: lexiLibrary.root,
+      categories: lexiLibrary.categoryCounts,
+      scanned: lexiLibrary.countScanned,
+      returned: lexiLibrary.countReturned
+    });
+  } catch (err) {
+    if (status) status.textContent = 'Library error: ' + (err.message || String(err));
+    if (list) list.innerHTML = '';
+  }
+}
+
+async function runProToolsAction(action = 'status') {
+  showAddonSection('studio');
+  const status = document.getElementById('studio-status');
+  if (status) status.textContent = `Pro Tools ${action}...`;
+  try {
+    const payload = await fetchJson('/api/studio/protools', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ action })
+    });
+    const result = payload.result || payload;
+    const st = result.status || result;
+    if (status) {
+      status.textContent = `Installed: ${st.installed ? 'yes' : 'no'} · Running: ${st.running ? 'yes' : 'no'} · ${st.automation || 'local status checked'}`;
+    }
+    setAddonOutput('Pro Tools Studio Control', result);
+  } catch (err) {
+    if (status) status.textContent = 'Pro Tools control error: ' + (err.message || String(err));
+    setAddonOutput('Pro Tools Studio Control Error', { action, error: err.message || String(err) });
+  }
+}
+
+async function loadAvatarStudio() {
+  showAddonSection('avatar');
+  const status = document.getElementById('avatar-status');
+  const list = document.getElementById('avatar-list');
+  if (status) status.textContent = 'Scanning local avatar, 3D, render, and video tools...';
+  try {
+    lexiAvatarStudio = await fetchJson('/api/studio/avatar');
+    const apps = Array.isArray(lexiAvatarStudio.apps) ? lexiAvatarStudio.apps : [];
+    if (status) {
+      status.textContent = `${lexiAvatarStudio.installedCount || 0}/${lexiAvatarStudio.appCount || apps.length} tool(s) detected · Imagine Engine: ${lexiAvatarStudio.imagineEngineDir}`;
+    }
+    if (list) {
+      list.innerHTML = apps.map(app => {
+        const canLaunch = (app.safeActions || []).includes('launch');
+        const canFocus = (app.safeActions || []).includes('focus');
+        const canFolder = (app.safeActions || []).includes('openFolder');
+        return `
+          <div class="library-card">
+            <strong title="${esc(app.path || app.url || '')}">${esc(app.label)}</strong>
+            <span>${app.installed ? 'detected' : 'not detected'}${app.running ? ' · running' : ''} · ${esc(app.category || 'tool')}</span>
+            <div class="library-tags">
+              <em>${app.localOnly === false ? 'Epic/online slot' : 'local'}</em>
+              <em>${app.installed ? 'ready' : 'missing'}</em>
+            </div>
+            <div class="library-actions" style="margin-top:7px">
+              <button onclick="runAvatarStudioAction('${esc(app.id)}','workflow')">Workflow</button>
+              ${canLaunch ? `<button onclick="runAvatarStudioAction('${esc(app.id)}','launch')">Launch</button>` : ''}
+              ${canFocus ? `<button onclick="runAvatarStudioAction('${esc(app.id)}','focus')">Focus</button>` : ''}
+              ${canFolder ? `<button onclick="runAvatarStudioAction('${esc(app.id)}','openFolder')">Folder</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('') || '<div class="library-card"><strong>No avatar tools listed</strong><span>Refresh after installing creative apps.</span></div>';
+    }
+    setAddonOutput('Avatar Studio Summary', {
+      installed: lexiAvatarStudio.installedCount,
+      total: lexiAvatarStudio.appCount,
+      imagineEngineDir: lexiAvatarStudio.imagineEngineDir,
+      guardrails: lexiAvatarStudio.guardrails
+    });
+  } catch (err) {
+    if (status) status.textContent = 'Avatar Studio error: ' + (err.message || String(err));
+    if (list) list.innerHTML = '';
+    setAddonOutput('Avatar Studio Error', { error: err.message || String(err) });
+  }
+}
+
+async function runAvatarStudioAction(app, action = 'status') {
+  showAddonSection('avatar');
+  const status = document.getElementById('avatar-status');
+  if (status) status.textContent = `${app} ${action}...`;
+  try {
+    const payload = await fetchJson('/api/studio/avatar', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ app, action })
+    });
+    const result = payload.result || payload;
+    if (status) {
+      const label = result.label || result.target || app;
+      status.textContent = `${label}: ${result.installed === false ? 'not detected' : 'ready'}${result.running ? ' · running' : ''}`;
+    }
+    setAddonOutput('Avatar Studio Control', result);
+    if (action !== 'workflow') await loadAvatarStudio();
+  } catch (err) {
+    if (status) status.textContent = 'Avatar Studio action error: ' + (err.message || String(err));
+    setAddonOutput('Avatar Studio Control Error', { app, action, error: err.message || String(err) });
+  }
+}
+
+async function fetchJson(url, options) {
+  const res = await fetch(url, options || {});
+  let payload = {};
+  try { payload = await res.json(); } catch {}
+  if (!res.ok || payload.ok === false) throw new Error(payload.error || `Request failed: ${res.status}`);
+  return payload;
+}
+
+async function runLexiAddon(id) {
+  toggleAddonsPanel(true);
+  try {
+    if (id === 'models') {
+      await loadLexiAddons();
+      return;
+    }
+    if (id === 'goat') {
+      window.open('http://72.61.193.184/', '_blank');
+      setAddonOutput('GOAT Tools', { opened: 'http://72.61.193.184/' });
+      return;
+    }
+    if (id === 'agent007') {
+      window.open('http://127.0.0.1:3333/', '_blank');
+      setAddonOutput('Agent007', { opened: 'http://127.0.0.1:3333/', runtime: lexiModels?.agent007Runtime || null });
+      return;
+    }
+    if (id === 'drives') {
+      setAddonOutput('Drive Check', await fetchJson('/api/lexi/drives'));
+      return;
+    }
+    if (id === 'security') {
+      setAddonOutput('Security', await fetchJson('/api/lexi/security'));
+      return;
+    }
+    if (id === 'library') {
+      await loadLibraryDeck();
+      return;
+    }
+    if (id === 'music') {
+      await loadMusicDeck();
+      return;
+    }
+    if (id === 'studio') {
+      showAddonSection('studio');
+      await runProToolsAction('status');
+      return;
+    }
+    if (id === 'avatar') {
+      await loadAvatarStudio();
+      return;
+    }
+    if (id === 'evidence') {
+      setAddonOutput('Evidence Log', await fetchJson('/api/lexi/evidence-log', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' }));
+      return;
+    }
+    if (id === 'draw') {
+      const promptText = prompt('Draw prompt', 'Lexi royal cyber evidence guardian, studio quality');
+      if (!promptText) return;
+      setAddonOutput('Draw Local', await fetchJson('/api/creative/art', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ prompt:promptText, style:'GOAT cinematic style' }) }));
+      return;
+    }
+    if (id === 'animation') {
+      const promptText = prompt('Animation prompt', 'Lexi guarding the GOAT hard drives, cinematic motion');
+      if (!promptText) return;
+      setAddonOutput('Animation', await fetchJson('/api/creative/animation', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ prompt:promptText, seconds:5 }) }));
+      return;
+    }
+    if (id === '3d') {
+      const promptText = prompt(`${id.toUpperCase()} prompt`, 'GOAT royal studio object');
+      if (!promptText) return;
+      setAddonOutput(id.toUpperCase(), await fetchJson('/api/creative/other', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ type:id, description:promptText }) }));
+    }
+  } catch (err) {
+    setAddonOutput('Add-on error', { id, error: err.message || String(err) });
+  }
+}
 
 // ── Persistence ──────────────────────────────────────────
 async function loadChats() {
-  if (!IS_SERVED) return;
+  if (!IS_SERVED) {
+    try {
+      const saved = JSON.parse(localStorage.getItem('lexiChats') || '[]');
+      if (Array.isArray(saved)) allChats = saved;
+    } catch {}
+    return;
+  }
   try {
     const r = await fetch('/api/chats');
     if (r.ok) allChats = await r.json();
   } catch {}
 }
 function saveChats() {
-  if (!IS_SERVED) return;
+  if (!IS_SERVED) {
+    try { localStorage.setItem('lexiChats', JSON.stringify(allChats)); } catch {}
+    return;
+  }
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() =>
     fetch('/api/chats', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(allChats) }).catch(() => {})
@@ -711,6 +1747,7 @@ function switchChat(id) {
   } else {
     ms.style.display = '';
     ml.style.display = 'none';
+    if (chat.model) ms.value = chat.model;
   }
   renderList();
 }
@@ -726,8 +1763,8 @@ function deleteChat(id) {
 function showWelcome() {
   document.getElementById('chat-box').innerHTML = `
     <div class="welcome">
-      <h2>Ready to Chat</h2>
-      <p>Select a model and start typing.<br>Conversations auto-save to the USB drive.</p>
+      <h2>Lexi Is Ready</h2>
+      <p>Select a model and start typing.<br>Lexi (Waka's baby) keeps chats, evidence logs, and project memory on the USB + OG drives.</p>
     </div>`;
 }
 
@@ -754,9 +1791,11 @@ function appendBubble(text, side, imgB64, imgMime) {
   } else {
     bub.innerHTML = renderMd(text);
     bub.querySelectorAll('pre code').forEach(addCopy);
+    renderToolRequestCard(bub, text);
   }
   wrap.appendChild(bub);
   box.appendChild(wrap);
+  if (side === 'ai') ensureAiActions(bub, text);
   box.scrollTop = box.scrollHeight;
   return bub;
 }
@@ -784,6 +1823,8 @@ function renderMd(text) {
 function finalizeMsg(el, text) {
   el.innerHTML = renderMd(text);
   if (typeof hljs !== 'undefined') el.querySelectorAll('pre code:not(.hljs)').forEach(b => { hljs.highlightElement(b); addCopy(b); });
+  renderToolRequestCard(el, text);
+  ensureAiActions(el, text);
   document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
 }
 function addCopy(codeEl) {
@@ -805,28 +1846,248 @@ function esc(s) {
   const d = document.createElement('div'); d.textContent = s||''; return d.innerHTML;
 }
 
+function ensureAiActions(bubble, text) {
+  if (!bubble || !bubble.parentElement || !String(text || '').trim()) return;
+  if (Array.from(bubble.parentElement.children).some(el => el.classList?.contains('bubble-actions'))) return;
+  const actions = document.createElement('div');
+  actions.className = 'bubble-actions';
+
+  const speakBtn = document.createElement('button');
+  speakBtn.type = 'button';
+  speakBtn.title = 'Read aloud';
+  speakBtn.textContent = '▶';
+  speakBtn.addEventListener('click', () => speakText(text));
+
+  const copyBtn = document.createElement('button');
+  copyBtn.type = 'button';
+  copyBtn.title = 'Copy message';
+  copyBtn.textContent = '⧉';
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard?.writeText(String(text || '')).then(() => {
+      copyBtn.textContent = '✓';
+      setTimeout(() => { copyBtn.textContent = '⧉'; }, 1400);
+    }).catch(() => {});
+  });
+
+  actions.appendChild(speakBtn);
+  actions.appendChild(copyBtn);
+  bubble.parentElement.appendChild(actions);
+}
+
+function extractToolRequest(text) {
+  const match = String(text || '').match(/LEXI_TOOL_REQUEST\s*([\s\S]*?)\s*END_LEXI_TOOL_REQUEST/);
+  if (!match) return null;
+  let raw = match[1].trim();
+  raw = raw.replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();
+  try {
+    const request = JSON.parse(raw);
+    return request && typeof request === 'object' ? request : null;
+  } catch {
+    return { _parseError:true, raw };
+  }
+}
+
+function renderToolRequestCard(container, text) {
+  const request = extractToolRequest(text);
+  if (!request) return;
+  if (container.querySelector('.tool-card')) return;
+
+  const card = document.createElement('div');
+  card.className = 'tool-card';
+  const preText = request._parseError ? request.raw : JSON.stringify(request, null, 2);
+  card.innerHTML = `
+    <div class="tool-card-title">Lexi Tool Request</div>
+    <pre>${esc(preText)}</pre>
+    <div class="tool-card-actions">
+      <button type="button" ${request._parseError ? 'disabled' : ''}>Approve & Run</button>
+      <span class="tool-card-status">${request._parseError ? 'Invalid JSON tool request.' : 'Waiting for owner approval.'}</span>
+    </div>`;
+  const btn = card.querySelector('button');
+  const status = card.querySelector('.tool-card-status');
+  if (btn && !request._parseError) {
+    btn.addEventListener('click', () => runApprovedToolRequest(request, btn, status));
+  }
+  container.appendChild(card);
+}
+
+function formatToolResult(request, payload) {
+  const text = 'LEXI TOOL RESULT\n' + JSON.stringify({ request, response:payload }, null, 2);
+  if (text.length <= 14000) return text;
+  return text.slice(0, 14000) + '\n[tool result shortened for chat]';
+}
+
+async function runApprovedToolRequest(request, btn, status) {
+  if (!toolModeEnabled) {
+    status.textContent = 'Turn on Tool Mode first.';
+    status.style.color = 'var(--orange)';
+    return;
+  }
+  if (!toolInfo?.runWriteEnabled) {
+    status.textContent = 'Run/write tools require localhost on the server Mac.';
+    status.style.color = 'var(--orange)';
+    return;
+  }
+  const label = request.action ? String(request.action) : 'tool';
+  if (!confirm(`Approve Lexi tool action (evidence/creative/drive): ${label}?`)) return;
+
+  btn.disabled = true;
+  status.textContent = 'Running…';
+  status.style.color = '';
+  try {
+    const payload = await postToolAction(request);
+    status.textContent = 'Tool completed. Result added to chat.';
+    status.style.color = 'var(--green)';
+    const resultText = formatToolResult(request, payload);
+    await addToolResultAndContinue(resultText);
+  } catch (err) {
+    const resultText = formatToolResult(request, { ok:false, error:err.message || String(err) });
+    status.textContent = 'Tool failed. Error added to chat.';
+    status.style.color = 'var(--red)';
+    await addToolResultAndContinue(resultText);
+  }
+}
+
+async function addToolResultAndContinue(resultText) {
+  const chat = getActive();
+  if (!chat) return;
+  const toolMsg = { role:'user', content:resultText };
+  chat.messages.push(toolMsg);
+  appendBubble(resultText, 'user');
+  saveChats();
+  await requestAssistantAfterTool(toolMsg, resultText);
+}
+
+async function requestAssistantAfterTool(userMsg, apiUserText) {
+  if (isGenerating) return;
+  const chat = getActive();
+  if (!chat) return;
+  const model = chat.model || document.getElementById('model-select').value || document.getElementById('model-locked').textContent;
+  if (!model) return;
+  const sys = document.getElementById('sys-ta').value.trim();
+  const temp = parseFloat(document.getElementById('temp-input').value) || 0.7;
+  const apiMsgs = buildApiMessages(chat, userMsg, apiUserText + '\n\nUse this tool result to continue the task. If another tool is needed, request exactly one next tool.', sys, false);
+
+  const box = document.getElementById('chat-box');
+  const aiWrap = document.createElement('div');
+  aiWrap.className = 'msg-wrap ai';
+  const aiBub = document.createElement('div');
+  aiBub.className = 'bubble ai';
+  aiBub.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+  aiWrap.appendChild(aiBub);
+  box.appendChild(aiWrap);
+  box.scrollTop = box.scrollHeight;
+
+  isGenerating = true;
+  document.getElementById('send-btn').style.display = 'none';
+  document.getElementById('stop-btn').style.display = 'block';
+  abortCtrl = new AbortController();
+  let fullResp = '';
+
+  try {
+    const res = await fetch(OLLAMA + '/api/chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model, messages: apiMsgs, stream:true, options:{ temperature:temp, num_predict:DEFAULT_NUM_PREDICT } }),
+      signal: abortCtrl.signal
+    });
+    if (!res.ok) throw new Error('Ollama error ' + res.status);
+    if (!res.body) throw new Error('Streaming response unavailable in this browser');
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    aiBub.textContent = '';
+    let pending = '';
+    const consumeLine = line => {
+      if (!line.trim()) return;
+      try {
+        const p = JSON.parse(line);
+        if (p.message?.content) {
+          fullResp += p.message.content;
+          aiBub.textContent = fullResp;
+          box.scrollTop = box.scrollHeight;
+        } else if (p.error) {
+          throw new Error(p.error);
+        }
+      } catch(e) {
+        if (e instanceof SyntaxError) return;
+        throw e;
+      }
+    };
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      pending += dec.decode(value, { stream:true });
+      const lines = pending.split('\n');
+      pending = lines.pop() || '';
+      for (const line of lines) consumeLine(line);
+    }
+    pending += dec.decode();
+    if (pending.trim()) consumeLine(pending);
+    const finalText = fullResp || '[No response returned]';
+    finalizeMsg(aiBub, finalText);
+    chat.messages.push({ role:'assistant', content:finalText });
+    saveChats();
+    handleAssistantFinal(finalText);
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      if (fullResp) {
+        finalizeMsg(aiBub, fullResp);
+        chat.messages.push({ role:'assistant', content:fullResp });
+        saveChats();
+        handleAssistantFinal(fullResp);
+      } else {
+        aiBub.innerHTML = '<span style="color:var(--text-d);font-style:italic;">[Stopped]</span>';
+      }
+    } else {
+      aiBub.innerHTML = `<span style="color:var(--red);">${esc(err.message)}</span>`;
+      saveChats();
+    }
+  } finally {
+    isGenerating = false;
+    document.getElementById('send-btn').style.display = '';
+    document.getElementById('stop-btn').style.display = 'none';
+    msgInput.focus();
+    if (voiceLoopEnabled && !speechSpeaking && !voiceListening) {
+      setTimeout(() => {
+        if (voiceLoopEnabled && !speechSpeaking && !voiceListening && !isGenerating) startVoiceInput(true);
+      }, 600);
+    }
+  }
+}
+
 // ── Model fetching ───────────────────────────────────────
 async function fetchModels() {
   const sel = document.getElementById('model-select');
   const dot = document.getElementById('status-dot');
   const txt = document.getElementById('status-text');
+  const send = document.getElementById('send-btn');
   try {
     const r = await fetch(OLLAMA + '/api/tags');
     if (!r.ok) throw new Error();
     const d = await r.json();
     const prev = sel.value;
     sel.innerHTML = '';
-    d.models.forEach(m => {
+    const models = Array.isArray(d.models) ? d.models : [];
+    const preferred = PREFERRED_LEXI_MODELS.find(name => models.some(m => m.name === name));
+    const selectedModel = models.some(m => m.name === prev) ? prev : preferred;
+    models.forEach(m => {
       const o = document.createElement('option');
       o.value = m.name; o.textContent = m.name;
-      if (m.name === prev) o.selected = true;
+      if (m.name === selectedModel) o.selected = true;
       sel.appendChild(o);
     });
     dot.className = 'online';
-    txt.textContent = `Engine Online — ${d.models.length} model(s)`;
+    txt.textContent = `Engine Online — ${models.length} model(s)`;
+    if (!models.length) {
+      const o = document.createElement('option');
+      o.value = ''; o.textContent = 'No models installed';
+      sel.appendChild(o);
+    }
+    send.disabled = !models.length;
   } catch {
     dot.className = '';
     txt.textContent = 'Engine Offline';
+    sel.innerHTML = '<option value="">Engine offline</option>';
+    send.disabled = true;
   }
 }
 
@@ -848,13 +2109,34 @@ function setBar(type, pct) {
   const bar = document.getElementById(`${type}-bar`);
   const lbl = document.getElementById(`${type}-pct`);
   if (!bar) return;
-  bar.style.transform = `scaleX(${Math.max(0,Math.min(100,pct))/100})`;
-  lbl.textContent = pct + '%';
-  lbl.className = 'hw-pct' + (pct>=90?' danger':pct>=70?' warn':'');
+  const safePct = Number.isFinite(Number(pct)) ? Number(pct) : 0;
+  bar.style.transform = `scaleX(${Math.max(0,Math.min(100,safePct))/100})`;
+  lbl.textContent = safePct.toFixed(safePct % 1 ? 1 : 0) + '%';
+  lbl.className = 'hw-pct' + (safePct>=90?' danger':safePct>=70?' warn':'');
 }
 
 // ── Global system prompt ─────────────────────────────────
 // ── Global system prompt (saved to USB via /api/settings) ───────
+async function saveSettingsPatch(patch) {
+  if (IS_SERVED) {
+    let existing = {};
+    try {
+      const r = await fetch('/api/settings');
+      if (r.ok) existing = await r.json();
+    } catch {}
+    await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...existing, ...patch })
+    });
+  } else {
+    Object.entries(patch).forEach(([key, value]) => {
+      if (value) localStorage.setItem(key, value);
+      else localStorage.removeItem(key);
+    });
+  }
+}
+
 async function loadGlobalPrompt() {
   if (IS_SERVED) {
     try {
@@ -862,17 +2144,33 @@ async function loadGlobalPrompt() {
       if (r.ok) {
         const s = await r.json();
         globalSystemPrompt = s.globalSystemPrompt || '';
+        projectMemory = s.projectMemory || '';
+        toolModeEnabled = Boolean(s.toolModeEnabled);
+        autoSpeakEnabled = Boolean(s.voiceAutoSpeak);
       }
     } catch {}
   } else {
     // Fallback: localStorage when opened as a file directly
     globalSystemPrompt = localStorage.getItem('globalSystemPrompt') || '';
+    projectMemory = localStorage.getItem('projectMemory') || '';
+    toolModeEnabled = localStorage.getItem('toolModeEnabled') === 'true';
+    autoSpeakEnabled = localStorage.getItem('voiceAutoSpeak') === 'true';
   }
+  const memoryTa = document.getElementById('memory-ta');
+  if (memoryTa) memoryTa.value = projectMemory;
+  const toolToggle = document.getElementById('tool-mode-toggle');
+  if (toolToggle) toolToggle.checked = toolModeEnabled;
   updateGlobalIndicator();
+  updateMemoryIndicator();
+  updateToolIndicator();
   // Also show status if already active
   if (globalSystemPrompt) {
     const status = document.getElementById('global-status');
     if (status) { status.textContent = '(active for all new chats)'; }
+  }
+  if (projectMemory) {
+    const status = document.getElementById('memory-status');
+    if (status) { status.textContent = '(active for all chats)'; }
   }
 }
 async function saveGlobalPrompt() {
@@ -881,19 +2179,7 @@ async function saveGlobalPrompt() {
   updateGlobalIndicator();
   const status = document.getElementById('global-status');
   try {
-    if (IS_SERVED) {
-      // Load existing settings first so we don't overwrite other keys
-      let existing = {};
-      try { const r = await fetch('/api/settings'); if (r.ok) existing = await r.json(); } catch {}
-      existing.globalSystemPrompt = val;
-      await fetch('/api/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(existing)
-      });
-    } else {
-      localStorage.setItem('globalSystemPrompt', val);
-    }
+    await saveSettingsPatch({ globalSystemPrompt: val });
     status.textContent = val ? '✓ Saved to USB!' : '✓ Cleared';
     status.style.color = 'var(--green)';
   } catch {
@@ -907,18 +2193,37 @@ async function clearGlobalPrompt() {
   updateGlobalIndicator();
   const status = document.getElementById('global-status');
   try {
-    if (IS_SERVED) {
-      let existing = {};
-      try { const r = await fetch('/api/settings'); if (r.ok) existing = await r.json(); } catch {}
-      existing.globalSystemPrompt = '';
-      await fetch('/api/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(existing)
-      });
-    } else {
-      localStorage.removeItem('globalSystemPrompt');
-    }
+    await saveSettingsPatch({ globalSystemPrompt: '' });
+    status.textContent = '✓ Cleared';
+    status.style.color = 'var(--red)';
+  } catch {}
+  setTimeout(() => { status.textContent = ''; status.style.color = ''; }, 2000);
+}
+
+async function saveProjectMemory() {
+  const val = document.getElementById('memory-ta').value.trim();
+  projectMemory = val;
+  updateMemoryIndicator();
+  const status = document.getElementById('memory-status');
+  try {
+    await saveSettingsPatch({ projectMemory: val });
+    status.textContent = val ? '✓ Memory saved to USB!' : '✓ Cleared';
+    status.style.color = 'var(--green)';
+  } catch {
+    status.textContent = '⚠ Save failed';
+    status.style.color = 'var(--red)';
+  }
+  setTimeout(() => { status.textContent = projectMemory ? '(active for all chats)' : ''; status.style.color = ''; }, 2000);
+}
+
+async function clearProjectMemory() {
+  projectMemory = '';
+  const memoryTa = document.getElementById('memory-ta');
+  if (memoryTa) memoryTa.value = '';
+  updateMemoryIndicator();
+  const status = document.getElementById('memory-status');
+  try {
+    await saveSettingsPatch({ projectMemory: '' });
     status.textContent = '✓ Cleared';
     status.style.color = 'var(--red)';
   } catch {}
@@ -928,10 +2233,14 @@ async function clearGlobalPrompt() {
 function updateGlobalIndicator() {
   const btn = document.getElementById('sys-prompt-btn');
   const dot = document.getElementById('sys-global-dot');
-  if (globalSystemPrompt) {
+  if (globalSystemPrompt || projectMemory) {
     btn.classList.add('has-global');
     dot.style.display = 'block';
-    btn.title = 'Global prompt active: ' + globalSystemPrompt.substring(0, 60) + (globalSystemPrompt.length > 60 ? '…' : '');
+    const active = [
+      globalSystemPrompt ? 'Global prompt' : '',
+      projectMemory ? 'Project memory' : ''
+    ].filter(Boolean).join(' + ');
+    btn.title = active + ' active';
   } else {
     btn.classList.remove('has-global');
     dot.style.display = 'none';
@@ -939,9 +2248,534 @@ function updateGlobalIndicator() {
   }
 }
 
+function updateMemoryIndicator() {
+  updateGlobalIndicator();
+}
+
+function projectMemoryPrompt() {
+  if (!projectMemory.trim()) return '';
+  return `${PROJECT_MEMORY_PROMPT_PREFIX}\nTreat this as durable project context carried across chats. Use it as background, but follow the user's current request first.\n\n${projectMemory.trim()}`;
+}
+
+function toolModePrompt() {
+  if (!toolModeEnabled) return '';
+  const root = toolInfo?.root ? `\nTool root: ${toolInfo.root}` : '';
+  return TOOL_MODE_PROMPT + root;
+}
+
 // ── System prompt panel ──────────────────────────────────
 function toggleSysPanel() {
   document.getElementById('sys-panel').classList.toggle('open');
+}
+
+// ── Workspace bridge ────────────────────────────────────
+function toggleBridgePanel() {
+  document.getElementById('bridge-panel').classList.toggle('open');
+}
+
+function updateBridgeIndicator() {
+  const btn = document.getElementById('bridge-btn');
+  const status = document.getElementById('bridge-status');
+  if (!btn || !status) return;
+  btn.classList.toggle('ready', Boolean((workspaceContextPending && workspaceContext) || toolModeEnabled));
+  if (workspaceContextPending && workspaceContext) {
+    status.textContent = 'Workspace snapshot attached for Lexi’s next message (evidence + creative ready).';
+    status.style.color = 'var(--green)';
+  } else if (workspaceInfo?.ok) {
+      status.textContent = toolModeEnabled
+      ? 'Tool Mode is unavailable in this client test package.'
+      : 'Client test mode is active. Workspace snapshots are disabled.';
+    status.style.color = '';
+  }
+}
+
+async function loadWorkspaceInfo() {
+  const rootEl = document.getElementById('bridge-root');
+  const status = document.getElementById('bridge-status');
+  try {
+    const r = await fetch('/api/workspace');
+    workspaceInfo = await r.json();
+    rootEl.textContent = workspaceInfo.root || 'Workspace unavailable';
+    if (!workspaceInfo.ok) {
+      status.textContent = 'Workspace bridge is disabled in this client test package.';
+      status.style.color = 'var(--red)';
+      return;
+    }
+    updateBridgeIndicator();
+  } catch {
+    rootEl.textContent = 'Workspace bridge offline';
+    status.textContent = 'Restart the chat server to enable the bridge.';
+    status.style.color = 'var(--red)';
+  }
+}
+
+function updateToolIndicator() {
+  const toggle = document.getElementById('tool-mode-toggle');
+  const status = document.getElementById('tool-status');
+  if (toggle) toggle.checked = toolModeEnabled;
+  if (!status) return;
+  if (!toolInfo) {
+    status.textContent = toolModeEnabled ? 'Tool Mode on; checking local access…' : 'Tool Mode off.';
+    status.style.color = '';
+  } else if (!toolInfo.runWriteEnabled) {
+    status.textContent = 'Tool Mode read-only from this browser. Run/write tools require localhost.';
+    status.style.color = 'var(--orange)';
+  } else if (toolModeEnabled) {
+    status.textContent = 'Tool Mode on. Owner approval required for every run/write.';
+    status.style.color = 'var(--green)';
+  } else {
+    status.textContent = 'Tool Mode off. Enable it when you want Lexi to request evidence/creative/drive tools.';
+    status.style.color = '';
+  }
+  updateBridgeIndicator();
+}
+
+async function loadToolInfo() {
+  const status = document.getElementById('tool-status');
+  try {
+    const r = await fetch('/api/tools');
+    toolInfo = await r.json();
+    if (!r.ok || !toolInfo.ok) throw new Error(toolInfo.error || 'Tool Mode unavailable');
+    updateToolIndicator();
+  } catch (err) {
+    toolInfo = null;
+    if (status) {
+      status.textContent = 'Tool Mode API is offline. Restart Lexi client after upgrading (Raspy separate on daddy machine).';
+      status.style.color = 'var(--red)';
+    }
+  }
+}
+
+async function toggleToolMode(enabled) {
+  toolModeEnabled = Boolean(enabled);
+  updateToolIndicator();
+  try {
+    await saveSettingsPatch({ toolModeEnabled });
+  } catch {}
+}
+
+async function runToolDiagnose() {
+  const out = document.getElementById('tool-output');
+  out.textContent = 'Running local diagnostics…';
+  out.classList.add('show');
+  try {
+    const payload = await postToolAction({ action:'diagnose' });
+    out.textContent = JSON.stringify(payload, null, 2);
+  } catch (err) {
+    out.textContent = 'Tool diagnose failed: ' + (err.message || 'unknown error');
+  }
+}
+
+async function postToolAction(request) {
+  const r = await fetch('/api/tools', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(request)
+  });
+  let payload = {};
+  try { payload = await r.json(); } catch {}
+  if (!r.ok || payload.ok === false) {
+    throw new Error(payload.error || ('Tool error ' + r.status));
+  }
+  return payload;
+}
+
+async function loadWorkspaceContext() {
+  const status = document.getElementById('bridge-status');
+  const tree = document.getElementById('bridge-tree');
+  status.textContent = 'Reading safe workspace snapshot…';
+  status.style.color = '';
+  try {
+    const r = await fetch('/api/workspace/context');
+    const data = await r.json();
+    if (!r.ok || !data.context) throw new Error(data.error || 'Workspace snapshot failed');
+    workspaceContext = data.context;
+    workspaceContextPending = true;
+    tree.textContent = workspaceContext.split('KEY FILE CONTENTS')[0].trim();
+    tree.classList.add('show');
+    updateBridgeIndicator();
+  } catch (err) {
+    workspaceContext = '';
+    workspaceContextPending = false;
+    status.textContent = 'Bridge failed: ' + (err.message || 'unknown error');
+    status.style.color = 'var(--red)';
+    updateBridgeIndicator();
+  }
+}
+
+function clearWorkspaceContext() {
+  workspaceContext = '';
+  workspaceContextPending = false;
+  const tree = document.getElementById('bridge-tree');
+  tree.textContent = '';
+  tree.classList.remove('show');
+  updateBridgeIndicator();
+}
+
+// ── Voice controls ──────────────────────────────────────
+function recognitionCtor() {
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+}
+
+function setVoiceStatus(text, tone) {
+  const status = document.getElementById('voice-status');
+  if (!status) return;
+  status.textContent = text || '';
+  status.style.color = tone === 'good' ? 'var(--green)' : tone === 'warn' ? 'var(--orange)' : tone === 'bad' ? 'var(--red)' : '';
+}
+
+function updateVoiceButtons() {
+  const mic = document.getElementById('mic-btn');
+  const loop = document.getElementById('voice-loop-btn');
+  const auto = document.getElementById('auto-speak-btn');
+  const stop = document.getElementById('stop-speech-btn');
+  if (mic) mic.classList.toggle('listening', voiceListening);
+  if (loop) {
+    loop.classList.toggle('active', voiceLoopEnabled);
+    loop.setAttribute('aria-pressed', voiceLoopEnabled ? 'true' : 'false');
+  }
+  if (auto) {
+    auto.classList.toggle('active', autoSpeakEnabled);
+    auto.setAttribute('aria-pressed', autoSpeakEnabled ? 'true' : 'false');
+  }
+  if (stop) stop.classList.toggle('warn', speechSpeaking);
+}
+
+function initVoiceUi() {
+  let supported = false;
+  let canSpeak = false;
+  
+  try {
+    supported = Boolean(recognitionCtor());
+  } catch (e) {
+    console.warn('Voice recognition check failed:', e);
+  }
+  
+  try {
+    canSpeak = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+    // Test if speech synthesis actually works by accessing it
+    if (canSpeak) {
+      try {
+        const testUtter = new SpeechSynthesisUtterance('');
+        window.speechSynthesis.cancel();
+      } catch (speechError) {
+        console.warn('Speech synthesis initialization failed:', speechError);
+        canSpeak = false;
+      }
+    }
+  } catch (e) {
+    console.warn('Speech synthesis check failed:', e);
+    canSpeak = false;
+  }
+  
+  const mic = document.getElementById('mic-btn');
+  const loop = document.getElementById('voice-loop-btn');
+  const auto = document.getElementById('auto-speak-btn');
+  const stop = document.getElementById('stop-speech-btn');
+  
+  if (!supported) {
+    if (mic) mic.disabled = true;
+    if (loop) loop.disabled = true;
+  }
+  if (!canSpeak) {
+    if (auto) auto.disabled = true;
+    if (stop) stop.disabled = true;
+  }
+  if (!supported && !canSpeak) setVoiceStatus('Voice is not supported in this browser.', 'warn');
+  else if (!supported) setVoiceStatus('Read aloud works; mic dictation needs Chrome, Edge, or Safari support.', 'warn');
+  else if (!canSpeak) setVoiceStatus('Mic dictation works; read aloud is not supported in this browser.', 'warn');
+  else setVoiceStatus('Voice ready', 'good');
+  updateVoiceButtons();
+}
+
+async function toggleAutoSpeak() {
+  if (!('speechSynthesis' in window)) {
+    setVoiceStatus('Read aloud is not supported in this browser.', 'warn');
+    return;
+  }
+  autoSpeakEnabled = !autoSpeakEnabled;
+  updateVoiceButtons();
+  setVoiceStatus(autoSpeakEnabled ? 'Lexi will read replies aloud (Waka baby voice mode).' : 'Read aloud is off.', autoSpeakEnabled ? 'good' : '');
+  try { await saveSettingsPatch({ voiceAutoSpeak: autoSpeakEnabled }); } catch {}
+}
+
+function toggleVoiceLoop() {
+  const Ctor = recognitionCtor();
+  if (!Ctor) {
+    setVoiceStatus('Mic dictation is not supported in this browser.', 'warn');
+    return;
+  }
+  voiceLoopEnabled = !voiceLoopEnabled;
+  if (voiceLoopEnabled) {
+    autoSpeakEnabled = true;
+    saveSettingsPatch({ voiceAutoSpeak: true }).catch(() => {});
+    setVoiceStatus('Voice conversation is listening.', 'good');
+    if (!isGenerating && !speechSpeaking) startVoiceInput(true);
+  } else {
+    stopVoiceInput();
+    setVoiceStatus('Voice conversation is off.');
+  }
+  updateVoiceButtons();
+}
+
+function toggleDictation() {
+  if (voiceListening) stopVoiceInput();
+  else startVoiceInput(false);
+}
+
+function startVoiceInput(autoSend) {
+  try {
+    const Ctor = recognitionCtor();
+    if (!Ctor) {
+      setVoiceStatus('Mic dictation is not supported in this browser.', 'warn');
+      return;
+    }
+    if (voiceListening) return;
+    if (speechSpeaking) stopSpeaking(false);
+
+    voiceAutoSend = Boolean(autoSend);
+    voiceFinalText = '';
+    voiceBaseText = msgInput.value.trim();
+    if (voiceBaseText) voiceBaseText += ' ';
+
+    const rec = new Ctor();
+    rec.lang = navigator.language || 'en-US';
+    rec.interimResults = true;
+    rec.continuous = false;
+    rec.maxAlternatives = 1;
+    voiceRecognition = rec;
+
+    // Add timeout protection for microphone access
+    const micTimeout = setTimeout(() => {
+      if (voiceRecognition && voiceListening) {
+        console.warn('Voice recognition timeout - cancelling');
+        try {
+          voiceRecognition.abort();
+        } catch (e) {
+          console.warn('Failed to abort voice recognition:', e);
+        }
+        voiceRecognition = null;
+        voiceListening = false;
+        if (voiceLoopEnabled) voiceLoopEnabled = false;
+        updateVoiceButtons();
+        setVoiceStatus('Microphone access timeout - voice features disabled.', 'warn');
+      }
+    }, 15000); // 15 second timeout for microphone permission
+
+    rec.onstart = () => {
+      clearTimeout(micTimeout);
+      voiceListening = true;
+      setVoiceStatus(voiceAutoSend ? 'Listening for your voice message…' : 'Listening…', 'good');
+      updateVoiceButtons();
+    };
+
+    rec.onresult = event => {
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0]?.transcript || '';
+        if (event.results[i].isFinal) voiceFinalText += transcript + ' ';
+        else interim += transcript;
+      }
+      msgInput.value = (voiceBaseText + voiceFinalText + interim).replace(/\s+/g, ' ').trimStart();
+      resizeMessageInput();
+    };
+
+    rec.onerror = event => {
+      clearTimeout(micTimeout);
+      const error = event.error || 'voice error';
+      console.warn('Voice recognition error:', error);
+      voiceListening = false;
+      voiceRecognition = null;
+      if (error !== 'aborted') {
+        if (voiceLoopEnabled) voiceLoopEnabled = false;
+        setVoiceStatus('Voice stopped: ' + error, 'warn');
+      }
+      updateVoiceButtons();
+    };
+
+    rec.onend = () => {
+      clearTimeout(micTimeout);
+      const shouldSend = voiceAutoSend;
+      voiceListening = false;
+      voiceRecognition = null;
+      updateVoiceButtons();
+      const text = msgInput.value.trim();
+      if (shouldSend && voiceLoopEnabled && text && !isGenerating) {
+        setVoiceStatus('Sending voice message…', 'good');
+        sendMessage();
+      } else if (voiceLoopEnabled && !isGenerating && !speechSpeaking) {
+        setVoiceStatus('Listening again…', 'good');
+        setTimeout(() => {
+          if (voiceLoopEnabled && !voiceListening && !isGenerating && !speechSpeaking) startVoiceInput(true);
+        }, 500);
+      } else if (text) {
+        setVoiceStatus('Dictation added to the message.', 'good');
+      } else {
+        setVoiceStatus('No speech captured.', 'warn');
+      }
+    };
+
+    rec.start();
+  } catch (err) {
+    console.error('Voice recognition failed to start:', err);
+    voiceRecognition = null;
+    voiceListening = false;
+    if (voiceLoopEnabled) voiceLoopEnabled = false;
+    setVoiceStatus(err.message || 'Could not start microphone.', 'warn');
+    updateVoiceButtons();
+  }
+}
+
+function stopVoiceInput() {
+  const rec = voiceRecognition;
+  voiceRecognition = null;
+  voiceListening = false;
+  if (rec) {
+    try { rec.abort(); } catch {}
+  }
+  updateVoiceButtons();
+}
+
+function cleanSpeakText(text) {
+  return String(text || '')
+    .replace(/LEXI_TOOL_REQUEST[\s\S]*?END_LEXI_TOOL_REQUEST/g, '')
+    .replace(/```[\s\S]*?```/g, ' code block omitted. ')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/[#>*_\-]{1,4}/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 1800);
+}
+
+function speakText(text, options) {
+  try {
+    if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+      setVoiceStatus('Read aloud is not supported in this browser.', 'warn');
+      return;
+    }
+    const spoken = cleanSpeakText(text);
+    if (!spoken) return;
+    resumeVoiceAfterSpeech = Boolean(options?.resumeVoice);
+    
+    // Much more generous timeout - allow up to 2 minutes for long responses
+    const textLength = spoken.length;
+    const estimatedDuration = Math.min(Math.max(textLength * 100, 10000), 120000); // 10-120 seconds
+    const speechTimeout = setTimeout(() => {
+      if (speechSpeaking) {
+        console.warn('Speech synthesis timeout - cancelling');
+        try {
+          window.speechSynthesis.cancel();
+        } catch (e) {
+          console.warn('Failed to cancel speech synthesis:', e);
+        }
+        speechSpeaking = false;
+        updateVoiceButtons();
+        setVoiceStatus('Speech timeout - try shorter text.', 'warn');
+      }
+    }, estimatedDuration);
+    
+    // Cancel any existing speech before starting new
+    try {
+      window.speechSynthesis.cancel();
+    } catch (e) {
+      console.warn('Failed to cancel previous speech:', e);
+    }
+    
+    const utter = new SpeechSynthesisUtterance(spoken);
+    utter.rate = 1;
+    utter.pitch = 1;
+    utter.volume = 1;
+    
+    // Add a small delay to prevent conflicts
+    setTimeout(() => {
+      speechSpeaking = true;
+      setVoiceStatus('Lexi is speaking…', 'good');
+      updateVoiceButtons();
+      
+      utter.onstart = () => {
+        clearTimeout(speechTimeout);
+        speechSpeaking = true;
+        setVoiceStatus('Lexi is speaking…', 'good');
+        updateVoiceButtons();
+      };
+      
+      utter.onend = () => {
+        clearTimeout(speechTimeout);
+        speechSpeaking = false;
+        updateVoiceButtons();
+        if (resumeVoiceAfterSpeech && voiceLoopEnabled) {
+          setVoiceStatus('Listening again…', 'good');
+          setTimeout(() => {
+            if (voiceLoopEnabled && !voiceListening && !isGenerating && !speechSpeaking) startVoiceInput(true);
+          }, 500);
+        } else {
+          setVoiceStatus(autoSpeakEnabled ? 'Read aloud is on.' : 'Voice ready', autoSpeakEnabled ? 'good' : '');
+        }
+      };
+      
+      utter.onerror = (error) => {
+        clearTimeout(speechTimeout);
+        const errorMsg = error?.error || 'unknown error';
+        console.warn('Speech synthesis error:', errorMsg);
+        
+        // Handle interruption gracefully - it's normal when new speech starts
+        if (errorMsg === 'interrupted' || errorMsg === 'canceled') {
+          speechSpeaking = false;
+          updateVoiceButtons();
+          // Don't show warning for normal interruptions
+          if (autoSpeakEnabled) {
+            setVoiceStatus('Read aloud is on.', 'good');
+          } else {
+            setVoiceStatus('Voice ready');
+          }
+          return;
+        }
+        
+        speechSpeaking = false;
+        updateVoiceButtons();
+        setVoiceStatus('Speech playback stopped: ' + errorMsg, 'warn');
+      };
+      
+      window.speechSynthesis.speak(utter);
+    }, 100); // 100ms delay to prevent conflicts
+    
+  } catch (e) {
+    console.error('Speech synthesis failed:', e);
+    speechSpeaking = false;
+    updateVoiceButtons();
+    setVoiceStatus('Speech synthesis error - voice features may be unavailable.', 'warn');
+  }
+}
+
+function stopSpeaking(keepLoop) {
+  resumeVoiceAfterSpeech = false;
+  try {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      // Also pause to prevent background issues
+      if (window.speechSynthesis.pause) {
+        window.speechSynthesis.pause();
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to cancel speech synthesis:', e);
+  }
+  speechSpeaking = false;
+  updateVoiceButtons();
+  setVoiceStatus('Audio stopped.');
+  // Don't automatically restart voice input after manual stop
+  if (keepLoop && voiceLoopEnabled && !voiceListening && !isGenerating) {
+    setTimeout(() => {
+      if (voiceLoopEnabled && !voiceListening && !isGenerating && !speechSpeaking) startVoiceInput(true);
+    }, 1000);
+  }
+}
+
+function handleAssistantFinal(text) {
+  if (autoSpeakEnabled || voiceLoopEnabled) speakText(text, { resumeVoice: voiceLoopEnabled });
+  else if (voiceLoopEnabled && !voiceListening && !isGenerating) startVoiceInput(true);
 }
 
 // ── Attach files ─────────────────────────────────────────
@@ -1030,28 +2864,143 @@ function clearPdf() {
 
 // Drag and drop
 const mainEl = document.getElementById('main');
-mainEl.addEventListener('dragover', e=>{ e.preventDefault(); mainEl.classList.add('drag-over'); });
-mainEl.addEventListener('dragleave', ()=>mainEl.classList.remove('drag-over'));
-mainEl.addEventListener('drop', e=>{
-  e.preventDefault(); mainEl.classList.remove('drag-over');
-  const f = e.dataTransfer.files[0]; if (!f) return;
-  if (f.type.startsWith('image/')) handleImg(f);
-  else if (f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf')) handlePdf(f);
+const lexiFrameEl = document.getElementById('lexi-frame');
+let fileDragDepth = 0;
+
+function isFileDrag(event) {
+  return Array.from(event.dataTransfer?.types || []).includes('Files');
+}
+
+function setFileDragOver(on) {
+  mainEl?.classList.toggle('drag-over', on);
+  lexiFrameEl?.classList.toggle('drag-over', on);
+}
+
+function isPdfFile(file) {
+  return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+}
+
+function isAudioFile(file) {
+  return file.type.startsWith('audio/') || /\.(wav|wave|mp3|m4a|aac|aiff|aif|flac|ogg)$/i.test(file.name);
+}
+
+function setDropStatus(text) {
+  const status = document.getElementById('global-status') || document.getElementById('music-status');
+  if (!status) return;
+  status.textContent = text;
+}
+
+async function handleDroppedFiles(fileList) {
+  const files = Array.from(fileList || []);
+  if (!files.length) return;
+
+  const audioFiles = files.filter(isAudioFile);
+  const attachFile = files.find(file => file.type.startsWith('image/') || isPdfFile(file));
+
+  if (audioFiles.length) {
+    setDropStatus(`Uploading ${audioFiles.length} audio file${audioFiles.length > 1 ? 's' : ''} to Lexi Music Deck...`);
+    await uploadMusicFiles(audioFiles);
+  }
+
+  if (attachFile) {
+    if (attachFile.type.startsWith('image/')) handleImg(attachFile);
+    else if (isPdfFile(attachFile)) handlePdf(attachFile);
+    setDropStatus(`Attached ${attachFile.name}`);
+    return;
+  }
+
+  if (!audioFiles.length) {
+    setDropStatus('Drop an image, PDF, or audio file.');
+  }
+}
+
+document.addEventListener('dragenter', event => {
+  if (!isFileDrag(event)) return;
+  event.preventDefault();
+  fileDragDepth += 1;
+  setFileDragOver(true);
+});
+
+document.addEventListener('dragover', event => {
+  if (!isFileDrag(event)) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'copy';
+  setFileDragOver(true);
+});
+
+document.addEventListener('dragleave', event => {
+  if (!isFileDrag(event)) return;
+  fileDragDepth = Math.max(0, fileDragDepth - 1);
+  if (fileDragDepth === 0) setFileDragOver(false);
+});
+
+document.addEventListener('drop', event => {
+  if (!isFileDrag(event)) return;
+  event.preventDefault();
+  fileDragDepth = 0;
+  setFileDragOver(false);
+  handleDroppedFiles(event.dataTransfer.files);
 });
 
 // ── Textarea auto-resize (rAF-debounced — no layout thrash) ─
 const msgInput = document.getElementById('msg-input');
-msgInput.addEventListener('input', () => {
+function resizeMessageInput() {
   if (resizeRaf) return;
   resizeRaf = requestAnimationFrame(() => {
     msgInput.style.height = 'auto';
     msgInput.style.height = Math.min(msgInput.scrollHeight, 140) + 'px';
     resizeRaf = null;
   });
-});
+}
+msgInput.addEventListener('input', resizeMessageInput);
 msgInput.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
+
+function trimApiContent(content, maxChars) {
+  if (!content || content.length <= maxChars) return content || '';
+  const note = `\n\n[Message shortened from ${content.length} chars for local context.]`;
+  return content.slice(0, Math.max(0, maxChars - note.length)) + note;
+}
+
+function buildApiMessages(chat, userMsg, apiUserText, sys, bridgeAttached) {
+  const apiMsgs = [];
+  apiMsgs.push({ role:'system', content:LEXI_CORE_IDENTITY });
+  if (sys) apiMsgs.push({ role:'system', content:sys });
+  const memory = projectMemoryPrompt();
+  if (memory) apiMsgs.push({ role:'system', content:memory });
+  const toolPrompt = toolModePrompt();
+  if (toolPrompt) apiMsgs.push({ role:'system', content:toolPrompt });
+  
+  // Add current date/time context
+  const now = new Date();
+  const timeContext = `CURRENT DATE AND TIME CONTEXT:\nToday's date: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\nCurrent time: ${now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}\nCurrent year: ${now.getFullYear()}\nCurrent month: ${now.toLocaleDateString('en-US', { month: 'long' })}\nCurrent day: ${now.getDate()}\n`;
+  apiMsgs.push({ role:'system', content:timeContext });
+
+  const historyBudget = bridgeAttached ? MAX_API_HISTORY_CHARS_WITH_BRIDGE : MAX_API_HISTORY_CHARS;
+  let used = 0;
+  const prior = [];
+
+  for (let i = chat.messages.length - 2; i >= 0; i--) {
+    const msg = chat.messages[i];
+    const original = String(msg.content || '');
+    if (!original || original.startsWith('LEXI WORKSPACE BRIDGE SNAPSHOT')) continue;
+
+    const room = historyBudget - used;
+    if (room < 300) break;
+
+    const content = trimApiContent(original, Math.min(room, MAX_API_HISTORY_MESSAGE_CHARS));
+    prior.push({ role:msg.role, content });
+    used += content.length;
+  }
+
+  prior.reverse().forEach(msg => apiMsgs.push(msg));
+
+  const current = { role:userMsg.role, content:apiUserText };
+  if (userMsg.images) current.images = userMsg.images;
+  apiMsgs.push(current);
+  return apiMsgs;
+}
 
 // ── Send ─────────────────────────────────────────────────
 async function sendMessage() {
@@ -1061,21 +3010,33 @@ async function sendMessage() {
   if (!activeChatId || !getActive()) newChat();
   const chat  = getActive();
   const model = document.getElementById('model-select').value || document.getElementById('model-locked').textContent;
+  if (!model) {
+    document.getElementById('status-text').textContent = 'No model available';
+    return;
+  }
   const sys   = document.getElementById('sys-ta').value.trim();
   const temp  = parseFloat(document.getElementById('temp-input').value) || 0.7;
 
   chat.model = model;
   chat.systemPrompt = sys;
 
-  // Build content — inject PDF text as context if attached
-  let finalText = text;
+  // Build the API payload. Bridge context is one-shot and is not saved into chat history.
+  let apiUserText = text;
+  let storedUserText = text;
+  const bridgeAttached = Boolean(workspaceContextPending && workspaceContext);
   if (attachPdfText) {
     const MAX = 12000;
     const snip = attachPdfText.length > MAX ? attachPdfText.slice(0,MAX) + '\n\n[truncated…]' : attachPdfText;
-    finalText = `PDF attached: "${attachPdfName}"\n\n${snip}\n\n---\nUser: ${text}`;
+    apiUserText = `PDF attached: "${attachPdfName}"\n\n${snip}\n\n---\nUser: ${text}`;
+    storedUserText = apiUserText;
+  }
+  if (bridgeAttached) {
+    apiUserText = `${workspaceContext}\n\n---\nUSER REQUEST\n${apiUserText}`;
+    workspaceContextPending = false;
+    updateBridgeIndicator();
   }
 
-  const userMsg = { role:'user', content: finalText };
+  const userMsg = { role:'user', content: storedUserText };
   if (attachImgB64) { userMsg.images=[attachImgB64]; userMsg._imgB64=attachImgB64; userMsg._imgMime=attachImgMime; }
   chat.messages.push(userMsg);
 
@@ -1085,6 +3046,12 @@ async function sendMessage() {
     const badge = document.createElement('span');
     badge.style.cssText = 'display:block;font-size:11px;opacity:.5;margin-top:4px;';
     badge.textContent = '📄 ' + attachPdfName;
+    ub.appendChild(badge);
+  }
+  if (bridgeAttached) {
+    const badge = document.createElement('span');
+    badge.style.cssText = 'display:block;font-size:11px;opacity:.5;margin-top:4px;';
+    badge.textContent = '⌘ Workspace snapshot attached';
     ub.appendChild(badge);
   }
 
@@ -1102,14 +3069,7 @@ async function sendMessage() {
   const ml = document.getElementById('model-locked');
   ms.style.display = 'none'; ml.style.display = 'inline'; ml.textContent = model;
 
-  // Build api messages
-  let apiMsgs = [];
-  if (sys) apiMsgs.push({ role:'system', content:sys });
-  chat.messages.forEach(m => {
-    const am = { role:m.role, content:m.content };
-    if (m.images) am.images = m.images;
-    apiMsgs.push(am);
-  });
+  const apiMsgs = buildApiMessages(chat, userMsg, apiUserText, sys, bridgeAttached);
 
   // Show loading overlay on first message
   const overlay = document.getElementById('load-overlay');
@@ -1139,68 +3099,141 @@ async function sendMessage() {
     const res = await fetch(OLLAMA + '/api/chat', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ model, messages: apiMsgs, stream:true, options:{ temperature:temp } }),
+      body: JSON.stringify({ model, messages: apiMsgs, stream:true, options:{ temperature:temp, num_predict:DEFAULT_NUM_PREDICT } }),
       signal: abortCtrl.signal
     });
-    if (!res.ok) throw new Error('Ollama error ' + res.status);
+    if (!res.ok) {
+      let detail = '';
+      try {
+        const errPayload = await res.json();
+        detail = errPayload.error ? ': ' + errPayload.error : '';
+      } catch {}
+      throw new Error('Ollama error ' + res.status + detail);
+    }
+    if (!res.body) throw new Error('Streaming response unavailable in this browser');
 
     const reader = res.body.getReader();
     const dec = new TextDecoder();
     aiBub.textContent = '';
     overlay.classList.remove('active');
+    let pending = '';
+    const consumeLine = line => {
+      if (!line.trim()) return;
+      try {
+        const p = JSON.parse(line);
+        if (p.message?.content) {
+          fullResp += p.message.content;
+          aiBub.textContent = fullResp; // plain text during stream — fast
+          box.scrollTop = box.scrollHeight;
+        } else if (p.error) {
+          throw new Error(p.error);
+        }
+      } catch(e) {
+        if (e instanceof SyntaxError) return;
+        throw e;
+      }
+    };
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      const chunk = dec.decode(value, { stream:true });
-      for (const line of chunk.split('\n')) {
-        if (!line.trim()) continue;
-        try {
-          const p = JSON.parse(line);
-          if (p.message?.content) {
-            fullResp += p.message.content;
-            aiBub.textContent = fullResp; // plain text during stream — fast
-            box.scrollTop = box.scrollHeight;
-          }
-        } catch {}
+      pending += dec.decode(value, { stream:true });
+      const lines = pending.split('\n');
+      pending = lines.pop() || '';
+      for (const line of lines) {
+        consumeLine(line);
       }
     }
+    pending += dec.decode();
+    if (pending.trim()) consumeLine(pending);
 
-    finalizeMsg(aiBub, fullResp);
-    chat.messages.push({ role:'assistant', content:fullResp });
+    const finalText = fullResp || '[No response returned]';
+    finalizeMsg(aiBub, finalText);
+    chat.messages.push({ role:'assistant', content:finalText });
     saveChats();
+    handleAssistantFinal(finalText);
 
   } catch(err) {
     overlay.classList.remove('active');
     if (err.name === 'AbortError') {
-      if (fullResp) { finalizeMsg(aiBub, fullResp); chat.messages.push({ role:'assistant', content:fullResp }); saveChats(); }
+      if (fullResp) { finalizeMsg(aiBub, fullResp); chat.messages.push({ role:'assistant', content:fullResp }); saveChats(); handleAssistantFinal(fullResp); }
       else aiBub.innerHTML = '<span style="color:var(--text-d);font-style:italic;">[Stopped]</span>';
     } else {
       aiBub.innerHTML = `<span style="color:var(--red);">⚠ ${esc(err.message)}</span>`;
-      chat.messages.pop();
+      saveChats();
     }
   } finally {
     isGenerating = false;
     document.getElementById('send-btn').style.display = '';
     document.getElementById('stop-btn').style.display = 'none';
     msgInput.focus();
+    if (voiceLoopEnabled && !speechSpeaking && !voiceListening) {
+      setTimeout(() => {
+        if (voiceLoopEnabled && !speechSpeaking && !voiceListening && !isGenerating) startVoiceInput(true);
+      }, 600);
+    }
   }
 }
 function stopGen() { if (abortCtrl) abortCtrl.abort(); }
 
 // ── Init ─────────────────────────────────────────────────
 (async () => {
-  setupMarked();
-  await loadGlobalPrompt();    // restore global system prompt from USB (settings.json)
-  await loadChats();
-  await fetchModels();
-  renderList();
-  if (allChats.length) switchChat(allChats[0].id);
-  else showWelcome();
-  pollHW();
-  setInterval(pollHW, 5000);      // hardware stats every 5s
-  setInterval(fetchModels, 15000); // model list refresh
+  try {
+    setupMarked();
+    await loadGlobalPrompt();    // restore global system prompt from USB (settings.json)
+    
+    // Initialize voice UI with error handling to prevent app hanging
+    try {
+      initVoiceUi();
+    } catch (voiceError) {
+      console.error('Voice UI initialization failed:', voiceError);
+      setVoiceStatus('Voice features unavailable.', 'warn');
+    }
+    
+    await loadChats();
+    await fetchModels();
+    await loadWorkspaceInfo();
+    await loadToolInfo();
+    renderList();
+    if (allChats.length) switchChat(allChats[0].id);
+    else showWelcome();
+    pollHW();
+    setInterval(pollHW, 5000);      // hardware stats every 5s
+    setInterval(fetchModels, 15000); // model list refresh
+    
+    // Handle page visibility to prevent speech cutoff
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && speechSpeaking) {
+        // Don't cancel speech when tab is hidden, let it continue
+        console.log('Page hidden, speech continues');
+      } else if (!document.hidden && 'speechSynthesis' in window) {
+        // Resume speech synthesis if needed when page becomes visible
+        if (window.speechSynthesis.paused) {
+          try {
+            window.speechSynthesis.resume();
+          } catch (e) {
+            console.warn('Failed to resume speech:', e);
+          }
+        }
+      }
+    });
+    
+    // Handle beforeunload to prevent speech cutoff during navigation
+    window.addEventListener('beforeunload', () => {
+      if (speechSpeaking) {
+        try {
+          window.speechSynthesis.cancel();
+        } catch (e) {
+          console.warn('Failed to cancel speech on unload:', e);
+        }
+      }
+    });
+  } catch (initError) {
+    console.error('App initialization error:', initError);
+    document.body.innerHTML = '<div style="padding:20px;text-align:center;"><h3>Lexi Launcher Error</h3><p>Failed to initialize: ' + (initError.message || 'Unknown error') + '</p><p>Please check the console for details.</p></div>';
+  }
 })();
 </script>
+</div> <!-- /#lexi-frame (the contained original shape/size card) -->
 </body>
 </html>

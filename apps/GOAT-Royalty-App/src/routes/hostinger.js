@@ -5,7 +5,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate, authorize } = require('../middleware/auth');
+const { protect: authenticate, authorize } = require('../middleware/auth');
 const HostingerService = require('../services/hostingerService');
 
 // Initialize Hostinger service
@@ -16,7 +16,7 @@ const hostingerService = new HostingerService();
  * @desc    Test Hostinger API connection
  * @access  Private (Admin only)
  */
-router.get('/test', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/test', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.testConnection();
     res.json(result);
@@ -34,7 +34,7 @@ router.get('/test', authenticate, authorize(['admin']), async (req, res) => {
  * @desc    Get all domains
  * @access  Private (Admin only)
  */
-router.get('/domains', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/domains', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.getDomains();
     res.json(result);
@@ -52,7 +52,7 @@ router.get('/domains', authenticate, authorize(['admin']), async (req, res) => {
  * @desc    Get domain details
  * @access  Private (Admin only)
  */
-router.get('/domains/:domainName', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/domains/:domainName', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.getDomainDetails(req.params.domainName);
     res.json(result);
@@ -70,7 +70,7 @@ router.get('/domains/:domainName', authenticate, authorize(['admin']), async (re
  * @desc    Get DNS records for a domain
  * @access  Private (Admin only)
  */
-router.get('/domains/:domainName/dns', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/domains/:domainName/dns', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.getDNSRecords(req.params.domainName);
     res.json(result);
@@ -88,7 +88,7 @@ router.get('/domains/:domainName/dns', authenticate, authorize(['admin']), async
  * @desc    Create a new DNS record
  * @access  Private (Admin only)
  */
-router.post('/domains/:domainName/dns', authenticate, authorize(['admin']), async (req, res) => {
+router.post('/domains/:domainName/dns', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.createDNSRecord(req.params.domainName, req.body);
     res.json(result);
@@ -106,7 +106,7 @@ router.post('/domains/:domainName/dns', authenticate, authorize(['admin']), asyn
  * @desc    Update a DNS record
  * @access  Private (Admin only)
  */
-router.put('/domains/:domainName/dns/:recordId', authenticate, authorize(['admin']), async (req, res) => {
+router.put('/domains/:domainName/dns/:recordId', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.updateDNSRecord(
       req.params.domainName,
@@ -128,7 +128,7 @@ router.put('/domains/:domainName/dns/:recordId', authenticate, authorize(['admin
  * @desc    Delete a DNS record
  * @access  Private (Admin only)
  */
-router.delete('/domains/:domainName/dns/:recordId', authenticate, authorize(['admin']), async (req, res) => {
+router.delete('/domains/:domainName/dns/:recordId', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.deleteDNSRecord(
       req.params.domainName,
@@ -149,7 +149,7 @@ router.delete('/domains/:domainName/dns/:recordId', authenticate, authorize(['ad
  * @desc    Get SSL certificate information
  * @access  Private (Admin only)
  */
-router.get('/domains/:domainName/ssl', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/domains/:domainName/ssl', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.getSSLInfo(req.params.domainName);
     res.json(result);
@@ -167,7 +167,7 @@ router.get('/domains/:domainName/ssl', authenticate, authorize(['admin']), async
  * @desc    Install SSL certificate
  * @access  Private (Admin only)
  */
-router.post('/domains/:domainName/ssl', authenticate, authorize(['admin']), async (req, res) => {
+router.post('/domains/:domainName/ssl', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.installSSL(req.params.domainName, req.body);
     res.json(result);
@@ -185,7 +185,7 @@ router.post('/domains/:domainName/ssl', authenticate, authorize(['admin']), asyn
  * @desc    Get hosting account information
  * @access  Private (Admin only)
  */
-router.get('/hosting', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/hosting', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.getHostingInfo();
     res.json(result);
@@ -203,7 +203,7 @@ router.get('/hosting', authenticate, authorize(['admin']), async (req, res) => {
  * @desc    Get hosting statistics
  * @access  Private (Admin only)
  */
-router.get('/hosting/stats', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/hosting/stats', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.getHostingStats();
     res.json(result);
@@ -221,7 +221,7 @@ router.get('/hosting/stats', authenticate, authorize(['admin']), async (req, res
  * @desc    Get bandwidth usage
  * @access  Private (Admin only)
  */
-router.get('/hosting/bandwidth', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/hosting/bandwidth', authenticate, authorize('admin'), async (req, res) => {
   try {
     const { start_date, end_date } = req.query;
     const result = await hostingerService.getBandwidthUsage(start_date, end_date);
@@ -240,7 +240,7 @@ router.get('/hosting/bandwidth', authenticate, authorize(['admin']), async (req,
  * @desc    Get disk usage
  * @access  Private (Admin only)
  */
-router.get('/hosting/disk-usage', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/hosting/disk-usage', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.getDiskUsage();
     res.json(result);
@@ -258,7 +258,7 @@ router.get('/hosting/disk-usage', authenticate, authorize(['admin']), async (req
  * @desc    Get email accounts for a domain
  * @access  Private (Admin only)
  */
-router.get('/domains/:domainName/emails', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/domains/:domainName/emails', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.getEmailAccounts(req.params.domainName);
     res.json(result);
@@ -276,7 +276,7 @@ router.get('/domains/:domainName/emails', authenticate, authorize(['admin']), as
  * @desc    Create a new email account
  * @access  Private (Admin only)
  */
-router.post('/domains/:domainName/emails', authenticate, authorize(['admin']), async (req, res) => {
+router.post('/domains/:domainName/emails', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.createEmailAccount(req.params.domainName, req.body);
     res.json(result);
@@ -294,7 +294,7 @@ router.post('/domains/:domainName/emails', authenticate, authorize(['admin']), a
  * @desc    Delete an email account
  * @access  Private (Admin only)
  */
-router.delete('/domains/:domainName/emails/:emailId', authenticate, authorize(['admin']), async (req, res) => {
+router.delete('/domains/:domainName/emails/:emailId', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.deleteEmailAccount(
       req.params.domainName,
@@ -315,7 +315,7 @@ router.delete('/domains/:domainName/emails/:emailId', authenticate, authorize(['
  * @desc    Get all databases
  * @access  Private (Admin only)
  */
-router.get('/databases', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/databases', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.getDatabases();
     res.json(result);
@@ -333,7 +333,7 @@ router.get('/databases', authenticate, authorize(['admin']), async (req, res) =>
  * @desc    Create a new database
  * @access  Private (Admin only)
  */
-router.post('/databases', authenticate, authorize(['admin']), async (req, res) => {
+router.post('/databases', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.createDatabase(req.body);
     res.json(result);
@@ -351,7 +351,7 @@ router.post('/databases', authenticate, authorize(['admin']), async (req, res) =
  * @desc    Get FTP accounts
  * @access  Private (Admin only)
  */
-router.get('/ftp', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/ftp', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.getFTPAccounts();
     res.json(result);
@@ -369,7 +369,7 @@ router.get('/ftp', authenticate, authorize(['admin']), async (req, res) => {
  * @desc    Create FTP account
  * @access  Private (Admin only)
  */
-router.post('/ftp', authenticate, authorize(['admin']), async (req, res) => {
+router.post('/ftp', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.createFTPAccount(req.body);
     res.json(result);
@@ -387,7 +387,7 @@ router.post('/ftp', authenticate, authorize(['admin']), async (req, res) => {
  * @desc    Check domain availability
  * @access  Private (Admin only)
  */
-router.get('/domains/check/:domainName', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/domains/check/:domainName', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.checkDomainAvailability(req.params.domainName);
     res.json(result);
@@ -405,7 +405,7 @@ router.get('/domains/check/:domainName', authenticate, authorize(['admin']), asy
  * @desc    Get account information
  * @access  Private (Admin only)
  */
-router.get('/account', authenticate, authorize(['admin']), async (req, res) => {
+router.get('/account', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await hostingerService.getAccountInfo();
     res.json(result);

@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Stem Splitter</title>
+<link rel="icon" href="favicon.ico">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060608;--bg2:#0a0a0d;--bg3:#0f0f13;--bg4:#141418;--bg5:#1a1a20;--bg6:#22222a;
+  --gold:#c9922a;--gold-dim:rgba(201,146,42,0.15);--gold-line:rgba(201,146,42,0.22);
+  --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#7c3aed;--orange:#f59e0b;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);
+  --text:#e8e4dd;--text2:#a09a90;--text3:#504a42;
+  --radius:6px;
+}
+html,body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:13px;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg6);border-radius:2px}
+
+/* NAV */
+.nav{
+  position:sticky;top:0;z-index:200;height:44px;
+  background:rgba(6,6,8,0.94);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:16px;
+}
+.nav-brand{font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--gold);flex-shrink:0}
+.nav-sep{width:1px;height:18px;background:var(--border);flex-shrink:0}
+.nav-file-btn{
+  height:28px;padding:0 14px;border-radius:var(--radius);
+  border:1px solid var(--border2);background:var(--bg3);
+  color:var(--text2);font-size:11px;font-weight:500;font-family:inherit;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.nav-file-btn:hover{border-color:var(--gold-line);color:var(--text)}
+.nav-status{font-size:11px;color:var(--text3);flex:1;padding-left:8px}
+.nav-status.active{color:var(--green)}
+.nav-status.error{color:var(--red)}
+.nav-process-btn{
+  height:28px;padding:0 18px;border-radius:var(--radius);
+  background:var(--gold);border:none;color:#000;
+  font-size:11px;font-weight:700;font-family:inherit;
+  cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;
+}
+.nav-process-btn:hover{background:#e0a830}
+.nav-process-btn:disabled{background:var(--bg5);color:var(--text3);cursor:not-allowed}
+.nav-hub-link{
+  height:28px;padding:0 12px;border-radius:var(--radius);
+  border:1px solid var(--border);background:transparent;
+  color:var(--text3);font-size:11px;font-family:inherit;
+  cursor:pointer;text-decoration:none;display:flex;align-items:center;
+  transition:all .15s;white-space:nowrap;
+}
+.nav-hub-link:hover{border-color:var(--border2);color:var(--text2)}
+
+/* LAYOUT */
+.main{display:flex;gap:0;height:calc(100vh - 44px);overflow:hidden}
+.left-col{width:40%;min-width:340px;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.right-col{flex:1;display:flex;flex-direction:column;overflow-y:auto}
+
+/* PANELS */
+.panel{padding:20px;border-bottom:1px solid var(--border)}
+.panel-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:16px}
+
+/* DROP ZONE */
+.drop-zone{
+  border:1px dashed rgba(201,146,42,0.3);border-radius:var(--radius);
+  background:var(--gold-dim);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 20px;cursor:pointer;transition:all .2s;
+  min-height:160px;text-align:center;
+}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--gold);background:rgba(201,146,42,0.2)}
+.drop-zone-icon{font-size:32px;color:var(--gold);margin-bottom:12px;opacity:0.6}
+.drop-zone-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.drop-zone-sub{font-size:11px;color:var(--text3)}
+.drop-formats{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;justify-content:center}
+.format-tag{font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 7px;border-radius:3px;border:1px solid var(--border2);color:var(--text3);background:var(--bg4)}
+
+/* FILE INFO */
+.file-info{display:none;margin-top:12px}
+.file-info.visible{display:block}
+.file-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.meta-item{background:var(--bg4);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px}
+.meta-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+.meta-value{font-size:12px;font-weight:600;color:var(--text)}
+
+/* WAVEFORM */
+.waveform-wrap{background:var(--bg4);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-top:12px}
+#waveformCanvas{display:block;width:100%;height:80px}
+
+/* QUALITY OPTIONS */
+.options-grid{display:flex;flex-direction:column;gap:12px}
+.option-row{display:flex;align-items:center;gap:10px}
+.option-label{font-size:11px;color:var(--text2);width:80px;flex-shrink:0}
+.radio-group{display:flex;gap:8px}
+.radio-opt{
+  height:26px;padding:0 12px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--bg4);
+  color:var(--text3);font-size:11px;font-weight:500;font-family:inherit;
+  cursor:pointer;transition:all .15s;
+}
+.radio-opt:hover{border-color:var(--border2);color:var(--text2)}
+.radio-opt.active{border-color:var(--gold-line);background:var(--gold-dim);color:var(--gold)}
+.checkbox-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.check-item{display:flex;align-items:center;gap:8px;cursor:pointer}
+.check-box{
+  width:16px;height:16px;border-radius:3px;border:1px solid var(--border2);
+  background:var(--bg4);display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s;
+}
+.check-item.checked .check-box{background:var(--gold-dim);border-color:var(--gold-line)}
+.check-mark{width:8px;height:8px;background:var(--gold);border-radius:1px;display:none}
+.check-item.checked .check-mark{display:block}
+.check-label{font-size:11px;color:var(--text2)}
+.split-btn{
+  width:100%;height:40px;border-radius:var(--radius);
+  background:var(--gold);border:none;color:#000;
+  font-size:12px;font-weight:700;font-family:inherit;
+  cursor:pointer;transition:all .15s;letter-spacing:.5px;margin-top:4px;
+}
+.split-btn:hover{background:#e0a830}
+.split-btn:disabled{background:var(--bg5);color:var(--text3);cursor:not-allowed}
+
+/* PROGRESS */
+.progress-wrap{display:none;margin-top:16px}
+.progress-wrap.visible{display:block}
+.progress-bar-bg{height:4px;background:var(--bg5);border-radius:2px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),#e0a830);border-radius:2px;transition:width .3s;width:0%}
+.progress-stage{font-size:11px;color:var(--text2);margin-top:8px;min-height:18px}
+.progress-pct{font-size:11px;color:var(--text3);text-align:right;margin-top:2px}
+
+/* FALLBACK NOTICE */
+.fallback-notice{
+  background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);
+  border-radius:var(--radius);padding:10px 12px;
+  font-size:11px;color:rgba(245,158,11,0.8);
+  display:none;margin-top:12px;line-height:1.5;
+}
+.fallback-notice.visible{display:block}
+
+/* RIGHT — STEM RESULTS */
+.stems-header{
+  padding:20px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.stems-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+.stems-empty{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:var(--text3);font-size:12px;gap:10px;
+}
+.stems-grid{padding:16px;display:flex;flex-direction:column;gap:12px}
+
+/* STEM CARD */
+.stem-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;transition:border-color .2s;
+}
+.stem-card:hover{border-color:var(--border2)}
+.stem-card-header{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;
+  border-bottom:1px solid var(--border);
+}
+.stem-color-bar{width:3px;height:32px;border-radius:2px;flex-shrink:0}
+.stem-name{font-size:12px;font-weight:700;letter-spacing:.5px;flex:1}
+.stem-badge{font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 7px;border-radius:3px;background:var(--bg5);color:var(--text3)}
+.stem-dl-btn{
+  height:26px;padding:0 12px;border-radius:var(--radius);
+  border:1px solid var(--border2);background:transparent;
+  color:var(--text2);font-size:10px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all .15s;
+}
+.stem-dl-btn:hover{border-color:var(--gold-line);color:var(--gold)}
+.stem-add-btn{
+  height:26px;padding:0 10px;border-radius:var(--radius);
+  border:1px solid var(--border);background:transparent;
+  color:var(--text3);font-size:10px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.stem-add-btn:hover{border-color:var(--border2);color:var(--text2)}
+
+.stem-waveform-wrap{padding:8px 14px;background:var(--bg4)}
+.stem-waveform-wrap canvas{display:block;width:100%;height:48px}
+
+.stem-controls{padding:10px 14px;display:flex;align-items:center;gap:10px}
+.play-btn{
+  width:32px;height:32px;border-radius:50%;
+  border:1px solid var(--border2);background:var(--bg4);
+  color:var(--text);font-size:11px;font-family:inherit;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+.play-btn:hover{border-color:var(--gold-line);color:var(--gold)}
+.play-btn.playing{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.stem-toggle-group{display:flex;gap:6px}
+.stem-toggle{
+  height:26px;padding:0 10px;border-radius:var(--radius);
+  border:1px solid var(--border);background:transparent;
+  color:var(--text3);font-size:10px;font-weight:700;font-family:inherit;
+  cursor:pointer;transition:all .15s;
+}
+.stem-toggle:hover{border-color:var(--border2);color:var(--text2)}
+.stem-toggle.solo-on{border-color:var(--gold-line);background:var(--gold-dim);color:var(--gold)}
+.stem-toggle.mute-on{border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.08);color:var(--red)}
+.vol-label{font-size:10px;color:var(--text3);flex-shrink:0}
+.vol-slider{
+  flex:1;height:3px;-webkit-appearance:none;appearance:none;
+  background:var(--bg5);border-radius:2px;cursor:pointer;
+}
+.vol-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:12px;height:12px;border-radius:50%;
+  background:var(--gold);cursor:pointer;
+}
+
+/* SERVER STATUS */
+.server-badge{
+  display:flex;align-items:center;gap:6px;
+  font-size:10px;color:var(--text3);
+  padding:0 12px;
+}
+.server-dot{width:6px;height:6px;border-radius:50%;background:var(--text3)}
+.server-dot.online{background:var(--green);box-shadow:0 0 6px var(--green)}
+.server-dot.offline{background:var(--red)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .main{flex-direction:column;height:auto}
+  .left-col{width:100%;border-right:none;border-bottom:1px solid var(--border)}
+}
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <span class="nav-brand">GOAT Stem Splitter</span>
+  <div class="nav-sep"></div>
+  <button class="nav-file-btn" onclick="document.getElementById('fileInput').click()">Load Audio File</button>
+  <input type="file" id="fileInput" accept=".wav,.mp3,.flac,.m4a,.aac,.ogg" style="display:none">
+  <span class="nav-status" id="navStatus">No file loaded</span>
+  <div class="server-badge">
+    <div class="server-dot" id="serverDot"></div>
+    <span id="serverLabel">Intel Server</span>
+  </div>
+  <button class="nav-process-btn" id="navProcessBtn" disabled onclick="startSplitting()">Split Stems</button>
+  <a href="goat-production-hub.html" class="nav-hub-link">Production Hub</a>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT COLUMN -->
+  <div class="left-col">
+
+    <!-- DROP ZONE -->
+    <div class="panel">
+      <div class="panel-title">Source Audio</div>
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="drop-zone-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/>
+          </svg>
+        </div>
+        <div class="drop-zone-title">Drop audio file to split</div>
+        <div class="drop-zone-sub">or click to browse</div>
+        <div class="drop-formats">
+          <span class="format-tag">WAV</span>
+          <span class="format-tag">MP3</span>
+          <span class="format-tag">FLAC</span>
+          <span class="format-tag">M4A</span>
+          <span class="format-tag">AAC</span>
+        </div>
+      </div>
+
+      <div class="file-info" id="fileInfo">
+        <div class="file-meta">
+          <div class="meta-item">
+            <div class="meta-label">Filename</div>
+            <div class="meta-value" id="metaFilename" style="font-size:11px;word-break:break-all">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Duration</div>
+            <div class="meta-value" id="metaDuration">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Format</div>
+            <div class="meta-value" id="metaFormat">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Sample Rate</div>
+            <div class="meta-value" id="metaSampleRate">—</div>
+          </div>
+        </div>
+        <div class="waveform-wrap">
+          <canvas id="waveformCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROCESSING OPTIONS -->
+    <div class="panel">
+      <div class="panel-title">Processing Options</div>
+      <div class="options-grid">
+        <div class="option-row">
+          <span class="option-label">Quality</span>
+          <div class="radio-group" id="qualityGroup">
+            <button class="radio-opt" data-val="fast" onclick="selectQuality(this)">Fast</button>
+            <button class="radio-opt active" data-val="balanced" onclick="selectQuality(this)">Balanced</button>
+            <button class="radio-opt" data-val="high" onclick="selectQuality(this)">High Quality</button>
+          </div>
+        </div>
+        <div class="option-row">
+          <span class="option-label">Output</span>
+          <div class="radio-group" id="formatGroup">
+            <button class="radio-opt active" data-val="wav24" onclick="selectFormat(this)">WAV 24-bit</button>
+            <button class="radio-opt" data-val="mp3320" onclick="selectFormat(this)">MP3 320k</button>
+            <button class="radio-opt" data-val="flac" onclick="selectFormat(this)">FLAC</button>
+          </div>
+        </div>
+        <div class="option-row" style="align-items:flex-start">
+          <span class="option-label" style="padding-top:2px">Stems</span>
+          <div class="checkbox-grid" id="stemChecks">
+            <div class="check-item checked" data-stem="vocals" onclick="toggleStem(this)">
+              <div class="check-box"><div class="check-mark"></div></div>
+              <span class="check-label">Vocals</span>
+            </div>
+            <div class="check-item checked" data-stem="drums" onclick="toggleStem(this)">
+              <div class="check-box"><div class="check-mark"></div></div>
+              <span class="check-label">Drums</span>
+            </div>
+            <div class="check-item checked" data-stem="bass" onclick="toggleStem(this)">
+              <div class="check-box"><div class="check-mark"></div></div>
+              <span class="check-label">Bass</span>
+            </div>
+            <div class="check-item checked" data-stem="other" onclick="toggleStem(this)">
+              <div class="check-box"><div class="check-mark"></div></div>
+              <span class="check-label">Other</span>
+            </div>
+            <div class="check-item" data-stem="piano" onclick="toggleStem(this)">
+              <div class="check-box"><div class="check-mark"></div></div>
+              <span class="check-label">Piano</span>
+            </div>
+            <div class="check-item" data-stem="guitar" onclick="toggleStem(this)">
+              <div class="check-box"><div class="check-mark"></div></div>
+              <span class="check-label">Guitar</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <button class="split-btn" id="splitBtn" disabled onclick="startSplitting()">Split Stems</button>
+      </div>
+
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+        <div class="progress-stage" id="progressStage">Initializing...</div>
+        <div class="progress-pct" id="progressPct">0%</div>
+      </div>
+
+      <div class="fallback-notice" id="fallbackNotice">
+        Basic mode — frequency-domain separation via WebAudio. Install Demucs AI server for full stem separation quality.
+      </div>
+    </div>
+
+  </div><!-- /left -->
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+    <div class="stems-header">
+      <span class="stems-title">Stem Results</span>
+      <span id="stemsCount" style="font-size:11px;color:var(--text3)"></span>
+    </div>
+    <div class="stems-empty" id="stemsEmpty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+      </svg>
+      <span>Load an audio file and click Split Stems</span>
+    </div>
+    <div class="stems-grid" id="stemsGrid"></div>
+  </div>
+
+</div>
+
+<script>
+// ── STATE ──
+const state = {
+  audioContext: null,
+  audioBuffer: null,
+  file: null,
+  quality: 'balanced',
+  outputFormat: 'wav24',
+  stems: ['vocals','drums','bass','other'],
+  stemBuffers: {},
+  stemPlayers: {},
+  serverOnline: false,
+};
+
+const STEM_COLORS = {
+  vocals: '#3b82f6',
+  drums:  '#ef4444',
+  bass:   '#7c3aed',
+  other:  '#22c55e',
+  piano:  '#f59e0b',
+  guitar: '#06b6d4',
+};
+const STEM_LABELS = {
+  vocals:'VOCALS', drums:'DRUMS', bass:'BASS',
+  other:'OTHER', piano:'PIANO', guitar:'GUITAR'
+};
+
+// ── AUDIO CONTEXT ──
+function getAudioContext() {
+  if (!state.audioContext) state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  return state.audioContext;
+}
+
+// ── SERVER CHECK ──
+async function checkServer() {
+  try {
+    const r = await fetch('http://127.0.0.1:5500/health', {signal: AbortSignal.timeout(2000)});
+    state.serverOnline = r.ok;
+  } catch(e) { state.serverOnline = false; }
+  const dot = document.getElementById('serverDot');
+  const lbl = document.getElementById('serverLabel');
+  dot.className = 'server-dot ' + (state.serverOnline ? 'online' : 'offline');
+  lbl.textContent = state.serverOnline ? 'Intel Server Online' : 'Intel Server Offline';
+}
+
+// ── FILE LOADING ──
+document.getElementById('fileInput').addEventListener('change', e => {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+});
+
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+
+async function loadFile(file) {
+  state.file = file;
+  const ctx = getAudioContext();
+  setStatus('Decoding audio...', false);
+  try {
+    const buf = await file.arrayBuffer();
+    state.audioBuffer = await ctx.decodeAudioData(buf);
+  } catch(err) {
+    setStatus('Error: Could not decode audio file', true);
+    return;
+  }
+  const dur = state.audioBuffer.duration;
+  const mins = Math.floor(dur/60);
+  const secs = (dur%60).toFixed(1).padStart(4,'0');
+  document.getElementById('metaFilename').textContent = file.name;
+  document.getElementById('metaDuration').textContent = `${mins}:${secs}`;
+  document.getElementById('metaFormat').textContent = file.name.split('.').pop().toUpperCase();
+  document.getElementById('metaSampleRate').textContent = `${(state.audioBuffer.sampleRate/1000).toFixed(1)} kHz`;
+  document.getElementById('fileInfo').classList.add('visible');
+  drawWaveform();
+  document.getElementById('splitBtn').disabled = false;
+  document.getElementById('navProcessBtn').disabled = false;
+  setStatus(`Loaded: ${file.name}`, false);
+  document.getElementById('stemsEmpty').style.display = 'flex';
+  document.getElementById('stemsGrid').innerHTML = '';
+}
+
+function setStatus(msg, isErr) {
+  const el = document.getElementById('navStatus');
+  el.textContent = msg;
+  el.className = 'nav-status' + (isErr ? ' error' : isErr===false ? '' : ' active');
+}
+
+// ── WAVEFORM DRAW ──
+function drawWaveform() {
+  const canvas = document.getElementById('waveformCanvas');
+  const ctx2 = canvas.getContext('2d');
+  const w = canvas.offsetWidth || 600;
+  canvas.width = w * window.devicePixelRatio;
+  canvas.height = 80 * window.devicePixelRatio;
+  ctx2.scale(window.devicePixelRatio, window.devicePixelRatio);
+  const data = state.audioBuffer.getChannelData(0);
+  const step = Math.ceil(data.length / w);
+  ctx2.fillStyle = '#141418';
+  ctx2.fillRect(0, 0, w, 80);
+  ctx2.strokeStyle = '#c9922a';
+  ctx2.lineWidth = 1;
+  ctx2.beginPath();
+  for (let i = 0; i < w; i++) {
+    let min = 1, max = -1;
+    for (let j = 0; j < step; j++) {
+      const v = data[i * step + j] || 0;
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+    const y1 = ((1 - max) / 2) * 80;
+    const y2 = ((1 - min) / 2) * 80;
+    if (i === 0) ctx2.moveTo(i, y1);
+    ctx2.lineTo(i, y1);
+    ctx2.lineTo(i, y2);
+  }
+  ctx2.stroke();
+}
+
+// ── STEM MINI WAVEFORM ──
+function drawStemWaveform(canvas, buffer, color) {
+  const ctx2 = canvas.getContext('2d');
+  const w = canvas.offsetWidth || 400;
+  canvas.width = w * devicePixelRatio;
+  canvas.height = 48 * devicePixelRatio;
+  ctx2.scale(devicePixelRatio, devicePixelRatio);
+  const data = buffer.getChannelData(0);
+  const step = Math.ceil(data.length / w);
+  ctx2.fillStyle = '#141418';
+  ctx2.fillRect(0, 0, w, 48);
+  ctx2.strokeStyle = color;
+  ctx2.lineWidth = 1;
+  ctx2.globalAlpha = 0.8;
+  ctx2.beginPath();
+  for (let i = 0; i < w; i++) {
+    let min = 1, max = -1;
+    for (let j = 0; j < step; j++) {
+      const v = data[i * step + j] || 0;
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+    const y1 = ((1 - max) / 2) * 48;
+    const y2 = ((1 - min) / 2) * 48;
+    ctx2.lineTo(i, y1);
+    ctx2.lineTo(i, y2);
+  }
+  ctx2.stroke();
+}
+
+// ── QUALITY / FORMAT TOGGLES ──
+function selectQuality(btn) {
+  document.querySelectorAll('#qualityGroup .radio-opt').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.quality = btn.dataset.val;
+}
+function selectFormat(btn) {
+  document.querySelectorAll('#formatGroup .radio-opt').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.outputFormat = btn.dataset.val;
+}
+function toggleStem(item) {
+  item.classList.toggle('checked');
+  const checked = [...document.querySelectorAll('#stemChecks .check-item.checked')].map(i => i.dataset.stem);
+  state.stems = checked;
+}
+
+// ── PROGRESS ──
+function setProgress(pct, stage) {
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressStage').textContent = stage;
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+// ── MAIN SPLIT LOGIC ──
+async function startSplitting() {
+  if (!state.audioBuffer) return;
+  document.getElementById('splitBtn').disabled = true;
+  document.getElementById('navProcessBtn').disabled = true;
+  document.getElementById('progressWrap').classList.add('visible');
+  document.getElementById('fallbackNotice').classList.remove('visible');
+  document.getElementById('stemsEmpty').style.display = 'none';
+  document.getElementById('stemsGrid').innerHTML = '';
+  setStatus('Processing...', false);
+  setProgress(5, 'Analyzing frequency content...');
+
+  await checkServer();
+
+  let usedServer = false;
+  if (state.serverOnline && state.file) {
+    try {
+      const fd = new FormData();
+      fd.append('file', state.file);
+      fd.append('quality', state.quality);
+      fd.append('stems', JSON.stringify(state.stems));
+      setProgress(20, 'Sending to Intel Server AI...');
+      const r = await fetch('http://127.0.0.1:5500/audio/split-stems', {
+        method:'POST', body:fd,
+        signal: AbortSignal.timeout(120000)
+      });
+      if (r.ok) {
+        const data = await r.json();
+        setProgress(90, 'Rendering outputs...');
+        await renderServerStems(data);
+        usedServer = true;
+      }
+    } catch(e) { usedServer = false; }
+  }
+
+  if (!usedServer) {
+    document.getElementById('fallbackNotice').classList.add('visible');
+    await doWebAudioSeparation();
+  }
+
+  setProgress(100, 'Complete');
+  setStatus('Separation complete — ' + state.stems.length + ' stems ready', false);
+  document.getElementById('splitBtn').disabled = false;
+  document.getElementById('navProcessBtn').disabled = false;
+  document.getElementById('stemsCount').textContent = state.stems.length + ' stems';
+  setTimeout(() => document.getElementById('progressWrap').classList.remove('visible'), 2500);
+}
+
+// ── WEBAUDIO FREQUENCY SEPARATION ──
+async function doWebAudioSeparation() {
+  const ctx = getAudioContext();
+  const src = state.audioBuffer;
+  const sr = src.sampleRate;
+  const len = src.length;
+  const nch = src.numberOfChannels;
+
+  const stages = [
+    [10, 'Analyzing frequency content...'],
+    [30, 'Separating stems...'],
+    [60, 'Applying filters...'],
+    [80, 'Rendering outputs...'],
+  ];
+  for (const [pct, label] of stages) {
+    setProgress(pct, label);
+    await sleep(300);
+  }
+
+  // Build raw channel data arrays
+  const L = src.getChannelData(0);
+  const R = nch > 1 ? src.getChannelData(1) : L;
+
+  // Offline context for each stem
+  for (const stemName of state.stems) {
+    setProgress(60 + (state.stems.indexOf(stemName) / state.stems.length) * 30,
+      `Processing ${STEM_LABELS[stemName]}...`);
+    await sleep(100);
+
+    const offCtx = new OfflineAudioContext(2, len, sr);
+    const srcNode = offCtx.createBufferSource();
+    srcNode.buffer = src;
+
+    let chain = srcNode;
+
+    if (stemName === 'vocals') {
+      // Bandpass 300Hz - 3kHz + reduce sides (mid channel emphasis)
+      const bp1 = offCtx.createBiquadFilter();
+      bp1.type = 'highpass'; bp1.frequency.value = 280; bp1.Q.value = 0.7;
+      const bp2 = offCtx.createBiquadFilter();
+      bp2.type = 'lowpass'; bp2.frequency.value = 3200; bp2.Q.value = 0.7;
+      const bp3 = offCtx.createBiquadFilter();
+      bp3.type = 'peaking'; bp3.frequency.value = 900; bp3.gain.value = 4; bp3.Q.value = 1.0;
+      srcNode.connect(bp1); bp1.connect(bp2); bp2.connect(bp3);
+      chain = bp3;
+    } else if (stemName === 'bass') {
+      const lp = offCtx.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 220; lp.Q.value = 0.85;
+      const lp2 = offCtx.createBiquadFilter();
+      lp2.type = 'lowpass'; lp2.frequency.value = 180; lp2.Q.value = 0.7;
+      const gain = offCtx.createGain(); gain.gain.value = 1.8;
+      srcNode.connect(lp); lp.connect(lp2); lp2.connect(gain);
+      chain = gain;
+    } else if (stemName === 'drums') {
+      // Broadband with transient emphasis
+      const hp = offCtx.createBiquadFilter();
+      hp.type = 'highpass'; hp.frequency.value = 60; hp.Q.value = 0.5;
+      const lp = offCtx.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 8000; lp.Q.value = 0.5;
+      const peakLow = offCtx.createBiquadFilter();
+      peakLow.type = 'peaking'; peakLow.frequency.value = 80; peakLow.gain.value = 6; peakLow.Q.value = 1.2;
+      const peakHi = offCtx.createBiquadFilter();
+      peakHi.type = 'peaking'; peakHi.frequency.value = 6000; peakHi.gain.value = 3; peakHi.Q.value = 1.0;
+      srcNode.connect(hp); hp.connect(lp); lp.connect(peakLow); peakLow.connect(peakHi);
+      chain = peakHi;
+    } else if (stemName === 'other') {
+      const hp = offCtx.createBiquadFilter();
+      hp.type = 'highpass'; hp.frequency.value = 3000; hp.Q.value = 0.7;
+      const lp = offCtx.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 16000; lp.Q.value = 0.7;
+      srcNode.connect(hp); hp.connect(lp);
+      chain = lp;
+    } else if (stemName === 'piano') {
+      const hp = offCtx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=200;
+      const lp = offCtx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=5000;
+      const pk = offCtx.createBiquadFilter(); pk.type='peaking'; pk.frequency.value=1200; pk.gain.value=3;
+      srcNode.connect(hp); hp.connect(lp); lp.connect(pk);
+      chain = pk;
+    } else if (stemName === 'guitar') {
+      const hp = offCtx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=150;
+      const lp = offCtx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=7000;
+      const pk = offCtx.createBiquadFilter(); pk.type='peaking'; pk.frequency.value=2500; pk.gain.value=4;
+      srcNode.connect(hp); hp.connect(lp); lp.connect(pk);
+      chain = pk;
+    } else {
+      srcNode.connect(offCtx.destination);
+      chain = null;
+    }
+
+    if (chain) chain.connect(offCtx.destination);
+    srcNode.start(0);
+    const rendered = await offCtx.startRendering();
+    state.stemBuffers[stemName] = rendered;
+  }
+  renderStemCards();
+}
+
+async function renderServerStems(data) {
+  // If server returns URLs, fetch and decode each
+  for (const stemName of state.stems) {
+    if (data[stemName]) {
+      try {
+        const r = await fetch('http://127.0.0.1:5500' + data[stemName]);
+        const ab = await r.arrayBuffer();
+        state.stemBuffers[stemName] = await getAudioContext().decodeAudioData(ab);
+      } catch(e) { /* fallback gracefully */ }
+    }
+  }
+  renderStemCards();
+}
+
+function renderStemCards() {
+  const grid = document.getElementById('stemsGrid');
+  grid.innerHTML = '';
+  for (const stemName of state.stems) {
+    const buf = state.stemBuffers[stemName];
+    if (!buf) continue;
+    const card = buildStemCard(stemName, buf);
+    grid.appendChild(card);
+  }
+  // Draw waveforms after DOM paint
+  requestAnimationFrame(() => {
+    for (const stemName of state.stems) {
+      const buf = state.stemBuffers[stemName];
+      if (!buf) continue;
+      const canvas = document.querySelector(`[data-stem-canvas="${stemName}"]`);
+      if (canvas) drawStemWaveform(canvas, buf, STEM_COLORS[stemName] || '#c9922a');
+    }
+  });
+}
+
+function buildStemCard(stemName, buf) {
+  const dur = buf.duration.toFixed(2);
+  const color = STEM_COLORS[stemName] || '#c9922a';
+  const label = STEM_LABELS[stemName] || stemName.toUpperCase();
+
+  const card = document.createElement('div');
+  card.className = 'stem-card';
+  card.dataset.stem = stemName;
+  card.innerHTML = `
+    <div class="stem-card-header">
+      <div class="stem-color-bar" style="background:${color}"></div>
+      <span class="stem-name">${label}</span>
+      <span class="stem-badge">${dur}s</span>
+      <button class="stem-dl-btn" onclick="downloadStem('${stemName}')">Download</button>
+      <button class="stem-add-btn" onclick="addToBeatMaker('${stemName}')">+ Beat Maker</button>
+    </div>
+    <div class="stem-waveform-wrap">
+      <canvas data-stem-canvas="${stemName}"></canvas>
+    </div>
+    <div class="stem-controls">
+      <button class="play-btn" id="playBtn_${stemName}" onclick="togglePlay('${stemName}')">
+        <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0l10 6L0 12z"/></svg>
+      </button>
+      <div class="stem-toggle-group">
+        <button class="stem-toggle" id="soloBtn_${stemName}" onclick="toggleSolo('${stemName}')">S</button>
+        <button class="stem-toggle" id="muteBtn_${stemName}" onclick="toggleMute('${stemName}')">M</button>
+      </div>
+      <span class="vol-label">Vol</span>
+      <input class="vol-slider" type="range" min="0" max="100" value="80"
+        oninput="setVolume('${stemName}', this.value)"
+        style="accent-color:${color}">
+    </div>
+  `;
+  return card;
+}
+
+// ── PLAYBACK ──
+const playbackState = {};
+function togglePlay(stemName) {
+  const ctx = getAudioContext();
+  if (ctx.state === 'suspended') ctx.resume();
+  if (playbackState[stemName] && playbackState[stemName].source) {
+    playbackState[stemName].source.stop();
+    delete playbackState[stemName];
+    document.getElementById('playBtn_' + stemName).classList.remove('playing');
+    document.getElementById('playBtn_' + stemName).innerHTML = `<svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0l10 6L0 12z"/></svg>`;
+    return;
+  }
+  const buf = state.stemBuffers[stemName];
+  if (!buf) return;
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = (playbackState[stemName]?.vol || 0.8);
+  gainNode.connect(ctx.destination);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(gainNode);
+  src.start(0);
+  playbackState[stemName] = { source: src, gain: gainNode, vol: gainNode.gain.value };
+  src.onended = () => {
+    delete playbackState[stemName];
+    const btn = document.getElementById('playBtn_' + stemName);
+    if (btn) {
+      btn.classList.remove('playing');
+      btn.innerHTML = `<svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0l10 6L0 12z"/></svg>`;
+    }
+  };
+  document.getElementById('playBtn_' + stemName).classList.add('playing');
+  document.getElementById('playBtn_' + stemName).innerHTML = `<svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><rect x="0" y="0" width="4" height="10"/><rect x="6" y="0" width="4" height="10"/></svg>`;
+}
+
+function setVolume(stemName, val) {
+  if (playbackState[stemName]?.gain) playbackState[stemName].gain.gain.value = val / 100;
+  if (playbackState[stemName]) playbackState[stemName].vol = val / 100;
+}
+
+function toggleSolo(stemName) {
+  const btn = document.getElementById('soloBtn_' + stemName);
+  btn.classList.toggle('solo-on');
+}
+function toggleMute(stemName) {
+  const btn = document.getElementById('muteBtn_' + stemName);
+  btn.classList.toggle('mute-on');
+  if (playbackState[stemName]?.gain) {
+    playbackState[stemName].gain.gain.value = btn.classList.contains('mute-on') ? 0 : (playbackState[stemName].vol || 0.8);
+  }
+}
+
+// ── DOWNLOAD ──
+function downloadStem(stemName) {
+  const buf = state.stemBuffers[stemName];
+  if (!buf) return;
+  const wavBlob = audioBufferToWav(buf);
+  const url = URL.createObjectURL(wavBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  const base = state.file ? state.file.name.replace(/\.[^.]+$/, '') : 'stem';
+  a.download = `${base}_${stemName}.wav`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function addToBeatMaker(stemName) {
+  const buf = state.stemBuffers[stemName];
+  if (!buf) return;
+  const base = state.file ? state.file.name.replace(/\.[^.]+$/, '') : 'stem';
+  const key = `goat_stem_${stemName}_${Date.now()}`;
+  const wav = audioBufferToWav(buf);
+  const reader = new FileReader();
+  reader.onload = () => {
+    const existing = JSON.parse(localStorage.getItem('goat_beat_maker_stems') || '[]');
+    existing.push({ key, name: `${base} — ${STEM_LABELS[stemName]}`, dataUrl: reader.result });
+    localStorage.setItem('goat_beat_maker_stems', JSON.stringify(existing));
+    alert(`${STEM_LABELS[stemName]} stem saved to Beat Maker library.`);
+  };
+  reader.readAsDataURL(wav);
+}
+
+// ── WAV ENCODER ──
+function audioBufferToWav(buffer) {
+  const nCh = buffer.numberOfChannels;
+  const sr = buffer.sampleRate;
+  const len = buffer.length;
+  const arrayBuffer = new ArrayBuffer(44 + len * nCh * 2);
+  const view = new DataView(arrayBuffer);
+  const setStr = (offset, str) => { for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); };
+  setStr(0, 'RIFF');
+  view.setUint32(4, 36 + len * nCh * 2, true);
+  setStr(8, 'WAVE');
+  setStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, nCh, true);
+  view.setUint32(24, sr, true);
+  view.setUint32(28, sr * nCh * 2, true);
+  view.setUint16(32, nCh * 2, true);
+  view.setUint16(34, 16, true);
+  setStr(36, 'data');
+  view.setUint32(40, len * nCh * 2, true);
+  let offset = 44;
+  for (let i = 0; i < len; i++) {
+    for (let ch = 0; ch < nCh; ch++) {
+      const s = Math.max(-1, Math.min(1, buffer.getChannelData(ch)[i]));
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      offset += 2;
+    }
+  }
+  return new Blob([arrayBuffer], { type: 'audio/wav' });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ── INIT ──
+checkServer();
+setInterval(checkServer, 30000);
+</script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

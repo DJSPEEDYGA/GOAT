@@ -29,7 +29,7 @@ router.post('/execute',
     });
 
     // Generate agent ID
-    const agentId = `agent-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const agentId = `agent-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     activeAgents.set(agentId, agent);
 
     // Execute agent asynchronously

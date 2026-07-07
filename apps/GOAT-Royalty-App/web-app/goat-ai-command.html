@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT AI Command Center</title>
+<link rel="icon" href="favicon.ico">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--bg2:#0e0e0e;--bg3:#141414;--bg4:#1a1a1a;--bg5:#222;
+  --border:#2a2a2a;--gold:#d4a03c;--gold2:#f0c040;
+  --green:#2ecc71;--red:#e74c3c;--blue:#3b82f6;--purple:#8b5cf6;
+  --cyan:#06b6d4;--orange:#f97316;--nvidia:#76b900;
+  --text:#f0ece4;--sub:#888;--muted:#555;
+  --sidebar:260px;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px}
+
+/* ── LAYOUT ── */
+#shell{display:flex;height:100vh;overflow:hidden}
+
+/* ── LEFT SIDEBAR ── */
+#sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+#sidebar-header{
+  padding:14px 16px 10px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.brand-logo{font-size:20px;font-weight:900;color:var(--gold);letter-spacing:-1px}
+.brand-sub{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+
+/* Agent list */
+#agent-list{flex:1;overflow-y:auto;padding:8px 0}
+#agent-list::-webkit-scrollbar{width:3px}
+#agent-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.agent-btn{
+  width:100%;display:flex;align-items:center;gap:10px;
+  padding:9px 14px;border:none;background:transparent;
+  color:var(--sub);cursor:pointer;font-family:inherit;font-size:12px;
+  text-align:left;transition:all .15s;border-left:2px solid transparent;
+}
+.agent-btn:hover{background:var(--bg3);color:var(--text)}
+.agent-btn.active{background:var(--bg4);color:var(--text);border-left-color:var(--gold)}
+.agent-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.agent-avatar{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.agent-info{flex:1;min-width:0}
+.agent-name{font-size:12px;font-weight:600;color:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agent-role{font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agent-online{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+/* Model picker */
+#model-panel{
+  border-top:1px solid var(--border);padding:10px 12px;flex-shrink:0;
+  background:var(--bg3);
+}
+.model-label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+#modelSelect{
+  width:100%;background:var(--bg);border:1px solid var(--border);
+  color:var(--text);border-radius:6px;padding:7px 10px;
+  font-family:inherit;font-size:11px;cursor:pointer;
+}
+#modelSelect:focus{outline:none;border-color:var(--gold)}
+.model-status{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:var(--muted)}
+.model-status-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+/* App launchers in sidebar */
+#app-launchers{border-top:1px solid var(--border);padding:10px 12px;flex-shrink:0}
+.app-launch-row{display:flex;gap:6px;margin-bottom:6px}
+.app-launch-btn{
+  flex:1;padding:7px 4px;border-radius:6px;border:1px solid var(--border);
+  background:var(--bg3);color:var(--sub);font-size:10px;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:all .2s;text-align:center;
+}
+.app-launch-btn:hover{background:var(--bg4);color:var(--text);border-color:var(--gold)}
+.app-launch-btn.nvidia{border-color:rgba(118,185,0,0.3);color:var(--nvidia)}
+.app-launch-btn.nvidia:hover{background:rgba(118,185,0,0.1)}
+.app-launch-btn.ollama{border-color:rgba(59,130,246,0.3);color:var(--blue)}
+.app-launch-btn.ollama:hover{background:rgba(59,130,246,0.1)}
+
+/* ── MAIN CHAT ── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* Top bar */
+#chatbar{
+  height:52px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;padding:0 20px;flex-shrink:0;
+}
+#active-agent-display{display:flex;align-items:center;gap:10px;flex:1}
+#active-avatar{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+#active-name{font-size:14px;font-weight:700;color:var(--text)}
+#active-role{font-size:11px;color:var(--muted)}
+#active-engine{font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid var(--border);color:var(--sub);background:var(--bg3)}
+#chatbar-actions{display:flex;gap:6px}
+.bar-btn{
+  padding:6px 12px;border-radius:6px;border:1px solid var(--border);
+  background:var(--bg3);color:var(--sub);font-size:11px;cursor:pointer;
+  font-family:inherit;transition:all .2s;
+}
+.bar-btn:hover{background:var(--bg4);color:var(--text);border-color:var(--gold)}
+.bar-btn.danger:hover{border-color:var(--red);color:var(--red)}
+
+/* Messages */
+#messages{
+  flex:1;overflow-y:auto;padding:20px;
+  display:flex;flex-direction:column;gap:18px;
+}
+#messages::-webkit-scrollbar{width:4px}
+#messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.msg{display:flex;gap:12px;animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.msg.user{flex-direction:row-reverse}
+.msg-avatar{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:2px}
+.msg-body{max-width:72%;display:flex;flex-direction:column;gap:4px}
+.msg.user .msg-body{align-items:flex-end}
+.msg-name{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.msg-bubble{
+  padding:12px 16px;border-radius:14px;
+  font-size:13px;line-height:1.65;color:var(--text);
+  background:var(--bg3);border:1px solid var(--border);
+  white-space:pre-wrap;word-break:break-word;
+}
+.msg.user .msg-bubble{background:rgba(212,160,60,0.1);border-color:rgba(212,160,60,0.25)}
+.msg-meta{font-size:10px;color:var(--muted);display:flex;gap:10px;align-items:center}
+.msg-engine{padding:1px 6px;border-radius:3px;background:var(--bg4);font-size:9px}
+.msg-copy{cursor:pointer;color:var(--muted);font-size:10px}
+.msg-copy:hover{color:var(--gold)}
+
+/* Thinking indicator */
+.thinking-dots{display:flex;gap:4px;padding:14px 16px}
+.thinking-dots span{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:bounce .9s infinite ease}
+.thinking-dots span:nth-child(2){animation-delay:.15s}
+.thinking-dots span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+
+/* Input */
+#input-zone{
+  background:var(--bg2);border-top:1px solid var(--border);
+  padding:14px 20px;flex-shrink:0;
+}
+#input-row{display:flex;gap:10px;align-items:flex-end}
+#msgInput{
+  flex:1;background:var(--bg3);border:1px solid var(--border);
+  color:var(--text);border-radius:12px;padding:12px 16px;
+  font-family:inherit;font-size:13px;resize:none;
+  max-height:140px;min-height:44px;line-height:1.5;
+  transition:border-color .2s;
+}
+#msgInput:focus{outline:none;border-color:var(--gold)}
+#msgInput::placeholder{color:var(--muted)}
+#sendBtn{
+  width:44px;height:44px;border-radius:10px;border:none;
+  background:var(--gold);color:#000;font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;flex-shrink:0;font-weight:700;
+}
+#sendBtn:hover{background:var(--gold2);transform:scale(1.05)}
+#sendBtn:disabled{background:var(--bg4);color:var(--muted);cursor:not-allowed;transform:none}
+
+/* Quick prompts */
+#quick-prompts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.qp{
+  padding:5px 12px;border-radius:20px;border:1px solid var(--border);
+  background:var(--bg3);color:var(--sub);font-size:11px;cursor:pointer;
+  font-family:inherit;transition:all .2s;
+}
+.qp:hover{border-color:var(--gold);color:var(--text);background:var(--bg4)}
+
+/* ── RIGHT PANEL ── */
+#right-panel{
+  width:300px;flex-shrink:0;background:var(--bg2);
+  border-left:1px solid var(--border);display:flex;flex-direction:column;
+  overflow:hidden;
+}
+#right-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.rtab{
+  flex:1;padding:10px 4px;text-align:center;font-size:11px;
+  color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
+  transition:all .2s;font-weight:600;
+}
+.rtab:hover{color:var(--text)}
+.rtab.act{color:var(--gold);border-bottom-color:var(--gold)}
+.rpanel{flex:1;overflow-y:auto;padding:14px;display:none}
+.rpanel.act{display:block}
+.rpanel::-webkit-scrollbar{width:3px}
+.rpanel::-webkit-scrollbar-thumb{background:var(--border)}
+
+/* Model card */
+.model-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:all .2s;
+}
+.model-card:hover{border-color:rgba(212,160,60,0.4);background:var(--bg4)}
+.model-card.active{border-color:var(--gold);background:rgba(212,160,60,0.06)}
+.model-card-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px}
+.model-card-meta{font-size:10px;color:var(--muted)}
+.model-card-size{
+  display:inline-block;padding:2px 7px;border-radius:4px;
+  background:var(--bg4);font-size:9px;color:var(--sub);margin-top:4px;
+}
+
+/* System stats */
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.stat-label{font-size:11px;color:var(--muted)}
+.stat-val{font-size:12px;font-weight:700;color:var(--text)}
+.stat-bar{height:4px;background:var(--bg4);border-radius:2px;margin-top:4px;overflow:hidden}
+.stat-fill{height:100%;border-radius:2px;transition:width .5s ease}
+
+/* Section header in panels */
+.panel-section{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.panel-section:first-child{margin-top:0}
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+<div id="shell">
+
+  <!-- ── SIDEBAR ── -->
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <div>
+        <div class="brand-logo">GOAT</div>
+        <div class="brand-sub">AI Command</div>
+      </div>
+      <div style="margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--green)" title="All systems online"></div>
+    </div>
+
+    <div id="agent-list">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;padding:10px 14px 6px">Agents</div>
+      <!-- Populated by JS -->
+    </div>
+
+    <div id="app-launchers">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">AI Apps</div>
+      <div class="app-launch-row">
+        <button class="app-launch-btn nvidia" onclick="launchAIApp('NVIDIA AI Workbench')">NVIDIA<br>Workbench</button>
+        <button class="app-launch-btn ollama" onclick="launchAIApp('Ollama')">Ollama<br>0.31.1</button>
+      </div>
+      <div class="app-launch-row">
+        <button class="app-launch-btn" onclick="window.open('https://chat.openai.com','_blank')" style="border-color:rgba(16,163,127,0.3);color:#10a37f">ChatGPT</button>
+        <button class="app-launch-btn" onclick="window.open('https://claude.ai','_blank')" style="border-color:rgba(212,160,60,0.3);color:var(--gold)">Claude</button>
+        <button class="app-launch-btn" onclick="window.open('https://devin.ai','_blank')" style="border-color:rgba(139,92,246,0.3);color:var(--purple)">Devin</button>
+      </div>
+    </div>
+
+    <div id="model-panel">
+      <div class="model-label">Active Model</div>
+      <select id="modelSelect" onchange="setModel(this.value)">
+        <option value="">Loading...</option>
+      </select>
+      <div class="model-status">
+        <div class="model-status-dot" id="ollamaStatusDot"></div>
+        <span id="ollamaStatusTxt">Connecting...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN CHAT ── -->
+  <div id="main">
+    <!-- Top bar -->
+    <div id="chatbar">
+      <div id="active-agent-display">
+        <div id="active-avatar" style="background:rgba(212,160,60,0.15)">🐐</div>
+        <div>
+          <div id="active-name">Ms. Money Penny</div>
+          <div id="active-role">GOAT Royalty AI · Financial Strategist</div>
+        </div>
+        <div id="active-engine">ollama · llama3.1:8b</div>
+      </div>
+      <div id="chatbar-actions">
+        <button class="bar-btn" onclick="exportChat()">Export</button>
+        <button class="bar-btn" onclick="copyLast()">Copy Last</button>
+        <button class="bar-btn danger" onclick="clearChat()">Clear</button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div id="messages">
+      <!-- Welcome message -->
+      <div class="msg" id="welcome-msg">
+        <div class="msg-avatar" style="background:rgba(212,160,60,0.15)">🐐</div>
+        <div class="msg-body">
+          <div class="msg-name">Ms. Money Penny</div>
+          <div class="msg-bubble">Good day, DJ Speedy. All GOAT Force systems are online. I have access to 56 local AI models, your royalty data, and the full intel server. What would you like to work on today?
+
+<span style="color:var(--muted);font-size:11px">• Ask me about royalties, contracts, distribution
+• Switch agents using the sidebar
+• Change AI models anytime — all 56 are loaded locally
+• Use quick prompts below to get started fast</span></div>
+          <div class="msg-meta"><span id="welcome-engine" class="msg-engine">loading model...</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div id="input-zone">
+      <div id="input-row">
+        <textarea id="msgInput" rows="1" placeholder="Message Ms. Money Penny..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button id="sendBtn" onclick="sendMsg()">↑</button>
+      </div>
+      <div id="quick-prompts">
+        <button class="qp" onclick="quickSend(this)">Royalty audit</button>
+        <button class="qp" onclick="quickSend(this)">DSP strategy</button>
+        <button class="qp" onclick="quickSend(this)">Write a verse</button>
+        <button class="qp" onclick="quickSend(this)">Beat idea 140 BPM trap</button>
+        <button class="qp" onclick="quickSend(this)">Contract review checklist</button>
+        <button class="qp" onclick="quickSend(this)">EDEN AWAKENING pitch</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT PANEL ── -->
+  <div id="right-panel">
+    <div id="right-tabs">
+      <div class="rtab act" onclick="switchRTab('models',this)">Models</div>
+      <div class="rtab" onclick="switchRTab('system',this)">System</div>
+      <div class="rtab" onclick="switchRTab('history',this)">History</div>
+    </div>
+
+    <!-- MODELS -->
+    <div class="rpanel act" id="rtab-models">
+      <div class="panel-section">56 Local Models</div>
+      <input id="modelSearch" type="text" placeholder="Search models..." oninput="filterModels(this.value)"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;font-size:11px;font-family:inherit;margin-bottom:10px">
+      <div id="modelCardList"></div>
+    </div>
+
+    <!-- SYSTEM -->
+    <div class="rpanel" id="rtab-system">
+      <div class="panel-section">GOAT Force Status</div>
+      <div class="stat-row"><span class="stat-label">Web App (Mac)</span><span class="stat-val" id="s-web-mac">—</span></div>
+      <div class="stat-row"><span class="stat-label">Intel Server</span><span class="stat-val" id="s-intel">—</span></div>
+      <div class="stat-row"><span class="stat-label">Ollama</span><span class="stat-val" id="s-ollama">—</span></div>
+      <div class="stat-row"><span class="stat-label">NAS (24/7)</span><span class="stat-val" id="s-nas">—</span></div>
+      <div class="stat-row"><span class="stat-label">Models Loaded</span><span class="stat-val" id="s-models">—</span></div>
+
+      <div class="panel-section" style="margin-top:16px">AI Apps</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <button onclick="launchAIApp('NVIDIA AI Workbench')" style="padding:10px 6px;background:rgba(118,185,0,0.1);border:1px solid rgba(118,185,0,0.3);border-radius:8px;color:var(--nvidia);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">NVIDIA<br>Workbench</button>
+        <button onclick="launchAIApp('Ollama')" style="padding:10px 6px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:8px;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Ollama<br>Desktop</button>
+        <button onclick="window.open('http://127.0.0.1:11435','_blank')" style="padding:10px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--sub);font-size:11px;cursor:pointer;font-family:inherit">Ollama<br>API</button>
+        <button onclick="window.open('http://127.0.0.1:8090','_blank')" style="padding:10px 6px;background:rgba(212,160,60,0.08);border:1px solid rgba(212,160,60,0.2);border-radius:8px;color:var(--gold);font-size:11px;cursor:pointer;font-family:inherit">GOAT<br>App</button>
+      </div>
+
+      <div class="panel-section" style="margin-top:16px">NVIDIA AI Workbench</div>
+      <div style="background:rgba(118,185,0,0.06);border:1px solid rgba(118,185,0,0.2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;color:var(--sub)">
+        Run local AI containers, Jupyter notebooks, and GPU-accelerated models. Connected to your Mac's GPU via Metal.<br><br>
+        <button onclick="launchAIApp('NVIDIA AI Workbench')" style="padding:6px 14px;background:rgba(118,185,0,0.15);border:1px solid rgba(118,185,0,0.4);border-radius:6px;color:var(--nvidia);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;width:100%">Launch NVIDIA Workbench →</button>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="rpanel" id="rtab-history">
+      <div class="panel-section">Chat History</div>
+      <div id="historyList" style="font-size:11px;color:var(--muted)">No history yet.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const INTEL = 'http://127.0.0.1:5500';
+const OLLAMA = 'http://127.0.0.1:11435';
+
+// ── AGENTS ──
+const AGENTS = [
+  {id:'moneypenny', name:'Ms. Money Penny', role:'Royalty AI · Financial Strategist', icon:'💰', color:'#d4a03c', endpoint:'/ai/moneypenny', accent:'rgba(212,160,60,0.15)', prompts:['Royalty audit','DSP strategy','Contract review checklist','EDEN AWAKENING pitch']},
+  {id:'devin',      name:'Dr. Devin',       role:'Lead Engineer · Code & Systems',   icon:'🤖', color:'#8b5cf6', endpoint:'/ai/devin',      accent:'rgba(139,92,246,0.15)',  prompts:['Debug this code','Build a new feature','System architecture','API design']},
+  {id:'agent007',   name:'Agent 007',        role:'Security · Intel Operations',      icon:'🕵️', color:'#3b82f6', endpoint:'/ai/agent007',   accent:'rgba(59,130,246,0.15)',  prompts:['Security audit','Threat analysis','Verify identity','GOAT vault status']},
+  {id:'lexi',       name:'Lexi',             role:'Legal · Contracts & Publishing',   icon:'⚖️', color:'#06b6d4', endpoint:'/ai/lexi',       accent:'rgba(6,182,212,0.15)',   prompts:['Review contract','Publishing deal terms','Sync licensing','Royalty splits']},
+  {id:'oscar',      name:'Oscar',            role:'Creative Director · Visual AI',    icon:'🎨', color:'#f97316', endpoint:'/ai/oscar',      accent:'rgba(249,115,22,0.15)',  prompts:['Generate image prompt','Brand concept','Album cover idea','Visual style']},
+  {id:'nexus',      name:'Nexus',            role:'Data · Analytics & Research',      icon:'📊', color:'#10b981', endpoint:'/ai/nexus',      accent:'rgba(16,185,129,0.15)',  prompts:['Market analysis','Trend report','Fan data insights','Platform metrics']},
+  {id:'vanessa',    name:'Vanessa',          role:'Marketing · Campaigns & Promo',   icon:'📢', color:'#ec4899', endpoint:'/ai/vanessa',    accent:'rgba(236,72,153,0.15)',  prompts:['Launch campaign','Social media plan','Press release','Promo strategy']},
+  {id:'codex',      name:'Sir Codex',        role:'Music AI · Lyrics & Production',  icon:'🎤', color:'#a855f7', endpoint:'/ai/codex',      accent:'rgba(168,85,247,0.15)',  prompts:['Write a verse','Hook for trap song','Beat description','Album concept']},
+];
+
+let activeAgent = AGENTS[0];
+let activeModel = 'llama3.1:8b';
+let chatHistory = [];
+let allModels = [];
+let sessionHistory = [];
+
+// ── INIT ──
+function init() {
+  buildAgentList();
+  loadModels();
+  checkStatus();
+  setActiveAgent(AGENTS[0]);
+  setInterval(checkStatus, 30000);
+}
+
+function buildAgentList() {
+  const list = document.getElementById('agent-list');
+  list.innerHTML = '';
+  // Separator label already in HTML
+  AGENTS.forEach(a => {
+    const btn = document.createElement('button');
+    btn.className = 'agent-btn' + (a.id === activeAgent.id ? ' active' : '');
+    btn.id = 'abtn-' + a.id;
+    btn.onclick = () => setActiveAgent(a);
+    btn.innerHTML = `
+      <div class="agent-avatar" style="background:${a.accent}">${a.icon}</div>
+      <div class="agent-info">
+        <div class="agent-name" style="color:${a.id===activeAgent.id?a.color:'inherit'}">${a.name}</div>
+        <div class="agent-role">${a.role}</div>
+      </div>
+      <div class="agent-online"></div>
+    `;
+    list.appendChild(btn);
+  });
+}
+
+function setActiveAgent(agent) {
+  activeAgent = agent;
+  // Update sidebar
+  document.querySelectorAll('.agent-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('abtn-' + agent.id);
+  if (btn) btn.classList.add('active');
+  // Update chatbar
+  document.getElementById('active-avatar').style.background = agent.accent;
+  document.getElementById('active-avatar').textContent = agent.icon;
+  document.getElementById('active-name').textContent = agent.name;
+  document.getElementById('active-role').textContent = agent.role;
+  document.getElementById('active-engine').textContent = `ollama · ${activeModel}`;
+  document.getElementById('msgInput').placeholder = `Message ${agent.name}...`;
+  // Update quick prompts
+  const qp = document.getElementById('quick-prompts');
+  qp.innerHTML = agent.prompts.map(p =>
+    `<button class="qp" onclick="quickSend(this)">${p}</button>`
+  ).join('');
+  // Re-color agent name in sidebar
+  buildAgentList();
+}
+
+// ── MODELS ──
+async function loadModels() {
+  try {
+    const r = await fetch(OLLAMA + '/api/tags', {signal: AbortSignal.timeout(5000)});
+    const d = await r.json();
+    allModels = d.models || [];
+    const sel = document.getElementById('modelSelect');
+    const saved = localStorage.getItem('goat_model') || 'llama3.1:8b';
+    sel.innerHTML = allModels.map(m =>
+      `<option value="${m.name}" ${m.name===saved?'selected':''}>${m.name} — ${(m.size/1e9).toFixed(1)}GB</option>`
+    ).join('');
+    activeModel = saved;
+    document.getElementById('ollamaStatusDot').style.background = 'var(--green)';
+    document.getElementById('ollamaStatusTxt').textContent = `${allModels.length} models ready`;
+    document.getElementById('active-engine').textContent = `ollama · ${activeModel}`;
+    document.getElementById('welcome-engine').textContent = `ollama · ${activeModel}`;
+    buildModelCards();
+  } catch(e) {
+    document.getElementById('ollamaStatusDot').style.background = 'var(--red)';
+    document.getElementById('ollamaStatusTxt').textContent = 'Ollama offline';
+    document.getElementById('modelSelect').innerHTML = '<option>Ollama not running</option>';
+  }
+}
+
+function setModel(val) {
+  activeModel = val;
+  localStorage.setItem('goat_model', val);
+  document.getElementById('active-engine').textContent = `ollama · ${activeModel}`;
+  // Highlight active card
+  document.querySelectorAll('.model-card').forEach(c => {
+    c.classList.toggle('active', c.dataset.model === val);
+  });
+}
+
+function buildModelCards(filter='') {
+  const list = document.getElementById('modelCardList');
+  const filtered = filter ? allModels.filter(m => m.name.toLowerCase().includes(filter.toLowerCase())) : allModels;
+  list.innerHTML = filtered.map(m => {
+    const gb = (m.size/1e9).toFixed(1);
+    const tag = m.name.split(':')[0];
+    return `<div class="model-card ${m.name===activeModel?'active':''}" data-model="${m.name}" onclick="setModel('${m.name}');document.getElementById('modelSelect').value='${m.name}'">
+      <div class="model-card-name">${m.name}</div>
+      <div class="model-card-meta">${gb}GB · ${tag}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterModels(val) { buildModelCards(val); }
+
+// ── CHAT ──
+async function sendMsg() {
+  const input = document.getElementById('msgInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  input.style.height = '';
+  document.getElementById('sendBtn').disabled = true;
+
+  // Add to history
+  sessionHistory.push({agent: activeAgent.name, role:'user', content: msg, time: new Date().toLocaleTimeString()});
+
+  appendMsg('user', 'DJ Speedy', '🎧', msg, 'rgba(212,160,60,0.1)', '');
+  chatHistory.push({role:'user', content: msg});
+
+  // Thinking
+  const thinkId = 'think-' + Date.now();
+  const thinkEl = document.createElement('div');
+  thinkEl.className = 'msg';
+  thinkEl.id = thinkId;
+  thinkEl.innerHTML = `
+    <div class="msg-avatar" style="background:${activeAgent.accent}">${activeAgent.icon}</div>
+    <div class="msg-body">
+      <div class="msg-name">${activeAgent.name}</div>
+      <div class="msg-bubble thinking-dots"><span></span><span></span><span></span></div>
+    </div>`;
+  document.getElementById('messages').appendChild(thinkEl);
+  scrollBottom();
+
+  try {
+    const r = await fetch(INTEL + activeAgent.endpoint, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg, history: chatHistory.slice(-12), model: activeModel}),
+      signal: AbortSignal.timeout(90000)
+    });
+    const d = await r.json();
+    document.getElementById(thinkId)?.remove();
+    const reply = d.reply || d.error || 'No response';
+    const engine = d.engine || d.model || activeModel;
+    appendMsg('ai', activeAgent.name, activeAgent.icon, reply, activeAgent.accent, engine);
+    chatHistory.push({role:'assistant', content: reply});
+    sessionHistory.push({agent: activeAgent.name, role:'ai', content: reply.substring(0,80)+'...', time: new Date().toLocaleTimeString()});
+    updateHistory();
+  } catch(e) {
+    document.getElementById(thinkId)?.remove();
+    appendMsg('ai', activeAgent.name, activeAgent.icon,
+      `⚠ Intel server offline or model timeout.\n\nStart the server: open Terminal → run goat_intel.py\nOr use a web AI: ChatGPT, Claude, or Devin via the sidebar buttons.`,
+      activeAgent.accent, 'offline');
+  }
+  document.getElementById('sendBtn').disabled = false;
+  input.focus();
+}
+
+function appendMsg(type, name, icon, content, bgColor, engine) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg' + (type==='user'?' user':'');
+  div.innerHTML = `
+    <div class="msg-avatar" style="background:${bgColor}">${icon}</div>
+    <div class="msg-body">
+      <div class="msg-name">${name}</div>
+      <div class="msg-bubble">${escHtml(content)}</div>
+      <div class="msg-meta">
+        ${engine ? `<span class="msg-engine">${engine}</span>` : ''}
+        <span class="msg-copy" onclick="copyText(this)" data-text="${escAttr(content)}">copy</span>
+      </div>
+    </div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function escAttr(s){return s.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function scrollBottom(){const m=document.getElementById('messages');m.scrollTop=m.scrollHeight}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}}
+function autoResize(el){el.style.height='';el.style.height=Math.min(el.scrollHeight,140)+'px'}
+function quickSend(btn){document.getElementById('msgInput').value=btn.textContent;sendMsg()}
+
+function clearChat(){
+  chatHistory=[];
+  const m=document.getElementById('messages');
+  m.innerHTML='';
+  appendMsg('ai',activeAgent.name,activeAgent.icon,'Chat cleared. What would you like to work on?',activeAgent.accent,'');
+}
+function copyLast(){
+  const bubbles=document.querySelectorAll('.msg:not(.user) .msg-bubble');
+  if(bubbles.length){navigator.clipboard.writeText(bubbles[bubbles.length-1].textContent);showToast('Copied!')}
+}
+function copyText(el){navigator.clipboard.writeText(el.dataset.text);showToast('Copied!')}
+function exportChat(){
+  const txt=chatHistory.map(m=>`[${m.role.toUpperCase()}]\n${m.content}`).join('\n\n---\n\n');
+  const a=document.createElement('a');
+  a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(txt);
+  a.download=`goat-chat-${Date.now()}.txt`;a.click();
+}
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:80px;right:20px;background:var(--bg4);border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:8px;font-size:12px;z-index:999;animation:fadein .2s ease';
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+}
+
+// ── RIGHT TABS ──
+function switchRTab(id, el) {
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('act'));
+  document.querySelectorAll('.rpanel').forEach(p=>p.classList.remove('act'));
+  el.classList.add('act');
+  document.getElementById('rtab-'+id).classList.add('act');
+}
+
+function updateHistory() {
+  const list = document.getElementById('historyList');
+  if(!sessionHistory.length){list.innerHTML='<div style="color:var(--muted);font-size:11px">No history yet.</div>';return;}
+  list.innerHTML = sessionHistory.slice(-20).reverse().map(h=>`
+    <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:10px;font-weight:700;color:var(--sub)">${h.agent}</span>
+        <span style="font-size:9px;color:var(--muted)">${h.time}</span>
+      </div>
+      <div style="font-size:11px;color:${h.role==='user'?'var(--text)':'var(--sub)'}">
+        ${h.role==='user'?'You: ':'AI: '}${h.content.substring(0,80)}${h.content.length>80?'...':''}
+      </div>
+    </div>`
+  ).join('');
+}
+
+// ── SYSTEM STATUS ──
+async function checkStatus() {
+  const checks = [
+    {url:'http://127.0.0.1:8090/', id:'s-web-mac'},
+    {url:'http://127.0.0.1:5500/health', id:'s-intel'},
+    {url:'http://127.0.0.1:11435/api/tags', id:'s-ollama'},
+    {url:'http://192.168.2.2:8090/', id:'s-nas'},
+  ];
+  for(const c of checks) {
+    fetch(c.url, {signal:AbortSignal.timeout(3000)})
+      .then(r => {
+        document.getElementById(c.id).textContent = '✅ Online';
+        document.getElementById(c.id).style.color = 'var(--green)';
+        if(c.id==='s-ollama') {
+          r.json().then(d => {
+            const n = d.models?.length || 0;
+            document.getElementById('s-models').textContent = n + ' loaded';
+          }).catch(()=>{});
+        }
+      })
+      .catch(() => {
+        document.getElementById(c.id).textContent = '❌ Offline';
+        document.getElementById(c.id).style.color = 'var(--red)';
+      });
+  }
+}
+
+// ── APP LAUNCHER ──
+async function launchAIApp(name) {
+  try {
+    const r = await fetch(INTEL + '/system/launch-app', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({app: name}), signal: AbortSignal.timeout(5000)
+    });
+    const d = await r.json();
+    if(d.ok) showToast(`Launching ${name}...`);
+    else showToast(`Not found: ${name}`);
+  } catch(e) {
+    showToast(`Opening ${name}...`);
+  }
+}
+
+// ── START ──
+init();
+</script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

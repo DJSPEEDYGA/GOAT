@@ -40,7 +40,10 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CHATS_DIR = os.path.join(SCRIPT_DIR, "chat_data")
 CHATS_FILE = os.path.join(CHATS_DIR, "chats.json")
 SETTINGS_FILE = os.path.join(CHATS_DIR, "settings.json")
-HTML_FILE = os.path.join(SCRIPT_DIR, "FastChatUI.html")
+# Master Oscar Console is the primary UI; fall back to FastChatUI if not present
+_oscar = os.path.join(SCRIPT_DIR, "OscarConsole.html")
+_legacy = os.path.join(SCRIPT_DIR, "FastChatUI.html")
+HTML_FILE = _oscar if os.path.exists(_oscar) else _legacy
 
 
 # ── Pure-Python Hardware Stats (no psutil needed) ──────────────
@@ -195,8 +198,8 @@ class ChatHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
 
-        # Serve the main UI
-        if path == "/" or path == "/index.html":
+        # Serve the main UI (Master Oscar Console)
+        if path in ("/", "/index.html", "/OscarConsole.html", "/oscar", "/oscar/"):
             self._serve_html()
 
         # Chat data API

@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT City RP — BrickSquaD-Rp | FiveM GTA V Roleplay</title>
+<meta name="description" content="BrickSquaD-Rp — GOAT City RP — DJ Speedy x Waka Flocka Flame's FiveM GTA V Roleplay Server. GOAT Force Records. Est. 2026.">
+<link rel="icon" href="favicon.ico">
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<style>
+:root {
+  --bg: #030205;
+  --bg2: #0a0810;
+  --bg3: #100d1a;
+  --panel: #0a0810;
+  --panel2: #100d1a;
+  --border: #1e1a2e;
+  --border-glow: #2a2440;
+  --gold: #FFD700;
+  --gold2: #d4a03c;
+  --gold3: #f0c040;
+  --gold-glow: rgba(255, 215, 0, 0.25);
+  --gold-dim: rgba(255, 215, 0, 0.08);
+  --red: #c1121f;
+  --red2: #e63946;
+  --red-glow: rgba(230, 57, 70, 0.25);
+  --red-dim: rgba(193, 18, 31, 0.12);
+  --blue: #1d3557;
+  --blue2: #58a6ff;
+  --blue-dim: rgba(88, 166, 255, 0.10);
+  --green: #3fb950;
+  --green-dim: rgba(63, 185, 80, 0.10);
+  --purple: #a855f7;
+  --purple-dim: rgba(168, 85, 247, 0.10);
+  --orange: #f97316;
+  --orange-dim: rgba(249, 115, 22, 0.10);
+  --cyan: #39d0d8;
+  --text: #f0ece4;
+  --dim: #8b8a94;
+  --muted: #5a586a;
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  --font-display: 'Impact', 'Haettenschweiler', 'Arial Narrow Bold', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ===== AMBIENT BACKGROUND ===== */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 10%, rgba(193, 18, 31, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 85% 85%, rgba(255, 215, 0, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(88, 166, 255, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ===== HERO — 100vh CINEMATIC ===== */
+/* Video background */
+.hero-video-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  filter: saturate(1.3) brightness(0.4);
+}
+.hero-video-mask {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,rgba(3,2,5,0.5) 0%,rgba(8,5,21,0.6) 40%,rgba(3,2,5,0.7) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+.hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 700px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: linear-gradient(180deg, #030205 0%, #080515 40%, #0a0520 70%, #06030f 100%);
+}
+.hero > *:not(.hero-video-bg):not(.hero-video-mask) {
+  position: relative;
+  z-index: 2;
+}
+
+/* Scanline overlay */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.015) 2px,
+    rgba(255, 255, 255, 0.015) 4px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Golden bottom glow */
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--gold3), var(--gold), transparent);
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.4), 0 0 80px rgba(255, 215, 0, 0.2);
+  animation: hero-border-glow 3s ease-in-out infinite;
+  z-index: 12;
+}
+@keyframes hero-border-glow {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* City skyline silhouette */
+.skyline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 280px;
+  z-index: 3;
+  pointer-events: none;
+}
+.skyline-layer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+}
+.skyline-layer.back { opacity: 0.3; }
+.skyline-layer.mid { opacity: 0.5; }
+.skyline-layer.front { opacity: 0.7; }
+.bldg {
+  background: #0a0e1a;
+  flex-shrink: 0;
+  position: relative;
+}
+.skyline-layer.back .bldg { background: #080c16; }
+.skyline-layer.mid .bldg { background: #0c1020; }
+.skyline-layer.front .bldg { background: #0e1224; }
+/* Building windows — tiny lit rectangles */
+.bldg::before {
+  content: '';
+  position: absolute;
+  inset: 8px 3px;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0px, transparent 6px,
+    rgba(255, 215, 0, 0.06) 6px, rgba(255, 215, 0, 0.06) 8px
+  ),
+  repeating-linear-gradient(
+    90deg,
+    transparent 0px, transparent 4px,
+    rgba(88, 166, 255, 0.04) 4px, rgba(88, 166, 255, 0.04) 6px
+  );
+}
+
+/* Spark / ember particles */
+.sparks {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+}
+.spark {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.8), 0 0 12px rgba(255, 215, 0, 0.4);
+  animation: spark-float linear infinite;
+  opacity: 0;
+}
+@keyframes spark-float {
+  0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-20vh) translateX(30px); opacity: 0; }
+}
+.spark:nth-child(1) { left: 5%; animation-duration: 6s; animation-delay: 0s; width: 2px; height: 2px; }
+.spark:nth-child(2) { left: 12%; animation-duration: 8s; animation-delay: 1.2s; }
+.spark:nth-child(3) { left: 20%; animation-duration: 7s; animation-delay: 0.5s; width: 4px; height: 4px; }
+.spark:nth-child(4) { left: 28%; animation-duration: 9s; animation-delay: 2.3s; width: 2px; height: 2px; }
+.spark:nth-child(5) { left: 35%; animation-duration: 6.5s; animation-delay: 0.8s; }
+.spark:nth-child(6) { left: 42%; animation-duration: 7.5s; animation-delay: 3.1s; width: 4px; height: 4px; }
+.spark:nth-child(7) { left: 48%; animation-duration: 8.5s; animation-delay: 1.7s; width: 2px; height: 2px; }
+.spark:nth-child(8) { left: 55%; animation-duration: 6s; animation-delay: 4s; }
+.spark:nth-child(9) { left: 62%; animation-duration: 7s; animation-delay: 0.3s; width: 4px; height: 4px; }
+.spark:nth-child(10) { left: 68%; animation-duration: 9.5s; animation-delay: 2.8s; }
+.spark:nth-child(11) { left: 73%; animation-duration: 6.5s; animation-delay: 1s; width: 2px; height: 2px; }
+.spark:nth-child(12) { left: 78%; animation-duration: 8s; animation-delay: 3.5s; }
+.spark:nth-child(13) { left: 83%; animation-duration: 7.5s; animation-delay: 0.6s; width: 4px; height: 4px; }
+.spark:nth-child(14) { left: 88%; animation-duration: 6s; animation-delay: 2s; width: 2px; height: 2px; }
+.spark:nth-child(15) { left: 92%; animation-duration: 9s; animation-delay: 4.2s; }
+.spark:nth-child(16) { left: 15%; animation-duration: 7s; animation-delay: 5s; width: 2px; height: 2px; }
+.spark:nth-child(17) { left: 38%; animation-duration: 8.5s; animation-delay: 1.5s; }
+.spark:nth-child(18) { left: 58%; animation-duration: 6.5s; animation-delay: 3.8s; width: 4px; height: 4px; }
+.spark:nth-child(19) { left: 75%; animation-duration: 7.5s; animation-delay: 0.2s; width: 2px; height: 2px; }
+.spark:nth-child(20) { left: 95%; animation-duration: 8s; animation-delay: 2.5s; }
+
+/* Hero content */
+.hero-content {
+  position: relative;
+  z-index: 8;
+  text-align: center;
+  padding: 0 24px;
+  max-width: 1000px;
+}
+
+/* Neon sign — BrickSquaD-Rp */
+.neon-sign {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 3vw, 2.2rem);
+  font-weight: 900;
+  color: var(--red2);
+  text-transform: uppercase;
+  letter-spacing: 6px;
+  text-shadow:
+    0 0 7px rgba(230, 57, 70, 0.8),
+    0 0 20px rgba(230, 57, 70, 0.6),
+    0 0 42px rgba(230, 57, 70, 0.4),
+    0 0 82px rgba(230, 57, 70, 0.2);
+  animation: neon-flicker 4s ease-in-out infinite;
+  margin-bottom: 12px;
+}
+@keyframes neon-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; text-shadow: 0 0 7px rgba(230,57,70,0.8), 0 0 20px rgba(230,57,70,0.6), 0 0 42px rgba(230,57,70,0.4), 0 0 82px rgba(230,57,70,0.2); }
+  20%, 24%, 55% { opacity: 0.6; text-shadow: none; }
+}
+
+/* Giant GOAT CITY */
+.hero-title {
+  font-size: clamp(4rem, 8vw, 9rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -3px;
+  background: linear-gradient(180deg, #FFD700 0%, #f0c040 35%, #d4a03c 70%, #b8860b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.3));
+  animation: title-pulse 4s ease-in-out infinite;
+  margin-bottom: 8px;
+}
+@keyframes title-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+}
+
+/* Subtitle */
+.hero-subtitle {
+  font-size: clamp(0.9rem, 2vw, 1.3rem);
+  color: var(--red2);
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.hero-tagline {
+  font-size: clamp(0.75rem, 1.4vw, 1rem);
+  color: var(--dim);
+  font-weight: 500;
+  letter-spacing: 1px;
+  margin-bottom: 28px;
+}
+
+/* Server status badge */
+.hero-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  background: rgba(10, 8, 16, 0.8);
+  border: 1px solid var(--border-glow);
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dim);
+  margin-bottom: 24px;
+  backdrop-filter: blur(10px);
+}
+.hero-status-badge .pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 10px var(--green);
+  animation: pulse 2s infinite;
+}
+.hero-status-badge .pulse-dot.offline { background: var(--red2); box-shadow: 0 0 10px var(--red2); animation: none; }
+.hero-status-badge .pulse-dot.connecting { background: var(--gold); box-shadow: 0 0 10px var(--gold); animation: pulse 1s infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.3); }
+}
+
+/* Stats row */
+.hero-stats {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.hero-stat {
+  background: rgba(10, 8, 16, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 20px;
+  min-width: 120px;
+  backdrop-filter: blur(10px);
+  transition: all 0.25s;
+}
+.hero-stat:hover {
+  border-color: var(--gold2);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(255, 215, 0, 0.1);
+}
+.hero-stat .val {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--gold);
+  line-height: 1;
+}
+.hero-stat .lbl {
+  font-size: 10px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 5px;
+}
+
+/* CTA Buttons */
+.hero-btns {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: all 0.25s;
+  font-family: var(--font-main);
+}
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), var(--gold3), var(--gold2));
+  color: #000;
+  box-shadow: 0 0 30px var(--gold-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.btn-gold:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 50px var(--gold-glow), 0 0 60px rgba(255, 215, 0, 0.15);
+}
+.btn-outline {
+  background: rgba(16, 13, 26, 0.8);
+  border: 1px solid var(--border-glow);
+  color: var(--text);
+  backdrop-filter: blur(10px);
+}
+.btn-outline:hover {
+  border-color: var(--gold2);
+  color: var(--gold);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.08);
+}
+.btn-green {
+  background: var(--green-dim);
+  border: 1px solid rgba(63, 185, 80, 0.3);
+  color: var(--green);
+}
+.btn-green:hover { background: rgba(63, 185, 80, 0.18); transform: translateY(-2px); }
+.btn-red {
+  background: var(--red-dim);
+  border: 1px solid rgba(193, 18, 31, 0.3);
+  color: var(--red2);
+}
+.btn-red:hover { background: rgba(193, 18, 31, 0.18); }
+.btn-blue {
+  background: var(--blue-dim);
+  border: 1px solid rgba(88, 166, 255, 0.3);
+  color: var(--blue2);
+}
+.btn-blue:hover { background: rgba(88, 166, 255, 0.18); }
+
+/* ===== NAV — STICKY GLASSMORPHISM ===== */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(3, 2, 5, 0.92);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-bottom: 1px solid var(--gold2);
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.nav-logo .nav-emoji {
+  font-size: 24px;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+}
+.nav-logo span {
+  font-size: 17px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
+}
+.nav-links {
+  display: flex;
+  gap: 2px;
+  margin-left: 16px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+.nav-links a {
+  padding: 7px 13px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--dim);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.nav-links a:hover {
+  color: var(--text);
+  background: var(--bg3);
+}
+.nav-links a.active {
+  color: var(--gold);
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.nav-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+}
+.nav-status .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dim);
+  box-shadow: 0 0 8px currentColor;
+}
+.nav-status.online { color: var(--green); border-color: rgba(63, 185, 80, 0.3); background: var(--green-dim); }
+.nav-status.online .dot { background: var(--green); animation: pulse 2s infinite; }
+.nav-status.connecting { color: var(--gold); border-color: rgba(255, 215, 0, 0.3); background: var(--gold-dim); }
+.nav-status.connecting .dot { background: var(--gold); animation: pulse 1s infinite; }
+.nav-status.offline { color: var(--red2); border-color: rgba(230, 57, 70, 0.3); background: var(--red-dim); }
+.nav-status.offline .dot { background: var(--red2); }
+
+/* ===== PAGE LAYOUT ===== */
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 24px;
+}
+.sec {
+  margin-bottom: 80px;
+}
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sec-head h2 {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+.sec-head .ico {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.sec-head .cnt {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--dim);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== DISTRICT CARDS ===== */
+.district-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.district-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.district-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold3), transparent);
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+.district-card:hover {
+  transform: translateY(-8px);
+  border-color: transparent;
+}
+.district-card:hover::before { opacity: 1; }
+.district-card .d-icon {
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.district-card h3 {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.district-card p {
+  font-size: 13px;
+  color: var(--dim);
+  line-height: 1.7;
+  flex: 1;
+}
+.district-card .d-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  width: fit-content;
+}
+/* Card glow colors */
+.district-card.glow-gold:hover { box-shadow: 0 0 30px rgba(255, 215, 0, 0.15), 0 20px 60px rgba(255, 215, 0, 0.08); border-color: rgba(255, 215, 0, 0.4); }
+.district-card.glow-gold::before { background: linear-gradient(90deg, var(--gold), var(--gold3), transparent); }
+.district-card.glow-red:hover { box-shadow: 0 0 30px rgba(230, 57, 70, 0.15), 0 20px 60px rgba(230, 57, 70, 0.08); border-color: rgba(230, 57, 70, 0.4); }
+.district-card.glow-red::before { background: linear-gradient(90deg, var(--red2), var(--red), transparent); }
+.district-card.glow-blue:hover { box-shadow: 0 0 30px rgba(88, 166, 255, 0.15), 0 20px 60px rgba(88, 166, 255, 0.08); border-color: rgba(88, 166, 255, 0.4); }
+.district-card.glow-blue::before { background: linear-gradient(90deg, var(--blue2), var(--blue), transparent); }
+.district-card.glow-orange:hover { box-shadow: 0 0 30px rgba(249, 115, 22, 0.15), 0 20px 60px rgba(249, 115, 22, 0.08); border-color: rgba(249, 115, 22, 0.4); }
+.district-card.glow-orange::before { background: linear-gradient(90deg, var(--orange), #fb923c, transparent); }
+.district-card.glow-purple:hover { box-shadow: 0 0 30px rgba(168, 85, 247, 0.15), 0 20px 60px rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.4); }
+.district-card.glow-purple::before { background: linear-gradient(90deg, var(--purple), #c084fc, transparent); }
+.district-card.glow-green:hover { box-shadow: 0 0 30px rgba(63, 185, 80, 0.15), 0 20px 60px rgba(63, 185, 80, 0.08); border-color: rgba(63, 185, 80, 0.4); }
+.district-card.glow-green::before { background: linear-gradient(90deg, var(--green), #6ee7b7, transparent); }
+
+.d-tag-gold { background: rgba(255, 215, 0, 0.1); color: var(--gold); }
+.d-tag-red { background: rgba(230, 57, 70, 0.1); color: var(--red2); }
+.d-tag-blue { background: rgba(88, 166, 255, 0.1); color: var(--blue2); }
+.d-tag-orange { background: rgba(249, 115, 22, 0.1); color: var(--orange); }
+.d-tag-purple { background: rgba(168, 85, 247, 0.1); color: var(--purple); }
+.d-tag-green { background: rgba(63, 185, 80, 0.1); color: var(--green); }
+
+/* ===== SERVER STATUS PANEL ===== */
+.status-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+}
+.status-panel-top {
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold3), var(--gold2));
+}
+.status-panel-body {
+  padding: 32px;
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+.status-orb-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+}
+.status-orb {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 20px var(--green), 0 0 50px rgba(63, 185, 80, 0.3);
+  animation: orb-pulse 2.5s ease-in-out infinite;
+  transition: all 0.4s;
+}
+.status-orb.offline {
+  background: var(--red2);
+  box-shadow: 0 0 20px var(--red2), 0 0 50px rgba(230, 57, 70, 0.3);
+  animation: none;
+}
+.status-orb.connecting {
+  background: var(--gold);
+  box-shadow: 0 0 20px var(--gold), 0 0 50px rgba(255, 215, 0, 0.3);
+  animation: orb-pulse 1s ease-in-out infinite;
+}
+@keyframes orb-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.7; }
+}
+.status-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+}
+.status-item .s-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.status-item .s-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.status-item .s-value.live { color: var(--green); }
+.status-item .s-value.off { color: var(--red2); }
+.status-panel-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 20px 32px 28px;
+  border-top: 1px solid var(--border);
+}
+
+/* ===== TERMINAL CHECKLIST ===== */
+.terminal {
+  background: #000208;
+  border: 1px solid #1a1830;
+  border-radius: 16px;
+  overflow: hidden;
+  font-family: var(--font-mono);
+}
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: #080614;
+  border-bottom: 1px solid #1a1830;
+}
+.terminal-bar .dot-r { width: 12px; height: 12px; border-radius: 50%; background: #e63946; }
+.terminal-bar .dot-y { width: 12px; height: 12px; border-radius: 50%; background: #f0c040; }
+.terminal-bar .dot-g { width: 12px; height: 12px; border-radius: 50%; background: #3fb950; }
+.terminal-bar span {
+  margin-left: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+.terminal-body {
+  padding: 20px 24px;
+  line-height: 2.2;
+  font-size: 13px;
+}
+.terminal-body .t-done {
+  color: var(--green);
+}
+.terminal-body .t-pending {
+  color: var(--gold);
+}
+.terminal-body .t-active {
+  color: var(--gold3);
+  font-weight: 700;
+}
+.terminal-body .cursor-blink {
+  display: inline-block;
+  width: 8px;
+  height: 16px;
+  background: var(--green);
+  margin-left: 6px;
+  animation: blink-cursor 1s step-end infinite;
+  vertical-align: middle;
+}
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ===== LAUNCH STEPS (game tutorial style) ===== */
+.launch-steps {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+/* Connecting line */
+.launch-steps::before {
+  content: '';
+  position: absolute;
+  left: 24px;
+  top: 30px;
+  bottom: 30px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--gold2), var(--border), var(--gold2));
+  z-index: 0;
+}
+.launch-step {
+  display: flex;
+  gap: 22px;
+  padding: 22px 0;
+  position: relative;
+  z-index: 1;
+}
+.launch-step + .launch-step {
+  border-top: 1px solid rgba(30, 26, 46, 0.5);
+}
+.launch-num {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));
+  border: 2px solid rgba(255, 215, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 18px;
+  color: var(--gold);
+  font-family: var(--font-display);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.08);
+}
+.launch-body h4 {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+.launch-body p {
+  font-size: 13px;
+  color: var(--dim);
+  line-height: 1.6;
+}
+.launch-body .cmd {
+  display: block;
+  background: #0a0810;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--cyan);
+  margin-top: 10px;
+  white-space: pre-wrap;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s;
+}
+.launch-body .cmd::after {
+  content: 'click to copy';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  color: var(--muted);
+  font-family: var(--font-main);
+}
+.launch-body .cmd:hover {
+  border-color: var(--gold2);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.06);
+}
+.launch-body .cmd:hover::after { color: var(--gold); }
+.launch-body .note {
+  background: rgba(88, 166, 255, 0.06);
+  border: 1px solid rgba(88, 166, 255, 0.15);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 12px;
+  color: var(--blue2);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+/* ===== RESOURCE / MOD CARDS ===== */
+.mod-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.mod-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.25s;
+}
+.mod-card:hover {
+  border-color: var(--gold2);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(255, 215, 0, 0.06);
+}
+.mod-card .mod-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: rgba(255, 215, 0, 0.06);
+  border: 1px solid rgba(255, 215, 0, 0.12);
+  flex-shrink: 0;
+}
+.mod-card .mod-info h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+.mod-card .mod-info p {
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.5;
+}
+.mod-card .mod-tag {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.tag-core { background: var(--green-dim); color: var(--green); }
+.tag-inv { background: var(--blue-dim); color: var(--blue2); }
+.tag-custom { background: var(--gold-dim); color: var(--gold); }
+.tag-casino { background: rgba(57, 208, 216, 0.1); color: var(--cyan); }
+.tag-music { background: var(--purple-dim); color: var(--purple); }
+.tag-gang { background: var(--orange-dim); color: var(--orange); }
+.tag-lib { background: rgba(100, 100, 120, 0.1); color: var(--dim); }
+
+/* ===== FOOTER ===== */
+footer {
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  padding: 48px 24px;
+  margin-top: 40px;
+}
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+.footer-main {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+}
+.footer-sub {
+  font-size: 13px;
+  color: var(--dim);
+  font-weight: 600;
+}
+.footer-meta {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+.footer-copy {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* ===== TOAST ===== */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  color: #000;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  transform: translateY(120px);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 9999;
+  box-shadow: 0 8px 40px rgba(255, 215, 0, 0.3);
+}
+#toast.show {
+  transform: translateY(0);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .district-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .nav-status { display: none; }
+  .district-grid { grid-template-columns: 1fr; }
+  .status-panel-body { flex-direction: column; align-items: center; text-align: center; }
+  .status-grid { grid-template-columns: repeat(2, 1fr); }
+  .mod-grid { grid-template-columns: 1fr; }
+  .hero-title { letter-spacing: -1px; }
+  .hero-stats { gap: 8px; }
+  .hero-stat { min-width: 100px; padding: 10px 14px; }
+  .hero-stat .val { font-size: 18px; }
+  .skyline { height: 160px; }
+  .launch-steps::before { left: 24px; }
+}
+@media (max-width: 480px) {
+  .hero-btns { flex-direction: column; align-items: center; }
+  .status-grid { grid-template-columns: 1fr; }
+}
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<!-- ===== NAV — STICKY GLASSMORPHISM ===== -->
+<nav>
+  <a class="nav-logo" href="index.html">
+    <span class="nav-emoji">🐐</span>
+    <span>GOAT FORCE</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="moneypenny.html">Agents</a>
+    <a href="goat-casino.html">Casino</a>
+    <a href="goat-celebrity-lounge.html">VIP Lounge</a>
+    <a href="goat-city-rp.html" class="active">GTA RP</a>
+    <a href="goat-launcher-hub.html">Hub</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-status offline" id="nav-status">
+      <span class="dot"></span>
+      <span id="nav-status-text">Server Offline</span>
+    </div>
+    <a href="goat-launcher-hub.html" class="btn btn-gold" style="padding:8px 18px;font-size:13px;border-radius:10px;">Hub</a>
+  </div>
+</nav>
+
+<!-- ===== HERO — 100vh CINEMATIC ===== -->
+<section class="hero" id="top">
+  <!-- Animated GOAT video background -->
+  <video class="hero-video-bg" autoplay muted loop playsinline>
+    <source src="video/goat-animated-2.mp4" type="video/mp4">
+    <source src="video/goat-animated-1.mp4" type="video/mp4">
+  </video>
+  <div class="hero-video-mask"></div>
+
+  <!-- Spark particles -->
+  <div class="sparks">
+    <div class="spark"></div><div class="spark"></div><div class="spark"></div><div class="spark"></div><div class="spark"></div>
+    <div class="spark"></div><div class="spark"></div><div class="spark"></div><div class="spark"></div><div class="spark"></div>
+    <div class="spark"></div><div class="spark"></div><div class="spark"></div><div class="spark"></div><div class="spark"></div>
+    <div class="spark"></div><div class="spark"></div><div class="spark"></div><div class="spark"></div><div class="spark"></div>
+  </div>
+
+  <!-- City skyline silhouette -->
+  <div class="skyline">
+    <!-- Back layer -->
+    <div class="skyline-layer back">
+      <div class="bldg" style="width:30px;height:90px;"></div>
+      <div class="bldg" style="width:20px;height:60px;"></div>
+      <div class="bldg" style="width:45px;height:140px;"></div>
+      <div class="bldg" style="width:15px;height:50px;"></div>
+      <div class="bldg" style="width:35px;height:180px;"></div>
+      <div class="bldg" style="width:25px;height:100px;"></div>
+      <div class="bldg" style="width:50px;height:220px;"></div>
+      <div class="bldg" style="width:20px;height:70px;"></div>
+      <div class="bldg" style="width:40px;height:160px;"></div>
+      <div class="bldg" style="width:30px;height:120px;"></div>
+      <div class="bldg" style="width:55px;height:250px;"></div>
+      <div class="bldg" style="width:25px;height:80px;"></div>
+      <div class="bldg" style="width:35px;height:190px;"></div>
+      <div class="bldg" style="width:20px;height:110px;"></div>
+      <div class="bldg" style="width:45px;height:170px;"></div>
+      <div class="bldg" style="width:30px;height:60px;"></div>
+      <div class="bldg" style="width:40px;height:200px;"></div>
+      <div class="bldg" style="width:25px;height:130px;"></div>
+      <div class="bldg" style="width:50px;height:150px;"></div>
+      <div class="bldg" style="width:20px;height:90px;"></div>
+      <div class="bldg" style="width:35px;height:210px;"></div>
+      <div class="bldg" style="width:30px;height:75px;"></div>
+      <div class="bldg" style="width:45px;height:240px;"></div>
+      <div class="bldg" style="width:25px;height:100px;"></div>
+      <div class="bldg" style="width:40px;height:160px;"></div>
+    </div>
+    <!-- Mid layer -->
+    <div class="skyline-layer mid">
+      <div class="bldg" style="width:35px;height:70px;margin-left:10px;"></div>
+      <div class="bldg" style="width:25px;height:110px;"></div>
+      <div class="bldg" style="width:50px;height:150px;"></div>
+      <div class="bldg" style="width:18px;height:45px;"></div>
+      <div class="bldg" style="width:42px;height:200px;"></div>
+      <div class="bldg" style="width:28px;height:85px;"></div>
+      <div class="bldg" style="width:55px;height:180px;"></div>
+      <div class="bldg" style="width:22px;height:130px;"></div>
+      <div class="bldg" style="width:38px;height:95px;"></div>
+      <div class="bldg" style="width:48px;height:230px;"></div>
+      <div class="bldg" style="width:30px;height:60px;"></div>
+      <div class="bldg" style="width:40px;height:170px;"></div>
+      <div class="bldg" style="width:20px;height:120px;"></div>
+      <div class="bldg" style="width:45px;height:140px;"></div>
+      <div class="bldg" style="width:32px;height:80px;"></div>
+      <div class="bldg" style="width:25px;height:190px;"></div>
+      <div class="bldg" style="width:50px;height:100px;"></div>
+    </div>
+    <!-- Front layer -->
+    <div class="skyline-layer front">
+      <div class="bldg" style="width:40px;height:55px;margin-left:20px;"></div>
+      <div class="bldg" style="width:30px;height:90px;"></div>
+      <div class="bldg" style="width:55px;height:130px;"></div>
+      <div class="bldg" style="width:25px;height:40px;"></div>
+      <div class="bldg" style="width:45px;height:160px;"></div>
+      <div class="bldg" style="width:35px;height:70px;"></div>
+      <div class="bldg" style="width:60px;height:110px;"></div>
+      <div class="bldg" style="width:20px;height:140px;"></div>
+      <div class="bldg" style="width:50px;height:80px;"></div>
+      <div class="bldg" style="width:30px;height:170px;"></div>
+      <div class="bldg" style="width:45px;height:50px;"></div>
+      <div class="bldg" style="width:35px;height:120px;"></div>
+      <div class="bldg" style="width:55px;height:95px;"></div>
+      <div class="bldg" style="width:25px;height:150px;"></div>
+      <div class="bldg" style="width:40px;height:60px;"></div>
+    </div>
+  </div>
+
+  <!-- Hero content -->
+  <div class="hero-content">
+    <div class="neon-sign">BrickSquaD-Rp</div>
+    <h1 class="hero-title">GOAT CITY</h1>
+    <div class="hero-subtitle">BrickSquaD-Rp | FiveM GTA V Roleplay</div>
+    <div class="hero-tagline">DJ Speedy &times; Waka Flocka Flame | GOAT Force Records | Est. 2026</div>
+
+    <div class="hero-status-badge" id="hero-badge">
+      <span class="pulse-dot offline" id="hero-dot"></span>
+      <span>Server ID: 3ygz8lo</span>
+      <span style="color:var(--muted);">|</span>
+      <span id="hero-status-label">Checking...</span>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="val" id="player-count">0</div>
+        <div class="lbl">Players Online</div>
+      </div>
+      <div class="hero-stat">
+        <div class="val">32</div>
+        <div class="lbl">Max Players</div>
+      </div>
+      <div class="hero-stat">
+        <div class="val">30120</div>
+        <div class="lbl">Port</div>
+      </div>
+      <div class="hero-stat">
+        <div class="val" id="status-text" style="font-size:16px;">Offline</div>
+        <div class="lbl">BrickSquaD-Rp</div>
+      </div>
+    </div>
+
+    <div class="hero-btns">
+      <a href="fivem://connect/localhost:30120" class="btn btn-gold" id="connect-btn" onclick="connectToServer(event)">🎮 CONNECT NOW</a>
+      <a href="http://127.0.0.1:40120" target="_blank" class="btn btn-outline">🖥️ txAdmin Panel</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PAGE CONTENT ===== -->
+<div class="page">
+
+  <!-- ===== 6 DISTRICT CARDS ===== -->
+  <div class="sec" id="districts">
+    <div class="sec-head">
+      <span class="ico">🌆</span>
+      <h2>GOAT City Districts</h2>
+      <span class="cnt">6 Zones</span>
+    </div>
+    <div class="district-grid">
+      <div class="district-card glow-gold">
+        <div class="d-icon">🏢</div>
+        <h3>GOAT FORCE HQ</h3>
+        <p>Sign artists, cut deals, run the label. Where legends are made.</p>
+        <span class="d-tag d-tag-gold">Record Label HQ</span>
+      </div>
+      <div class="district-card glow-red">
+        <div class="d-icon">🎰</div>
+        <h3>GOAT CASINO</h3>
+        <p>Blackjack, poker, roulette, slots. High-rollers only.</p>
+        <span class="d-tag d-tag-red">High Stakes</span>
+      </div>
+      <div class="district-card glow-blue">
+        <div class="d-icon">🎵</div>
+        <h3>THE STUDIO</h3>
+        <p>Record hits, mix records, master tracks. Every beat born here bangs.</p>
+        <span class="d-tag d-tag-blue">Production</span>
+      </div>
+      <div class="district-card glow-orange">
+        <div class="d-icon">🧱</div>
+        <h3>BRICK SQUAD TERRITORY</h3>
+        <p>Waka Flocka's turf. Street culture. BrickSquad til the end.</p>
+        <span class="d-tag d-tag-orange">Street Turf</span>
+      </div>
+      <div class="district-card glow-purple">
+        <div class="d-icon">👑</div>
+        <h3>VIP CELEBRITY LOUNGE</h3>
+        <p>Most exclusive club in the city. Celebrities only.</p>
+        <span class="d-tag d-tag-purple">Exclusive VIP</span>
+      </div>
+      <div class="district-card glow-green">
+        <div class="d-icon">🌆</div>
+        <h3>GOAT CITY STREETS</h3>
+        <p>Open world missions, jobs, hustle. Block to penthouse.</p>
+        <span class="d-tag d-tag-green">Open World</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SERVER STATUS PANEL ===== -->
+  <div class="sec" id="server-info">
+    <div class="sec-head">
+      <span class="ico">🖥️</span>
+      <h2>Server Status Panel</h2>
+      <span class="cnt">Live</span>
+    </div>
+    <div class="status-panel">
+      <div class="status-panel-top"></div>
+      <div class="status-panel-body">
+        <div class="status-orb-wrap">
+          <div class="status-orb offline" id="status-orb"></div>
+        </div>
+        <div class="status-grid">
+          <div class="status-item">
+            <div class="s-label">Hostname</div>
+            <div class="s-value">BrickSquaD-Rp</div>
+          </div>
+          <div class="status-item">
+            <div class="s-label">Port</div>
+            <div class="s-value">30120</div>
+          </div>
+          <div class="status-item">
+            <div class="s-label">Max Players</div>
+            <div class="s-value">32</div>
+          </div>
+          <div class="status-item">
+            <div class="s-label">Server ID</div>
+            <div class="s-value" style="color:var(--gold);cursor:pointer;" onclick="copy('3ygz8lo')">3ygz8lo</div>
+          </div>
+          <div class="status-item">
+            <div class="s-label">Gamemode</div>
+            <div class="s-value">ESX Roleplay</div>
+          </div>
+          <div class="status-item">
+            <div class="s-label">Status</div>
+            <div class="s-value" id="info-status-text" style="display:flex;align-items:center;gap:8px;">
+              <span class="dot" id="info-dot" style="width:8px;height:8px;border-radius:50%;background:var(--red2);display:inline-block;"></span>
+              <span id="info-status-label">Offline</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="status-panel-actions">
+        <a href="fivem://connect/localhost:30120" class="btn btn-gold">🎮 Connect via FiveM</a>
+        <a href="http://127.0.0.1:40120" target="_blank" class="btn btn-blue">🛠️ txAdmin Panel</a>
+        <button class="btn btn-outline" onclick="refreshServerStatus()">🔄 Refresh Status</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SETUP CHECKLIST (Terminal Style) ===== -->
+  <div class="sec" id="setup">
+    <div class="sec-head">
+      <span class="ico">✅</span>
+      <h2>Setup Checklist</h2>
+      <span class="cnt">Build Progress</span>
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="dot-r"></div>
+        <div class="dot-y"></div>
+        <div class="dot-g"></div>
+        <span>goat-city-rp — setup status</span>
+      </div>
+      <div class="terminal-body">
+        <div class="t-done">&#10003; FXServer artifacts extracted</div>
+        <div class="t-done">&#10003; cfx-server-data cloned</div>
+        <div class="t-done">&#10003; Base resources configured</div>
+        <div class="t-done">&#10003; server.cfg created</div>
+        <div class="t-done">&#10003; Server registered: <span class="t-active">3ygz8lo</span> (BrickSquaD-Rp) — <span style="color:var(--green);">ACTIVE</span></div>
+        <div class="t-pending">&#9203; Add license key locally to server.cfg</div>
+        <div class="t-pending">&#9203; Launch FXServer (Windows/Linux runtime)</div>
+        <div class="t-pending">&#9203; Custom GOAT Force resources pending</div>
+        <span class="cursor-blink"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LAUNCH STEPS ===== -->
+  <div class="sec" id="launch">
+    <div class="sec-head">
+      <span class="ico">🚀</span>
+      <h2>Launch Steps</h2>
+      <span class="cnt">Game Tutorial</span>
+    </div>
+    <div class="launch-steps">
+      <div class="launch-step">
+        <div class="launch-num">1</div>
+        <div class="launch-body">
+          <h4>Add Cfx.re license key to server.cfg locally</h4>
+          <p>Get a free key from keymaster.fivem.net and add it to your local server.cfg file.</p>
+          <div class="cmd" onclick="copy('sv_licenseKey YOUR_CFX_LICENSE_KEY_HERE')">sv_licenseKey "YOUR_CFX_LICENSE_KEY_HERE"</div>
+        </div>
+      </div>
+      <div class="launch-step">
+        <div class="launch-num">2</div>
+        <div class="launch-body">
+          <h4>Windows: Run server-artifacts/FXServer.exe</h4>
+          <p>Navigate to your server artifacts folder and execute the FXServer binary.</p>
+          <div class="cmd" onclick="copy('FXServer.exe +exec server-data/server.cfg')">FXServer.exe +exec server-data/server.cfg</div>
+        </div>
+      </div>
+      <div class="launch-step">
+        <div class="launch-num">3</div>
+        <div class="launch-body">
+          <h4>Open txAdmin</h4>
+          <p>After first launch, txAdmin will print a PIN to your console. Open the panel to complete setup.</p>
+          <div class="cmd" onclick="copy('http://127.0.0.1:40120')">http://127.0.0.1:40120</div>
+        </div>
+      </div>
+      <div class="launch-step">
+        <div class="launch-num">4</div>
+        <div class="launch-body">
+          <h4>Configure server in txAdmin wizard</h4>
+          <p>Follow the txAdmin setup wizard to configure your server name, resources, and admin credentials.</p>
+          <div class="note">Save your txAdmin credentials somewhere safe. The master PIN only appears once on first launch.</div>
+        </div>
+      </div>
+      <div class="launch-step">
+        <div class="launch-num">5</div>
+        <div class="launch-body">
+          <h4>Connect in FiveM</h4>
+          <p>Launch FiveM, press F8, and connect to your server.</p>
+          <div class="cmd" onclick="copy('connect localhost:30120')">connect localhost:30120</div>
+        </div>
+      </div>
+      <div class="launch-step">
+        <div class="launch-num">6</div>
+        <div class="launch-body">
+          <h4>Invite the crew — build GOAT City</h4>
+          <p>Share the server IP with the squad. BrickSquaD runs deep. Time to build the empire in Los Santos.</p>
+          <div class="cmd" onclick="copy('fivem://connect/localhost:30120')">fivem://connect/localhost:30120</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PLANNED RESOURCES ===== -->
+  <div class="sec" id="resources">
+    <div class="sec-head">
+      <span class="ico">🧩</span>
+      <h2>Planned Resources</h2>
+      <span class="cnt">Mods & Scripts</span>
+    </div>
+    <div class="mod-grid">
+      <div class="mod-card">
+        <div class="mod-icon">🛠️</div>
+        <div class="mod-info">
+          <h4>es_extended</h4>
+          <p>Core ESX roleplay framework</p>
+        </div>
+        <span class="mod-tag tag-core">Core</span>
+      </div>
+      <div class="mod-card">
+        <div class="mod-icon">🎒</div>
+        <div class="mod-info">
+          <h4>ox_inventory</h4>
+          <p>Modern inventory system</p>
+        </div>
+        <span class="mod-tag tag-inv">Inventory</span>
+      </div>
+      <div class="mod-card">
+        <div class="mod-icon">🎰</div>
+        <div class="mod-info">
+          <h4>goat-casino-scripts</h4>
+          <p>Blackjack, poker, slots, roulette</p>
+        </div>
+        <span class="mod-tag tag-casino">Casino</span>
+      </div>
+      <div class="mod-card">
+        <div class="mod-icon">🎵</div>
+        <div class="mod-info">
+          <h4>goat-music-jobs</h4>
+          <p>Studio sessions & artist careers</p>
+        </div>
+        <span class="mod-tag tag-music">Music</span>
+      </div>
+      <div class="mod-card">
+        <div class="mod-icon">🍾</div>
+        <div class="mod-info">
+          <h4>goat-vip-lounge</h4>
+          <p>VIP club interior & events</p>
+        </div>
+        <span class="mod-tag tag-custom">Custom</span>
+      </div>
+      <div class="mod-card">
+        <div class="mod-icon">🧱</div>
+        <div class="mod-info">
+          <h4>bricksquad-gang</h4>
+          <p>Territory, rep, street culture</p>
+        </div>
+        <span class="mod-tag tag-gang">Gang</span>
+      </div>
+      <div class="mod-card">
+        <div class="mod-icon">🏢</div>
+        <div class="mod-info">
+          <h4>goat-force-hq</h4>
+          <p>Record label HQ interior & jobs</p>
+        </div>
+        <span class="mod-tag tag-custom">Custom</span>
+      </div>
+      <div class="mod-card">
+        <div class="mod-icon">📦</div>
+        <div class="mod-info">
+          <h4>ox_lib</h4>
+          <p>Utility library for FiveM</p>
+        </div>
+        <span class="mod-tag tag-lib">Library</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-main">BrickSquaD-Rp | GOAT City RP</div>
+    <div class="footer-sub">DJ Speedy (Harvey L. Miller Jr.) &times; Waka Flocka Flame</div>
+    <div class="footer-meta">Server ID: 3ygz8lo | Port: 30120 | Max Players: 32</div>
+    <div class="footer-copy">&copy; 2026 GOAT Force Records</div>
+  </div>
+</footer>
+
+<!-- TOAST -->
+<div id="toast">Copied to clipboard</div>
+
+<script>
+/* ===== SERVER STATUS ENGINE ===== */
+const SERVER_ENDPOINT = 'http://127.0.0.1:30120/info.json';
+
+let statusState = 'offline';
+let playerCount = 0;
+let maxPlayers = 32;
+
+function setStatus(state, players, max) {
+  statusState = state;
+  playerCount = players || 0;
+  maxPlayers = max || 32;
+
+  // Nav status
+  const nav = document.getElementById('nav-status');
+  const navText = document.getElementById('nav-status-text');
+  // Hero elements
+  const heroDot = document.getElementById('hero-dot');
+  const heroLabel = document.getElementById('hero-status-label');
+  const heroStatusText = document.getElementById('status-text');
+  const heroPlayers = document.getElementById('player-count');
+  // Status panel
+  const statusOrb = document.getElementById('status-orb');
+  const infoDot = document.getElementById('info-dot');
+  const infoLabel = document.getElementById('info-status-label');
+  // Connect button
+  const connectBtn = document.getElementById('connect-btn');
+
+  const labels = {
+    online: { nav: 'Server Online', hero: 'Online', info: 'Online' },
+    connecting: { nav: 'Connecting...', hero: 'Connecting', info: 'Checking...' },
+    offline: { nav: 'Server Offline', hero: 'Offline', info: 'Offline' }
+  };
+
+  // Nav
+  nav.className = 'nav-status ' + state;
+  navText.textContent = labels[state].nav;
+
+  // Hero dot
+  heroDot.className = 'pulse-dot ' + (state === 'online' ? '' : state);
+  heroLabel.textContent = labels[state].hero;
+  heroStatusText.textContent = labels[state].hero;
+  heroPlayers.textContent = playerCount;
+
+  // Status panel orb
+  statusOrb.className = 'status-orb ' + (state === 'online' ? '' : state);
+
+  // Info status
+  if (state === 'online') {
+    infoDot.style.background = 'var(--green)';
+    infoDot.style.boxShadow = '0 0 10px var(--green)';
+    infoLabel.style.color = 'var(--green)';
+  } else if (state === 'connecting') {
+    infoDot.style.background = 'var(--gold)';
+    infoDot.style.boxShadow = '0 0 10px var(--gold)';
+    infoLabel.style.color = 'var(--gold)';
+  } else {
+    infoDot.style.background = 'var(--red2)';
+    infoDot.style.boxShadow = '0 0 10px var(--red2)';
+    infoLabel.style.color = 'var(--red2)';
+  }
+  infoLabel.textContent = labels[state].info;
+
+  // Connect button state
+  if (connectBtn) {
+    if (state === 'online') {
+      connectBtn.className = 'btn btn-gold';
+      connectBtn.textContent = '🎮 CONNECT NOW';
+    } else {
+      connectBtn.className = 'btn btn-outline';
+      connectBtn.textContent = '⛔ Server Offline';
+    }
+  }
+}
+
+async function refreshServerStatus() {
+  setStatus('connecting', 0, 32);
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+    const response = await fetch(SERVER_ENDPOINT, {
+      signal: controller.signal,
+      mode: 'cors',
+      cache: 'no-store'
+    });
+    clearTimeout(timeout);
+
+    if (!response.ok) throw new Error('Server returned ' + response.status);
+    const data = await response.json();
+    const players = data?.clients ?? data?.players ?? 0;
+    const max = data?.sv_maxclients ?? data?.maxClients ?? 32;
+    setStatus('online', players, max);
+  } catch (err) {
+    setStatus('offline', 0, 32);
+  }
+}
+
+function connectToServer(e) {
+  if (statusState !== 'online') {
+    if (e) e.preventDefault();
+    showToast('Server is offline — start FXServer first');
+    return;
+  }
+  window.location.href = 'fivem://connect/localhost:30120';
+}
+
+function copy(text) {
+  // Strip the "click to copy" suffix if present
+  text = text.replace(/click to copy$/i, '').trim();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => showToast('Copied: ' + text.substring(0, 40)));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Copied: ' + text.substring(0, 40));
+  }
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// Initial status check on load
+setTimeout(refreshServerStatus, 500);
+// Auto-refresh every 30 seconds
+setInterval(refreshServerStatus, 30000);
+</script>
+
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

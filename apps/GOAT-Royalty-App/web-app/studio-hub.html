@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GOAT Force Studio Hub — The Complete Creative Suite</title>
+  <link rel="stylesheet" href="css/goat-brand.css" />
+  
+  
+  
+
+  <style>
+    /* ══════════════════════════════════════════════════════
+       DESIGN TOKENS (mirrored from goat-theme.css)
+       ══════════════════════════════════════════════════════ */
+    :root {
+      --bg-0:          #030609;
+      --bg-1:          #050a14;
+      --bg-2:          #080c14;
+      --bg-3:          #0d1420;
+      --bg-4:          #111928;
+      --bg-5:          #1a2336;
+      --bg-card:       rgba(13, 20, 32, 0.85);
+      --bg-card-hover: rgba(22, 32, 50, 0.92);
+      --bg-glass:      rgba(13, 20, 32, 0.55);
+      --bg-glass-hi:   rgba(13, 20, 32, 0.90);
+
+      --gold:          #d4a03c;
+      --gold-light:    #e8b84b;
+      --gold-bright:   #f0c040;
+      --gold-pale:     #f5d878;
+      --gold-deep:     #a87828;
+      --gold-glow:     rgba(212, 160, 60, 0.20);
+      --gold-glow-med: rgba(212, 160, 60, 0.38);
+      --gold-glow-hi:  rgba(212, 160, 60, 0.60);
+
+      --purple:        #9b59b6;
+      --purple-bright: #b24bf3;
+      --purple-glow:   rgba(155, 89, 182, 0.22);
+      --blue:          #3498db;
+      --blue-glow:     rgba(52, 152, 219, 0.22);
+      --cyan:          #00d4ff;
+      --cyan-glow:     rgba(0, 212, 255, 0.18);
+      --green:         #2ecc71;
+      --green-glow:    rgba(46, 204, 113, 0.18);
+      --red:           #e74c3c;
+      --red-glow:      rgba(231, 76, 60, 0.20);
+      --orange:        #f39c12;
+      --pink:          #e91e8c;
+      --teal:          #1abc9c;
+
+      --text:          #f0ece4;
+      --text-primary:  #f5f0e8;
+      --text-secondary:#c8c0b0;
+      --text-muted:    #8a8070;
+      --sub:           #7a7060;
+
+      --border:        rgba(212, 160, 60, 0.14);
+      --border-light:  rgba(212, 160, 60, 0.08);
+      --border-med:    rgba(212, 160, 60, 0.28);
+      --border-hi:     rgba(212, 160, 60, 0.52);
+
+      --shadow-card:   0 4px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.04);
+      --shadow-lg:     0 8px 48px rgba(0, 0, 0, 0.65);
+      --shadow-gold:   0 0 32px rgba(212, 160, 60, 0.14);
+
+      --font-main:     'Inter', 'Space Grotesk', sans-serif;
+      --font-display:  'Playfair Display', Georgia, serif;
+      --font-ui:       'Space Grotesk', 'Inter', sans-serif;
+      --font-mono:     'JetBrains Mono', monospace;
+
+      --radius-xs:     4px;
+      --radius-sm:     8px;
+      --radius:        12px;
+      --radius-md:     16px;
+      --radius-lg:     22px;
+      --radius-xl:     32px;
+      --radius-pill:   9999px;
+
+      --tr:            all 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+      --tr-spring:     all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       RESET & BASE
+       ══════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--bg-1);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    ::selection { background: var(--gold-glow-med); color: #fff; }
+    a { color: var(--gold); text-decoration: none; transition: var(--tr); }
+    a:hover { color: var(--gold-bright); }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-2); }
+    ::-webkit-scrollbar-thumb { background: var(--gold-deep); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+    /* ══════════════════════════════════════════════════════
+       ANIMATED BACKGROUND
+       ══════════════════════════════════════════════════════ */
+    .hub-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background: var(--bg-1);
+      overflow: hidden;
+    }
+    .hub-bg::before {
+      content: '';
+      position: absolute;
+      width: 900px;
+      height: 900px;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse at center,
+        rgba(212, 160, 60, 0.07) 0%,
+        rgba(155, 89, 182, 0.05) 40%,
+        transparent 70%);
+      animation: bgPulse 8s ease-in-out infinite;
+    }
+    .hub-bg::after {
+      content: '';
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      bottom: -100px;
+      right: -100px;
+      background: radial-gradient(ellipse at center,
+        rgba(52, 152, 219, 0.06) 0%,
+        rgba(0, 212, 255, 0.04) 40%,
+        transparent 70%);
+      animation: bgPulse 10s 2s ease-in-out infinite;
+    }
+
+    .hub-grid-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-image:
+        linear-gradient(rgba(212,160,60,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(212,160,60,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    @keyframes bgPulse {
+      0%, 100% { opacity: 0.8; transform: translateX(-50%) scale(1); }
+      50%       { opacity: 1;   transform: translateX(-50%) scale(1.08); }
+    }
+
+    /* ══════════════════════════════════════════════════════
+       NAVIGATION — override goat-brand.css for studio theme
+       ══════════════════════════════════════════════════════ */
+    .studio-nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(5, 10, 20, 0.92);
+      backdrop-filter: blur(22px) saturate(1.5);
+      -webkit-backdrop-filter: blur(22px) saturate(1.5);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 1px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.02);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .nav-brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 0 16px var(--gold-glow-med);
+      animation: crownPulse 3s ease-in-out infinite;
+    }
+    @keyframes crownPulse {
+      0%,100% { box-shadow: 0 0 16px var(--gold-glow-med); }
+      50%      { box-shadow: 0 0 30px var(--gold-glow-hi); }
+    }
+    .nav-brand-text {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.1rem;
+      letter-spacing: 0.3px;
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-bright) 60%, var(--gold-pale) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex: 1;
+      justify-content: center;
+    }
+    .nav-link {
+      padding: 6px 15px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: var(--tr);
+      border: 1px solid transparent;
+      letter-spacing: 0.2px;
+    }
+    .nav-link:hover {
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+      border-color: var(--border);
+    }
+    .nav-link.active {
+      color: var(--gold);
+      background: var(--gold-glow);
+      border-color: var(--border-med);
+    }
+    .nav-link.active::after {
+      /* underline handled via border-bottom */
+    }
+
+    .nav-cta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .nav-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 11px;
+      background: var(--gold-glow);
+      border: 1px solid var(--border-med);
+      border-radius: var(--radius-pill);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       HERO SECTION
+       ══════════════════════════════════════════════════════ */
+    .hero {
+      position: relative;
+      padding: 90px 28px 70px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .hero-aura {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%,
+          rgba(212, 160, 60, 0.10) 0%,
+          rgba(155, 89, 182, 0.06) 50%,
+          transparent 80%);
+      pointer-events: none;
+    }
+
+    /* Floating particles */
+    .hero-particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: var(--gold);
+      opacity: 0;
+      animation: particleFloat linear infinite;
+    }
+    @keyframes particleFloat {
+      0%   { opacity: 0; transform: translateY(0) scale(0.5); }
+      10%  { opacity: 0.7; }
+      90%  { opacity: 0.4; }
+      100% { opacity: 0; transform: translateY(-120px) scale(1.5); }
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: var(--radius-pill);
+      background: var(--gold-glow);
+      border: 1px solid var(--border-med);
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      animation: fadeInDown 0.6s ease both;
+    }
+    .hero-eyebrow .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.6rem, 6vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+      animation: fadeInUp 0.7s 0.1s ease both;
+    }
+    .hero-title-main {
+      display: block;
+      background: linear-gradient(135deg,
+        var(--gold-pale) 0%,
+        var(--gold-bright) 30%,
+        var(--gold) 60%,
+        var(--gold-light) 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradShift 5s linear infinite;
+      text-shadow: none;
+    }
+    @keyframes gradShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .hero-title-sub {
+      display: block;
+      font-size: 0.45em;
+      font-family: var(--font-ui);
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      -webkit-text-fill-color: var(--text-secondary);
+      margin-top: 10px;
+    }
+
+    .hero-tagline {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      max-width: 520px;
+      margin: 0 auto 36px;
+      line-height: 1.7;
+      animation: fadeInUp 0.7s 0.2s ease both;
+    }
+    .hero-tagline em {
+      color: var(--gold);
+      font-style: normal;
+      font-weight: 600;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.7s 0.3s ease both;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       QUICK STATS BAR
+       ══════════════════════════════════════════════════════ */
+    .stats-bar {
+      background: rgba(13, 20, 32, 0.70);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      padding: 14px 28px;
+    }
+    .stats-bar-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 24px;
+      border-right: 1px solid var(--border);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-icon { font-size: 1rem; }
+    .stat-text {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+    .stat-text strong { color: var(--gold); }
+
+    /* ══════════════════════════════════════════════════════
+       SHARED SECTION CHROME
+       ══════════════════════════════════════════════════════ */
+    .hub-section {
+      max-width: 1340px;
+      margin: 0 auto;
+      padding: 64px 28px;
+    }
+    .hub-section + .hub-section {
+      padding-top: 0;
+    }
+
+    .section-head {
+      margin-bottom: 36px;
+    }
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 1px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.15;
+    }
+    .section-title span { color: var(--gold); }
+    .section-desc {
+      margin-top: 10px;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      max-width: 560px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       FEATURED — 3 LARGE CARDS
+       ══════════════════════════════════════════════════════ */
+    .featured-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .featured-card {
+      position: relative;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 32px 28px 28px;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+      transition: var(--tr-spring);
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 300px;
+      text-decoration: none;
+    }
+    .featured-card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: var(--card-accent-color, var(--gold));
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: -1;
+    }
+    .featured-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--card-accent-color, var(--gold));
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      transform: scaleX(0.6);
+      transform-origin: left;
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      opacity: 0.7;
+    }
+    .featured-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--card-accent-color, var(--gold));
+      box-shadow: 0 24px 60px rgba(0,0,0,0.55),
+                  0 0 40px var(--card-shadow-color, var(--gold-glow));
+    }
+    .featured-card:hover::after {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+
+    /* Gold featured card */
+    .featured-card.gold-card {
+      --card-accent-color: var(--gold);
+      --card-shadow-color: var(--gold-glow-med);
+      background: linear-gradient(145deg, rgba(22, 32, 50, 0.92) 0%, rgba(13, 20, 32, 0.88) 100%);
+    }
+    /* Purple featured card */
+    .featured-card.purple-card {
+      --card-accent-color: var(--purple-bright);
+      --card-shadow-color: rgba(178, 75, 243, 0.22);
+      background: linear-gradient(145deg, rgba(25, 15, 40, 0.92) 0%, rgba(13, 20, 32, 0.88) 100%);
+    }
+    /* Blue featured card */
+    .featured-card.blue-card {
+      --card-accent-color: var(--blue);
+      --card-shadow-color: var(--blue-glow);
+      background: linear-gradient(145deg, rgba(12, 22, 42, 0.92) 0%, rgba(13, 20, 32, 0.88) 100%);
+    }
+
+    /* Decorative glow orb */
+    .card-orb {
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      right: -40px;
+      top: -40px;
+      opacity: 0.12;
+      filter: blur(40px);
+      background: var(--card-accent-color, var(--gold));
+      transition: opacity 0.4s;
+    }
+    .featured-card:hover .card-orb { opacity: 0.25; }
+
+    .featured-icon-wrap {
+      width: 62px;
+      height: 62px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.9rem;
+      margin-bottom: 20px;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      transition: var(--tr-spring);
+    }
+    .featured-card:hover .featured-icon-wrap {
+      transform: scale(1.08) rotate(-3deg);
+    }
+
+    .featured-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      width: fit-content;
+    }
+    .badge-gold-style {
+      background: var(--gold-glow);
+      color: var(--gold);
+      border: 1px solid var(--border-med);
+    }
+    .badge-purple-style {
+      background: rgba(178,75,243,0.14);
+      color: var(--purple-bright);
+      border: 1px solid rgba(178,75,243,0.28);
+    }
+    .badge-blue-style {
+      background: var(--blue-glow);
+      color: var(--blue);
+      border: 1px solid rgba(52,152,219,0.28);
+    }
+
+    .featured-title {
+      font-family: var(--font-ui);
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: 0.3px;
+      margin-bottom: 8px;
+    }
+    .featured-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .featured-footer {
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .featured-launch {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      transition: var(--tr-spring);
+      border: 1px solid;
+    }
+    .featured-launch:hover { transform: translateY(-1px) scale(1.03); }
+
+    .launch-gold {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+      color: #000;
+      border-color: var(--gold);
+      box-shadow: 0 4px 18px var(--gold-glow-med);
+    }
+    .launch-gold:hover { box-shadow: 0 6px 28px var(--gold-glow-hi); }
+
+    .launch-purple {
+      background: linear-gradient(135deg, var(--purple-bright) 0%, #8b2fcf 100%);
+      color: #fff;
+      border-color: var(--purple-bright);
+      box-shadow: 0 4px 18px rgba(178,75,243,0.25);
+    }
+    .launch-purple:hover { box-shadow: 0 6px 28px rgba(178,75,243,0.40); }
+
+    .launch-blue {
+      background: linear-gradient(135deg, var(--blue) 0%, #1a6fad 100%);
+      color: #fff;
+      border-color: var(--blue);
+      box-shadow: 0 4px 18px var(--blue-glow);
+    }
+    .launch-blue:hover { box-shadow: 0 6px 28px rgba(52,152,219,0.40); }
+
+    .featured-arrow {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      transition: var(--tr);
+    }
+    .featured-card:hover .featured-arrow {
+      color: var(--card-accent-color, var(--gold));
+      transform: translateX(4px);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       STUDIO GRID CARDS (music, video sections)
+       ══════════════════════════════════════════════════════ */
+    .studio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 18px;
+    }
+
+    .studio-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px 20px 20px;
+      backdrop-filter: blur(12px);
+      transition: var(--tr-spring);
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      overflow: hidden;
+    }
+    .studio-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--s-accent, var(--gold));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.32s ease;
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+    }
+    .studio-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--s-accent, var(--gold));
+      box-shadow: 0 16px 50px rgba(0,0,0,0.50),
+                  0 0 0 1px var(--s-accent, var(--gold)),
+                  0 0 30px var(--s-glow, var(--gold-glow));
+      background: var(--bg-card-hover);
+    }
+    .studio-card:hover::before { transform: scaleX(1); }
+
+    .s-icon {
+      font-size: 2rem;
+      margin-bottom: 14px;
+      display: block;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      line-height: 1;
+    }
+    .studio-card:hover .s-icon { transform: scale(1.15) rotate(-5deg); }
+
+    .s-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--radius-xs);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      width: fit-content;
+      background: var(--s-glow, var(--gold-glow));
+      color: var(--s-accent, var(--gold));
+      border: 1px solid var(--s-accent, var(--gold));
+    }
+
+    .s-title {
+      font-family: var(--font-ui);
+      font-size: 1.0rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+    .s-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      flex: 1;
+    }
+    .s-footer {
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .s-launch {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      color: var(--s-accent, var(--gold));
+      background: var(--s-glow, var(--gold-glow));
+      border: 1px solid var(--s-accent, var(--gold));
+      transition: var(--tr-spring);
+      text-decoration: none;
+    }
+    .s-launch:hover {
+      background: var(--s-accent, var(--gold));
+      color: #000;
+      box-shadow: 0 4px 16px var(--s-glow, var(--gold-glow));
+      transform: translateY(-1px);
+    }
+    .s-chevron {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      transition: var(--tr);
+    }
+    .studio-card:hover .s-chevron {
+      color: var(--s-accent, var(--gold));
+      transform: translateX(3px);
+    }
+
+    /* Color variants */
+    .s-gold   { --s-accent: var(--gold);          --s-glow: var(--gold-glow); }
+    .s-purple { --s-accent: var(--purple-bright);  --s-glow: rgba(178,75,243,0.15); }
+    .s-blue   { --s-accent: var(--blue);           --s-glow: var(--blue-glow); }
+    .s-cyan   { --s-accent: var(--cyan);           --s-glow: var(--cyan-glow); }
+    .s-green  { --s-accent: var(--green);          --s-glow: var(--green-glow); }
+    .s-orange { --s-accent: var(--orange);         --s-glow: rgba(243,156,18,0.15); }
+    .s-pink   { --s-accent: var(--pink);           --s-glow: rgba(233,30,140,0.15); }
+    .s-teal   { --s-accent: var(--teal);           --s-glow: rgba(26,188,156,0.15); }
+    .s-red    { --s-accent: var(--red);            --s-glow: var(--red-glow); }
+
+    /* ══════════════════════════════════════════════════════
+       DIVIDER WITH LABEL
+       ══════════════════════════════════════════════════════ */
+    .divider-line {
+      height: 1px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        var(--border-med) 20%,
+        var(--border-med) 80%,
+        transparent 100%);
+      margin: 0 28px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       HALITO CHAT INTEGRATION PANEL
+       ══════════════════════════════════════════════════════ */
+    .halito-panel {
+      background: linear-gradient(135deg,
+        rgba(8, 12, 24, 0.95) 0%,
+        rgba(13, 8, 24, 0.95) 100%);
+      border: 1px solid rgba(178, 75, 243, 0.30);
+      border-radius: var(--radius-xl);
+      padding: 56px 48px;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+      align-items: center;
+    }
+
+    .halito-panel-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 80% at 80% 50%, rgba(178,75,243,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 50% at 20% 80%, rgba(0,212,255,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .halito-panel-scanlines {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(178,75,243,0.02) 3px,
+        rgba(178,75,243,0.02) 4px
+      );
+      pointer-events: none;
+    }
+
+    .halito-content { position: relative; z-index: 1; }
+
+    .halito-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 12px;
+      background: rgba(178,75,243,0.12);
+      border: 1px solid rgba(178,75,243,0.30);
+      border-radius: var(--radius-pill);
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--purple-bright);
+      margin-bottom: 18px;
+    }
+    .halito-eyebrow .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--purple-bright);
+      animation: blink 1.2s ease-in-out infinite;
+    }
+
+    .halito-title {
+      font-family: var(--font-display);
+      font-size: 2.1rem;
+      font-weight: 900;
+      color: var(--text-primary);
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .halito-title .hl { color: var(--purple-bright); }
+
+    .halito-body {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    .halito-features {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+    .halito-feature {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.83rem;
+      color: var(--text-secondary);
+    }
+    .halito-feature-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-xs);
+      background: rgba(178,75,243,0.12);
+      border: 1px solid rgba(178,75,243,0.20);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .halito-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 13px 28px;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--purple-bright) 0%, #6a1fa0 100%);
+      color: #fff;
+      border: 1px solid var(--purple-bright);
+      transition: var(--tr-spring);
+      box-shadow: 0 4px 24px rgba(178,75,243,0.28);
+      text-decoration: none;
+    }
+    .halito-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 36px rgba(178,75,243,0.45);
+      color: #fff;
+    }
+
+    /* Chat preview mockup */
+    .halito-preview {
+      position: relative;
+      z-index: 1;
+      background: rgba(13, 8, 22, 0.80);
+      border: 1px solid rgba(178,75,243,0.25);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+    .preview-topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .preview-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple-bright) 0%, #5a0fa8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      box-shadow: 0 0 12px rgba(178,75,243,0.35);
+    }
+    .preview-name {
+      font-weight: 700;
+      font-size: 0.87rem;
+      color: var(--text-primary);
+    }
+    .preview-status {
+      font-size: 0.72rem;
+      color: var(--purple-bright);
+    }
+    .preview-live {
+      margin-left: auto;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: rgba(178,75,243,0.15);
+      color: var(--purple-bright);
+      border: 1px solid rgba(178,75,243,0.30);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .preview-messages { display: flex; flex-direction: column; gap: 12px; }
+
+    .msg {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .msg.user { flex-direction: row-reverse; }
+
+    .msg-bubble {
+      max-width: 78%;
+      padding: 9px 13px;
+      border-radius: 14px;
+      font-size: 0.79rem;
+      line-height: 1.5;
+    }
+    .msg-ai .msg-bubble {
+      background: rgba(178,75,243,0.12);
+      border: 1px solid rgba(178,75,243,0.20);
+      color: var(--text-secondary);
+      border-radius: 4px 14px 14px 14px;
+    }
+    .msg-user .msg-bubble {
+      background: var(--gold-glow);
+      border: 1px solid var(--border-med);
+      color: var(--text);
+      border-radius: 14px 4px 14px 14px;
+    }
+
+    .msg-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.82rem;
+    }
+    .dot-ai {
+      background: linear-gradient(135deg, var(--purple-bright) 0%, #5a0fa8 100%);
+      box-shadow: 0 0 8px rgba(178,75,243,0.30);
+    }
+    .dot-user {
+      background: var(--gold-glow);
+      border: 1px solid var(--border-med);
+    }
+
+    .preview-typing {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .typing-dots {
+      display: flex;
+      gap: 3px;
+    }
+    .typing-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--purple-bright);
+      animation: typingBounce 1.2s ease-in-out infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.30s; }
+    @keyframes typingBounce {
+      0%,80%,100% { transform: translateY(0); opacity: 0.5; }
+      40%          { transform: translateY(-4px); opacity: 1; }
+    }
+    .typing-text {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       AGENT-007 SIDEBAR / BANNER
+       ══════════════════════════════════════════════════════ */
+    .agents-section {
+      background: linear-gradient(135deg,
+        rgba(8, 14, 26, 0.96) 0%,
+        rgba(10, 8, 20, 0.96) 100%);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .agents-inner {
+      max-width: 1340px;
+      margin: 0 auto;
+      padding: 52px 28px;
+    }
+
+    .agents-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+    }
+
+    .agents-title {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--text-primary);
+    }
+    .agents-title .hl { color: var(--gold); }
+
+    .agents-sub {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .agent-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px 22px;
+      backdrop-filter: blur(12px);
+      transition: var(--tr-spring);
+      overflow: hidden;
+    }
+    .agent-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--a-color, var(--gold));
+      transform: scaleX(0.4);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .agent-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--a-color, var(--gold));
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45), 0 0 28px var(--a-glow, var(--gold-glow));
+    }
+    .agent-card:hover::before { transform: scaleX(1); }
+
+    .agent-lexi  { --a-color: var(--pink);   --a-glow: rgba(233,30,140,0.15); }
+    .agent-codex { --a-color: var(--cyan);   --a-glow: var(--cyan-glow); }
+    .agent-devin { --a-color: var(--gold);   --a-glow: var(--gold-glow); }
+
+    .agent-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .agent-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      border: 2px solid var(--a-color, var(--gold));
+      box-shadow: 0 0 14px var(--a-glow, var(--gold-glow));
+      transition: var(--tr-spring);
+    }
+    .agent-card:hover .agent-avatar {
+      transform: scale(1.08);
+      box-shadow: 0 0 24px var(--a-glow, var(--gold-glow));
+    }
+    .agent-lexi  .agent-avatar { background: linear-gradient(135deg, rgba(233,30,140,0.20) 0%, rgba(233,30,140,0.05) 100%); }
+    .agent-codex .agent-avatar { background: linear-gradient(135deg, rgba(0,212,255,0.18) 0%, rgba(0,212,255,0.04) 100%); }
+    .agent-devin .agent-avatar { background: linear-gradient(135deg, rgba(212,160,60,0.20) 0%, rgba(212,160,60,0.05) 100%); }
+
+    .agent-info {}
+    .agent-name {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--text-primary);
+      letter-spacing: 0.2px;
+    }
+    .agent-role {
+      font-size: 0.75rem;
+      color: var(--a-color, var(--gold));
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .agent-desc {
+      font-size: 0.81rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 18px;
+    }
+
+    .agent-skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 18px;
+    }
+    .skill-chip {
+      padding: 2px 8px;
+      border-radius: var(--radius-xs);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text-muted);
+    }
+
+    .agent-ask-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      width: 100%;
+      padding: 9px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--a-color, var(--gold));
+      background: transparent;
+      border: 1px solid var(--a-color, var(--gold));
+      transition: var(--tr-spring);
+      text-decoration: none;
+      letter-spacing: 0.2px;
+    }
+    .agent-ask-btn:hover {
+      background: var(--a-color, var(--gold));
+      color: #000;
+      box-shadow: 0 4px 18px var(--a-glow, var(--gold-glow));
+      transform: translateY(-1px);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════════════════════ */
+    .hub-footer {
+      padding: 40px 28px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      background: rgba(5,10,20,0.6);
+    }
+    .footer-brand {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .footer-tagline {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .footer-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .footer-links a {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      transition: var(--tr);
+    }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-copy {
+      font-size: 0.72rem;
+      color: var(--sub);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       SHARED KEYFRAMES
+       ══════════════════════════════════════════════════════ */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ══════════════════════════════════════════════════════
+       RESPONSIVE
+       ══════════════════════════════════════════════════════ */
+    @media (max-width: 1100px) {
+      .featured-grid { grid-template-columns: 1fr 1fr; }
+      .featured-grid .featured-card:last-child { grid-column: span 2; }
+      .halito-panel { grid-template-columns: 1fr; gap: 36px; padding: 40px 32px; }
+      .agents-grid { grid-template-columns: 1fr 1fr; }
+      .agents-grid .agent-card:last-child { grid-column: span 2; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .featured-grid { grid-template-columns: 1fr; }
+      .featured-grid .featured-card:last-child { grid-column: span 1; }
+      .studio-grid { grid-template-columns: repeat(2, 1fr); }
+      .agents-grid { grid-template-columns: 1fr; }
+      .agents-grid .agent-card:last-child { grid-column: span 1; }
+      .halito-panel { padding: 28px 20px; }
+      .halito-title { font-size: 1.5rem; }
+      .hub-section { padding: 40px 16px; }
+      .stat-item { padding: 4px 14px; }
+    }
+    @media (max-width: 480px) {
+      .studio-grid { grid-template-columns: 1fr; }
+      .hero { padding: 60px 16px 48px; }
+      .hero-tagline { font-size: 0.95rem; }
+    }
+  </style>
+  <link rel="stylesheet" href="css/local-fonts.css">
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+
+<body>
+
+  <!-- Animated Background -->
+  <div class="hub-bg" aria-hidden="true"></div>
+  <div class="hub-grid-overlay" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════════════════════════
+       NAVIGATION
+       ═══════════════════════════════════════════ -->
+  <nav class="studio-nav" role="navigation" aria-label="Main navigation">
+    <!-- Brand -->
+    <a href="index.html" class="nav-brand" aria-label="GOAT Force Home">
+      <div class="nav-brand-icon" aria-hidden="true">🐐</div>
+      <span class="nav-brand-text">GOAT FORCE</span>
+    </a>
+
+    <!-- Nav Links -->
+    <div class="nav-links">
+      <a href="index.html"       class="nav-link">🏠 Home</a>
+      <a href="agent-007.html"   class="nav-link">🕵️ Agent-007</a>
+      <a href="moneypenny.html"  class="nav-link">💼 Ms. Money Penny</a>
+      <a href="studio-hub.html"  class="nav-link active" aria-current="page">🎛️ Studio Hub</a>
+      <a href="halito-chat.html" class="nav-link">💬 Halito Chat</a>
+    </div>
+
+    <!-- CTA -->
+    <div class="nav-cta">
+      <span class="nav-badge">⚡ 13 Tools</span>
+    </div>
+  </nav>
+
+
+  <!-- ═══════════════════════════════════════════
+       HERO
+       ═══════════════════════════════════════════ -->
+  <section class="hero" aria-label="Studio Hub Hero">
+    <div class="hero-aura" aria-hidden="true"></div>
+
+    <!-- Particles -->
+    <div class="hero-particles" aria-hidden="true">
+      <!-- JS will spawn these, but we seed a few CSS ones -->
+      <span class="particle" style="left:15%; bottom:0; animation-duration:6s; animation-delay:0s;"></span>
+      <span class="particle" style="left:30%; bottom:0; animation-duration:8s; animation-delay:1.2s; background:var(--purple-bright);"></span>
+      <span class="particle" style="left:50%; bottom:0; animation-duration:7s; animation-delay:0.5s;"></span>
+      <span class="particle" style="left:65%; bottom:0; animation-duration:9s; animation-delay:2s; background:var(--cyan);"></span>
+      <span class="particle" style="left:80%; bottom:0; animation-duration:5.5s; animation-delay:0.8s;"></span>
+      <span class="particle" style="left:42%; bottom:0; animation-duration:7.5s; animation-delay:3s; background:var(--blue);"></span>
+      <span class="particle" style="left:22%; bottom:0; animation-duration:6.5s; animation-delay:1.8s; background:var(--gold-bright); width:3px; height:3px;"></span>
+      <span class="particle" style="left:70%; bottom:0; animation-duration:8.5s; animation-delay:0.3s; background:var(--pink);"></span>
+    </div>
+
+    <div class="hero-eyebrow" aria-hidden="true">
+      <span class="dot"></span>
+      GOAT Force Creative Suite
+    </div>
+
+    <h1 class="hero-title">
+      <span class="hero-title-main">GOAT FORCE STUDIO</span>
+      <span class="hero-title-sub">The Complete Creative Suite</span>
+    </h1>
+
+    <p class="hero-tagline">
+      Audio · Video · Movie · Script &amp; More.<br />
+      <em>From beat to screen.</em> One hub, every tool.
+    </p>
+
+    <div class="hero-actions">
+      <a href="studio.html" class="halito-cta" style="background:linear-gradient(135deg,var(--gold) 0%,var(--gold-deep) 100%); color:#000; border-color:var(--gold); box-shadow:0 4px 24px var(--gold-glow-med);">
+        🎙️ Open Recording Studio
+      </a>
+      <a href="halito-chat.html" class="halito-cta" style="background:rgba(178,75,243,0.12); color:var(--purple-bright); border-color:rgba(178,75,243,0.35); box-shadow:none;">
+        💬 Halito AI Chat
+      </a>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       QUICK STATS BAR
+       ═══════════════════════════════════════════ -->
+  <div class="stats-bar" role="region" aria-label="Studio capabilities">
+    <div class="stats-bar-inner">
+      <div class="stat-item">
+        <span class="stat-icon">🎛️</span>
+        <span class="stat-text"><strong>13</strong> Studio Tools</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">🤖</span>
+        <span class="stat-text"><strong>AI-Powered</strong> Suite</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">🎬</span>
+        <span class="stat-text"><strong>4K</strong> Video Output</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">🔊</span>
+        <span class="stat-text"><strong>96kHz</strong> Audio Engine</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">✍️</span>
+        <span class="stat-text"><strong>Script to Screen</strong> Pipeline</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">🚀</span>
+        <span class="stat-text"><strong>Sora 2</strong> Video Gen</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       FEATURED — 3 LARGE CARDS
+       ═══════════════════════════════════════════ -->
+  <main>
+  <section class="hub-section" aria-labelledby="featured-heading">
+    <div class="section-head">
+      <div class="section-label">⭐ Featured Studios</div>
+      <h2 class="section-title" id="featured-heading">Your <span>Flagship</span> Creative Tools</h2>
+      <p class="section-desc">The three crown-jewel studios at the heart of your production workflow.</p>
+    </div>
+
+    <div class="featured-grid">
+
+      <!-- Recording Studio — GOLD -->
+      <a href="studio.html" class="featured-card gold-card">
+        <div class="card-orb"></div>
+        <div class="featured-icon-wrap" style="background:linear-gradient(135deg,rgba(212,160,60,0.18) 0%,rgba(212,160,60,0.06) 100%); border-color:var(--border-med);">🎙️</div>
+        <span class="featured-badge badge-gold-style">PRO DAW</span>
+        <h3 class="featured-title">Recording Studio</h3>
+        <p class="featured-desc">Full professional DAW with multitrack recording, real-time mixing, effects chain, and 96kHz audio engine. Your complete pro recording environment.</p>
+        <div class="featured-footer">
+          <span class="featured-launch launch-gold">🚀 Launch Studio</span>
+          <span class="featured-arrow">→</span>
+        </div>
+      </a>
+
+      <!-- AI Video Studio — PURPLE -->
+      <a href="goat-ai-video.html" class="featured-card purple-card">
+        <div class="card-orb"></div>
+        <div class="featured-icon-wrap" style="background:linear-gradient(135deg,rgba(178,75,243,0.18) 0%,rgba(178,75,243,0.06) 100%); border-color:rgba(178,75,243,0.20);">🎥</div>
+        <span class="featured-badge badge-purple-style">SORA 2</span>
+        <h3 class="featured-title">AI Video Studio</h3>
+        <p class="featured-desc">Sora-powered AI video generation. Transform text prompts and scripts into stunning cinematic footage with full 4K output and scene control.</p>
+        <div class="featured-footer">
+          <span class="featured-launch launch-purple">🚀 Generate Video</span>
+          <span class="featured-arrow">→</span>
+        </div>
+      </a>
+
+      <!-- Screenwriting — BLUE -->
+      <a href="screenwriting.html" class="featured-card blue-card">
+        <div class="card-orb"></div>
+        <div class="featured-icon-wrap" style="background:linear-gradient(135deg,rgba(52,152,219,0.18) 0%,rgba(52,152,219,0.06) 100%); border-color:rgba(52,152,219,0.20);">✍️</div>
+        <span class="featured-badge badge-blue-style">AI-ASSISTED</span>
+        <h3 class="featured-title">Screenwriting Studio</h3>
+        <p class="featured-desc">Professional screenplay writing with AI co-pilot. Industry-standard formatting, character development, scene suggestions, and one-click export.</p>
+        <div class="featured-footer">
+          <span class="featured-launch launch-blue">🚀 Write Script</span>
+          <span class="featured-arrow">→</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+
+  <div class="divider-line" role="separator"></div>
+
+
+  <!-- ═══════════════════════════════════════════
+       MUSIC PRODUCTION SECTION
+       ═══════════════════════════════════════════ -->
+  <section class="hub-section" aria-labelledby="music-heading">
+    <div class="section-head">
+      <div class="section-label">🎵 Music Production</div>
+      <h2 class="section-title" id="music-heading">Beat, Mix &amp; <span>Distribute</span></h2>
+      <p class="section-desc">From raw idea to finished track — every production tool you need in one place.</p>
+    </div>
+
+    <div class="studio-grid">
+
+      <!-- Music Studio -->
+      <a href="music-studio.html" class="studio-card s-gold">
+        <span class="s-icon">🎵</span>
+        <span class="s-tag">DSP + ROYALTY</span>
+        <h3 class="s-title">Music Studio</h3>
+        <p class="s-desc">DSP distribution, royalty tracking, and revenue analytics. Get your music on every platform with one click.</p>
+        <div class="s-footer">
+          <a href="music-studio.html" class="s-launch">Open →</a>
+          <span class="s-chevron">›</span>
+        </div>
+      </a>
+
+      <!-- Beat Maker -->
+      <a href="beat-maker.html" class="studio-card s-orange">
+        <span class="s-icon">🥁</span>
+        <span class="s-tag">BEAT MAKER</span>
+        <h3 class="s-title">Beat Maker</h3>
+        <p class="s-desc">Pattern-based beat creation with 808s, live pads, sample chops, and BPM sync across the suite.</p>
+        <div class="s-footer">
+          <a href="beat-maker.html" class="s-launch">Open →</a>
+          <span class="s-chevron">›</span>
+        </div>
+      </a>
+
+      <!-- GOAT MPC -->
+      <a href="goat-mpc.html" class="studio-card s-red">
+        <span class="s-icon">🎛️</span>
+        <span class="s-tag">MPC PRO</span>
+        <h3 class="s-title">GOAT MPC</h3>
+        <p class="s-desc">Classic MPC-style pad controller with velocity sensitivity, multi-layer samples, and live recording grid.</p>
+        <div class="s-footer">
+          <a href="goat-mpc.html" class="s-launch">Open →</a>
+          <span class="s-chevron">›</span>
+        </div>
+      </a>
+
+      <!-- Vocal Studio -->
+      <a href="vocal-studio.html" class="studio-card s-pink">
+        <span class="s-icon">🎤</span>
+        <span class="s-tag">VOCALS</span>
+        <h3 class="s-title">Vocal Studio</h3>
+        <p class="s-desc">Pitch correction, harmonics, vocal chains, reverb, and AI-powered lyric generation. Your voice, perfected.</p>
+        <div class="s-footer">
+          <a href="vocal-studio.html" class="s-launch">Open →</a>
+          <span class="s-chevron">›</span>
+        </div>
+      </a>
+
+      <!-- Mastering -->
+      <a href="mastering.html" class="studio-card s-teal">
+        <span class="s-icon">🔊</span>
+        <span class="s-tag">MASTERING</span>
+        <h3 class="s-title">Mastering</h3>
+        <p class="s-desc">AI-powered audio mastering. Loudness normalization, EQ, limiting, and DSP-ready export in seconds.</p>
+        <div class="s-footer">
+          <a href="mastering.html" class="s-launch">Open →</a>
+          <span class="s-chevron">›</span>
+        </div>
+      </a>
+
+      <!-- Sound Library -->
+      <a href="goat-sound-library.html" class="studio-card s-blue">
+        <span class="s-icon">📚</span>
+        <span class="s-tag">SOUND LIB</span>
+        <h3 class="s-title">Sound Library</h3>
+        <p class="s-desc">Massive curated library of samples, loops, one-shots, and stems. Search by BPM, key, genre, or mood.</p>
+        <div class="s-footer">
+          <a href="goat-sound-library.html" class="s-launch">Open →</a>
+          <span class="s-chevron">›</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+
+  <div class="divider-line" role="separator"></div>
+
+
+  <!-- ═══════════════════════════════════════════
+       VIDEO & FILM SECTION
+       ═══════════════════════════════════════════ -->
+  <section class="hub-section" aria-labelledby="video-heading">
+    <div class="section-head">
+      <div class="section-label">🎬 Video &amp; Film</div>
+      <h2 class="section-title" id="video-heading">Create, Score &amp; <span>Publish</span></h2>
+      <p class="section-desc">From concept to final cut — visual storytelling at every stage.</p>
+    </div>
+
+    <div class="studio-grid">
+
+      <!-- Movie Studio -->
+      <a href="movie-studio.html" class="studio-card s-gold">
+        <span class="s-icon">🎬</span>
+        <span class="s-tag">VIDEO EDITOR</span>
+        <h3 class="s-title">Movie Studio</h3>
+        <p class="s-desc">Full-featured non-linear video editor. Multi-track timeline, color grading, transitions, and 4K export.</p>
+        <div class="s-footer">
+          <a href="movie-studio.html" class="s-launch">Open →</a>
+          <span class="s-chevron">›</span>
+        </div>
+      </a>
+
+      <!-- AI Video -->
+      <a href="goat-ai-video.html" class="studio-card s-purple">
+        <span class="s-icon">🤖</span>
+        <span class="s-tag">AI-POWERED</span>
+        <h3 class="s-title">AI Video Generator</h3>
+        <p class="s-desc">Generate cinematic AI video with Sora. Text-to-video, image animation, and scene extend — in 4K.</p>
+        <div class="s-footer">
+          <a href="goat-ai-video.html" class="s-launch">Open →</a>
+          <span class="s-chevron">›</span>
+        </div>
+      </a>
+
+      <!-- Film Score -->
+      <a href="film-score.html" class="studio-card s-cyan">
+        <span class="s-icon">🎼</span>
+        <span class="s-tag">FILM SCORE</span>
+        <h3 class="s-title">Film Score</h3>
+        <p class="s-desc">Orchestral scoring, MIDI composition, cue sheets, and picture lock sync. Score to frame with precision.</p>
+        <div class="s-footer">
+          <a href="film-score.html" class="s-launch">Open →</a>
+          <span class="s-chevron">›</span>
+        </div>
+      </a>
+
+      <!-- 3D Studio -->
+      <a href="goat-3d-studio.html" class="studio-card s-green">
+        <span class="s-icon">🌐</span>
+        <span class="s-tag">3D STUDIO</span>
+        <h3 class="s-title">3D Studio</h3>
+        <p class="s-desc">3D modeling, animation, rendering, and VR asset creation. Real-time preview and export to industry formats.</p>
+        <div class="s-footer">
+          <a href="goat-3d-studio.html" class="s-launch">Open →</a>
+          <span class="s-chevron">›</span>
+        </div>
+      </a>
+
+      <!-- NFT Studio -->
+      <a href="goat-nft-studio.html" class="studio-card s-orange">
+        <span class="s-icon">💎</span>
+        <span class="s-tag">NFT STUDIO</span>
+        <h3 class="s-title">NFT Studio</h3>
+        <p class="s-desc">Mint audio, video, and visual art as NFTs. Set royalty splits, manage drops, and publish to multiple blockchains.</p>
+        <div class="s-footer">
+          <a href="goat-nft-studio.html" class="s-launch">Open →</a>
+          <span class="s-chevron">›</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+
+  <div class="divider-line" role="separator"></div>
+
+
+  <!-- ═══════════════════════════════════════════
+       HALITO CHAT INTEGRATION PANEL
+       ═══════════════════════════════════════════ -->
+  <section class="hub-section" aria-labelledby="halito-heading">
+    <div class="halito-panel">
+      <div class="halito-panel-bg" aria-hidden="true"></div>
+      <div class="halito-panel-scanlines" aria-hidden="true"></div>
+
+      <!-- Left: Copy -->
+      <div class="halito-content">
+        <div class="halito-eyebrow">
+          <span class="live-dot" aria-hidden="true"></span>
+          AI Integration
+        </div>
+        <h2 class="halito-title" id="halito-heading">
+          Halito Chat<br /><span class="hl">Inside Your Studio</span>
+        </h2>
+        <p class="halito-body">
+          Get AI creative assistance, lyric suggestions, beat ideas, and script help right inside your studio session. Halito is your always-on creative co-pilot — from first note to final cut.
+        </p>
+        <div class="halito-features" role="list">
+          <div class="halito-feature" role="listitem">
+            <span class="halito-feature-icon" aria-hidden="true">🎵</span>
+            Lyric &amp; melody suggestions as you record
+          </div>
+          <div class="halito-feature" role="listitem">
+            <span class="halito-feature-icon" aria-hidden="true">🥁</span>
+            Beat ideas &amp; arrangement feedback in real-time
+          </div>
+          <div class="halito-feature" role="listitem">
+            <span class="halito-feature-icon" aria-hidden="true">✍️</span>
+            Script rewrites, scene notes &amp; story direction
+          </div>
+          <div class="halito-feature" role="listitem">
+            <span class="halito-feature-icon" aria-hidden="true">🎬</span>
+            Video concept &amp; prompt engineering for AI scenes
+          </div>
+        </div>
+        <a href="halito-chat.html" class="halito-cta">
+          💬 Open Halito Chat
+        </a>
+      </div>
+
+      <!-- Right: Chat Preview Mockup -->
+      <div class="halito-preview" role="img" aria-label="Halito Chat preview interface">
+        <div class="preview-topbar">
+          <div class="preview-avatar" aria-hidden="true">🤖</div>
+          <div>
+            <div class="preview-name">Halito Chat</div>
+            <div class="preview-status">Creative AI • Studio Mode</div>
+          </div>
+          <span class="preview-live" aria-hidden="true">● LIVE</span>
+        </div>
+        <div class="preview-messages" role="log" aria-live="polite">
+          <div class="msg msg-user">
+            <div class="msg-dot dot-user" aria-hidden="true">🎤</div>
+            <div class="msg-bubble">I need a hook for my trap beat — something about rising up, BPM 140</div>
+          </div>
+          <div class="msg msg-ai">
+            <div class="msg-dot dot-ai" aria-hidden="true">🤖</div>
+            <div class="msg-bubble">Here's a hook concept: <em>"Eyes on the crown, I came from the ground / Every bar I spit, that's another sound / They sleeping on me but I'm rising now / GOAT Force forever, can't hold me down"</em> — want me to adjust the cadence?</div>
+          </div>
+          <div class="msg msg-user">
+            <div class="msg-dot dot-user" aria-hidden="true">🎤</div>
+            <div class="msg-bubble">Perfect. Now suggest a chord progression</div>
+          </div>
+        </div>
+        <div class="preview-typing" aria-label="Halito is typing">
+          <div class="msg-dot dot-ai" style="width:24px;height:24px;font-size:0.75rem;" aria-hidden="true">🤖</div>
+          <div class="typing-dots" aria-hidden="true">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+          <span class="typing-text">Halito is composing...</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  </main><!-- /main -->
+
+
+  <!-- ═══════════════════════════════════════════
+       AGENT-007 STUDIO TEAM BANNER
+       ═══════════════════════════════════════════ -->
+  <aside class="agents-section" aria-labelledby="agents-heading">
+    <div class="agents-inner">
+      <div class="agents-header">
+        <div>
+          <h2 class="agents-title" id="agents-heading">
+            <span class="hl">Agent-007</span> Studio Team
+          </h2>
+          <p class="agents-sub">Three specialized AI agents ready to power your creative session.</p>
+        </div>
+        <a href="agent-007.html" class="halito-cta" style="background:var(--gold-glow); color:var(--gold); border-color:var(--border-med); box-shadow:none; white-space:nowrap;">
+          🕵️ Full Agent Hub →
+        </a>
+      </div>
+
+      <div class="agents-grid">
+
+        <!-- Lexi — Creative -->
+        <div class="agent-card agent-lexi">
+          <div class="agent-top">
+            <div class="agent-avatar" aria-hidden="true">💃</div>
+            <div class="agent-info">
+              <div class="agent-name">Lexi</div>
+              <div class="agent-role">✨ Creative Director</div>
+            </div>
+          </div>
+          <p class="agent-desc">Lexi handles all things creative — lyrics, hooks, visual concepts, color palettes, music video storyboards, and brand identity.</p>
+          <div class="agent-skills" aria-label="Skills">
+            <span class="skill-chip">Lyrics</span>
+            <span class="skill-chip">Storytelling</span>
+            <span class="skill-chip">Branding</span>
+            <span class="skill-chip">Concepts</span>
+            <span class="skill-chip">Storyboards</span>
+          </div>
+          <a href="moneypenny.html?mode=lexi" class="agent-ask-btn">
+            💃 Ask Lexi
+          </a>
+        </div>
+
+        <!-- Codex — Tech -->
+        <div class="agent-card agent-codex">
+          <div class="agent-top">
+            <div class="agent-avatar" aria-hidden="true">⚡</div>
+            <div class="agent-info">
+              <div class="agent-name">Codex</div>
+              <div class="agent-role">⚡ Technical Lead</div>
+            </div>
+          </div>
+          <p class="agent-desc">Codex is your tech powerhouse — DAW troubleshooting, plugin config, audio routing, DSP optimization, and API integrations.</p>
+          <div class="agent-skills" aria-label="Skills">
+            <span class="skill-chip">DSP</span>
+            <span class="skill-chip">Plugins</span>
+            <span class="skill-chip">Routing</span>
+            <span class="skill-chip">Code</span>
+            <span class="skill-chip">APIs</span>
+          </div>
+          <a href="moneypenny.html?mode=codex" class="agent-ask-btn">
+            ⚡ Ask Codex
+          </a>
+        </div>
+
+        <!-- Dr. Devin — Strategy -->
+        <div class="agent-card agent-devin">
+          <div class="agent-top">
+            <div class="agent-avatar" aria-hidden="true">🎯</div>
+            <div class="agent-info">
+              <div class="agent-name">Dr. Devin</div>
+              <div class="agent-role">🎯 Strategy & Business</div>
+            </div>
+          </div>
+          <p class="agent-desc">Dr. Devin maps out release strategies, royalty splits, DSP optimization, publishing deals, and career development roadmaps.</p>
+          <div class="agent-skills" aria-label="Skills">
+            <span class="skill-chip">Royalties</span>
+            <span class="skill-chip">Publishing</span>
+            <span class="skill-chip">Release Plan</span>
+            <span class="skill-chip">DSP Strategy</span>
+          </div>
+          <a href="moneypenny.html?mode=devin" class="agent-ask-btn">
+            🎯 Ask Dr. Devin
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </aside>
+
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════ -->
+  <footer class="hub-footer" role="contentinfo">
+    <div class="footer-brand">🐐 GOAT FORCE STUDIO</div>
+    <p class="footer-tagline">From beat to screen. One hub, every tool. — Life Imitates Art Inc.</p>
+    <nav class="footer-links" aria-label="Footer links">
+      <a href="index.html">Home</a>
+      <a href="studio.html">Recording Studio</a>
+      <a href="music-studio.html">Music Studio</a>
+      <a href="goat-ai-video.html">AI Video</a>
+      <a href="screenwriting.html">Screenwriting</a>
+      <a href="halito-chat.html">Halito Chat</a>
+      <a href="agent-007.html">Agent-007</a>
+      <a href="moneypenny.html">Ms. Money Penny</a>
+    </nav>
+    <p class="footer-copy">© 2025 Life Imitates Art Inc. · GOAT Force · All Rights Reserved</p>
+  </footer>
+
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

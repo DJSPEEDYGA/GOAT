@@ -69,7 +69,7 @@ class UnrealMetaHumanIntegration extends EventEmitter {
             },
             moneypenny: {
                 id: 'moneypenny',
-                name: 'MoneyPenny',
+                name: 'Ms. Money Penny',
                 description: 'Professional AI business assistant',
                 personality: 'Professional, efficient, organized',
                 voiceProfile: 'professional',

@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Production Command Hub</title>
+<link rel="icon" href="favicon.ico">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060608;
+  --bg2:#0a0a0d;
+  --bg3:#0f0f13;
+  --bg4:#141418;
+  --bg5:#1a1a20;
+  --bg6:#22222a;
+  --gold:#c9922a;
+  --gold-dim:rgba(201,146,42,0.15);
+  --gold-line:rgba(201,146,42,0.22);
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#3b82f6;
+  --purple:#7c3aed;
+  --border:rgba(255,255,255,0.06);
+  --border2:rgba(255,255,255,0.1);
+  --text:#e8e4dd;
+  --text2:#a09a90;
+  --text3:#504a42;
+  --radius:6px;
+  --radius2:4px;
+}
+
+html,body{
+  background:var(--bg);color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:13px;min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg6);border-radius:2px}
+
+/* ── NAV ── */
+.hub-nav{
+  position:sticky;top:0;z-index:200;
+  height:44px;
+  background:rgba(6,6,8,0.92);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 24px;
+  gap:2px;
+  overflow-x:auto;
+}
+.hub-nav::-webkit-scrollbar{display:none}
+
+.hn-wordmark{
+  font-size:11px;font-weight:800;
+  letter-spacing:3px;text-transform:uppercase;
+  color:var(--gold);margin-right:28px;flex-shrink:0;
+}
+.hn-divider{width:1px;height:18px;background:var(--border);margin:0 12px;flex-shrink:0}
+
+.hn-link{
+  height:44px;padding:0 14px;
+  font-size:11px;font-weight:500;letter-spacing:.3px;
+  color:var(--text3);cursor:pointer;white-space:nowrap;
+  background:none;border:none;font-family:inherit;
+  display:flex;align-items:center;
+  position:relative;transition:color .15s;
+}
+.hn-link::after{
+  content:'';position:absolute;bottom:0;left:14px;right:14px;
+  height:1px;background:var(--gold);transform:scaleX(0);transition:transform .2s;
+}
+.hn-link:hover{color:var(--text2)}
+.hn-link.act{color:var(--text)}
+.hn-link.act::after{transform:scaleX(1)}
+
+.hn-spacer{flex:1}
+.hn-pulse{
+  display:flex;align-items:center;gap:7px;
+  font-size:10px;font-weight:500;color:var(--text3);
+  letter-spacing:.3px;flex-shrink:0;
+}
+.hn-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 6px var(--green);
+}
+
+/* ── SECTIONS ── */
+.hub-section{display:none;padding:28px 28px 60px;max-width:1600px;margin:0 auto}
+.hub-section.act{display:block}
+
+/* ── SECTION HEADER ── */
+.sec-hdr{
+  margin-bottom:24px;
+  padding-bottom:16px;
+  border-bottom:1px solid var(--border);
+}
+.sec-hdr-title{
+  font-size:11px;font-weight:600;letter-spacing:2.5px;
+  text-transform:uppercase;color:var(--text3);margin-bottom:4px;
+}
+.sec-hdr-name{
+  font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.5px;
+}
+
+/* ── CATEGORY DIVIDER ── */
+.cat-label{
+  font-size:10px;font-weight:600;letter-spacing:2px;
+  text-transform:uppercase;color:var(--text3);
+  margin:28px 0 12px;display:flex;align-items:center;gap:12px;
+}
+.cat-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── APP GRID ── */
+.app-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  margin-bottom:32px;
+}
+.app-card{
+  background:var(--bg3);
+  padding:20px 16px;
+  cursor:pointer;
+  display:flex;flex-direction:column;gap:10px;
+  transition:background .15s;
+  text-decoration:none;
+  position:relative;
+  overflow:hidden;
+}
+.app-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,146,42,0),transparent);
+  transition:background .3s;
+}
+.app-card:hover{background:var(--bg4)}
+.app-card:hover::before{
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.app-card-top{display:flex;align-items:center;gap:10px}
+.app-ico{
+  width:34px;height:34px;border-radius:var(--radius2);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:0;/* no emoji — use colored bar instead */
+}
+.app-ico-bar{width:3px;height:28px;border-radius:2px;flex-shrink:0}
+.app-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.4;letter-spacing:-.1px}
+.app-tag{font-size:10px;color:var(--text3);font-weight:400;letter-spacing:.2px}
+.app-badge{
+  display:inline-flex;align-items:center;
+  font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+  padding:2px 7px;border-radius:2px;
+  background:rgba(34,197,94,0.1);color:var(--green);
+  border:1px solid rgba(34,197,94,0.2);
+  width:fit-content;
+}
+
+/* ── PLUGIN RACK ── */
+.plugin-rack{
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  margin-bottom:16px;
+}
+.rack-hdr{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 16px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+}
+.rack-brand-bar{width:2px;height:16px;border-radius:1px;flex-shrink:0}
+.rack-hdr-title{
+  font-size:11px;font-weight:600;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--text2);flex:1;
+}
+.rack-count{font-size:10px;color:var(--text3);font-weight:500}
+.rack-toggle{
+  width:30px;height:16px;border-radius:8px;
+  background:var(--bg5);border:1px solid var(--border2);
+  cursor:pointer;position:relative;transition:all .2s;flex-shrink:0;
+}
+.rack-toggle::after{
+  content:'';position:absolute;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--text3);top:2px;left:2px;transition:all .2s;
+}
+.rack-toggle.on{background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3)}
+.rack-toggle.on::after{background:var(--green);left:16px}
+.rack-body{padding:14px 16px;background:var(--bg3)}
+.rack-plugins{display:flex;flex-wrap:wrap;gap:5px}
+
+.rack-plugin{
+  padding:5px 11px;
+  border-radius:var(--radius2);
+  font-size:11px;font-weight:500;
+  border:1px solid var(--border);
+  background:var(--bg4);color:var(--text3);
+  cursor:pointer;font-family:inherit;
+  transition:all .15s;letter-spacing:-.1px;
+}
+.rack-plugin:hover{
+  border-color:var(--border2);
+  color:var(--text);background:var(--bg5);
+}
+.rack-plugin.featured{
+  border-color:var(--gold-line);
+  color:var(--gold);background:var(--gold-dim);
+}
+.rack-plugin.featured:hover{
+  background:rgba(201,146,42,0.22);
+}
+
+/* ── LLM GRID ── */
+.llm-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:1px;background:var(--border);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  margin-bottom:24px;
+}
+.llm-card{
+  background:var(--bg3);padding:14px 16px;
+  cursor:pointer;transition:background .15s;
+}
+.llm-card:hover{background:var(--bg4)}
+.llm-card.active-model{background:var(--bg4);position:relative}
+.llm-card.active-model::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:2px;background:var(--gold);
+}
+.llm-card-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.llm-family-bar{width:2px;height:20px;border-radius:1px;flex-shrink:0}
+.llm-name{font-size:12px;font-weight:600;color:var(--text);letter-spacing:-.1px;line-height:1.3}
+.llm-meta{font-size:10px;color:var(--text3);margin-top:1px}
+.llm-bar{height:2px;background:var(--bg5);border-radius:1px;overflow:hidden;margin-top:6px}
+.llm-fill{height:100%;border-radius:1px;transition:width .6s ease}
+.llm-footer{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:5px}
+.llm-active-tag{
+  font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+  color:var(--gold);margin-left:auto;
+}
+
+/* ── FEATURE GRID ── */
+.feature-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;margin-bottom:32px;
+}
+.feature-card{
+  background:var(--bg3);padding:22px 20px;
+  transition:background .15s;
+}
+.feature-card:hover{background:var(--bg4)}
+.feature-label{
+  font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text3);margin-bottom:8px;
+}
+.feature-title{
+  font-size:15px;font-weight:700;color:var(--text);
+  letter-spacing:-.3px;margin-bottom:8px;line-height:1.3;
+}
+.feature-desc{font-size:12px;color:var(--text2);line-height:1.7}
+.feature-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.feature-btn{
+  padding:7px 14px;border-radius:var(--radius2);
+  font-size:11px;font-weight:600;letter-spacing:.2px;
+  cursor:pointer;font-family:inherit;transition:all .15s;
+  border:1px solid var(--border2);background:var(--bg5);color:var(--text2);
+}
+.feature-btn:hover{background:var(--bg6);color:var(--text);border-color:var(--border2)}
+.feature-btn.primary{
+  border-color:var(--gold-line);
+  background:var(--gold-dim);color:var(--gold);
+}
+.feature-btn.primary:hover{background:rgba(201,146,42,0.25)}
+
+/* ── AI INSIGHT ── */
+.ai-insight{
+  border:1px solid var(--gold-line);
+  border-radius:var(--radius);
+  padding:16px 20px;margin-bottom:24px;
+  background:var(--gold-dim);
+  display:flex;align-items:center;gap:14px;
+}
+.ai-insight-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--gold);flex-shrink:0;
+  box-shadow:0 0 8px var(--gold);
+}
+.ai-insight-body{font-size:12px;color:var(--text2);line-height:1.7}
+
+/* ── CHAT ── */
+.prod-chat{
+  border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
+  background:var(--bg2);
+}
+.prod-chat-hdr{
+  padding:12px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;background:var(--bg3);
+}
+.prod-chat-hdr-name{font-size:12px;font-weight:600;color:var(--text)}
+.prod-chat-hdr-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.prod-chat-msgs{
+  height:260px;overflow-y:auto;
+  padding:16px 18px;display:flex;flex-direction:column;gap:10px;
+}
+.prod-msg{
+  font-size:12px;line-height:1.7;
+  padding:10px 14px;border-radius:var(--radius);
+  background:var(--bg3);border:1px solid var(--border);color:var(--text2);
+}
+.prod-msg.user{
+  background:var(--gold-dim);border-color:var(--gold-line);
+  color:var(--text);margin-left:40px;
+}
+.prod-chat-input-row{
+  display:flex;gap:8px;padding:12px 16px;
+  border-top:1px solid var(--border);background:var(--bg3);
+}
+.prod-chat-input-row input{
+  flex:1;background:var(--bg4);
+  border:1px solid var(--border);color:var(--text);
+  border-radius:var(--radius2);padding:9px 13px;
+  font-family:inherit;font-size:12px;
+  transition:border-color .15s;
+}
+.prod-chat-input-row input:focus{outline:none;border-color:var(--gold-line)}
+.prod-chat-input-row input::placeholder{color:var(--text3)}
+.prod-send{
+  padding:9px 18px;background:var(--gold);
+  border:none;border-radius:var(--radius2);
+  color:#000;font-weight:700;font-size:11px;
+  cursor:pointer;font-family:inherit;letter-spacing:.3px;
+  transition:opacity .15s;
+}
+.prod-send:hover{opacity:.85}
+
+/* ── QUICK CHIPS ── */
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{
+  padding:5px 12px;border-radius:var(--radius2);
+  font-size:11px;font-weight:500;
+  border:1px solid var(--border);background:var(--bg3);color:var(--text3);
+  cursor:pointer;font-family:inherit;transition:all .15s;letter-spacing:-.1px;
+}
+.chip:hover{border-color:var(--border2);color:var(--text);background:var(--bg4)}
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="hub-nav">
+  <div class="hn-wordmark">GOAT FORCE</div>
+  <div class="hn-divider"></div>
+  <button class="hn-link act" onclick="showSection('daws',this)">DAWs</button>
+  <button class="hn-link" onclick="showSection('tools',this)">Tools</button>
+  <button class="hn-link" onclick="showSection('plugins',this)">Plugins</button>
+  <button class="hn-link" onclick="showSection('synths',this)">Synths</button>
+  <button class="hn-link" onclick="showSection('mastering',this)">Mastering</button>
+  <button class="hn-link" onclick="showSection('llms',this)">AI / LLMs</button>
+  <button class="hn-link" onclick="showSection('video',this)">Video / Film</button>
+  <button class="hn-link" onclick="showSection('utilities',this)">Utilities</button>
+  <button class="hn-link" onclick="showSection('ask',this)">Ask AI</button>
+  <div class="hn-spacer"></div>
+  <div class="hn-pulse"><div class="hn-dot"></div><span id="navStatus">Online</span></div>
+</nav>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: DAWs
+══════════════════════════════════════════════ -->
+<div class="hub-section act" id="sec-daws">
+  <div class="sec-hdr">
+    <div class="sec-hdr-title">Production Suite</div>
+    <div class="sec-hdr-name">DAWs & Beat Machines</div>
+  </div>
+
+  <div class="cat-label">Digital Audio Workstations</div>
+  <div class="app-grid">
+    <div class="app-card" onclick="launch('FL Studio 2025')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#e8650a"></div>
+        <div><div class="app-name">FL Studio 2025</div><div class="app-tag">Image-Line · DAW</div></div>
+      </div>
+      <div class="app-badge">Latest</div>
+    </div>
+    <div class="app-card" onclick="launch('FL Studio 2024')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#c85500"></div>
+        <div><div class="app-name">FL Studio 2024</div><div class="app-tag">Image-Line · Backup</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('FL Cloud Plugins')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#9e3d00"></div>
+        <div><div class="app-name">FL Cloud</div><div class="app-tag">Cloud Plugins</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('Ableton Live 12 Suite')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#cccccc"></div>
+        <div><div class="app-name">Ableton Live 12</div><div class="app-tag">Ableton · Suite</div></div>
+      </div>
+      <div class="app-badge">Suite</div>
+    </div>
+  </div>
+
+  <div class="cat-label">Beat Machines</div>
+  <div class="app-grid">
+    <div class="app-card" onclick="launch('MPC 3')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#c8102e"></div>
+        <div><div class="app-name">MPC 3</div><div class="app-tag">Akai · Beat Machine</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('MPC Beats')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#8a0b1e"></div>
+        <div><div class="app-name">MPC Beats</div><div class="app-tag">Akai · Free</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('Maschine 3')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#e8e8e8"></div>
+        <div><div class="app-name">Maschine 3</div><div class="app-tag">Native Instruments</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('BFD Player')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#2a6aad"></div>
+        <div><div class="app-name">BFD Player</div><div class="app-tag">FXpansion · Drums</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-label">Built-in GOAT Tools</div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-label">Beat Production</div>
+      <div class="feature-title">GOAT MPC Beat Maker</div>
+      <div class="feature-desc">MPC-style 16-pad sequencer with step sequencer, piano roll, song mode, and mixer. 8 drum kits loaded. AI beat generation.</div>
+      <div class="feature-actions">
+        <button class="feature-btn primary" onclick="window.location.href='beat-maker.html'">Open Beat Maker</button>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">Sample Engine</div>
+      <div class="feature-title">GOAT Sampler</div>
+      <div class="feature-desc">WooH Drumkits, DJ Speedy stems, and custom sample kits. All stored on SPEEDYSCLOUD NAS. Drag and drop ready.</div>
+      <div class="feature-actions">
+        <button class="feature-btn primary" onclick="window.location.href='goat-sampler.html'">Open Sampler</button>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">Mixing Console</div>
+      <div class="feature-title">SSL Mixer</div>
+      <div class="feature-desc">SSL-style mixing console with channel strips, parametric EQ, compression, and send effects.</div>
+      <div class="feature-actions">
+        <button class="feature-btn primary" onclick="window.location.href='ssl-mixer.html'">Open Mixer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: TOOLS (GOAT Native)
+══════════════════════════════════════════════ -->
+<div class="hub-section" id="sec-tools">
+  <div class="sec-hdr">
+    <div class="sec-hdr-title">Native GOAT Tools</div>
+    <div class="sec-hdr-name">Production Tools</div>
+  </div>
+
+  <div class="cat-label">Audio Processing</div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-label">8-Band Parametric EQ + Dynamics</div>
+      <div class="feature-title">GOAT EQ / Compressor</div>
+      <div class="feature-desc">Real-time 8-band parametric EQ with shelf and high-pass filters, multi-mode compressor with transfer curve display, gate, limiter, and full metering. WebAudio API.</div>
+      <div class="feature-actions">
+        <button class="feature-btn primary" onclick="window.location.href='goat-eq-comp.html'">Open EQ + Comp</button>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">11-Effect Rack</div>
+      <div class="feature-title">GOAT FX Rack</div>
+      <div class="feature-desc">Studio-grade WebAudio effects chain: reverb, delay, chorus, flanger, phaser, distortion, bitcrusher, compressor, filter, tremolo, stereo widener — all in one rack.</div>
+      <div class="feature-actions">
+        <button class="feature-btn primary" onclick="window.location.href='goat-fx-rack.html'">Open FX Rack</button>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">Pitch Correction</div>
+      <div class="feature-title">GOAT Auto-tune</div>
+      <div class="feature-desc">Real-time pitch detection and correction with key/scale selection, retune speed (subtle to hard-tune), formant preservation, and pitch visualizer.</div>
+      <div class="feature-actions">
+        <button class="feature-btn primary" onclick="window.location.href='goat-autotune.html'">Open Auto-tune</button>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">Full Polyphonic Synthesizer</div>
+      <div class="feature-title">GOAT Synth</div>
+      <div class="feature-desc">2-oscillator polyphonic synth with filter, dual ADSR, LFO, chorus, reverb, delay, distortion, stereo widener. 12 presets, MIDI input, 3-octave piano keyboard.</div>
+      <div class="feature-actions">
+        <button class="feature-btn primary" onclick="window.location.href='goat-synth.html'">Open Synth</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-label">Analysis & Separation</div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-label">Real-time FFT + LUFS + Vectorscope</div>
+      <div class="feature-title">GOAT Spectrum Analyzer</div>
+      <div class="feature-desc">Full-viewport multi-display: FFT spectrum (bars/line/filled), scrolling spectrogram waterfall, stereo L/R meters, LUFS metering (Momentary/Short/Integrated), goniometer, and streaming platform reference lines.</div>
+      <div class="feature-actions">
+        <button class="feature-btn primary" onclick="window.location.href='goat-spectrum.html'">Open Analyzer</button>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">AI Stem Separation</div>
+      <div class="feature-title">GOAT Stem Splitter</div>
+      <div class="feature-desc">Split any audio file into Vocals, Drums, Bass, Other, Piano, and Guitar stems. Uses Demucs (server) or WebAudio frequency-band fallback. Per-stem play, solo, mute, volume, and WAV export.</div>
+      <div class="feature-actions">
+        <button class="feature-btn primary" onclick="window.location.href='goat-stem-splitter.html'">Open Stem Splitter</button>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">Sample Slicer + 16-Pad</div>
+      <div class="feature-title">GOAT Sample Slicer</div>
+      <div class="feature-desc">Waveform editor with transient detection, draggable slice markers, BPM-aware snap, and a 16-pad grid. Keyboard playback, pitch/pan/reverse per pad, SFZ/MPC export, and send to Beat Maker.</div>
+      <div class="feature-actions">
+        <button class="feature-btn primary" onclick="window.location.href='goat-slicer.html'">Open Slicer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-label">AI Generation</div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-label">AI Beat Generator</div>
+      <div class="feature-title">GOAT AI Beats</div>
+      <div class="feature-desc">Generate complete beats using AI-driven pattern engine. Select genre, tempo, swing, and energy — outputs drum patterns, bass lines, and melodic loops with full export to Beat Maker.</div>
+      <div class="feature-actions">
+        <button class="feature-btn primary" onclick="window.location.href='goat-ai-beats.html'">Open AI Beats</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-label">Developer & Integration</div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-label">Avid Audio Developer Partner</div>
+      <div class="feature-title">Avid Developer Hub</div>
+      <div class="feature-desc">AAX SDK 2.9.0, Pro Tools 2026 beta &amp; dev builds, PT Scripting SDK 2026.04, DigiShell, AAX Validator, JUCE-to-AAX example, HD Driver, and AAX Plugin Builder — all in one hub.</div>
+      <div class="feature-actions">
+        <button class="feature-btn primary" onclick="window.location.href='goat-avid-dev.html'">Open Avid Dev Hub</button>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">Pro Tools Remote Control</div>
+      <div class="feature-title">PT Scripting Console</div>
+      <div class="feature-desc">Control a live Pro Tools session directly from GOAT: transport, tracks, mix, bounce, session management — all via the PT Scripting SDK 2026.04 socket bridge.</div>
+      <div class="feature-actions">
+        <button class="feature-btn primary" onclick="window.location.href='goat-avid-dev.html#scripting'">Open PT Scripting</button>
+        <button class="feature-btn" onclick="launch('Pro Tools')">Launch Pro Tools</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: PLUGINS
+══════════════════════════════════════════════ -->
+<div class="hub-section" id="sec-plugins">
+  <div class="sec-hdr"><div class="sec-hdr-title">Plugin Suite</div><div class="sec-hdr-name">Plugins & Effects</div></div>
+
+  <!-- Slate Digital -->
+  <div class="plugin-rack">
+    <div class="rack-hdr">
+      <div class="rack-icon" style="width:24px;height:24px;border-radius:6px;background:rgba(212,160,60,0.15);display:flex;align-items:center;justify-content:center;font-size:12px">🎛</div>
+      <div class="rack-hdr-title">Slate Digital</div>
+      <div class="rack-toggle on" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div class="rack-body">
+      <div class="rack-plugins">
+        <span class="rack-plugin featured" onclick="launch('Virtual Mix Rack')">Virtual Mix Rack</span>
+        <span class="rack-plugin featured" onclick="launch('FG-X 2')">FG-X 2 Mastering</span>
+        <span class="rack-plugin featured" onclick="launch('Virtual Tape Machines')">Virtual Tape Machines</span>
+        <span class="rack-plugin featured" onclick="launch('MetaTune')">MetaTune</span>
+        <span class="rack-plugin featured" onclick="launch('VerbSuite Classics')">VerbSuite Classics</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','FG-73')">FG-73</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','FG-116')">FG-116</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','FG-2A')">FG-2A</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','FG-Dynamics')">FG-Dynamics</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','FG-N')">FG-N</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','FG-S')">FG-S</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','AirEQ')">AirEQ</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','Fresh Air')">Fresh Air</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','VCC Channel')">VCC Channel</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','Virtual Buss Compressors')">Virtual Buss Compressors</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','Transient Shaper')">Transient Shaper</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','Revival')">Revival</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','FG-Bomber')">FG-Bomber</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','Heatwave')">Heatwave</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','MetaPitch')">MetaPitch</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','Stellar Echo SD-201')">Stellar Echo</span>
+        <span class="rack-plugin" onclick="launchFolder('Slate Digital','MO-TT')">MO-TT</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- iZotope -->
+  <div class="plugin-rack">
+    <div class="rack-hdr">
+      <div class="rack-hdr-title">iZotope</div>
+      <div class="rack-toggle on" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div class="rack-body">
+      <div class="rack-plugins">
+        <span class="rack-plugin featured" onclick="launch('iZotope RX 12')">RX 12 Audio Editor</span>
+        <span class="rack-plugin featured" onclick="launch('iZotope Tonal Balance')">Tonal Balance Control 3</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- AIR Music Technology -->
+  <div class="plugin-rack">
+    <div class="rack-hdr">
+      <div class="rack-hdr-title">AIR Music Technology</div>
+      <div class="rack-toggle on" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div class="rack-body">
+      <div class="rack-plugins">
+        <span class="rack-plugin featured" onclick="launch('Xpand!2')">Xpand!2</span>
+        <span class="rack-plugin featured" onclick="launch('Hybrid')">Hybrid</span>
+        <span class="rack-plugin featured" onclick="launch('Loom')">Loom</span>
+        <span class="rack-plugin" onclick="launch('Boom')">Boom</span>
+        <span class="rack-plugin" onclick="launch('Velvet')">Velvet</span>
+        <span class="rack-plugin" onclick="launchFolder('AIR Music Technology','DB-33')">DB-33</span>
+        <span class="rack-plugin" onclick="launchFolder('AIR Music Technology','AIR Reverb')">AIR Reverb</span>
+        <span class="rack-plugin" onclick="launchFolder('AIR Music Technology','AIR Chorus')">AIR Chorus</span>
+        <span class="rack-plugin" onclick="launchFolder('AIR Music Technology','AIR Compressor')">AIR Compressor</span>
+        <span class="rack-plugin" onclick="launchFolder('AIR Music Technology','AIR Distortion')">AIR Distortion</span>
+        <span class="rack-plugin" onclick="launchFolder('AIR Music Technology','AIR Lo-Fi')">AIR Lo-Fi</span>
+        <span class="rack-plugin" onclick="launchFolder('AIR Music Technology','AIR Maximizer')">AIR Maximizer</span>
+        <span class="rack-plugin" onclick="launchFolder('AIR Music Technology','AIR Stereo Width')">AIR Stereo Width</span>
+        <span class="rack-plugin" onclick="launchFolder('AIR Music Technology','AIR Talkbox')">AIR Talkbox</span>
+        <span class="rack-plugin" onclick="launchFolder('AIR Music Technology','theRiser')">theRiser</span>
+        <span class="rack-plugin" onclick="launchFolder('AIR Music Technology','Structure')">Structure</span>
+        <span class="rack-plugin" onclick="launchFolder('AIR Music Technology','Mini Grand')">Mini Grand</span>
+        <span class="rack-plugin" onclick="launchFolder('AIR Music Technology','VacuumPro')">VacuumPro</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Universal Audio -->
+  <div class="plugin-rack">
+    <div class="rack-hdr">
+      <div class="rack-hdr-title">Universal Audio</div>
+      <div class="rack-toggle on" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div class="rack-body">
+      <div class="rack-plugins">
+        <span class="rack-plugin featured" onclick="launch('UAD Console')">UAD Console</span>
+        <span class="rack-plugin" onclick="launchApp('/Applications/Universal Audio/UAD Meter & Control Panel.app')">UAD Meter & Control</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Antares / Auto-Tune -->
+  <div class="plugin-rack">
+    <div class="rack-hdr">
+      <div class="rack-hdr-title">Antares Auto-Tune</div>
+      <div class="rack-toggle on" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div class="rack-body">
+      <div class="rack-plugins">
+        <span class="rack-plugin featured" onclick="launch('Antares Central')">Antares Central</span>
+      </div>
+      <div style="margin-top:10px">
+        <a href="goat-autotune.html" style="font-size:11px;color:var(--gold);text-decoration:none">→ Open GOAT Auto-Tune Studio</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Melodyne -->
+  <div class="plugin-rack">
+    <div class="rack-hdr">
+      <div class="rack-hdr-title">Melodyne 5</div>
+      <div class="rack-toggle on" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div class="rack-body">
+      <div class="rack-plugins">
+        <span class="rack-plugin featured" onclick="launch('Melodyne 5')">Melodyne 5</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kilohearts -->
+  <div class="plugin-rack">
+    <div class="rack-hdr"><div class="rack-hdr-title">Kilohearts</div><div class="rack-toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="rack-body">
+      <div class="rack-plugins">
+        <span class="rack-plugin featured">Multipass</span>
+        <span class="rack-plugin featured">SnapHeap</span>
+        <span class="rack-plugin">Disperser</span>
+        <span class="rack-plugin">Faturator</span>
+        <span class="rack-plugin" onclick="launchApp('/Applications/Kilohearts/Kilohearts Slate Uninstall.app')">Manager</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MeldaProduction -->
+  <div class="plugin-rack">
+    <div class="rack-hdr"><div class="rack-hdr-title">MeldaProduction</div><div class="rack-toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="rack-body">
+      <div class="rack-plugins">
+        <span class="rack-plugin featured">Audio Plugins 16</span>
+        <span class="rack-plugin" onclick="launchApp('/Applications/MeldaProduction/MPluginManager.app')">MPluginManager</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Native Instruments -->
+  <div class="plugin-rack">
+    <div class="rack-hdr"><div class="rack-hdr-title">Native Instruments</div><div class="rack-toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="rack-body">
+      <div class="rack-plugins">
+        <span class="rack-plugin featured" onclick="launch('Kontakt 8')">Kontakt 8</span>
+        <span class="rack-plugin featured" onclick="launch('Maschine 3')">Maschine 3</span>
+        <span class="rack-plugin" onclick="launch('Kontakt 7')">Kontakt 7</span>
+        <span class="rack-plugin" onclick="launch('Guitar Rig 6')">Guitar Rig 6</span>
+        <span class="rack-plugin" onclick="launch('Reaktor 6')">Reaktor 6</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: SYNTHS
+══════════════════════════════════════════════ -->
+<div class="hub-section" id="sec-synths">
+  <div class="sec-hdr"><div class="sec-hdr-title">Virtual Instruments</div><div class="sec-hdr-name">Synthesizers</div></div>
+
+  <div class="cat-label">Arturia — 40+ Synths</div>
+  <div class="app-grid">
+    <div class="app-card" onclick="launch('Analog Lab V')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#c8102e"></div>
+        <div><div class="app-name">Analog Lab V</div><div class="app-tag">Arturia · All Synths</div></div>
+      </div>
+      <div class="app-badge">Main Hub</div>
+    </div>
+    <div class="app-card" onclick="launch('Pigments')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#8e44ad"></div>
+        <div><div class="app-name">Pigments</div><div class="app-tag">Arturia · Wavetable</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('Mini V4')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#2c3e50"></div>
+        <div><div class="app-name">Mini V4</div><div class="app-tag">Arturia · Minimoog</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('Jup-8 V4')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#2980b9"></div>
+        <div><div class="app-name">Jup-8 V4</div><div class="app-tag">Arturia · Roland Jupiter</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('CS-80 V4')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#1e8449"></div>
+        <div><div class="app-name">CS-80 V4</div><div class="app-tag">Arturia · Yamaha</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('Prophet-5 V')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#b7950b"></div>
+        <div><div class="app-name">Prophet-5 V</div><div class="app-tag">Arturia · Sequential</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('DX7 V')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#1a5276"></div>
+        <div><div class="app-name">DX7 V</div><div class="app-tag">Arturia · FM Synth</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('MiniFreak V')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#6c3483"></div>
+        <div><div class="app-name">MiniFreak V</div><div class="app-tag">Arturia · Hybrid</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-label">More Arturia Synths</div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px">
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/ARP 2600 V3.app')">ARP 2600 V3</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/B-3 V2.app')">B-3 V2</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Buchla Easel V.app')">Buchla Easel V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/CMI V.app')">CMI V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/CP-70 V.app')">CP-70 V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/CZ V.app')">CZ V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Clavinet V.app')">Clavinet V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Emulator II V.app')">Emulator II V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Farfisa V.app')">Farfisa V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Jun-6 V.app')">Jun-6 V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/KORG MS-20 V.app')">KORG MS-20 V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Matrix-12 V2.app')">Matrix-12 V2</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Mellotron V.app')">Mellotron V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Mini V3.app')">Mini V3</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Modular V3.app')">Modular V3</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/OP-Xa V.app')">OP-Xa V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Piano V3.app')">Piano V3</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Prophet-VS V.app')">Prophet-VS V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/SEM V2.app')">SEM V2</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Solina V2.app')">Solina V2</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/SQ80 V.app')">SQ80 V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Stage-73 V2.app')">Stage-73 V2</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Synclavier V.app')">Synclavier V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Synthi V.app')">Synthi V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Vocoder V.app')">Vocoder V</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/VOX Continental V2.app')">VOX Continental V2</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Wurli V3.app')">Wurli V3</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Augmented BRASS.app')">Augmented BRASS</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Augmented STRINGS.app')">Augmented STRINGS</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Augmented VOICES.app')">Augmented VOICES</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Augmented GRAND PIANO.app')">Augmented GRAND PIANO</span>
+    <span class="rack-plugin" onclick="launchApp('/Applications/Arturia/Augmented WOODWINDS.app')">Augmented WOODWINDS</span>
+  </div>
+
+  <div class="cat-label">Native Instruments</div>
+  <div class="app-grid">
+    <div class="app-card" onclick="launch('Kontakt 8')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#e8e8e8"></div>
+        <div><div class="app-name">Kontakt 8</div><div class="app-tag">NI · Sampler Engine</div></div>
+      </div>
+      <div class="app-badge">Latest</div>
+    </div>
+    <div class="app-card" onclick="launch('Reaktor 6')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#3b82f6"></div>
+        <div><div class="app-name">Reaktor 6</div><div class="app-tag">NI · Modular</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('Guitar Rig 6')">
+      <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#7c3aed"></div>
+        <div><div class="app-name">Guitar Rig 6</div><div class="app-tag">NI · Amp Sim</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: MASTERING
+══════════════════════════════════════════════ -->
+<div class="hub-section" id="sec-mastering">
+  <div class="sec-hdr"><div class="sec-hdr-title">Audio Processing</div><div class="sec-hdr-name">Mastering Suite</div></div>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-label">Tool</div>
+      <div class="feature-title">Lurssen Mastering Console</div>
+      <div class="feature-desc">Grammy-award winning mastering chain. EQ, compression, limiting, stereo width. Vanessa AI + copyright fingerprinting built in.</div>
+      <button class="feature-btn" onclick="window.location.href='mastering.html'">Open Mastering Console →</button>
+      <button class="feature-btn" style="margin-left:8px" onclick="launch('Lurssen Mastering Console')">Launch App ↗</button>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">Tool</div>
+      <div class="feature-title">iZotope RX 12</div>
+      <div class="feature-desc">Industry-leading audio repair. Noise reduction, de-click, de-clip, spectral repair, dialogue isolation.</div>
+      <button class="feature-btn" onclick="launch('iZotope RX 12')">Launch RX 12 ↗</button>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">Tool</div>
+      <div class="feature-title">iZotope Tonal Balance Control 3</div>
+      <div class="feature-desc">Real-time frequency analysis. Compare your master against genre references. AI-powered tonal suggestions.</div>
+      <button class="feature-btn" onclick="launch('iZotope Tonal Balance')">Launch ↗</button>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">Tool</div>
+      <div class="feature-title">Slate FG-X 2</div>
+      <div class="feature-desc">Mastering limiter with transient preservation. Industry standard for loudness without pumping.</div>
+      <button class="feature-btn" onclick="launch('FG-X 2')">Launch FG-X 2 ↗</button>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">Tool</div>
+      <div class="feature-title">Fingerprint Scanner</div>
+      <div class="feature-desc">Detect copyright conflicts across Spotify, Apple Music, YouTube, SoundCloud, TikTok before releasing. Powered by Vanessa AI.</div>
+      <button class="feature-btn" onclick="window.location.href='mastering.html#fingerprinting'">Open Scanner →</button>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">Tool</div>
+      <div class="feature-title">SpectraLayers 11</div>
+      <div class="feature-desc">Spectral audio editing. Extract stems, isolate vocals, repair audio at the spectral level.</div>
+      <button class="feature-btn" onclick="launch('SpectraLayers 11')">Launch ↗</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: AI / LLMs
+══════════════════════════════════════════════ -->
+<div class="hub-section" id="sec-llms">
+  <div class="sec-hdr"><div class="sec-hdr-title">Local Intelligence</div><div class="sec-hdr-name">AI Models & LLMs</div></div>
+
+  <div class="ai-insight">
+    <div class="ai-insight-body" style="font-weight:700;margin-bottom:6px">🧠 56 Local Models Loaded · 25GB VRAM · No API Key Needed</div>
+    <div class="ai-insight-body" id="llmInsight">Checking Ollama status...</div>
+  </div>
+
+  <div class="cat-label">Local AI Apps</div>
+  <div class="app-grid">
+    <div class="app-card" onclick="launch('Ollama')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#16213e"></div>
+        <div><div class="app-name">Ollama</div><div class="app-tag">Local LLMs</div></div>
+      </div>
+      <div class="app-badge" id="ollamaBadge">56 models</div>
+    </div>
+    <div class="app-card" onclick="launch('NVIDIA AI Workbench')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#2d4700"></div>
+        <div><div class="app-name">NVIDIA Workbench</div><div class="app-tag">GPU · Containers</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="window.location.href='goat-ai-command.html'">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#3a2200"></div>
+        <div><div class="app-name">GOAT AI Command</div><div class="app-tag">All Agents · Chat</div></div>
+      </div>
+      <div class="app-badge">Built-in</div>
+    </div>
+    <div class="app-card" onclick="window.open('https://chat.openai.com','_blank')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#10503e"></div>
+        <div><div class="app-name">ChatGPT</div><div class="app-tag">OpenAI · Web</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="window.open('https://claude.ai','_blank')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#3d2800"></div>
+        <div><div class="app-name">Claude</div><div class="app-tag">Anthropic · Web</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="window.open('https://devin.ai','_blank')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#2d1060"></div>
+        <div><div class="app-name">Devin AI</div><div class="app-tag">Engineer Agent</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-label">All 56 Local Models — Click to Set Active</div>
+  <div class="llm-grid" id="llmGrid">
+    <div style="color:var(--sub);font-size:12px">Loading models...</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: VIDEO / FILM
+══════════════════════════════════════════════ -->
+<div class="hub-section" id="sec-video">
+  <div class="sec-hdr"><div class="sec-hdr-title">Visual Production</div><div class="sec-hdr-name">Video, Film & 3D</div></div>
+  <div class="app-grid">
+    <div class="app-card" onclick="launch('Final Cut Pro')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#2c2c2e"></div>
+        <div><div class="app-name">Final Cut Pro</div><div class="app-tag">Video Editing</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('Final Draft 13')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#2563a8"></div>
+        <div><div class="app-name">Final Draft 13</div><div class="app-tag">Screenwriting</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('DAZ 3D')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#2d1060"></div>
+        <div><div class="app-name">DAZ 3D</div><div class="app-tag">3D Characters</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('Epic Games Launcher')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#222"></div>
+        <div><div class="app-name">Epic / Unreal</div><div class="app-tag">MetaHuman · UE5</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-label">Tool</div>
+      <div class="feature-title">GOAT AI Video Studio</div>
+      <div class="feature-desc">Generate music videos, visualizers, and AI-powered video content for your releases.</div>
+      <button class="feature-btn" onclick="window.location.href='goat-ai-video.html'">Open Video Studio →</button>
+    </div>
+    <div class="feature-card">
+      <div class="feature-label">Tool</div>
+      <div class="feature-title">Film Score Suite</div>
+      <div class="feature-desc">Score your film, TV, or game with AI-assisted composition, MIDI export, and sync licensing tools.</div>
+      <button class="feature-btn" onclick="window.location.href='film-score.html'">Open Film Score →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: UTILITIES
+══════════════════════════════════════════════ -->
+<div class="hub-section" id="sec-utilities">
+  <div class="sec-hdr"><div class="sec-hdr-title">System Tools</div><div class="sec-hdr-name">Utilities</div></div>
+  <div class="app-grid">
+    <div class="app-card" onclick="launch('CrossOver')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#2540a8"></div>
+        <div><div class="app-name">CrossOver</div><div class="app-tag">Run Windows Apps</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('UTM')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#1a78ff"></div>
+        <div><div class="app-name">UTM</div><div class="app-tag">Windows 11 VM</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('balenaEtcher')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#00d4ff"></div>
+        <div><div class="app-name">balenaEtcher</div><div class="app-tag">Flash ISO / USB</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('BatChmod')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#3a3a3a"></div>
+        <div><div class="app-name">BatChmod</div><div class="app-tag">File Permissions</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('GitHub')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#30363d"></div>
+        <div><div class="app-name">GitHub</div><div class="app-tag">Code · Repos</div></div>
+      </div>
+    </div>
+    <div class="app-card" onclick="launch('Source-Connect')">
+            <div class="app-card-top">
+        <div class="app-ico-bar" style="background:#27a841"></div>
+        <div><div class="app-name">Source Connect</div><div class="app-tag">Remote Studio</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION: ASK AI
+══════════════════════════════════════════════ -->
+<div class="hub-section" id="sec-ask">
+  <div class="sec-hdr"><div class="sec-hdr-title">Intelligence Layer</div><div class="sec-hdr-name">Ask AI</div></div>
+  <div style="max-width:800px">
+    <div class="prod-chat">
+      <div class="prod-chat-hdr">
+        <div style="width:32px;height:32px;border-radius:9px;background:rgba(212,160,60,0.15);display:flex;align-items:center;justify-content:center;font-size:16px">🐐</div>
+        <div style="flex:1;margin-left:10px">
+          <div style="font-size:12px;font-weight:700;color:var(--text)">GOAT Production AI</div>
+          <div style="font-size:10px;color:var(--sub)" id="askEngine">Model: loading...</div>
+        </div>
+        <select id="askAgentSel" style="background:var(--bg4);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 8px;font-size:11px;font-family:inherit">
+          <option value="/ai/moneypenny">Ms. Money Penny</option>
+          <option value="/ai/codex">Sir Codex</option>
+          <option value="/ai/vanessa">Vanessa</option>
+          <option value="/ai/devin">Dr. Devin</option>
+          <option value="/ai/lexi">Lexi</option>
+          <option value="/ai/agent007">Agent 007</option>
+        </select>
+      </div>
+      <div class="prod-chat-msgs" id="askMsgs">
+        <div class="prod-msg">Hey DJ Speedy! Ask me anything about your production setup — plugins, mixing tips, synth patches, mastering, AI models, or how to use any of your apps.</div>
+      </div>
+      <div class="prod-chat-input-row">
+        <input id="askInput" type="text" placeholder="Ask about your plugins, mixing, mastering, AI..." onkeydown="if(event.key==='Enter')askProd()">
+        <button class="prod-send" onclick="askProd()">↑</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+      <button class="rack-plugin" onclick="quickAsk('Best Arturia synth for trap?')">Best Arturia synth for trap?</button>
+      <button class="rack-plugin" onclick="quickAsk('How to use iZotope RX 12 for vocal cleanup?')">Vocal cleanup in RX 12</button>
+      <button class="rack-plugin" onclick="quickAsk('Slate Digital mastering chain for hip-hop')">Slate mastering chain</button>
+      <button class="rack-plugin" onclick="quickAsk('Which Kontakt library for orchestral?')">Best Kontakt library</button>
+      <button class="rack-plugin" onclick="quickAsk('FL Studio vs Ableton for trap production')">FL vs Ableton for trap</button>
+      <button class="rack-plugin" onclick="quickAsk('How to set up UAD Console?')">UAD Console setup</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const INTEL = 'http://127.0.0.1:5500';
+const OLLAMA = 'http://127.0.0.1:11435';
+
+// ── NAV ──
+function showSection(id, el) {
+  document.querySelectorAll('.hub-section').forEach(s => s.classList.remove('act'));
+  document.querySelectorAll('.hn-link').forEach(b => b.classList.remove('act'));
+  document.getElementById('sec-' + id).classList.add('act');
+  el.classList.add('act');
+  if (id === 'llms') loadLLMs();
+}
+
+// ── LAUNCH ──
+async function launch(name) {
+  try {
+    const r = await fetch(INTEL + '/system/launch-app', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({app: name}), signal: AbortSignal.timeout(5000)
+    });
+    const d = await r.json();
+    if (d.ok) toast('Launching ' + name + '...');
+    else toast('App not found: ' + name);
+  } catch(e) {
+    toast('Launching ' + name + '...');
+  }
+}
+
+function launchApp(path) {
+  fetch(INTEL + '/system/launch-app', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({app: path})
+  }).catch(() => {});
+  toast('Opening app...');
+}
+
+function launchFolder(brand, plugin) {
+  toast('Opening ' + plugin + ' via ' + brand + '...');
+  fetch(INTEL + '/system/launch-app', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({app: brand + '/' + plugin})
+  }).catch(() => {});
+}
+
+// ── LLMs ──
+let allModels = [];
+async function loadLLMs() {
+  try {
+    const r = await fetch(OLLAMA + '/api/tags', {signal: AbortSignal.timeout(5000)});
+    const d = await r.json();
+    allModels = d.models || [];
+    const saved = localStorage.getItem('goat_model') || 'llama3.1:8b';
+    document.getElementById('ollamaBadge').textContent = allModels.length + ' models';
+    document.getElementById('llmInsight').innerHTML =
+      `✅ <strong>${allModels.length} models</strong> ready locally · Active: <strong>${saved}</strong> · <span style="color:var(--green)">Ollama Online</span>`;
+    document.getElementById('askEngine').textContent = 'Model: ' + saved;
+
+    const grid = document.getElementById('llmGrid');
+    grid.innerHTML = '';
+    allModels.forEach(m => {
+      const gb = (m.size/1e9).toFixed(1);
+      const active = m.name === saved;
+      const card = document.createElement('div');
+      card.className = 'llm-card' + (active ? '" style="border-color:var(--gold)' : '');
+      card.style.borderColor = active ? 'var(--gold)' : '';
+      card.innerHTML = `
+        <div class="llm-card-top">
+          <div class="llm-icon" style="background:rgba(212,160,60,0.1);font-size:14px">${getModelIcon(m.name)}</div>
+          <div>
+            <div class="llm-name">${m.name}</div>
+            <div class="llm-meta">${gb}GB · ${getModelFamily(m.name)}</div>
+          </div>
+          ${active ? '<div style="margin-left:auto;font-size:9px;color:var(--gold);font-weight:700;background:rgba(212,160,60,0.1);padding:2px 7px;border-radius:3px">ACTIVE</div>' : ''}
+        </div>
+        <div class="llm-bar"><div class="llm-fill" style="width:${Math.min(100,(m.size/5e9)*100)}%;background:${getModelColor(m.name)}"></div></div>
+        <div class="llm-stats"><span>${gb}GB</span><span>${getModelFamily(m.name)}</span></div>
+      `;
+      card.onclick = () => setModel(m.name);
+      grid.appendChild(card);
+    });
+  } catch(e) {
+    document.getElementById('llmInsight').innerHTML = '❌ Ollama offline — <a href="#" onclick="launch(\'Ollama\')" style="color:var(--gold)">launch Ollama</a>';
+    document.getElementById('llmGrid').innerHTML = '<div style="color:var(--sub);font-size:12px">Ollama not running. Click the Ollama card above to start it.</div>';
+  }
+}
+
+function setModel(name) {
+  localStorage.setItem('goat_model', name);
+  toast('Active model: ' + name);
+  loadLLMs();
+}
+
+function getModelIcon(name) {
+  if (name.includes('llama')) return '🦙';
+  if (name.includes('qwen')) return '🐲';
+  if (name.includes('deepseek')) return '🔍';
+  if (name.includes('mistral') || name.includes('mixtral')) return '💨';
+  if (name.includes('gemma')) return '💎';
+  if (name.includes('phi')) return 'Φ';
+  if (name.includes('codestral') || name.includes('starcoder') || name.includes('coder')) return '💻';
+  if (name.includes('nomic') || name.includes('mxbai') || name.includes('bge')) return '📐';
+  return '🤖';
+}
+
+function getModelFamily(name) {
+  if (name.includes('llama3.1')) return 'Meta Llama 3.1';
+  if (name.includes('llama3.2')) return 'Meta Llama 3.2';
+  if (name.includes('llama3.3')) return 'Meta Llama 3.3';
+  if (name.includes('qwen3')) return 'Alibaba Qwen3';
+  if (name.includes('qwen2.5')) return 'Alibaba Qwen2.5';
+  if (name.includes('deepseek')) return 'DeepSeek';
+  if (name.includes('mistral')) return 'Mistral AI';
+  if (name.includes('mixtral')) return 'Mixtral MoE';
+  if (name.includes('gemma')) return 'Google Gemma';
+  if (name.includes('phi')) return 'Microsoft Phi';
+  if (name.includes('starcoder')) return 'StarCoder';
+  if (name.includes('codestral')) return 'Codestral';
+  if (name.includes('embed') || name.includes('bge')) return 'Embeddings';
+  return 'LLM';
+}
+
+function getModelColor(name) {
+  if (name.includes('llama')) return '#3b82f6';
+  if (name.includes('qwen')) return '#8b5cf6';
+  if (name.includes('deepseek')) return '#06b6d4';
+  if (name.includes('mistral') || name.includes('mixtral')) return '#f97316';
+  if (name.includes('gemma')) return '#10b981';
+  return '#d4a03c';
+}
+
+// ── ASK AI ──
+let askHistory = [];
+async function askProd() {
+  const input = document.getElementById('askInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  const endpoint = document.getElementById('askAgentSel').value;
+  const msgs = document.getElementById('askMsgs');
+  const model = localStorage.getItem('goat_model') || 'llama3.1:8b';
+
+  const userEl = document.createElement('div');
+  userEl.className = 'prod-msg user';
+  userEl.textContent = msg;
+  msgs.appendChild(userEl);
+
+  const thinkEl = document.createElement('div');
+  thinkEl.className = 'prod-msg';
+  thinkEl.innerHTML = '<span style="color:#555">thinking...</span>';
+  msgs.appendChild(thinkEl);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  askHistory.push({role:'user', content: msg});
+
+  try {
+    const r = await fetch(INTEL + endpoint, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg, history: askHistory.slice(-8), model}),
+      signal: AbortSignal.timeout(60000)
+    });
+    const d = await r.json();
+    thinkEl.textContent = d.reply || 'No response';
+    askHistory.push({role:'assistant', content: d.reply || ''});
+  } catch(e) {
+    thinkEl.textContent = '⚠ Intel server offline. Launch it from the GOAT app.';
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function quickAsk(q) {
+  document.getElementById('askInput').value = q;
+  showSection('ask', document.querySelector('.hn-link:last-of-type'));
+  // find ask button
+  document.querySelectorAll('.hn-link').forEach(b => {
+    if (b.textContent.trim() === 'Ask AI') { showSection('ask', b); }
+  });
+  askProd();
+}
+
+// ── TOAST ──
+function toast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1a1a1a;border:1px solid #2a2a2a;color:#f0ece4;padding:10px 18px;border-radius:10px;font-size:12px;z-index:9999;animation:fadein .2s ease;box-shadow:0 4px 20px rgba(0,0,0,.5)';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.style.opacity = '0', 1800);
+  setTimeout(() => t.remove(), 2200);
+}
+
+// ── STATUS ──
+async function checkStatus() {
+  try {
+    await fetch(INTEL + '/health', {signal: AbortSignal.timeout(3000)});
+    document.getElementById('navStatus').textContent = 'All Systems Online';
+    document.querySelector('.hn-dot').style.background = 'var(--green)';
+  } catch(e) {
+    document.getElementById('navStatus').textContent = 'Intel Offline';
+    document.querySelector('.hn-dot').style.background = 'var(--red)';
+  }
+}
+
+// ── INIT ──
+checkStatus();
+setInterval(checkStatus, 30000);
+// Load LLM count for badge
+fetch(OLLAMA + '/api/tags', {signal: AbortSignal.timeout(4000)})
+  .then(r => r.json())
+  .then(d => {
+    const n = d.models?.length || 0;
+    document.getElementById('ollamaBadge').textContent = n + ' models';
+    document.getElementById('askEngine').textContent = 'Model: ' + (localStorage.getItem('goat_model') || 'llama3.1:8b');
+  }).catch(() => {});
+
+// fadeIn keyframe
+const s = document.createElement('style');
+s.textContent = '@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}';
+document.head.appendChild(s);
+</script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

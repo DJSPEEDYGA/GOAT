@@ -12,7 +12,7 @@ const axios = require('axios');
 class GoatCatalogRAG {
     constructor(config = {}) {
         this.catalogPath = config.catalogPath || './GOAT_FORCE_MASTER_WORKS_CATALOG.csv';
-        this.ollamaUrl = config.ollamaUrl || process.env.OLLAMA_URL || 'http://localhost:11434';
+        this.ollamaUrl = config.ollamaUrl || process.env.OLLAMA_URL || 'http://localhost:11435';
         this.embeddingModel = config.embeddingModel || 'nomic-embed-text';
         this.chunks = [];
         this.embeddings = [];

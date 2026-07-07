@@ -6,33 +6,40 @@
 <title>🤖 11 AI Agents — GOAT Force Specialists</title>
 <meta name="description" content="Chat with 11 specialized AI agents: Business Strategy, Creative Content, Fashion Designer, Legal Compliance, Music Industry, Personal Stylist, Researcher, Tech Dev, Writer, Autonomous, Fashion Business." />
 <style>
-:root { --bg:#0a0e17; --card:#121826; --border:#1e2535; --text:#e4e4e7; --muted:#8b92a7; --gold:#FFD700; --hot:#FF3D00; --cyan:#00E5FF; --green:#10b981; }
+:root { --bg:#080a0c; --card:#111318; --border:rgba(255,255,255,0.08); --text:#e8eaf5; --muted:#6b7099; --gold:#f0c040; --hot:#ff3d00; --teal:#00d4aa; --green:#22c55e; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+body { background: var(--bg); color: var(--text); font-family: 'JetBrains Mono','Fira Code',monospace; line-height: 1.6; }
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: url('assets/goat-superman.jpg') center center / 500px no-repeat;
+  opacity: 0.04; filter: grayscale(100%);
+}
+body > * { position: relative; z-index: 1; }
 .layout { display: flex; min-height: 100vh; }
-.sidebar { width: 260px; background: #0c1220; border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.sidebar { width: 260px; background: rgba(12,14,18,0.97); border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .brand { padding: 0 20px 20px; border-bottom: 1px solid var(--border); }
-.brand h1 { font-size: 20px; color: var(--gold); }
+.brand h1 { font-size: 20px; color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.4); }
 .brand small { color: var(--muted); font-size: 11px; }
 .nav { padding: 12px 0; }
-.nav a { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--text); text-decoration: none; font-size: 14px; border-left: 3px solid transparent; }
-.nav a:hover { background: #1a2035; border-left-color: var(--gold); }
-.nav a.active { background: #1a2035; border-left-color: var(--gold); color: var(--gold); }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--text); text-decoration: none; font-size: 13px; border-left: 3px solid transparent; transition: all 0.15s; }
+.nav a:hover { background: rgba(255,255,255,0.04); border-left-color: var(--gold); color: #fff; }
+.nav a.active { background: rgba(240,192,64,0.08); border-left-color: var(--gold); color: var(--gold); }
 .nav .section-title { padding: 16px 20px 8px; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
 .main { flex: 1; padding: 40px; max-width: 1500px; }
-.hero { padding: 50px 40px; border-radius: 16px; background: linear-gradient(135deg, #1a0f3a 0%, #0a1a3e 100%); border: 1px solid var(--cyan); margin-bottom: 40px; }
-.hero h2 { font-size: clamp(32px, 5vw, 48px); background: linear-gradient(90deg, var(--gold), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; font-weight: 900; }
-.hero p { font-size: 17px; color: #d4d4d8; max-width: 700px; }
+.hero { padding: 50px 40px; border-radius: 16px; background: linear-gradient(135deg, rgba(240,192,64,0.1) 0%, rgba(8,10,12,0.95) 60%); border: 1px solid rgba(240,192,64,0.25); margin-bottom: 40px; }
+.hero h2 { font-size: clamp(32px, 5vw, 48px); color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 18px rgba(255,255,255,0.5), 0 0 35px rgba(255,255,255,0.25); margin-bottom: 12px; font-weight: 900; }
+.hero p { font-size: 17px; color: rgba(255,255,255,0.6); max-width: 700px; }
 
 .agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 40px; }
 .agent-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.3s; }
-.agent-card:hover { transform: translateY(-2px); border-color: var(--gold); box-shadow: 0 12px 30px rgba(255,215,0,0.1); }
-.agent-card.active { border-color: var(--gold); background: linear-gradient(135deg, rgba(255,215,0,0.08), var(--card)); }
+.agent-card:hover { transform: translateY(-2px); border-color: var(--gold); box-shadow: 0 12px 30px rgba(240,192,64,0.1); }
+.agent-card.active { border-color: var(--gold); background: linear-gradient(135deg, rgba(240,192,64,0.08), var(--card)); }
 .agent-icon { font-size: 36px; margin-bottom: 10px; }
 .agent-card h4 { font-size: 15px; margin-bottom: 4px; color: var(--gold); }
 .agent-card .tagline { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
 .agent-card .skills { display: flex; flex-wrap: wrap; gap: 4px; }
-.agent-card .skill { font-size: 9px; padding: 2px 6px; background: #1a2035; color: var(--cyan); border-radius: 8px; }
+.agent-card .skill { font-size: 9px; padding: 2px 6px; background: rgba(240,192,64,0.1); color: var(--gold); border-radius: 8px; border: 1px solid rgba(240,192,64,0.2); }
 
 .chat-panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
 .chat-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
@@ -44,19 +51,22 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 .chat-messages { min-height: 250px; max-height: 400px; overflow-y: auto; padding: 12px; background: #0a0e17; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 14px; }
 .chat-msg { margin-bottom: 10px; padding: 10px 14px; border-radius: 10px; max-width: 88%; font-size: 14px; }
-.chat-msg.user { background: #1a2035; margin-left: auto; }
+.chat-msg.user { background: rgba(240,192,64,0.1); margin-left: auto; }
 .chat-msg.bot { background: rgba(255,215,0,0.06); border-left: 3px solid var(--gold); }
 .chat-input-row { display: flex; gap: 10px; }
-.chat-input-row input { flex: 1; padding: 12px; background: #1a2035; border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 14px; }
+.chat-input-row input { flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 14px; }
 .chat-input-row button { padding: 12px 20px; background: var(--gold); color: #000; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
 .chat-input-row button:hover { filter: brightness(1.1); }
 .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.suggestion { padding: 6px 12px; background: #1a2035; border: 1px solid var(--border); border-radius: 16px; font-size: 12px; cursor: pointer; color: var(--cyan); }
-.suggestion:hover { background: var(--cyan); color: #000; }
+.suggestion { padding: 6px 12px; background: rgba(240,192,64,0.08); border: 1px solid rgba(240,192,64,0.25); border-radius: 16px; font-size: 12px; cursor: pointer; color: var(--gold); }
+.suggestion:hover { background: var(--gold); color: #000; }
 
 @media (max-width: 900px) { .layout { flex-direction: column; } .sidebar { width: 100%; height: auto; position: static; } .main { padding: 20px; } }
 </style>
-<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
 </head>
 <body>
 <div class="layout">
@@ -288,5 +298,7 @@ function fallback(a, msg) {
 renderAgents();
 selectAgent('music');
 </script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
 </body>
 </html>

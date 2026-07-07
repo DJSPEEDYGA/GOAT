@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Spectrum Analyzer</title>
+<link rel="icon" href="favicon.ico">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060608;--bg2:#0a0a0d;--bg3:#0f0f13;--bg4:#141418;--bg5:#1a1a20;--bg6:#22222a;
+  --gold:#c9922a;--gold-dim:rgba(201,146,42,0.15);--gold-line:rgba(201,146,42,0.22);
+  --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--cyan:#06b6d4;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);
+  --text:#e8e4dd;--text2:#a09a90;--text3:#504a42;
+  --radius:6px;
+}
+html,body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:13px;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg6);border-radius:2px}
+canvas{display:block}
+
+/* NAV */
+.nav{
+  height:44px;background:rgba(6,6,8,0.96);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px;gap:10px;
+  position:relative;z-index:100;flex-shrink:0;
+}
+.nav-brand{font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--gold);flex-shrink:0}
+.nav-sep{width:1px;height:18px;background:var(--border);flex-shrink:0}
+.nav-btn{
+  height:26px;padding:0 12px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--bg3);
+  color:var(--text3);font-size:11px;font-weight:500;font-family:inherit;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.nav-btn:hover{border-color:var(--border2);color:var(--text2)}
+.nav-btn.active{border-color:var(--gold-line);background:var(--gold-dim);color:var(--gold)}
+.nav-btn.running{border-color:rgba(34,197,94,0.4);background:rgba(34,197,94,0.08);color:var(--green)}
+.nav-spacer{flex:1}
+.nav-source-label{font-size:10px;color:var(--text3);letter-spacing:.5px}
+.nav-hub-link{
+  height:26px;padding:0 12px;border-radius:var(--radius);
+  border:1px solid var(--border);background:transparent;
+  color:var(--text3);font-size:11px;font-family:inherit;
+  cursor:pointer;text-decoration:none;display:flex;align-items:center;
+  transition:all .15s;
+}
+.nav-hub-link:hover{border-color:var(--border2);color:var(--text2)}
+
+/* LAYOUT */
+.app{display:flex;flex-direction:column;height:calc(100vh - 44px)}
+
+/* METERS STRIP */
+.meters-strip{
+  height:96px;background:var(--bg3);border-bottom:1px solid var(--border);
+  display:flex;align-items:stretch;gap:0;flex-shrink:0;
+}
+.meter-block{
+  flex:1;display:flex;align-items:stretch;border-right:1px solid var(--border);
+  padding:8px 12px;gap:10px;
+}
+.meter-block:last-child{border-right:none}
+.meter-label-col{display:flex;flex-direction:column;justify-content:space-between;flex-shrink:0}
+.meter-ch-label{font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--text3)}
+.meter-num-block{display:flex;flex-direction:column;gap:3px}
+.meter-num{font-size:18px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;line-height:1}
+.meter-num-label{font-size:9px;color:var(--text3);letter-spacing:.5px}
+.clip-indicator{
+  width:20px;height:20px;border-radius:3px;background:var(--bg5);
+  border:1px solid var(--border);font-size:8px;font-weight:700;
+  color:var(--text3);display:flex;align-items:center;justify-content:center;
+  transition:all .1s;flex-shrink:0;align-self:flex-start;
+}
+.clip-indicator.clip{background:rgba(239,68,68,0.3);border-color:var(--red);color:var(--red)}
+.meter-bars-col{flex:1;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.meter-bar-wrap{display:flex;align-items:center;gap:6px;height:22px}
+.meter-bar-ch{font-size:9px;color:var(--text3);width:8px;flex-shrink:0}
+.meter-bar-outer{flex:1;height:14px;background:var(--bg5);border-radius:2px;overflow:hidden;position:relative}
+.meter-bar-inner{height:100%;width:0%;transition:width .05s;border-radius:2px;background:linear-gradient(90deg,#22c55e 0%,#22c55e 70%,#f59e0b 85%,#ef4444 100%)}
+.meter-rms-bar{position:absolute;top:0;height:100%;width:2px;background:rgba(255,255,255,0.5);border-radius:1px}
+.meter-peak-hold{position:absolute;top:0;height:100%;width:2px;background:#fff;border-radius:1px}
+
+.lufs-block{
+  padding:8px 16px;display:flex;gap:20px;align-items:center;border-right:1px solid var(--border);
+  flex-shrink:0;
+}
+.lufs-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+.lufs-value{font-size:17px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.lufs-value.warn{color:#f59e0b}
+.lufs-value.good{color:var(--green)}
+.lufs-lbl{font-size:9px;font-weight:600;letter-spacing:1px;color:var(--text3);text-transform:uppercase}
+
+.phase-block{
+  width:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  border-right:1px solid var(--border);padding:6px;flex-shrink:0;
+}
+.phase-canvas-wrap{width:72px;height:72px;flex-shrink:0}
+#phaseCanvas{border-radius:50%;background:#0a0a0d}
+.phase-bar-wrap{width:100%;padding:0 4px}
+.phase-bar-bg{height:4px;background:var(--bg5);border-radius:2px;position:relative}
+.phase-bar-fill{position:absolute;height:100%;border-radius:2px;background:var(--green);top:0}
+.phase-val{font-size:9px;color:var(--text3);text-align:center;margin-top:2px}
+
+/* SPECTRUM */
+.spectrum-section{
+  position:relative;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.spectrum-controls{
+  position:absolute;top:6px;right:8px;z-index:10;
+  display:flex;gap:6px;align-items:center;
+}
+.ctrl-btn{
+  height:22px;padding:0 9px;border-radius:3px;
+  border:1px solid var(--border);background:rgba(6,6,8,0.8);
+  color:var(--text3);font-size:10px;font-weight:500;font-family:inherit;
+  cursor:pointer;transition:all .15s;
+}
+.ctrl-btn:hover{border-color:var(--border2);color:var(--text2)}
+.ctrl-btn.active{border-color:var(--gold-line);color:var(--gold)}
+.ctrl-range{
+  -webkit-appearance:none;height:3px;background:var(--bg5);border-radius:2px;cursor:pointer;
+  accent-color:var(--gold);width:80px;
+}
+.ctrl-label{font-size:9px;color:var(--text3)}
+#spectrumCanvas{width:100%}
+
+/* SPECTROGRAM */
+.spectro-section{background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0;position:relative}
+.spectro-label{position:absolute;top:4px;left:8px;font-size:9px;color:var(--text3);letter-spacing:1px;z-index:2}
+#spectrogramCanvas{width:100%}
+
+/* BOTTOM ROW */
+.bottom-row{display:flex;flex:1;overflow:hidden;min-height:0}
+.lufs-panel{width:280px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.lufs-panel-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:10px 14px 6px}
+.lufs-meters-grid{padding:8px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lufs-meter-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px}
+.lm-val{font-size:20px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.lm-lbl{font-size:9px;color:var(--text3);letter-spacing:.5px;margin-top:2px}
+.lm-bar{height:3px;background:var(--bg5);border-radius:2px;margin-top:6px;overflow:hidden}
+.lm-bar-fill{height:100%;border-radius:2px;background:var(--green);transition:width .3s}
+.ref-lines{padding:8px 14px}
+.ref-lines-title{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.ref-line-item{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)}
+.ref-line-item:last-child{border-bottom:none}
+.ref-name{font-size:11px;color:var(--text2)}
+.ref-val{font-size:11px;font-weight:700;color:var(--text3)}
+.lufs-history{padding:8px 14px;flex:1}
+.lufs-history-title{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+#lufsHistoryCanvas{width:100%;border-radius:var(--radius);background:var(--bg3);border:1px solid var(--border)}
+
+.ref-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.ref-panel-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.ref-panel-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);flex:1}
+.ref-btn{
+  height:24px;padding:0 10px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--bg3);
+  color:var(--text3);font-size:10px;font-weight:500;font-family:inherit;
+  cursor:pointer;transition:all .15s;
+}
+.ref-btn:hover{border-color:var(--border2);color:var(--text2)}
+.ref-btn.active{border-color:var(--gold-line);background:var(--gold-dim);color:var(--gold)}
+.ref-overlay-canvas{flex:1;width:100%;min-height:0}
+#refCanvas{width:100%;height:100%}
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <span class="nav-brand">GOAT Spectrum</span>
+  <div class="nav-sep"></div>
+  <span class="nav-source-label">Source</span>
+  <button class="nav-btn" id="btnMic" onclick="setSource('mic')">Microphone</button>
+  <button class="nav-btn" id="btnFile" onclick="document.getElementById('audioFileInput').click()">Load File</button>
+  <input type="file" id="audioFileInput" accept="audio/*" style="display:none">
+  <div class="nav-sep"></div>
+  <button class="nav-btn" id="btnStart" onclick="toggleAnalysis()">Start Analysis</button>
+  <div class="nav-sep"></div>
+  <span class="nav-source-label">FFT</span>
+  <select id="fftSelect" onchange="setFFTSize(+this.value)" style="height:26px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);font-size:11px;padding:0 8px;font-family:inherit;cursor:pointer">
+    <option value="2048">2048</option>
+    <option value="4096">4096</option>
+    <option value="8192" selected>8192</option>
+    <option value="16384">16384</option>
+  </select>
+  <div class="nav-spacer"></div>
+  <a href="goat-production-hub.html" class="nav-hub-link">Production Hub</a>
+</nav>
+
+<div class="app" id="app">
+
+  <!-- METERS STRIP -->
+  <div class="meters-strip" id="metersStrip">
+
+    <!-- L METER -->
+    <div class="meter-block">
+      <div class="meter-label-col">
+        <div class="meter-ch-label">L</div>
+        <div class="clip-indicator" id="clipL">CLP</div>
+      </div>
+      <div class="meter-bars-col">
+        <div class="meter-bar-wrap">
+          <span class="meter-bar-ch">L</span>
+          <div class="meter-bar-outer">
+            <div class="meter-bar-inner" id="meterBarL"></div>
+            <div class="meter-rms-bar" id="rmsBarL"></div>
+            <div class="meter-peak-hold" id="peakHoldL" style="left:0%"></div>
+          </div>
+        </div>
+        <div class="meter-bar-wrap">
+          <span class="meter-bar-ch">R</span>
+          <div class="meter-bar-outer">
+            <div class="meter-bar-inner" id="meterBarR"></div>
+            <div class="meter-rms-bar" id="rmsBarR"></div>
+            <div class="meter-peak-hold" id="peakHoldR" style="left:0%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="meter-num-block">
+        <div class="meter-num" id="peakNumL">—</div>
+        <div class="meter-num-label">PEAK dBFS</div>
+        <div class="meter-num" id="rmsNumL" style="margin-top:4px;font-size:13px;color:var(--text2)">—</div>
+        <div class="meter-num-label">RMS</div>
+      </div>
+    </div>
+
+    <!-- LUFS BLOCK -->
+    <div class="lufs-block">
+      <div class="lufs-item">
+        <div class="lufs-value" id="lufsM">—</div>
+        <div class="lufs-lbl">Momentary</div>
+      </div>
+      <div class="lufs-item">
+        <div class="lufs-value" id="lufsS">—</div>
+        <div class="lufs-lbl">Short-term</div>
+      </div>
+      <div class="lufs-item">
+        <div class="lufs-value" id="lufsI">—</div>
+        <div class="lufs-lbl">Integrated</div>
+      </div>
+      <div class="lufs-item">
+        <div class="lufs-value" id="truePeak">—</div>
+        <div class="lufs-lbl">True Peak</div>
+      </div>
+      <div class="lufs-item">
+        <div class="lufs-value" id="lraVal">—</div>
+        <div class="lufs-lbl">LRA</div>
+      </div>
+    </div>
+
+    <!-- PHASE/GONIO -->
+    <div class="phase-block">
+      <div class="phase-canvas-wrap">
+        <canvas id="phaseCanvas" width="72" height="72"></canvas>
+      </div>
+      <div style="width:100%;padding:0 2px">
+        <div class="phase-bar-bg" style="height:4px;background:var(--bg5);border-radius:2px;position:relative">
+          <div class="phase-bar-fill" id="phaseBarFill" style="position:absolute;height:100%;border-radius:2px;background:var(--green);top:0;left:50%;width:0%"></div>
+          <div style="position:absolute;top:-2px;left:50%;width:1px;height:8px;background:var(--border2)"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:2px">
+          <span style="font-size:8px;color:var(--text3)">-1</span>
+          <span class="phase-val" id="phaseVal">0.00</span>
+          <span style="font-size:8px;color:var(--text3)">+1</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /meters -->
+
+  <!-- SPECTRUM DISPLAY -->
+  <div class="spectrum-section" id="spectrumSection">
+    <div class="spectrum-controls">
+      <span class="ctrl-label">Smooth</span>
+      <input class="ctrl-range" type="range" id="smoothRange" min="0" max="99" value="80" oninput="setSmoothing(this.value/100)">
+      <div class="nav-sep" style="height:14px"></div>
+      <button class="ctrl-btn active" id="btnBars" onclick="setDisplayMode('bars')">Bars</button>
+      <button class="ctrl-btn" id="btnLine" onclick="setDisplayMode('line')">Line</button>
+      <button class="ctrl-btn" id="btnFilled" onclick="setDisplayMode('filled')">Filled</button>
+      <div class="nav-sep" style="height:14px"></div>
+      <button class="ctrl-btn" id="btnRef" onclick="toggleRefOverlay()">Show Ref</button>
+    </div>
+    <canvas id="spectrumCanvas"></canvas>
+  </div>
+
+  <!-- SPECTROGRAM -->
+  <div class="spectro-section" id="spectroSection">
+    <span class="spectro-label">SPECTROGRAM</span>
+    <canvas id="spectrogramCanvas"></canvas>
+  </div>
+
+  <!-- BOTTOM ROW -->
+  <div class="bottom-row">
+
+    <!-- LUFS PANEL -->
+    <div class="lufs-panel">
+      <div class="lufs-panel-title">LUFS Metering</div>
+      <div class="lufs-meters-grid">
+        <div class="lufs-meter-item">
+          <div class="lm-val" id="lmM">—</div>
+          <div class="lm-lbl">Momentary LUFS</div>
+          <div class="lm-bar"><div class="lm-bar-fill" id="lmMBar"></div></div>
+        </div>
+        <div class="lufs-meter-item">
+          <div class="lm-val" id="lmS">—</div>
+          <div class="lm-lbl">Short-term LUFS</div>
+          <div class="lm-bar"><div class="lm-bar-fill" id="lmSBar"></div></div>
+        </div>
+        <div class="lufs-meter-item" style="grid-column:span 2">
+          <div class="lm-val" id="lmI" style="font-size:28px">—</div>
+          <div class="lm-lbl">Integrated LUFS</div>
+          <div class="lm-bar"><div class="lm-bar-fill" id="lmIBar"></div></div>
+        </div>
+        <div class="lufs-meter-item">
+          <div class="lm-val" id="lmTP">—</div>
+          <div class="lm-lbl">True Peak</div>
+          <div class="lm-bar"><div class="lm-bar-fill" id="lmTPBar" style="background:var(--red)"></div></div>
+        </div>
+        <div class="lufs-meter-item">
+          <div class="lm-val" id="lmLRA">—</div>
+          <div class="lm-lbl">Loudness Range</div>
+          <div class="lm-bar"><div class="lm-bar-fill" id="lmLRABar" style="background:var(--blue)"></div></div>
+        </div>
+      </div>
+      <div class="ref-lines">
+        <div class="ref-lines-title">Streaming Targets</div>
+        <div class="ref-line-item"><span class="ref-name">Spotify</span><span class="ref-val">-14 LUFS</span></div>
+        <div class="ref-line-item"><span class="ref-name">Apple Music</span><span class="ref-val">-16 LUFS</span></div>
+        <div class="ref-line-item"><span class="ref-name">YouTube</span><span class="ref-val">-14 LUFS</span></div>
+        <div class="ref-line-item"><span class="ref-name">CD / Mastered</span><span class="ref-val">0 dBFS</span></div>
+        <div class="ref-line-item"><span class="ref-name">Tidal / Amazon</span><span class="ref-val">-14 LUFS</span></div>
+      </div>
+      <div class="lufs-history">
+        <div class="lufs-history-title">LUFS History</div>
+        <canvas id="lufsHistoryCanvas" height="60"></canvas>
+      </div>
+    </div>
+
+    <!-- REF OVERLAY PANEL -->
+    <div class="ref-panel">
+      <div class="ref-panel-header">
+        <span class="ref-panel-title">Spectrum Overlay</span>
+        <button class="ref-btn" onclick="document.getElementById('refFileInput').click()">Load Reference</button>
+        <input type="file" id="refFileInput" accept="audio/*" style="display:none">
+        <button class="ref-btn" id="btnAB" onclick="toggleAB()">A/B Compare</button>
+        <span style="font-size:10px;color:var(--text3)">Gold = Yours / White = Reference</span>
+      </div>
+      <div class="ref-overlay-canvas">
+        <canvas id="refCanvas"></canvas>
+      </div>
+    </div>
+
+  </div><!-- /bottom-row -->
+
+</div><!-- /app -->
+
+<script>
+// ── STATE ──
+const S = {
+  ctx: null, analyser: null, analyserR: null,
+  source: null, mediaSource: null,
+  running: false,
+  fftSize: 8192,
+  displayMode: 'bars',
+  smoothing: 0.80,
+  sourceType: null,
+  audioEl: null,
+  refBuffer: null,
+  refAnalyser: null,
+  showRef: false,
+  abMode: 'A',
+  // Peak holds
+  peakHoldL: 0, peakHoldR: 0, peakHoldLTimer: 0, peakHoldRTimer: 0,
+  clipLTimer: 0, clipRTimer: 0,
+  // LUFS approximation buffers
+  lufsShortBuffer: [], lufsIntBuffer: [], lufsHistory: [],
+  peakL: -144, peakR: -144,
+  // Spectrogram offscreen
+  spectroCanvas: null, spectroCtx: null, spectroShift: 0,
+};
+
+// ── INIT CANVASES ──
+function initCanvases() {
+  const app = document.getElementById('app');
+  const totalH = app.clientHeight;
+  const metersH = 96;
+  const spectrumH = Math.floor(totalH * 0.38);
+  const spectroH = Math.floor(totalH * 0.18);
+  const bottomH = totalH - metersH - spectrumH - spectroH;
+
+  document.getElementById('spectrumSection').style.height = spectrumH + 'px';
+  document.getElementById('spectroSection').style.height = spectroH + 'px';
+
+  const specCv = document.getElementById('spectrumCanvas');
+  specCv.width = specCv.offsetWidth * devicePixelRatio;
+  specCv.height = spectrumH * devicePixelRatio;
+  specCv.style.height = spectrumH + 'px';
+
+  const spgrCv = document.getElementById('spectrogramCanvas');
+  spgrCv.width = spgrCv.offsetWidth * devicePixelRatio;
+  spgrCv.height = spectroH * devicePixelRatio;
+  spgrCv.style.height = spectroH + 'px';
+
+  // Offscreen spectrogram
+  S.spectroCanvas = document.createElement('canvas');
+  S.spectroCanvas.width = spgrCv.width;
+  S.spectroCanvas.height = spgrCv.height;
+  S.spectroCtx = S.spectroCanvas.getContext('2d');
+  S.spectroCtx.fillStyle = '#0a0a0d';
+  S.spectroCtx.fillRect(0, 0, S.spectroCanvas.width, S.spectroCanvas.height);
+
+  const lhCv = document.getElementById('lufsHistoryCanvas');
+  lhCv.width = lhCv.offsetWidth * devicePixelRatio;
+  lhCv.height = 60 * devicePixelRatio;
+
+  const refCv = document.getElementById('refCanvas');
+  const refPanel = refCv.parentElement;
+  refCv.width = refPanel.offsetWidth * devicePixelRatio;
+  refCv.height = (bottomH - 40) * devicePixelRatio;
+  refCv.style.height = (bottomH - 40) + 'px';
+}
+
+window.addEventListener('resize', () => { initCanvases(); });
+
+// ── AUDIO CONTEXT ──
+function getCtx() {
+  if (!S.ctx) {
+    S.ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+  }
+  return S.ctx;
+}
+
+function buildAnalysers(sourceNode) {
+  const ctx = S.ctx;
+  // Splitter for L/R
+  const splitter = ctx.createChannelSplitter(2);
+  const mergerL = ctx.createChannelMerger(1);
+  const mergerR = ctx.createChannelMerger(1);
+
+  S.analyser = ctx.createAnalyser();
+  S.analyser.fftSize = S.fftSize;
+  S.analyser.smoothingTimeConstant = S.smoothing;
+
+  S.analyserL = ctx.createAnalyser();
+  S.analyserL.fftSize = 2048;
+  S.analyserL.smoothingTimeConstant = 0.85;
+
+  S.analyserR = ctx.createAnalyser();
+  S.analyserR.fftSize = 2048;
+  S.analyserR.smoothingTimeConstant = 0.85;
+
+  sourceNode.connect(S.analyser);
+  sourceNode.connect(splitter);
+  splitter.connect(mergerL, 0); mergerL.connect(S.analyserL);
+  splitter.connect(mergerR, 1); mergerR.connect(S.analyserR);
+
+  const dest = ctx.createMediaStreamDestination(); // sink
+  S.analyser.connect(ctx.destination);
+}
+
+// ── SOURCE TOGGLE ──
+function setSource(type) {
+  S.sourceType = type;
+  document.getElementById('btnMic').classList.toggle('active', type === 'mic');
+  document.getElementById('btnFile').classList.toggle('active', type === 'file');
+}
+
+document.getElementById('audioFileInput').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return;
+  const ctx = getCtx();
+  if (ctx.state === 'suspended') await ctx.resume();
+  if (S.audioEl) { S.audioEl.pause(); S.audioEl.src = ''; }
+  S.audioEl = new Audio(URL.createObjectURL(file));
+  S.audioEl.loop = true;
+  S.mediaSource = ctx.createMediaElementSource(S.audioEl);
+  buildAnalysers(S.mediaSource);
+  S.audioEl.play();
+  S.sourceType = 'file';
+  S.running = true;
+  document.getElementById('btnStart').textContent = 'Stop Analysis';
+  document.getElementById('btnStart').classList.add('running');
+  setSource('file');
+  requestAnimationFrame(drawLoop);
+});
+
+document.getElementById('refFileInput').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return;
+  const ctx = getCtx();
+  const ab = await file.arrayBuffer();
+  S.refBuffer = await ctx.decodeAudioData(ab);
+});
+
+async function toggleAnalysis() {
+  const ctx = getCtx();
+  if (S.running) {
+    S.running = false;
+    if (S.mediaSource) { S.audioEl?.pause(); }
+    if (S.micStream) { S.micStream.getTracks().forEach(t=>t.stop()); }
+    document.getElementById('btnStart').textContent = 'Start Analysis';
+    document.getElementById('btnStart').classList.remove('running');
+    return;
+  }
+  if (ctx.state === 'suspended') await ctx.resume();
+  if (S.sourceType === 'mic' || !S.sourceType) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false }, video: false });
+      S.micStream = stream;
+      S.mediaSource = ctx.createMediaStreamSource(stream);
+      buildAnalysers(S.mediaSource);
+      S.sourceType = 'mic';
+      setSource('mic');
+    } catch(err) {
+      alert('Microphone access denied. Load an audio file instead.');
+      return;
+    }
+  }
+  S.running = true;
+  document.getElementById('btnStart').textContent = 'Stop Analysis';
+  document.getElementById('btnStart').classList.add('running');
+  requestAnimationFrame(drawLoop);
+}
+
+function setFFTSize(size) {
+  S.fftSize = size;
+  if (S.analyser) { S.analyser.fftSize = size; }
+}
+function setSmoothing(val) {
+  S.smoothing = val;
+  if (S.analyser) S.analyser.smoothingTimeConstant = val;
+}
+function setDisplayMode(mode) {
+  S.displayMode = mode;
+  ['Bars','Line','Filled'].forEach(m => {
+    document.getElementById('btn' + m).classList.toggle('active', mode === m.toLowerCase());
+  });
+}
+function toggleRefOverlay() {
+  S.showRef = !S.showRef;
+  document.getElementById('btnRef').classList.toggle('active', S.showRef);
+}
+function toggleAB() {
+  S.abMode = S.abMode === 'A' ? 'B' : 'A';
+  document.getElementById('btnAB').textContent = 'A/B: ' + S.abMode;
+}
+
+// ── DRAW LOOP ──
+let frameCount = 0;
+function drawLoop() {
+  if (!S.running) return;
+  requestAnimationFrame(drawLoop);
+  frameCount++;
+  updateMeters();
+  drawSpectrum();
+  if (frameCount % 3 === 0) drawSpectrogram();
+  if (frameCount % 2 === 0) drawPhase();
+  if (frameCount % 6 === 0) drawLufsHistory();
+  if (S.showRef) drawRefOverlay();
+}
+
+// ── METERS ──
+function linToDb(lin) { return lin > 0 ? 20 * Math.log10(lin) : -144; }
+function dbToWidth(db) { return Math.max(0, Math.min(100, ((db + 60) / 60) * 100)); }
+
+function updateMeters() {
+  if (!S.analyserL || !S.analyserR) return;
+  const bufL = new Float32Array(S.analyserL.fftSize);
+  const bufR = new Float32Array(S.analyserR.fftSize);
+  S.analyserL.getFloatTimeDomainData(bufL);
+  S.analyserR.getFloatTimeDomainData(bufR);
+
+  let maxL=0, maxR=0, rmsL=0, rmsR=0;
+  for (let i=0;i<bufL.length;i++){
+    const aL=Math.abs(bufL[i]), aR=Math.abs(bufR[i]);
+    if(aL>maxL)maxL=aL; if(aR>maxR)maxR=aR;
+    rmsL+=aL*aL; rmsR+=aR*aR;
+  }
+  rmsL=Math.sqrt(rmsL/bufL.length); rmsR=Math.sqrt(rmsR/bufR.length);
+
+  const dbL = linToDb(maxL), dbR = linToDb(maxR);
+  const dbRmsL = linToDb(rmsL), dbRmsR = linToDb(rmsR);
+
+  // Peak hold
+  const now = Date.now();
+  if(dbL > S.peakHoldL){ S.peakHoldL=dbL; S.peakHoldLTimer=now+3000; }
+  if(dbR > S.peakHoldR){ S.peakHoldR=dbR; S.peakHoldRTimer=now+3000; }
+  if(now > S.peakHoldLTimer) S.peakHoldL = Math.max(S.peakHoldL - 0.5, dbL);
+  if(now > S.peakHoldRTimer) S.peakHoldR = Math.max(S.peakHoldR - 0.5, dbR);
+  if(dbL>S.peakL) S.peakL=dbL;
+  if(dbR>S.peakR) S.peakR=dbR;
+
+  // Clip
+  if(dbL>=-0.1){ document.getElementById('clipL').classList.add('clip'); S.clipLTimer=now+2000; }
+  else if(now>S.clipLTimer) document.getElementById('clipL').classList.remove('clip');
+
+  // Bars
+  document.getElementById('meterBarL').style.width = dbToWidth(dbL)+'%';
+  document.getElementById('meterBarR').style.width = dbToWidth(dbR)+'%';
+  document.getElementById('rmsBarL').style.left = dbToWidth(dbRmsL)+'%';
+  document.getElementById('rmsBarR').style.left = dbToWidth(dbRmsR)+'%';
+  document.getElementById('peakHoldL').style.left = dbToWidth(S.peakHoldL)+'%';
+  document.getElementById('peakHoldR').style.left = dbToWidth(S.peakHoldR)+'%';
+
+  document.getElementById('peakNumL').textContent = dbL.toFixed(1);
+  document.getElementById('rmsNumL').textContent = dbRmsL.toFixed(1);
+
+  // Simple LUFS approx (ITU-R BS.1770)
+  const momentaryPower = (rmsL*rmsL + rmsR*rmsR) / 2;
+  const momentaryLUFS = momentaryPower > 0 ? -0.691 + 10 * Math.log10(momentaryPower) : -70;
+  S.lufsShortBuffer.push(momentaryPower);
+  S.lufsIntBuffer.push(momentaryPower);
+  if (S.lufsShortBuffer.length > 180) S.lufsShortBuffer.shift(); // ~3s at 60fps
+  if (S.lufsIntBuffer.length > 3600) S.lufsIntBuffer.shift();
+  S.lufsHistory.push(momentaryLUFS);
+  if (S.lufsHistory.length > 600) S.lufsHistory.shift();
+
+  const shortPow = S.lufsShortBuffer.reduce((a,b)=>a+b,0)/S.lufsShortBuffer.length;
+  const intPow = S.lufsIntBuffer.reduce((a,b)=>a+b,0)/S.lufsIntBuffer.length;
+  const shortLUFS = shortPow > 0 ? -0.691 + 10*Math.log10(shortPow) : -70;
+  const intLUFS = intPow > 0 ? -0.691 + 10*Math.log10(intPow) : -70;
+  const tp = Math.max(dbL,dbR);
+  const lra = shortLUFS > -70 ? Math.abs(shortLUFS - intLUFS) * 2.5 : 0;
+
+  const fmtL = v => v < -60 ? '—' : v.toFixed(1);
+  document.getElementById('lufsM').textContent = fmtL(momentaryLUFS);
+  document.getElementById('lufsS').textContent = fmtL(shortLUFS);
+  document.getElementById('lufsI').textContent = fmtL(intLUFS);
+  document.getElementById('truePeak').textContent = fmtL(tp);
+  document.getElementById('lraVal').textContent = lra > 0 ? lra.toFixed(1) + ' LU' : '—';
+  document.getElementById('lmM').textContent = fmtL(momentaryLUFS);
+  document.getElementById('lmS').textContent = fmtL(shortLUFS);
+  document.getElementById('lmI').textContent = fmtL(intLUFS);
+  document.getElementById('lmTP').textContent = fmtL(tp);
+  document.getElementById('lmLRA').textContent = lra > 0 ? lra.toFixed(1) + ' LU' : '—';
+
+  const lufsToBar = v => Math.max(0, Math.min(100, ((v + 40) / 40) * 100));
+  document.getElementById('lmMBar').style.width = lufsToBar(momentaryLUFS)+'%';
+  document.getElementById('lmSBar').style.width = lufsToBar(shortLUFS)+'%';
+  document.getElementById('lmIBar').style.width = lufsToBar(intLUFS)+'%';
+  document.getElementById('lmTPBar').style.width = dbToWidth(tp)+'%';
+  document.getElementById('lmLRABar').style.width = Math.min(100, lra*5)+'%';
+}
+
+// ── SPECTRUM ──
+const LOG_MIN = Math.log10(20);
+const LOG_MAX = Math.log10(20000);
+const FREQ_LABELS = [50,100,200,500,1000,2000,5000,10000,20000];
+const DB_LINES = [-6,-12,-18,-24,-36,-48,-60];
+
+function freqToX(freq, w) {
+  return ((Math.log10(freq) - LOG_MIN) / (LOG_MAX - LOG_MIN)) * w;
+}
+function dbToY(db, h) {
+  const minDb = -120, maxDb = 0;
+  return ((maxDb - db) / (maxDb - minDb)) * h;
+}
+
+function drawSpectrum() {
+  if (!S.analyser) return;
+  const canvas = document.getElementById('spectrumCanvas');
+  const ctx2 = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const dpr = devicePixelRatio;
+  const w = W/dpr, h = H/dpr;
+  ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  ctx2.fillStyle = '#0a0a0d';
+  ctx2.fillRect(0, 0, w, h);
+
+  // Grid lines dB
+  DB_LINES.forEach(db => {
+    const y = dbToY(db, h);
+    ctx2.strokeStyle = db === -6 ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.04)';
+    ctx2.lineWidth = 1;
+    ctx2.beginPath(); ctx2.moveTo(0, y); ctx2.lineTo(w, y); ctx2.stroke();
+    ctx2.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx2.font = `${8 * dpr / dpr}px Inter, sans-serif`;
+    ctx2.fillText(db + 'dB', 4, y - 3);
+  });
+
+  // Freq grid lines
+  FREQ_LABELS.forEach(f => {
+    const x = freqToX(f, w);
+    ctx2.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx2.lineWidth = 1;
+    ctx2.beginPath(); ctx2.moveTo(x, 0); ctx2.lineTo(x, h - 18); ctx2.stroke();
+    ctx2.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx2.font = '8px Inter, sans-serif';
+    const label = f >= 1000 ? (f/1000)+'k' : f+'';
+    ctx2.textAlign = 'center';
+    ctx2.fillText(label, x, h - 5);
+  });
+
+  // Spectrum data
+  const fftBuf = new Uint8Array(S.analyser.frequencyBinCount);
+  S.analyser.getByteFrequencyData(fftBuf);
+  const binCount = fftBuf.length;
+  const sr = S.ctx.sampleRate;
+
+  if (S.displayMode === 'bars') {
+    // Draw bars
+    const barW = Math.max(1, w / 256);
+    for (let i = 1; i < binCount; i++) {
+      const freq = (i / binCount) * (sr / 2);
+      if (freq < 20 || freq > 20000) continue;
+      const x = freqToX(freq, w);
+      const db = (fftBuf[i] / 255) * 120 - 120;
+      const barH = Math.max(0, dbToY(db < -120 ? -120 : db, h) < h ? h - dbToY(db, h) : 0);
+      const pct = fftBuf[i] / 255;
+      let col;
+      if (pct > 0.95) col = '#ef4444';
+      else if (pct > 0.75) col = `rgba(${Math.floor(201+54*((pct-0.75)/0.2))},${Math.floor(146+(-146)*((pct-0.75)/0.2))},${Math.floor(42)},1)`;
+      else col = `rgba(${Math.floor(50+151*pct)},${Math.floor(50+96*pct)},${Math.floor(42+10*pct)},0.85)`;
+      ctx2.fillStyle = col;
+      ctx2.fillRect(x, h - barH - 18, barW + 0.5, barH);
+    }
+  } else {
+    ctx2.beginPath();
+    let first = true;
+    for (let i = 1; i < binCount; i++) {
+      const freq = (i / binCount) * (sr / 2);
+      if (freq < 20 || freq > 20000) continue;
+      const x = freqToX(freq, w);
+      const db = (fftBuf[i] / 255) * 120 - 120;
+      const y = dbToY(Math.max(-120, db), h) - 18;
+      if (first) { ctx2.moveTo(x, y); first = false; }
+      else ctx2.lineTo(x, y);
+    }
+    if (S.displayMode === 'filled') {
+      ctx2.lineTo(w, h - 18); ctx2.lineTo(0, h - 18);
+      ctx2.closePath();
+      const grad = ctx2.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, 'rgba(201,146,42,0.5)');
+      grad.addColorStop(1, 'rgba(201,146,42,0.02)');
+      ctx2.fillStyle = grad;
+      ctx2.fill();
+    }
+    ctx2.strokeStyle = '#c9922a';
+    ctx2.lineWidth = 1.5;
+    ctx2.stroke();
+  }
+
+  // Reference overlay
+  if (S.showRef && S.refBuffer) {
+    drawRefSpectrumOnCanvas(ctx2, w, h, S.refBuffer);
+  }
+}
+
+function drawRefSpectrumOnCanvas(ctx2, w, h, refBuf) {
+  // Static snapshot - draw avg spectrum from refBuffer
+  const data = refBuf.getChannelData(0);
+  const fftSize = 2048;
+  const half = fftSize / 2;
+  const bins = new Float32Array(half).fill(0);
+  let count = 0;
+  for (let offset = 0; offset + fftSize < data.length; offset += fftSize) {
+    for (let i = 0; i < half; i++) {
+      const re = data[offset + i*2] || 0;
+      bins[i] += Math.abs(re);
+    }
+    count++;
+  }
+  if (count === 0) return;
+  const sr = refBuf.sampleRate;
+  ctx2.beginPath();
+  let first = true;
+  for (let i = 1; i < half; i++) {
+    const freq = (i / half) * (sr / 2);
+    if (freq < 20 || freq > 20000) continue;
+    const x = freqToX(freq, w);
+    const mag = bins[i] / count;
+    const db = mag > 0 ? 20 * Math.log10(mag) - 40 : -120;
+    const y = dbToY(Math.max(-120, db), h) - 18;
+    if (first) { ctx2.moveTo(x, y); first = false; }
+    else ctx2.lineTo(x, y);
+  }
+  ctx2.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx2.lineWidth = 1;
+  ctx2.stroke();
+}
+
+// ── SPECTROGRAM ──
+function drawSpectrogram() {
+  if (!S.analyser) return;
+  const canvas = document.getElementById('spectrogramCanvas');
+  const ctx2 = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // Shift existing image left by 1 column
+  const colW = devicePixelRatio;
+  S.spectroCtx.drawImage(S.spectroCanvas, -colW, 0);
+
+  // Draw new column
+  const fftBuf = new Uint8Array(S.analyser.frequencyBinCount);
+  S.analyser.getByteFrequencyData(fftBuf);
+  const binCount = fftBuf.length;
+  const colH = H;
+  const imgData = S.spectroCtx.createImageData(colW, colH);
+  const pixels = imgData.data;
+
+  for (let py = 0; py < colH; py++) {
+    const fraction = 1 - py / colH;
+    const binIdx = Math.floor(fraction * binCount);
+    const val = fftBuf[Math.min(binIdx, binCount-1)] / 255;
+    let r, g, b;
+    if (val < 0.25) { r=0; g=0; b=Math.floor(val*4*200); }
+    else if (val < 0.5) { const t=(val-0.25)/0.25; r=0; g=Math.floor(t*200); b=Math.floor((1-t)*200+55); }
+    else if (val < 0.75) { const t=(val-0.5)/0.25; r=Math.floor(t*220); g=220; b=Math.floor((1-t)*55); }
+    else { const t=(val-0.75)/0.25; r=220+Math.floor(t*35); g=Math.floor((1-t)*220+35); b=35; }
+    for (let x = 0; x < colW; x++) {
+      const idx = (py * colW + x) * 4;
+      pixels[idx]=r; pixels[idx+1]=g; pixels[idx+2]=b; pixels[idx+3]=255;
+    }
+  }
+  S.spectroCtx.putImageData(imgData, W - colW, 0);
+  ctx2.drawImage(S.spectroCanvas, 0, 0);
+}
+
+// ── PHASE / GONIOMETER ──
+function drawPhase() {
+  if (!S.analyserL || !S.analyserR) return;
+  const canvas = document.getElementById('phaseCanvas');
+  const ctx2 = canvas.getContext('2d');
+  const sz = 72;
+  ctx2.fillStyle = 'rgba(10,10,13,0.3)';
+  ctx2.fillRect(0, 0, sz, sz);
+
+  const bufL = new Float32Array(S.analyserL.fftSize);
+  const bufR = new Float32Array(S.analyserR.fftSize);
+  S.analyserL.getFloatTimeDomainData(bufL);
+  S.analyserR.getFloatTimeDomainData(bufR);
+
+  const cx = sz/2, cy = sz/2, scale = sz*0.44;
+  ctx2.strokeStyle = 'rgba(201,146,42,0.6)';
+  ctx2.lineWidth = 0.5;
+
+  let corr = 0;
+  ctx2.beginPath();
+  for (let i = 0; i < bufL.length; i += 4) {
+    const mid = (bufL[i] + bufR[i]) * 0.707;
+    const side = (bufL[i] - bufR[i]) * 0.707;
+    const x = cx + side * scale;
+    const y = cy - mid * scale;
+    if (i === 0) ctx2.moveTo(x, y);
+    else ctx2.lineTo(x, y);
+    corr += bufL[i] * bufR[i];
+  }
+  ctx2.stroke();
+
+  // Correlation bar
+  const normCorr = Math.max(-1, Math.min(1, corr / (bufL.length * 0.1 + 0.001)));
+  document.getElementById('phaseVal').textContent = normCorr.toFixed(2);
+  const fillEl = document.getElementById('phaseBarFill');
+  const pct = (normCorr + 1) / 2 * 50;
+  if (normCorr >= 0) {
+    fillEl.style.left = '50%';
+    fillEl.style.width = pct + '%';
+    fillEl.style.background = '#22c55e';
+  } else {
+    fillEl.style.left = (50 + pct * 2 - 50) + '%';
+    fillEl.style.width = Math.abs(pct * 2 - 50) + '%';
+    fillEl.style.background = '#ef4444';
+  }
+}
+
+// ── LUFS HISTORY ──
+function drawLufsHistory() {
+  const canvas = document.getElementById('lufsHistoryCanvas');
+  const ctx2 = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx2.fillStyle = '#0f0f13';
+  ctx2.fillRect(0, 0, W, H);
+  const data = S.lufsHistory;
+  if (data.length < 2) return;
+  // Reference lines
+  [-14, -16, -23].forEach((db, i) => {
+    const y = ((db + 40) / 40) * H;
+    ctx2.strokeStyle = i === 0 ? 'rgba(201,146,42,0.3)' : 'rgba(255,255,255,0.08)';
+    ctx2.lineWidth = 1;
+    ctx2.setLineDash([3,4]);
+    ctx2.beginPath(); ctx2.moveTo(0, H-y); ctx2.lineTo(W, H-y); ctx2.stroke();
+    ctx2.setLineDash([]);
+  });
+  ctx2.beginPath();
+  ctx2.strokeStyle = '#c9922a';
+  ctx2.lineWidth = 1.5;
+  for (let i = 0; i < data.length; i++) {
+    const x = (i / data.length) * W;
+    const y = H - Math.max(0, Math.min(H, ((data[i] + 40) / 40) * H));
+    if (i === 0) ctx2.moveTo(x, y);
+    else ctx2.lineTo(x, y);
+  }
+  ctx2.stroke();
+}
+
+// ── REF OVERLAY ──
+function drawRefOverlay() {
+  const canvas = document.getElementById('refCanvas');
+  const ctx2 = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const dpr = devicePixelRatio;
+  const w = W/dpr, h = H/dpr;
+  ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx2.fillStyle = '#0a0a0d';
+  ctx2.fillRect(0, 0, w, h);
+  // Draw same spectrum but bigger
+  if (S.analyser) {
+    const fftBuf = new Uint8Array(S.analyser.frequencyBinCount);
+    S.analyser.getByteFrequencyData(fftBuf);
+    const binCount = fftBuf.length;
+    const sr = S.ctx.sampleRate;
+    ctx2.beginPath();
+    let first = true;
+    for (let i = 1; i < binCount; i++) {
+      const freq = (i / binCount) * (sr / 2);
+      if (freq < 20 || freq > 20000) continue;
+      const x = freqToX(freq, w);
+      const db = (fftBuf[i] / 255) * 120 - 120;
+      const y = dbToY(Math.max(-120, db), h);
+      if (first) { ctx2.moveTo(x, y); first = false; }
+      else ctx2.lineTo(x, y);
+    }
+    ctx2.lineTo(w, h); ctx2.lineTo(0, h); ctx2.closePath();
+    const grad = ctx2.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, 'rgba(201,146,42,0.4)');
+    grad.addColorStop(1, 'rgba(201,146,42,0.02)');
+    ctx2.fillStyle = grad;
+    ctx2.fill();
+    ctx2.strokeStyle = '#c9922a';
+    ctx2.lineWidth = 2;
+    ctx2.stroke();
+  }
+  if (S.refBuffer) {
+    drawRefSpectrumOnCanvas(ctx2, w, h, S.refBuffer);
+  }
+  // Labels
+  DB_LINES.forEach(db => {
+    const y = dbToY(db, h);
+    ctx2.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx2.lineWidth = 1;
+    ctx2.beginPath(); ctx2.moveTo(0, y); ctx2.lineTo(w, y); ctx2.stroke();
+    ctx2.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx2.font = '8px Inter';
+    ctx2.fillText(db + 'dB', 4, y - 3);
+  });
+  FREQ_LABELS.forEach(f => {
+    const x = freqToX(f, w);
+    ctx2.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx2.lineWidth = 1;
+    ctx2.beginPath(); ctx2.moveTo(x, 0); ctx2.lineTo(x, h - 16); ctx2.stroke();
+    ctx2.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx2.font = '9px Inter';
+    ctx2.textAlign = 'center';
+    const label = f >= 1000 ? (f/1000)+'k' : f+'';
+    ctx2.fillText(label, x, h - 4);
+  });
+}
+
+// ── INIT ──
+window.addEventListener('load', () => {
+  initCanvases();
+  // Draw static state
+  const canvas = document.getElementById('spectrumCanvas');
+  const ctx2 = canvas.getContext('2d');
+  ctx2.fillStyle = '#0a0a0d';
+  ctx2.fillRect(0, 0, canvas.width, canvas.height);
+});
+</script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

@@ -6,6 +6,7 @@
 
 const express = require('express');
 const router = express.Router();
+const { protect, authorize } = require('../middleware/auth');
 const { OfflineDataService } = require('../services/offlineDataService');
 
 let offlineDataInstance = null;
@@ -13,7 +14,7 @@ let offlineDataInstance = null;
 /**
  * Initialize offline data service
  */
-router.post('/initialize', async (req, res) => {
+router.post('/initialize', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     const config = {
       rootDir: req.body.rootDir || './offline-data',
@@ -33,7 +34,7 @@ router.post('/initialize', async (req, res) => {
 /**
  * Sync staged data from Google Drive
  */
-router.post('/sync', async (req, res) => {
+router.post('/sync', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     if (!offlineDataInstance) {
       return res.status(400).json({ success: false, error: 'Offline data service not initialized' });
@@ -50,7 +51,7 @@ router.post('/sync', async (req, res) => {
 /**
  * Get data by type
  */
-router.get('/data/:type', async (req, res) => {
+router.get('/data/:type', protect, async (req, res) => {
   try {
     if (!offlineDataInstance) {
       return res.status(400).json({ success: false, error: 'Offline data service not initialized' });
@@ -68,7 +69,7 @@ router.get('/data/:type', async (req, res) => {
 /**
  * Get latest data by type
  */
-router.get('/latest/:type', async (req, res) => {
+router.get('/latest/:type', protect, async (req, res) => {
   try {
     if (!offlineDataInstance) {
       return res.status(400).json({ success: false, error: 'Offline data service not initialized' });
@@ -86,7 +87,7 @@ router.get('/latest/:type', async (req, res) => {
 /**
  * Search data
  */
-router.get('/search', async (req, res) => {
+router.get('/search', protect, async (req, res) => {
   try {
     if (!offlineDataInstance) {
       return res.status(400).json({ success: false, error: 'Offline data service not initialized' });
@@ -109,7 +110,7 @@ router.get('/search', async (req, res) => {
 /**
  * Get data for AI processing
  */
-router.get('/ai-data', async (req, res) => {
+router.get('/ai-data', protect, async (req, res) => {
   try {
     if (!offlineDataInstance) {
       return res.status(400).json({ success: false, error: 'Offline data service not initialized' });
@@ -132,7 +133,7 @@ router.get('/ai-data', async (req, res) => {
 /**
  * Process data locally (offline AI)
  */
-router.post('/process', async (req, res) => {
+router.post('/process', protect, async (req, res) => {
   try {
     if (!offlineDataInstance) {
       return res.status(400).json({ success: false, error: 'Offline data service not initialized' });
@@ -166,7 +167,7 @@ router.post('/process', async (req, res) => {
 /**
  * Start scheduled sync
  */
-router.post('/schedule-sync', async (req, res) => {
+router.post('/schedule-sync', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     if (!offlineDataInstance) {
       return res.status(400).json({ success: false, error: 'Offline data service not initialized' });
@@ -189,7 +190,7 @@ router.post('/schedule-sync', async (req, res) => {
 /**
  * Stop scheduled sync
  */
-router.post('/stop-sync', async (req, res) => {
+router.post('/stop-sync', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     if (!offlineDataInstance) {
       return res.status(400).json({ success: false, error: 'Offline data service not initialized' });
@@ -206,7 +207,7 @@ router.post('/stop-sync', async (req, res) => {
 /**
  * Export data for backup
  */
-router.post('/backup', async (req, res) => {
+router.post('/backup', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     if (!offlineDataInstance) {
       return res.status(400).json({ success: false, error: 'Offline data service not initialized' });
@@ -223,7 +224,7 @@ router.post('/backup', async (req, res) => {
 /**
  * Import data from backup
  */
-router.post('/restore', async (req, res) => {
+router.post('/restore', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     if (!offlineDataInstance) {
       return res.status(400).json({ success: false, error: 'Offline data service not initialized' });
@@ -246,7 +247,7 @@ router.post('/restore', async (req, res) => {
 /**
  * Get service metrics
  */
-router.get('/metrics', async (req, res) => {
+router.get('/metrics', protect, async (req, res) => {
   try {
     if (!offlineDataInstance) {
       return res.status(400).json({ success: false, error: 'Offline data service not initialized' });
@@ -290,7 +291,7 @@ router.get('/status', async (req, res) => {
 /**
  * Clear cache
  */
-router.post('/clear-cache', async (req, res) => {
+router.post('/clear-cache', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     if (!offlineDataInstance) {
       return res.status(400).json({ success: false, error: 'Offline data service not initialized' });

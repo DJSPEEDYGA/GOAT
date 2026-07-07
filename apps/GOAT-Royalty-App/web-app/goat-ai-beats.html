@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT AI Beats</title>
+<link rel="icon" href="favicon.ico">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060608;--bg2:#0a0a0d;--bg3:#0f0f13;--bg4:#141418;--bg5:#1a1a20;--bg6:#22222a;
+  --gold:#c9922a;--gold-dim:rgba(201,146,42,0.15);--gold-line:rgba(201,146,42,0.22);
+  --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#7c3aed;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+  --text:#e8e4dd;--text2:#a09a90;--text3:#504a42;
+}
+html,body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:13px;min-height:100vh;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bg6);border-radius:2px}
+
+/* NAV */
+.nav{height:44px;background:rgba(6,6,8,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100}
+.nav-wordmark{font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+.nav-div{width:1px;height:18px;background:var(--border)}
+.nav-status{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);font-weight:500}
+.nav-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+.nav-dot.offline{background:var(--red);box-shadow:0 0 6px var(--red)}
+.nav-spacer{flex:1}
+.nav-btn{padding:6px 14px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid var(--border2);background:var(--bg4);color:var(--text2);transition:all .15s;letter-spacing:.2px}
+.nav-btn:hover{background:var(--bg5);color:var(--text)}
+.nav-btn.primary{border-color:var(--gold-line);background:var(--gold-dim);color:var(--gold)}
+.nav-btn.primary:hover{background:rgba(201,146,42,0.25)}
+.bpm-ctrl{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3)}
+.bpm-ctrl input{width:52px;background:var(--bg4);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 8px;font-family:inherit;font-size:12px;font-weight:700;text-align:center}
+.bpm-ctrl input:focus{outline:none;border-color:var(--gold-line)}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 44px)}
+
+/* LEFT PANEL */
+.left-panel{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.agent-header{padding:20px;border-bottom:1px solid var(--border)}
+.agent-row{display:flex;align-items:center;gap:12px}
+.agent-avatar{width:40px;height:40px;border-radius:4px;background:var(--bg4);border:1px solid var(--gold-line);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--gold);letter-spacing:.5px;flex-shrink:0}
+.agent-name{font-size:13px;font-weight:700;color:var(--text)}
+.agent-role{font-size:10px;color:var(--text3);margin-top:2px;letter-spacing:.3px}
+
+.panel-body{flex:1;overflow-y:auto;padding:16px}
+.panel-label{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+
+/* PROMPT */
+.prompt-area{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:inherit;font-size:12px;padding:12px;resize:none;line-height:1.6;margin-bottom:4px;transition:border-color .15s}
+.prompt-area:focus{outline:none;border-color:var(--gold-line)}
+.prompt-area::placeholder{color:var(--text3)}
+.char-count{font-size:10px;color:var(--text3);text-align:right;margin-bottom:14px}
+
+/* STYLE CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px}
+.chip{padding:4px 10px;border-radius:3px;font-size:10px;font-weight:600;border:1px solid var(--border);background:var(--bg4);color:var(--text3);cursor:pointer;font-family:inherit;transition:all .15s;letter-spacing:.2px}
+.chip:hover{border-color:var(--border2);color:var(--text);background:var(--bg5)}
+.chip.active{border-color:var(--gold-line);color:var(--gold);background:var(--gold-dim)}
+
+/* PARAMS */
+.param-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.param-item{display:flex;flex-direction:column;gap:5px}
+.param-item label{font-size:10px;color:var(--text3);font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+.param-item select,.param-item input[type=range]{width:100%;background:var(--bg4);border:1px solid var(--border);color:var(--text);border-radius:3px;padding:5px 8px;font-family:inherit;font-size:11px;cursor:pointer}
+.param-item select:focus{outline:none;border-color:var(--gold-line)}
+.param-val{font-size:10px;color:var(--gold);font-weight:600;margin-top:-2px}
+input[type=range]{-webkit-appearance:none;height:4px;border-radius:2px;background:var(--bg5);padding:0!important;border:none!important}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--gold);cursor:pointer}
+
+/* GENERATE BTN */
+.gen-btn{width:100%;padding:11px;background:var(--gold);border:none;border-radius:4px;color:#000;font-weight:800;font-size:12px;letter-spacing:.5px;cursor:pointer;font-family:inherit;transition:opacity .15s;margin-bottom:16px}
+.gen-btn:hover{opacity:.88}
+.gen-btn:disabled{opacity:.4;cursor:not-allowed}
+.gen-btn.loading{background:var(--bg4);color:var(--gold);border:1px solid var(--gold-line)}
+
+/* HISTORY */
+.history-list{display:flex;flex-direction:column;gap:5px}
+.hist-item{padding:8px 10px;border-radius:3px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;transition:all .15s}
+.hist-item:hover{border-color:var(--border2);background:var(--bg4)}
+.hist-name{font-size:11px;font-weight:600;color:var(--text)}
+.hist-meta{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* RIGHT PANEL */
+.right-panel{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+
+/* SEQUENCER HEADER */
+.seq-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;background:var(--bg2);flex-shrink:0}
+.seq-title{font-size:13px;font-weight:700;color:var(--text)}
+.seq-desc{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.5}
+.transport-btns{display:flex;gap:6px;margin-left:auto;flex-shrink:0}
+.t-btn{width:32px;height:32px;border-radius:4px;border:1px solid var(--border2);background:var(--bg4);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:inherit}
+.t-btn:hover{background:var(--bg5);color:var(--text)}
+.t-btn.active{background:var(--gold-dim);border-color:var(--gold-line);color:var(--gold)}
+.step-counter{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:1px;width:40px;text-align:center}
+
+/* SEQUENCER GRID */
+.seq-body{flex:1;overflow-y:auto;padding:20px}
+.seq-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.row-info{width:100px;flex-shrink:0;display:flex;align-items:center;gap:8px}
+.row-bar{width:2px;height:28px;border-radius:1px;flex-shrink:0}
+.row-name{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:-.1px}
+.row-sub{font-size:9px;color:var(--text3)}
+.steps-grid{display:grid;grid-template-columns:repeat(16,1fr);gap:4px;flex:1}
+.step{height:36px;border-radius:3px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;transition:all .1s;position:relative;overflow:hidden}
+.step:hover{border-color:var(--border2);background:var(--bg4)}
+.step.on{background:var(--gold-dim);border-color:var(--gold-line)}
+.step.on::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--gold)}
+.step.ghost{background:rgba(201,146,42,0.07);border-color:rgba(201,146,42,0.12)}
+.step.ghost::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(201,146,42,0.4)}
+.step.playing{border-color:rgba(255,255,255,0.3)!important}
+.step.active-step{background:rgba(255,255,255,0.05)!important;border-color:rgba(255,255,255,0.15)!important}
+
+/* BEAT LABELS (1,2,3,4) */
+.beat-labels{display:flex;margin-left:110px;margin-bottom:4px}
+.beat-label{flex:4;font-size:9px;color:var(--text3);font-weight:600;letter-spacing:.5px;display:flex;gap:4px}
+.beat-label span{flex:1;text-align:center}
+
+/* VELOCITY STRIP */
+.vel-row{display:flex;align-items:flex-end;gap:4px;margin-left:110px;height:32px;margin-bottom:16px}
+.vel-bar{flex:1;background:var(--gold-dim);border:1px solid var(--gold-line);border-radius:2px;cursor:ns-resize;transition:background .1s;position:relative}
+.vel-bar:hover{background:rgba(201,146,42,0.25)}
+
+/* AI DESCRIPTION */
+.ai-desc{margin:0 0 20px;padding:14px 16px;border:1px solid var(--gold-line);border-radius:4px;background:var(--gold-dim)}
+.ai-desc-label{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.ai-desc-text{font-size:12px;color:var(--text2);line-height:1.7}
+
+/* PRESET SECTION */
+.presets-hdr{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.presets-hdr::after{content:'';flex:1;height:1px;background:var(--border)}
+.preset-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:20px}
+.preset-chip{padding:5px 12px;border-radius:3px;font-size:11px;font-weight:500;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s}
+.preset-chip:hover{border-color:var(--border2);color:var(--text);background:var(--bg4)}
+
+/* EXPORT ROW */
+.export-row{display:flex;gap:8px;padding:16px 20px;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-wordmark">GOAT AI BEATS</div>
+  <div class="nav-div"></div>
+  <div class="nav-status"><div class="nav-dot" id="serverDot"></div><span id="serverStatus">Checking...</span></div>
+  <div class="nav-div"></div>
+  <div class="bpm-ctrl">
+    <span>BPM</span>
+    <input type="number" id="bpmInput" value="140" min="60" max="220">
+  </div>
+  <div class="nav-spacer"></div>
+  <button class="nav-btn" onclick="exportMIDI()">Export MIDI</button>
+  <button class="nav-btn primary" onclick="openInBeatMaker()">Open in Beat Maker</button>
+</nav>
+
+<div class="layout">
+  <!-- LEFT: AI GENERATION -->
+  <div class="left-panel">
+    <div class="agent-header">
+      <div class="agent-row">
+        <div class="agent-avatar">SC</div>
+        <div>
+          <div class="agent-name">Sir Codex</div>
+          <div class="agent-role">Music AI · Beat Producer · GOAT Intelligence</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <div class="panel-label">Describe your beat</div>
+      <textarea class="prompt-area" id="promptArea" rows="4" maxlength="400"
+        placeholder="Dark trap 140 BPM with heavy 808s and rolling hi-hats..."></textarea>
+      <div class="char-count"><span id="charCount">0</span>/400</div>
+
+      <div class="panel-label">Style</div>
+      <div class="chips" id="styleChips">
+        <span class="chip" data-style="Trap">Trap</span>
+        <span class="chip" data-style="Drill">Drill</span>
+        <span class="chip" data-style="Boom Bap">Boom Bap</span>
+        <span class="chip" data-style="Afrobeats">Afrobeats</span>
+        <span class="chip" data-style="R&B">R&B</span>
+        <span class="chip" data-style="Lo-Fi">Lo-Fi</span>
+        <span class="chip" data-style="House">House</span>
+        <span class="chip" data-style="Dancehall">Dancehall</span>
+        <span class="chip" data-style="Jersey Club">Jersey Club</span>
+        <span class="chip" data-style="UK Drill">UK Drill</span>
+      </div>
+
+      <div class="param-grid">
+        <div class="param-item">
+          <label>Swing</label>
+          <input type="range" id="swingSlider" min="0" max="100" value="20" oninput="document.getElementById('swingVal').textContent=this.value+'%'">
+          <div class="param-val" id="swingVal">20%</div>
+        </div>
+        <div class="param-item">
+          <label>Density</label>
+          <select id="densitySelect">
+            <option>Sparse</option>
+            <option selected>Medium</option>
+            <option>Dense</option>
+            <option>Chaotic</option>
+          </select>
+        </div>
+        <div class="param-item">
+          <label>Kick Style</label>
+          <select id="kickStyle">
+            <option>808</option>
+            <option>Punchy</option>
+            <option>Deep</option>
+            <option>Clap-Sub</option>
+          </select>
+        </div>
+        <div class="param-item">
+          <label>Hi-Hat Style</label>
+          <select id="hatStyle">
+            <option>Trap Rolls</option>
+            <option>Straight</option>
+            <option>Swung</option>
+            <option>Open</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="gen-btn" id="genBtn" onclick="generateBeat()">Generate Beat</button>
+
+      <div class="panel-label">Presets (offline)</div>
+      <div class="preset-chips" id="presetChips">
+        <span class="preset-chip" onclick="loadPreset('Classic Trap')">Classic Trap</span>
+        <span class="preset-chip" onclick="loadPreset('Boom Bap')">Boom Bap</span>
+        <span class="preset-chip" onclick="loadPreset('Afrobeats')">Afrobeats</span>
+        <span class="preset-chip" onclick="loadPreset('Drill')">Drill</span>
+        <span class="preset-chip" onclick="loadPreset('R&B Groove')">R&B Groove</span>
+        <span class="preset-chip" onclick="loadPreset('Lo-Fi')">Lo-Fi</span>
+        <span class="preset-chip" onclick="loadPreset('House')">House</span>
+        <span class="preset-chip" onclick="loadPreset('Dancehall')">Dancehall</span>
+      </div>
+
+      <div class="panel-label" style="margin-top:8px">History</div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: SEQUENCER -->
+  <div class="right-panel">
+    <div class="seq-hdr">
+      <div>
+        <div class="seq-title" id="beatTitle">Classic Trap · 140 BPM</div>
+        <div class="seq-desc" id="beatDesc">Heavy 808 kicks, tight snares on 2 and 4, rolling 16th hi-hats with trap flair.</div>
+      </div>
+      <div class="transport-btns">
+        <button class="t-btn" id="playBtn" onclick="togglePlay()" title="Play/Stop">&#9654;</button>
+        <button class="t-btn" id="loopBtn" onclick="toggleLoop()" title="Loop">&#8635;</button>
+        <button class="t-btn" onclick="clearAll()" title="Clear">&#9632;</button>
+        <div class="step-counter" id="stepCounter">1</div>
+      </div>
+    </div>
+
+    <div class="seq-body" id="seqBody">
+      <div class="beat-labels">
+        <div class="beat-label"><span>1</span><span></span><span></span><span></span><span>2</span><span></span><span></span><span></span><span>3</span><span></span><span></span><span></span><span>4</span><span></span><span></span><span></span></div>
+      </div>
+      <!-- Rows injected by JS -->
+      <div id="seqGrid"></div>
+
+      <!-- Velocity -->
+      <div class="vel-row" id="velRow"></div>
+
+      <!-- AI Description -->
+      <div class="ai-desc">
+        <div class="ai-desc-label">Sir Codex Says</div>
+        <div class="ai-desc-text" id="aiDescText">Load a preset or generate a beat with AI to get started. Type a description and hit Generate Beat — Sir Codex will craft a pattern and explain the vibe.</div>
+      </div>
+    </div>
+
+    <div class="export-row">
+      <button class="nav-btn" onclick="exportWAV()">Export WAV</button>
+      <button class="nav-btn" onclick="saveBeat()">Save Pattern</button>
+      <button class="nav-btn" onclick="shuffleVelocities()">Humanize</button>
+      <div style="flex:1"></div>
+      <button class="nav-btn primary" onclick="openInBeatMaker()">Open in Beat Maker &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── INSTRUMENTS ───────────────────────────────────────────────────────────
+const INSTRUMENTS = [
+  { id:'kick',  name:'Kick',       sub:'808 / Punch',   color:'#ef4444' },
+  { id:'snare', name:'Snare',      sub:'Crack / Clap',  color:'#f97316' },
+  { id:'hatc',  name:'Hi-Hat',     sub:'Closed',        color:'#eab308' },
+  { id:'hato',  name:'Open Hat',   sub:'Open',          color:'#84cc16' },
+  { id:'clap',  name:'Clap',       sub:'Layer',         color:'#22c55e' },
+  { id:'s808',  name:'808',        sub:'Sub Bass',      color:'#7c3aed' },
+  { id:'perc1', name:'Perc 1',     sub:'Hi Perc',       color:'#3b82f6' },
+  { id:'perc2', name:'Perc 2',     sub:'Lo Perc',       color:'#c9922a' },
+];
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let pattern = {};        // {instrId: [0..1 x 16]}
+let velocities = {};     // {instrId: [0..127 x 16]}
+let isPlaying = false;
+let isLooping = true;
+let currentStep = -1;
+let playInterval = null;
+let history = [];
+
+// Init empty pattern
+INSTRUMENTS.forEach(i => {
+  pattern[i.id] = Array(16).fill(0);
+  velocities[i.id] = Array(16).fill(100);
+});
+
+// ─── PRESETS ───────────────────────────────────────────────────────────────
+const PRESETS = {
+  'Classic Trap': {
+    bpm:140, swing:20,
+    desc:'Heavy 808 kicks, tight snares on 2 and 4, rolling 16th hi-hats with trap flair.',
+    pattern:{
+      kick: [1,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0],
+      snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],
+      hatc: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      hato: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0],
+      clap: [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],
+      s808: [1,0,0,0,0,0,0.5,0,0,1,0,0,0,0,0,0],
+      perc1:[0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,1],
+      perc2:[0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0],
+    }
+  },
+  'Boom Bap': {
+    bpm:90, swing:55,
+    desc:'Classic 90s hip-hop groove. Swung hi-hats, punchy snare on 2 and 4, deep kick placement.',
+    pattern:{
+      kick: [1,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0],
+      snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],
+      hatc: [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0],
+      hato: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0],
+      clap: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      s808: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      perc1:[0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0],
+      perc2:[0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0],
+    }
+  },
+  'Afrobeats': {
+    bpm:105, swing:30,
+    desc:'Infectious Afrobeats groove. Syncopated kick, layered percussion, call-and-response hi-hats.',
+    pattern:{
+      kick: [1,0,0,1,0,0,1,0,1,0,0,1,0,0,0,0],
+      snare:[0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],
+      hatc: [1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1],
+      hato: [0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0],
+      clap: [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],
+      s808: [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
+      perc1:[0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+      perc2:[1,0,1,0,0,0,1,0,1,0,1,0,0,0,1,0],
+    }
+  },
+  'Drill': {
+    bpm:140, swing:0,
+    desc:'UK/Chicago Drill. Sliding 808 bass, off-beat snare, stuttering hi-hat patterns.',
+    pattern:{
+      kick: [1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0],
+      snare:[0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
+      hatc: [1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,0],
+      hato: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      clap: [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1],
+      s808: [1,0,0,0.5,0,0,0,0,0,0,1,0,0,0.5,0,0],
+      perc1:[0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0],
+      perc2:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    }
+  },
+  'R&B Groove': {
+    bpm:95, swing:40,
+    desc:'Smooth R&B pocket. Laid-back kick, ghost snares, open hats on the upbeats.',
+    pattern:{
+      kick: [1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
+      snare:[0,0,0,0,1,0,0,0.5,0,0,0,0,1,0,0,0.5],
+      hatc: [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0],
+      hato: [0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+      clap: [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],
+      s808: [1,0,0,0,0,0,0,0,0,0,0,0.5,0,0,0,0],
+      perc1:[0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0],
+      perc2:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    }
+  },
+  'Lo-Fi': {
+    bpm:75, swing:60,
+    desc:'Chill lo-fi hip-hop. Dusty boom bap with heavy swing and soft ghost notes.',
+    pattern:{
+      kick: [1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0],
+      snare:[0,0,0,0,1,0,0,0.5,0,0,0,0,1,0,0,0],
+      hatc: [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0],
+      hato: [0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],
+      clap: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      s808: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      perc1:[0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0],
+      perc2:[0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0],
+    }
+  },
+  'House': {
+    bpm:128, swing:0,
+    desc:'Classic 4-on-the-floor house. Four-to-the-floor kick, offbeat claps, 8th note hats.',
+    pattern:{
+      kick: [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
+      snare:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      hatc: [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0],
+      hato: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      clap: [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],
+      s808: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      perc1:[0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+      perc2:[0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],
+    }
+  },
+  'Dancehall': {
+    bpm:110, swing:20,
+    desc:'Riddim-driven dancehall. Dembow kick pattern, heavy snare, syncopated percussion.',
+    pattern:{
+      kick: [1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0],
+      snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],
+      hatc: [1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,0],
+      hato: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      clap: [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],
+      s808: [1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
+      perc1:[0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+      perc2:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
+    }
+  }
+};
+
+// ─── BUILD GRID ─────────────────────────────────────────────────────────────
+function buildGrid() {
+  const grid = document.getElementById('seqGrid');
+  grid.innerHTML = '';
+  INSTRUMENTS.forEach(instr => {
+    const row = document.createElement('div');
+    row.className = 'seq-row';
+    row.innerHTML = `
+      <div class="row-info">
+        <div class="row-bar" style="background:${instr.color}"></div>
+        <div><div class="row-name">${instr.name}</div><div class="row-sub">${instr.sub}</div></div>
+      </div>
+      <div class="steps-grid" id="grid-${instr.id}"></div>`;
+    grid.appendChild(row);
+    renderRow(instr.id);
+  });
+  buildVelRow();
+}
+
+function renderRow(instrId) {
+  const container = document.getElementById(`grid-${instrId}`);
+  if (!container) return;
+  container.innerHTML = '';
+  const instr = INSTRUMENTS.find(i => i.id === instrId);
+  for (let s = 0; s < 16; s++) {
+    const v = pattern[instrId][s];
+    const btn = document.createElement('div');
+    btn.className = 'step' + (v === 1 ? ' on' : v > 0 ? ' ghost' : '');
+    btn.dataset.instr = instrId;
+    btn.dataset.step = s;
+    btn.onclick = () => toggleStep(instrId, s);
+    container.appendChild(btn);
+  }
+}
+
+function buildVelRow() {
+  const row = document.getElementById('velRow');
+  row.innerHTML = '';
+  for (let s = 0; s < 16; s++) {
+    const bar = document.createElement('div');
+    bar.className = 'vel-bar';
+    // use kick velocities as reference
+    const pct = (velocities.kick[s] / 127) * 100;
+    bar.style.height = pct + '%';
+    bar.title = `Step ${s+1}: ${velocities.kick[s]}`;
+    row.appendChild(bar);
+  }
+}
+
+function toggleStep(instrId, step) {
+  const v = pattern[instrId][step];
+  pattern[instrId][step] = v === 0 ? 1 : v === 1 ? 0.5 : 0;
+  renderRow(instrId);
+}
+
+// ─── PLAYBACK (WebAudio) ────────────────────────────────────────────────────
+let audioCtx = null;
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playDrum(type, velocity=1.0, time=0) {
+  const ctx = getCtx();
+  const t = time || ctx.currentTime;
+  const g = ctx.createGain();
+  g.connect(ctx.destination);
+  g.gain.setValueAtTime(velocity, t);
+
+  if (type === 'kick') {
+    const o = ctx.createOscillator();
+    o.connect(g);
+    o.frequency.setValueAtTime(150, t);
+    o.frequency.exponentialRampToValueAtTime(40, t + 0.3);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    o.start(t); o.stop(t + 0.4);
+  } else if (type === 's808') {
+    const o = ctx.createOscillator();
+    o.connect(g);
+    o.frequency.setValueAtTime(80, t);
+    o.frequency.exponentialRampToValueAtTime(28, t + 0.8);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+    o.start(t); o.stop(t + 0.9);
+  } else if (type === 'snare') {
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const f = ctx.createBiquadFilter();
+    f.type = 'bandpass'; f.frequency.value = 2000; f.Q.value = 0.5;
+    src.connect(f); f.connect(g);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    src.start(t); src.stop(t + 0.2);
+  } else if (type === 'clap') {
+    for (let i = 0; i < 3; i++) {
+      const offset = i * 0.012;
+      const buf = ctx.createBuffer(1, ctx.sampleRate * 0.1, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let j = 0; j < d.length; j++) d[j] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource(); src.buffer = buf;
+      const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 1500;
+      src.connect(f); f.connect(g);
+      src.start(t + offset); src.stop(t + offset + 0.1);
+    }
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+  } else if (type === 'hatc') {
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.06, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 8000;
+    src.connect(f); f.connect(g);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+    src.start(t); src.stop(t + 0.06);
+  } else if (type === 'hato') {
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 6000;
+    src.connect(f); f.connect(g);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+    src.start(t); src.stop(t + 0.3);
+  } else {
+    // perc1/perc2
+    const freq = type === 'perc1' ? 800 : 300;
+    const o = ctx.createOscillator();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(freq, t);
+    o.frequency.exponentialRampToValueAtTime(freq * 0.3, t + 0.08);
+    o.connect(g);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    o.start(t); o.stop(t + 0.1);
+  }
+}
+
+function togglePlay() {
+  if (isPlaying) stopPlayback(); else startPlayback();
+}
+
+function startPlayback() {
+  getCtx().resume();
+  isPlaying = true;
+  currentStep = -1;
+  document.getElementById('playBtn').innerHTML = '&#9646;&#9646;';
+  document.getElementById('playBtn').classList.add('active');
+  const bpm = parseInt(document.getElementById('bpmInput').value) || 140;
+  const interval = (60 / bpm / 4) * 1000;
+  playInterval = setInterval(() => {
+    currentStep = (currentStep + 1) % 16;
+    document.getElementById('stepCounter').textContent = currentStep + 1;
+    // Highlight active column
+    document.querySelectorAll('.step').forEach(el => el.classList.remove('active-step'));
+    document.querySelectorAll(`.step[data-step="${currentStep}"]`).forEach(el => el.classList.add('active-step'));
+    // Play sounds
+    INSTRUMENTS.forEach(instr => {
+      const v = pattern[instr.id][currentStep];
+      if (v > 0) playDrum(instr.id, v);
+    });
+    if (!isLooping && currentStep === 15) stopPlayback();
+  }, interval);
+}
+
+function stopPlayback() {
+  isPlaying = false;
+  clearInterval(playInterval);
+  currentStep = -1;
+  document.getElementById('playBtn').innerHTML = '&#9654;';
+  document.getElementById('playBtn').classList.remove('active');
+  document.getElementById('stepCounter').textContent = '1';
+  document.querySelectorAll('.step').forEach(el => el.classList.remove('active-step'));
+}
+
+function toggleLoop() {
+  isLooping = !isLooping;
+  document.getElementById('loopBtn').classList.toggle('active', isLooping);
+}
+
+function clearAll() {
+  stopPlayback();
+  INSTRUMENTS.forEach(i => { pattern[i.id] = Array(16).fill(0); });
+  buildGrid();
+}
+
+// ─── LOAD PRESET ────────────────────────────────────────────────────────────
+function loadPreset(name) {
+  const p = PRESETS[name];
+  if (!p) return;
+  document.getElementById('bpmInput').value = p.bpm;
+  document.getElementById('beatTitle').textContent = `${name} · ${p.bpm} BPM`;
+  document.getElementById('beatDesc').textContent = p.desc;
+  document.getElementById('aiDescText').textContent = p.desc;
+  INSTRUMENTS.forEach(i => {
+    pattern[i.id] = p.pattern[i.id] ? [...p.pattern[i.id]] : Array(16).fill(0);
+  });
+  if (isPlaying) { stopPlayback(); setTimeout(startPlayback, 100); }
+  buildGrid();
+  addHistory(name, p.bpm, p.desc);
+}
+
+// ─── AI GENERATION ──────────────────────────────────────────────────────────
+async function generateBeat() {
+  const prompt = document.getElementById('promptArea').value.trim();
+  const activeStyles = [...document.querySelectorAll('.chip.active')].map(c => c.dataset.style);
+  const styleStr = activeStyles.length ? activeStyles.join(', ') : 'any style';
+  const bpm = document.getElementById('bpmInput').value;
+  const density = document.getElementById('densitySelect').value;
+  const swing = document.getElementById('swingSlider').value;
+
+  const fullPrompt = `Generate a beat pattern for: "${prompt || styleStr}". 
+BPM: ${bpm}, Density: ${density}, Swing: ${swing}%.
+Return ONLY valid JSON with this exact structure (no extra text):
+{
+  "title": "beat name",
+  "description": "2-3 sentence description of the vibe",
+  "bpm": ${bpm},
+  "pattern": {
+    "kick":  [16 values, each 0, 0.5, or 1],
+    "snare": [16 values],
+    "hatc":  [16 values],
+    "hato":  [16 values],
+    "clap":  [16 values],
+    "s808":  [16 values],
+    "perc1": [16 values],
+    "perc2": [16 values]
+  }
+}`;
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.textContent = 'Generating...';
+
+  try {
+    const res = await fetch('http://127.0.0.1:5500/ai/codex', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ message: fullPrompt, model: 'llama3.1:8b' }),
+      signal: AbortSignal.timeout(30000)
+    });
+    const data = await res.json();
+    const raw = data.response || data.message || '';
+    // Extract JSON from response
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('No JSON in response');
+    const beat = JSON.parse(match[0]);
+    applyGeneratedBeat(beat);
+  } catch (err) {
+    // Fallback: pick closest preset
+    const styles = ['Classic Trap','Boom Bap','Afrobeats','Drill','R&B Groove','Lo-Fi','House','Dancehall'];
+    const chosen = styles[Math.floor(Math.random() * styles.length)];
+    loadPreset(chosen);
+    document.getElementById('aiDescText').textContent = `(AI offline — loaded ${chosen} preset) ${PRESETS[chosen].desc}`;
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btn.textContent = 'Generate Beat';
+  }
+}
+
+function applyGeneratedBeat(beat) {
+  if (beat.bpm) document.getElementById('bpmInput').value = beat.bpm;
+  document.getElementById('beatTitle').textContent = `${beat.title || 'AI Beat'} · ${beat.bpm || document.getElementById('bpmInput').value} BPM`;
+  document.getElementById('beatDesc').textContent = beat.description || '';
+  document.getElementById('aiDescText').textContent = beat.description || '';
+  INSTRUMENTS.forEach(i => {
+    if (beat.pattern && beat.pattern[i.id]) {
+      pattern[i.id] = beat.pattern[i.id].slice(0,16).map(Number);
+    }
+  });
+  if (isPlaying) { stopPlayback(); setTimeout(startPlayback, 100); }
+  buildGrid();
+  addHistory(beat.title || 'AI Beat', beat.bpm, beat.description);
+}
+
+// ─── HISTORY ────────────────────────────────────────────────────────────────
+function addHistory(name, bpm, desc) {
+  history.unshift({ name, bpm, desc, pattern: JSON.parse(JSON.stringify(pattern)) });
+  if (history.length > 5) history.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  list.innerHTML = '';
+  history.forEach((item, idx) => {
+    const el = document.createElement('div');
+    el.className = 'hist-item';
+    el.innerHTML = `<div class="hist-name">${item.name}</div><div class="hist-meta">${item.bpm} BPM</div>`;
+    el.onclick = () => {
+      INSTRUMENTS.forEach(i => { pattern[i.id] = [...item.pattern[i.id]]; });
+      document.getElementById('bpmInput').value = item.bpm;
+      document.getElementById('beatTitle').textContent = `${item.name} · ${item.bpm} BPM`;
+      buildGrid();
+      if (isPlaying) { stopPlayback(); setTimeout(startPlayback, 100); }
+    };
+    list.appendChild(el);
+  });
+}
+
+// ─── HUMANIZE ────────────────────────────────────────────────────────────────
+function shuffleVelocities() {
+  INSTRUMENTS.forEach(i => {
+    for (let s = 0; s < 16; s++) {
+      if (pattern[i.id][s] > 0) {
+        velocities[i.id][s] = Math.floor(80 + Math.random() * 47);
+      }
+    }
+  });
+  buildVelRow();
+}
+
+// ─── EXPORT ─────────────────────────────────────────────────────────────────
+function exportMIDI() {
+  alert('MIDI export: pattern saved to localStorage. Open FL Studio or Ableton and paste MIDI.');
+  saveBeat();
+}
+
+function exportWAV() {
+  alert('WAV export coming soon — use the Beat Maker page for full audio rendering.');
+}
+
+function saveBeat() {
+  const name = document.getElementById('beatTitle').textContent || 'Beat';
+  const saves = JSON.parse(localStorage.getItem('goatBeats') || '[]');
+  saves.unshift({ name, bpm: document.getElementById('bpmInput').value, pattern: JSON.parse(JSON.stringify(pattern)) });
+  localStorage.setItem('goatBeats', JSON.stringify(saves.slice(0,20)));
+  const btn = event?.target;
+  if (btn) { const orig = btn.textContent; btn.textContent = 'Saved!'; setTimeout(()=>btn.textContent=orig,1500); }
+}
+
+function openInBeatMaker() {
+  localStorage.setItem('goatImportBeat', JSON.stringify({
+    bpm: document.getElementById('bpmInput').value,
+    pattern
+  }));
+  window.location.href = 'beat-maker.html';
+}
+
+// ─── PROMPT CHARS ───────────────────────────────────────────────────────────
+document.getElementById('promptArea').addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length;
+});
+
+// ─── STYLE CHIPS ────────────────────────────────────────────────────────────
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', function() {
+    this.classList.toggle('active');
+    if (this.classList.contains('active')) {
+      const prompt = document.getElementById('promptArea');
+      const style = this.dataset.style;
+      if (!prompt.value.includes(style)) {
+        prompt.value = (prompt.value + ' ' + style).trim();
+        document.getElementById('charCount').textContent = prompt.value.length;
+      }
+    }
+  });
+});
+
+// ─── SERVER CHECK ───────────────────────────────────────────────────────────
+async function checkServer() {
+  try {
+    const r = await fetch('http://127.0.0.1:5500/status', { signal: AbortSignal.timeout(2000) });
+    if (r.ok) {
+      document.getElementById('serverDot').classList.remove('offline');
+      document.getElementById('serverStatus').textContent = 'Sir Codex Online';
+      return;
+    }
+  } catch {}
+  document.getElementById('serverDot').classList.add('offline');
+  document.getElementById('serverStatus').textContent = 'AI Offline — Presets Available';
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+buildGrid();
+loadPreset('Classic Trap');
+checkServer();
+document.getElementById('loopBtn').classList.add('active');
+</script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

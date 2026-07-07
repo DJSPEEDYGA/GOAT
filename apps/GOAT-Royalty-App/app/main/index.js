@@ -1,325 +1,308 @@
 /**
- * Main Entry Point for Self-Contained GOAT Royalty App
- * 
- * This is the main entry point for the Electron-based self-contained application.
- * It initializes all systems including:
- * - Self-Healing System
- * - Self-Building System
- * - Built-in Development Tools
- * - Google Drive Pipeline
- * - Offline Data Service
- * - AI Assistant Hub
- * 
- * @module MainEntryPoint
+ * GOAT Royalty App — Electron Main Process
+ * Cross-platform: macOS (.dmg), Windows (.exe), Linux (.AppImage/.deb)
  */
 
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
-const path = require('path');
-const fs = require('fs').promises;
+const { app, BrowserWindow, ipcMain, dialog, shell, Menu, Tray, nativeTheme } = require('electron');
+const path   = require('path');
+const fs     = require('fs');
+const http   = require('http');
+const { exec, spawn } = require('child_process');
 
-// Import core systems
-const SelfHealingSystem = require('./self-healing');
-const SelfBuildingSystem = require('./self-building');
-const BuiltInTools = require('./builtin-tools');
+// ─── PATHS ───────────────────────────────────────────────────────────────────
+const ROOT     = path.join(__dirname, '..', '..');
+const WEB_APP  = path.join(ROOT, 'web-app');
+const INTEL    = path.join(ROOT, 'goat-intel-server', 'goat_intel.py');
+const ICON_MAC = path.join(ROOT, 'assets', 'icon.icns');
+const ICON_WIN = path.join(ROOT, 'assets', 'icon.ico');
+const ICON_PNG = path.join(ROOT, 'assets', 'icon.png');
 
-class GOATRoyaltyApp {
-  constructor() {
-    this.window = null;
-    this.selfHealingSystem = null;
-    this.selfBuildingSystem = null;
-    this.builtInTools = null;
-    this.isReady = false;
-    
-    // Application paths
-    this.paths = {
-      root: app.getAppPath(),
-      userData: app.getPath('userData'),
-      logs: path.join(app.getPath('userData'), 'logs'),
-      data: path.join(app.getPath('userData'), 'data'),
-      backups: path.join(app.getPath('userData'), 'backups'),
-      cache: path.join(app.getPath('userData'), 'cache')
-    };
+function getIcon() {
+  if (process.platform === 'darwin') return fs.existsSync(ICON_MAC) ? ICON_MAC : ICON_PNG;
+  if (process.platform === 'win32')  return fs.existsSync(ICON_WIN) ? ICON_WIN : ICON_PNG;
+  return ICON_PNG;
+}
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let mainWindow   = null;
+let tray         = null;
+let intelProcess = null;
+let intelPort    = 5500;
+
+// ─── INTEL SERVER ────────────────────────────────────────────────────────────
+function startIntelServer() {
+  if (!fs.existsSync(INTEL)) {
+    console.log('[GOAT] Intel server not found at', INTEL);
+    return;
   }
-  
-  /**
-   * Initialize the application
-   */
-  async initialize() {
-    console.log('🐐 Initializing GOAT Royalty App...');
-    
-    try {
-      // Ensure directories exist
-      await this.ensureDirectories();
-      
-      // Initialize self-healing system
-      console.log('🔧 Initializing Self-Healing System...');
-      this.selfHealingSystem = new SelfHealingSystem({
-        logFile: path.join(this.paths.logs, 'self-healing.log'),
-        enableConsole: true
-      });
-      
-      // Initialize self-building system
-      console.log('🏗️  Initializing Self-Building System...');
-      this.selfBuildingSystem = new SelfBuildingSystem({
-        github: {
-          owner: 'DJSPEEDYGA',
-          repo: 'GOAT-Royalty-App',
-          branch: 'main',
-          token: process.env.GITHUB_TOKEN
-        },
-        update: {
-          autoUpdate: true,
-          checkInterval: 3600000, // 1 hour
-          backupBeforeUpdate: true
-        },
-        rollback: {
-          enabled: true,
-          maxBackups: 5,
-          backupDir: this.paths.backups
-        },
-        logFile: path.join(this.paths.logs, 'self-building.log'),
-        enableConsole: true
-      });
-      
-      // Initialize built-in tools
-      console.log('🛠️  Initializing Built-in Development Tools...');
-      this.builtInTools = new BuiltInTools();
-      
-      // Register IPC handlers
-      this.registerIPCHandlers();
-      
-      this.isReady = true;
-      console.log('✅ GOAT Royalty App initialized successfully!');
-      
-    } catch (error) {
-      console.error('❌ Failed to initialize application:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Ensure all required directories exist
-   */
-  async ensureDirectories() {
-    const dirs = Object.values(this.paths);
-    for (const dir of dirs) {
-      await fs.mkdir(dir, { recursive: true });
-    }
-  }
-  
-  /**
-   * Create the main application window
-   */
-  async createWindow() {
-    console.log('🪟 Creating main window...');
-    
-    this.window = new BrowserWindow({
-      width: 1400,
-      height: 900,
-      minWidth: 1200,
-      minHeight: 700,
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false,
-        enableRemoteModule: true
-      },
-      title: '🐐 GOAT Royalty App',
-      icon: path.join(__dirname, '../../assets/icon.png')
-    });
-    
-    // Load the application
-    const indexPath = path.join(__dirname, '../../dist/index.html');
-    
-    // Check if built version exists
-    try {
-      await fs.access(indexPath);
-      this.window.loadFile(indexPath);
-    } catch (error) {
-      // Fall back to development server
-      console.log('Built version not found, loading from development server...');
-      this.window.loadURL('http://localhost:3000');
-    }
-    
-    // Open DevTools in development mode
-    if (process.env.NODE_ENV === 'development') {
-      this.window.webContents.openDevTools();
-    }
-    
-    // Handle window closed
-    this.window.on('closed', () => {
-      this.window = null;
-    });
-    
-    console.log('✅ Main window created successfully!');
-  }
-  
-  /**
-   * Register IPC handlers for communication with renderer process
-   */
-  registerIPCHandlers() {
-    console.log('📡 Registering IPC handlers...');
-    
-    // System status handlers
-    ipcMain.handle('get-system-status', async () => {
-      return {
-        healing: this.selfHealingSystem?.getSystemStatus(),
-        building: this.selfBuildingSystem?.getSystemStatus(),
-        tools: {
-          codeEditor: true,
-          terminal: true,
-          gitClient: true,
-          fileExplorer: true,
-          processManager: true,
-          systemMonitor: true
-        },
-        paths: this.paths,
-        isReady: this.isReady
-      };
-    });
-    
-    // Self-healing handlers
-    ipcMain.handle('check-health', async () => {
-      if (!this.selfHealingSystem) {
-        return { success: false, error: 'Self-healing system not initialized' };
-      }
-      return await this.selfHealingSystem.checkSystemHealth();
-    });
-    
-    ipcMain.handle('get-health-history', async () => {
-      if (!this.selfHealingSystem) {
-        return { success: false, error: 'Self-healing system not initialized' };
-      }
-      return { success: true, history: this.selfHealingSystem.getHealthHistory() };
-    });
-    
-    // Self-building handlers
-    ipcMain.handle('check-updates', async () => {
-      if (!this.selfBuildingSystem) {
-        return { success: false, error: 'Self-building system not initialized' };
-      }
-      return await this.selfBuildingSystem.checkForUpdates();
-    });
-    
-    ipcMain.handle('perform-update', async (event, updateInfo) => {
-      if (!this.selfBuildingSystem) {
-        return { success: false, error: 'Self-building system not initialized' };
-      }
-      return await this.selfBuildingSystem.performUpdate(updateInfo);
-    });
-    
-    ipcMain.handle('perform-build', async (event, options) => {
-      if (!this.selfBuildingSystem) {
-        return { success: false, error: 'Self-building system not initialized' };
-      }
-      return await this.selfBuildingSystem.performBuild(options);
-    });
-    
-    ipcMain.handle('get-build-history', async () => {
-      if (!this.selfBuildingSystem) {
-        return { success: false, error: 'Self-building system not initialized' };
-      }
-      return { success: true, history: this.selfBuildingSystem.buildHistory };
-    });
-    
-    ipcMain.handle('get-update-history', async () => {
-      if (!this.selfBuildingSystem) {
-        return { success: false, error: 'Self-building system not initialized' };
-      }
-      return { success: true, history: this.selfBuildingSystem.updateHistory };
-    });
-    
-    ipcMain.handle('perform-rollback', async (event, backupName) => {
-      if (!this.selfBuildingSystem) {
-        return { success: false, error: 'Self-building system not initialized' };
-      }
-      return await this.selfBuildingSystem.performRollback(backupName);
-    });
-    
-    ipcMain.handle('hot-reload', async (event, modulePath) => {
-      if (!this.selfBuildingSystem) {
-        return { success: false, error: 'Self-building system not initialized' };
-      }
-      return await this.selfBuildingSystem.hotReload(modulePath);
-    });
-    
-    // File system handlers
-    ipcMain.handle('select-file', async () => {
-      const result = await dialog.showOpenDialog(this.window, {
-        properties: ['openFile', 'openDirectory']
-      });
-      return result;
-    });
-    
-    ipcMain.handle('save-file', async (event, defaultPath, content) => {
-      const result = await dialog.showSaveDialog(this.window, {
-        defaultPath: defaultPath
-      });
-      
-      if (result.canceled) {
-        return { success: false, canceled: true };
-      }
-      
-      await fs.writeFile(result.filePath, content);
-      return { success: true, filePath: result.filePath };
-    });
-    
-    console.log('✅ IPC handlers registered successfully!');
-  }
-  
-  /**
-   * Start the application
-   */
-  async start() {
-    console.log('🚀 Starting GOAT Royalty App...');
-    
-    // Wait for app to be ready
-    await app.whenReady();
-    
-    // Initialize systems
-    await this.initialize();
-    
-    // Create window
-    await this.createWindow();
-    
-    // Handle app activation
-    app.on('activate', async () => {
-      if (BrowserWindow.getAllWindows().length === 0) {
-        await this.createWindow();
-      }
-    });
-    
-    // Handle app quit
-    app.on('before-quit', async () => {
-      console.log('🛑 Shutting down GOAT Royalty App...');
-      
-      // Shutdown systems
-      if (this.selfHealingSystem) {
-        await this.selfHealingSystem.shutdown();
-      }
-      
-      if (this.selfBuildingSystem) {
-        await this.selfBuildingSystem.shutdown();
-      }
-      
-      console.log('✅ GOAT Royalty App shut down successfully!');
-    });
-    
-    // Handle all windows closed
-    app.on('window-all-closed', () => {
-      if (process.platform !== 'darwin') {
-        app.quit();
-      }
-    });
-    
-    console.log('✅ GOAT Royalty App started successfully!');
+
+  const python = process.platform === 'win32' ? 'python' : 'python3';
+  intelProcess = spawn(python, [INTEL], {
+    cwd: path.dirname(INTEL),
+    env: { ...process.env, PYTHONUNBUFFERED: '1' }
+  });
+
+  intelProcess.stdout.on('data', d => console.log('[Intel]', d.toString().trim()));
+  intelProcess.stderr.on('data', d => console.log('[Intel ERR]', d.toString().trim()));
+  intelProcess.on('exit', code => console.log('[Intel] exited with code', code));
+  console.log('[GOAT] Intel server started (PID', intelProcess.pid, ')');
+}
+
+function stopIntelServer() {
+  if (intelProcess) {
+    intelProcess.kill();
+    intelProcess = null;
   }
 }
 
-// Create and start the application
-const goatRoyaltyApp = new GOATRoyaltyApp();
-goatRoyaltyApp.start().catch(error => {
-  console.error('Failed to start application:', error);
-  process.exit(1);
+function checkIntel(cb) {
+  http.get(`http://127.0.0.1:${intelPort}/status`, res => {
+    cb(res.statusCode === 200);
+  }).on('error', () => cb(false));
+}
+
+// ─── MENU ─────────────────────────────────────────────────────────────────────
+function buildMenu() {
+  const template = [
+    {
+      label: 'GOAT',
+      submenu: [
+        { label: 'Production Hub',   click: () => navigate('goat-production-hub.html') },
+        { label: 'Beat Maker',       click: () => navigate('beat-maker.html') },
+        { label: 'AI Beats',         click: () => navigate('goat-ai-beats.html') },
+        { label: 'Synth',            click: () => navigate('goat-synth.html') },
+        { label: 'EQ + Compressor',  click: () => navigate('goat-eq-comp.html') },
+        { label: 'FX Rack',          click: () => navigate('goat-fx-rack.html') },
+        { label: 'Auto-Tune',        click: () => navigate('goat-autotune.html') },
+        { label: 'Stem Splitter',    click: () => navigate('goat-stem-splitter.html') },
+        { label: 'Spectrum',         click: () => navigate('goat-spectrum.html') },
+        { label: 'Sample Slicer',    click: () => navigate('goat-slicer.html') },
+        { type: 'separator' },
+        { label: 'AI Command Center', click: () => navigate('goat-ai-command.html') },
+        { label: 'Dr. Devin',        click: () => navigate('dr-devin.html') },
+        { type: 'separator' },
+        { label: 'Reload',           role: 'reload' },
+        { label: 'Quit GOAT',        role: 'quit' }
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        { label: 'Full Screen',      role: 'togglefullscreen' },
+        { label: 'Zoom In',          role: 'zoomin' },
+        { label: 'Zoom Out',         role: 'zoomout' },
+        { label: 'Reset Zoom',       role: 'resetzoom' },
+        { type: 'separator' },
+        { label: 'Developer Tools',  role: 'toggleDevTools' }
+      ]
+    },
+    {
+      label: 'Window',
+      submenu: [
+        { role: 'minimize' },
+        { role: 'zoom' },
+        { role: 'close' }
+      ]
+    }
+  ];
+
+  if (process.platform === 'darwin') {
+    template[0].submenu.unshift(
+      { label: 'About GOAT Royalty App', role: 'about' },
+      { type: 'separator' }
+    );
+  }
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
+function navigate(page) {
+  if (mainWindow) {
+    mainWindow.loadFile(path.join(WEB_APP, page));
+  }
+}
+
+// ─── WINDOW ───────────────────────────────────────────────────────────────────
+function createWindow() {
+  nativeTheme.themeSource = 'dark';
+
+  mainWindow = new BrowserWindow({
+    width:  1440,
+    height: 900,
+    minWidth:  1100,
+    minHeight: 700,
+    icon: getIcon(),
+    title: 'GOAT Royalty App',
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    backgroundColor: '#060608',
+    show: false,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
+      webSecurity: false,          // allow local file:// resources
+      allowRunningInsecureContent: true
+    }
+  });
+
+  // Load Production Hub as home screen
+  const home = path.join(WEB_APP, 'goat-production-hub.html');
+  if (fs.existsSync(home)) {
+    mainWindow.loadFile(home);
+  } else {
+    // fallback to web-app index
+    const idx = path.join(WEB_APP, 'index.html');
+    mainWindow.loadFile(fs.existsSync(idx) ? idx : path.join(ROOT, 'index.html'));
+  }
+
+  // Show when ready to avoid white flash
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+    if (process.env.NODE_ENV === 'development') {
+      mainWindow.webContents.openDevTools();
+    }
+  });
+
+  mainWindow.on('closed', () => { mainWindow = null; });
+
+  buildMenu();
+}
+
+// ─── TRAY ─────────────────────────────────────────────────────────────────────
+function createTray() {
+  const iconPath = fs.existsSync(ICON_PNG) ? ICON_PNG : null;
+  if (!iconPath) return;
+
+  tray = new Tray(iconPath);
+  tray.setToolTip('GOAT Royalty App');
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: 'Open GOAT',   click: () => { if (mainWindow) mainWindow.show(); else createWindow(); } },
+    { label: 'Beat Maker',  click: () => navigate('beat-maker.html') },
+    { label: 'AI Beats',    click: () => navigate('goat-ai-beats.html') },
+    { type: 'separator' },
+    { label: 'Quit',        click: () => app.quit() }
+  ]));
+  tray.on('double-click', () => { if (mainWindow) mainWindow.show(); });
+}
+
+// ─── IPC HANDLERS ─────────────────────────────────────────────────────────────
+function registerIPC() {
+  // Navigate to a page
+  ipcMain.handle('navigate', (_, page) => navigate(page));
+
+  // Launch a native app by path
+  ipcMain.handle('launch-app', (_, appPath) => {
+    return new Promise(resolve => {
+      const cmd = process.platform === 'win32'
+        ? `start "" "${appPath}"`
+        : process.platform === 'darwin'
+          ? `open "${appPath}"`
+          : `xdg-open "${appPath}"`;
+      exec(cmd, err => resolve({ ok: !err, error: err?.message }));
+    });
+  });
+
+  // Open file/folder picker
+  ipcMain.handle('pick-file', async (_, opts) => {
+    return dialog.showOpenDialog(mainWindow, opts || { properties: ['openFile'] });
+  });
+
+  ipcMain.handle('pick-folder', async () => {
+    return dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] });
+  });
+
+  // Save file dialog
+  ipcMain.handle('save-file', async (_, { defaultPath, content }) => {
+    const result = await dialog.showSaveDialog(mainWindow, { defaultPath });
+    if (result.canceled) return { ok: false };
+    fs.writeFileSync(result.filePath, content);
+    return { ok: true, filePath: result.filePath };
+  });
+
+  // Open in system browser
+  ipcMain.handle('open-external', (_, url) => shell.openExternal(url));
+
+  // Intel server status
+  ipcMain.handle('intel-status', () => new Promise(r => checkIntel(ok => r({ ok }))));
+
+  // Read file from disk (for audio loading etc)
+  ipcMain.handle('read-file', (_, filePath) => {
+    try {
+      return { ok: true, data: fs.readFileSync(filePath).toString('base64') };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  });
+
+  // Platform info
+  ipcMain.handle('platform', () => process.platform);
+
+  // App version
+  ipcMain.handle('version', () => app.getVersion());
+
+  // Minimize / maximize
+  ipcMain.on('window-minimize', () => mainWindow?.minimize());
+  ipcMain.on('window-maximize', () => {
+    if (mainWindow?.isMaximized()) mainWindow.unmaximize();
+    else mainWindow?.maximize();
+  });
+  ipcMain.on('window-close', () => mainWindow?.close());
+}
+
+// ─── PRELOAD (create if missing) ──────────────────────────────────────────────
+function ensurePreload() {
+  const preload = path.join(__dirname, 'preload.js');
+  if (!fs.existsSync(preload)) {
+    fs.writeFileSync(preload, `
+const { contextBridge, ipcRenderer } = require('electron');
+contextBridge.exposeInMainWorld('goat', {
+  navigate:     page  => ipcRenderer.invoke('navigate', page),
+  launchApp:    p     => ipcRenderer.invoke('launch-app', p),
+  pickFile:     opts  => ipcRenderer.invoke('pick-file', opts),
+  pickFolder:   ()    => ipcRenderer.invoke('pick-folder'),
+  saveFile:     opts  => ipcRenderer.invoke('save-file', opts),
+  openExternal: url   => ipcRenderer.invoke('open-external', url),
+  intelStatus:  ()    => ipcRenderer.invoke('intel-status'),
+  readFile:     p     => ipcRenderer.invoke('read-file', p),
+  platform:     ()    => ipcRenderer.invoke('platform'),
+  version:      ()    => ipcRenderer.invoke('version'),
+  minimize:     ()    => ipcRenderer.send('window-minimize'),
+  maximize:     ()    => ipcRenderer.send('window-maximize'),
+  close:        ()    => ipcRenderer.send('window-close'),
+});
+`);
+  }
+}
+
+// ─── APP LIFECYCLE ────────────────────────────────────────────────────────────
+app.whenReady().then(() => {
+  ensurePreload();
+  registerIPC();
+  startIntelServer();
+  createWindow();
+  createTray();
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
 });
 
-module.exports = GOATRoyaltyApp;
+app.on('window-all-closed', () => {
+  // On macOS keep app alive in tray
+  if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('before-quit', () => {
+  stopIntelServer();
+});
+
+// Security: block new window creation to external URLs
+app.on('web-contents-created', (_, contents) => {
+  contents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('http://127.0.0.1') || url.startsWith('file://')) {
+      return { action: 'allow' };
+    }
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
+});

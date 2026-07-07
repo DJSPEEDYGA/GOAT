@@ -1,13 +1,14 @@
 #!/bin/bash
 # ===================================================
-#  Portable AI - Fast Web Chat (Mac)
+#  Master Oscar Console — GOAT Force AI (Mac)
 # ===================================================
 
 echo "==================================================="
-echo "    Portable AI - Fast Web Chat Mode (Mac)"
+echo "    🐐 Master Oscar Console — GOAT Force AI (Mac)"
 echo "==================================================="
 echo ""
-echo "  Launches the AI engine + browser chat UI."
+echo "  Launches Ollama AI + Master Oscar Console."
+echo "  Touch Studio · Gen UI · Voice · Customize"
 echo "  All chats auto-save to the USB drive."
 echo ""
 
@@ -58,8 +59,9 @@ fi
 
 echo ""
 echo "==================================================="
-echo "  AI ENGINE IS RUNNING"
-echo "  Chat UI will open automatically."
+echo "  🐐 OSCAR CONSOLE IS RUNNING"
+echo "  Opens at: http://127.0.0.1:3333/"
+echo "  Touch Studio · Gen UI · Voice · Customize"
 echo "  Press Ctrl+C to shut down."
 echo "==================================================="
 echo ""

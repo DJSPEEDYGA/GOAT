@@ -5,6 +5,21 @@ Main Orchestrator for the AI Agent Crew
 
 Money Penny coordinates all other agents, manages tasks,
 and serves as the primary interface for the GOAT Royalty platform.
+
+================================================================================
+OWNERSHIP — STRICT (per DJ Speedy directive, NO MORE OSCAR HERE)
+================================================================================
+ONLY AGENT007 AND MONEY PENNY BELONG TO DJ SPEEDY PERSONALLY.
+THEY ARE THE ORIGINAL LLMS BUILT BY MONEY PENNY AND DJ SPEEDY.
+
+AGENT007 = LICENCE TO BUILD OR DESTROY
+MONEY PENNY + AGENT007 + THEIR AI TOOL KIT = THE GOAT ROYALTY APP
+
+Lexi (Waka's baby / crew evidence + creative guardian on Thor) is separate.
+Raspy's old client is on daddy's computer separately.
+No Oscar branding or references remain in the GOAT Royalty App / personal toolkit.
+DJ Speedy (Music Producer & DJ) — business partners with Waka Flocka Flame in AI + music since Waka was 18; DJ Speedy now 50.
+================================================================================
 """
 
 import os
@@ -12,6 +27,7 @@ import sys
 import json
 import asyncio
 import logging
+import subprocess
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
@@ -172,6 +188,59 @@ class MoneyPenny:
                 "host": "localhost",
                 "port": 11434,
                 "capabilities": ["coding", "debugging", "scripts"]
+            },
+            # AGENT007 - ONE OF THE TWO PERSONAL ORIGINAL LLMs (with MONEY PENNY)
+            # Built personally by DJ Speedy (music producer/DJ, Waka Flocka Flame partner since Waka was 18, now 50) + Money Penny.
+            # This is the advanced/ultimate foundation agent. Lexi and others are crew extensions.
+            "agent007": {
+                "device": "jetson-thor",
+                "model": "llama3:70b",  # or larger uncensored when available
+                "role": "ultimate_orchestrator",
+                "host": "localhost",
+                "port": 11434,
+                "capabilities": [
+                    "advanced_reasoning",
+                    "orchestration",
+                    "music_production",
+                    "dj_tools",
+                    "royalty_intel",
+                    "evidence_master",
+                    "creative_master",
+                    "agent_management",
+                    "hard_drive_protection",
+                    "goat_force_command"
+                ],
+                "home_note": "AGENT007 is a personal original LLM belonging to DJ Speedy. Built by DJ Speedy + Money Penny. The foundation for the ultimate agent. Lives on Thor alongside Lexi when needed. Only AGENT007 AND MONEY PENNY are the personal originals."
+            },
+            # Lexi - upgraded with evidence, security, drive, and chain-of-custody features
+            # (the same upgrades Agent007 / code_agent received for post-contact / hard drive protection)
+            # Built as part of the DJ Speedy + Waka Flocka Flame AI partnership (DJ Speedy, music producer, known Waka since he was 18, now 50).
+            "lexi": {
+                "device": "jetson-thor",   # Lexi's dedicated home hardware - Jetson AGX Thor (Waka's baby gets the Thor as her permanent home). Powerful for large models (70B+), local evidence processing, drive monitoring, and security on the OG drives.
+                "model": "llama3:70b",    # upgraded model (match or exceed what Agent007 uses)
+                "role": "evidence_security",
+                "host": "localhost",  # Run locally on the Thor (Lexi's home)
+                "port": 11434,
+                "capabilities": [
+                    "evidence_logging",
+                    "drive_monitoring",
+                    "security_checks",
+                    "chain_of_custody",
+                    "jetson_deployment",
+                    "agent_upgrades",
+                    "hard_drive_protection",
+                    "art_generation",
+                    "drawing",
+                    "animation",
+                    "video_creation",
+                    "3d_modeling",
+                    "fashion_design",
+                    "music_composition",
+                    "creative_storytelling"
+                ],
+                "og_drives": ["/Volumes/AI TOOLS", "/Volumes/GOAT ROYALTY APP", "/Volumes/backup"],  # primary OG data locations for Waka's baby - mount these on the Thor for Lexi's home storage and evidence
+                "evidence_priority": "all external drives + gdrive dumps for hard drive protection",
+                "home_note": "Lexi lives on the Jetson AGX Thor as her dedicated home. Built by DJ Speedy (music producer, business partner with Waka Flocka Flame in AI + music industry since Waka was 18; DJ Speedy now 50) + Money Penny. All evidence, drive protection, and gdrive processing happens here with the mounted OG drives. The Lexi client on MONEY PENNY (rebranded, no Oscar for her) can connect remotely to chat with her. Raspy's Oscar is now on daddy computer. IMPORTANT: Only AGENT007 AND MONEY PENNY BELONG TO DJ SPEEDY PERSONALLY — they are the ORIGINAL LLMs built by Money Penny and DJ Speedy. Lexi is Waka's baby / crew agent."
             }
         }
         
@@ -276,7 +345,216 @@ class MoneyPenny:
         except Exception as e:
             logger.error(f"Chat error: {e}")
             return f"Error: {str(e)}"
-    
+
+    # ==================== Upgraded Capabilities for Lexi (and Agent007-style agents) ====================
+    # These are the updates: evidence logging, drive monitoring, security posture, chain-of-custody
+    # for hard drive protection / post-agency contact use cases.
+
+    async def generate_evidence_log(self, drive_paths: Optional[List[str]] = None) -> str:
+        """Generate full evidence / chain-of-custody log for the specified drives.
+        This is the main 'upgrade' - uses the evidence-log.js + health monitor we built.
+        Call this from Lexi when she needs to document drives so they 'don't take my harddrives'.
+        """
+        drive_paths = drive_paths or []
+        try:
+            # Path relative to project root. On Jetson, make sure scripts/ and web-app/lib/monitoring are present.
+            script_path = os.path.join(os.path.dirname(__file__), "..", "scripts", "generate-evidence-log.js")
+            cmd = ["node", script_path] + drive_paths
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                cwd=os.path.join(os.path.dirname(__file__), ".."),
+                timeout=120
+            )
+            if result.returncode == 0:
+                return result.stdout.strip() or "Evidence log generated successfully. Check data/evidence-logs/"
+            else:
+                return f"Evidence log generation had issues: {result.stderr}"
+        except Exception as e:
+            logger.error(f"Evidence log error: {e}")
+            return f"Failed to generate evidence log: {str(e)}"
+
+    async def get_drive_status(self) -> Dict:
+        """Quick drive status (the 'drives are up now' feature).
+        Used by Lexi for real-time external storage health (WFHD, AGENT*, GOAT ROYALTY APP, etc.).
+        """
+        try:
+            # Use the health-check drive logic via node if available, else simple df
+            health_script = os.path.join(os.path.dirname(__file__), "..", "web-app", "lib", "monitoring", "health-check.js")
+            if os.path.exists(health_script):
+                cmd = ["node", "-e", f'''
+                    const Health = require("{health_script}");
+                    Health.checkDrives().then(d => {{
+                        console.log(JSON.stringify({{status: d.status, message: d.message, count: d.count}}));
+                    }});
+                ''')]
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                if result.returncode == 0:
+                    return json.loads(result.stdout.strip())
+            # Fallback - simple df for drive visibility
+        df = subprocess.check_output(["df", "-h"], text=True)
+        return {"status": "up", "message": "Drives visible via df (full JS health-check recommended)", "raw": df[:500]}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
+    async def get_security_posture(self) -> Dict:
+        """Security check (the one we added for the system after the FBI contact).
+        Lexi can now report hardened/secure/exposed status + recent agency contacts.
+        """
+        try:
+            health_script = os.path.join(os.path.dirname(__file__), "..", "web-app", "lib", "monitoring", "health-check.js")
+            cmd = ["node", "-e", f'''
+                const Health = require("{health_script}");
+                Health.checkSecurity().then(s => {{
+                    console.log(JSON.stringify({{status: s.status, score: s.score, message: s.message, recent: s.recentAgencyContact}}));
+                }});
+            ''']]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            if result.returncode == 0:
+                return json.loads(result.stdout.strip())
+            return {"status": "unknown", "message": "Security module not reachable"}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
+    async def ingest_gdrive_evidence_dump(self, local_dump_path: str, links_file: Optional[str] = None, category: str = "gdrive_dump") -> str:
+        """THE MAIN UPDATE FOR LEXI from the massive Drive link list you just provided.
+
+        Call this when Lexi needs to process the full Google Drive data dump (legal docs, openclav/nemoclav code & plans,
+        AI platform materials, Gmail/OpenAI activity, evidence from the case, etc.) into the chain-of-custody / evidence log.
+
+        This is how you "add the updates to Lexi" with all the data for hard drive protection.
+
+        Steps for you:
+        1. Download the items from the links you pasted into a directory on one of your big external drives
+           (e.g. /Volumes/GOAT_ROYALTY_APP/evidence/gdrive_dump_2026-06-07/ or the same on a Jetson after mounting).
+        2. Save the list of links into a text file (e.g. links.txt) in that directory.
+        3. Call this method (or run the script directly on the device).
+
+        It will:
+        - Scan every file and compute SHA-256.
+        - Produce a proper EVID-style manifest (matching your MASTER DOC format).
+        - Call the existing evidence-log generator for the full HTML/JSON/TXT output.
+        - Include the original Drive links as source metadata.
+        - Tie everything to the FBI contact and the drives that are "up now".
+
+        Returns a summary you can give to Lexi or log.
+        """
+        try:
+            script = os.path.join(os.path.dirname(__file__), "..", "scripts", "ingest_gdrive_evidence.py")
+            cmd = [
+                sys.executable, script,
+                "--dump-dir", local_dump_path,
+                "--category", category
+            ]
+            if links_file:
+                cmd += ["--links-file", links_file]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+            if result.returncode == 0:
+                return result.stdout.strip()
+            else:
+                return f"Ingest script error (return {result.returncode}): {result.stderr}"
+        except Exception as e:
+            logger.error(f"ingest_gdrive_evidence_dump failed: {e}")
+            return f"Failed to ingest GDrive dump: {str(e)}"
+
+    # Creative methods for Lexi - fully local, no API keys, no logins. Uses local backends if available (install on the drive: ComfyUI/Automatic1111 for art, AnimateDiff for animation, etc.).
+    # Lexi generates prompts or calls local for art, draw, animation, 3D, fashion, music, all the GOAT creative stuff.
+    async def generate_art(self, description: str, style: str = "in GOAT royal style, high detail, vibrant") -> str:
+        """Local art and drawing. No API keys, no logins."""
+        enhanced = await self.generate(f"Create a detailed prompt for local Stable Diffusion image generation (no cloud, no keys): {description}. Style: {style}. High resolution, masterpiece, detailed lighting and composition.")
+        sd_url = os.getenv("LOCAL_SD_URL", "http://127.0.0.1:7860")
+        try:
+            payload = {
+                "prompt": enhanced,
+                "negative_prompt": "blurry, low quality, text, watermark, deformed, ugly",
+                "steps": 25,
+                "cfg_scale": 7,
+                "width": 512,
+                "height": 512
+            }
+            async with aiohttp.ClientSession() as session:
+                async with session.post(f"{sd_url}/sdapi/v1/txt2img", json=payload, timeout=120) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        if data.get("images"):
+                            return f"Art generated locally with no API keys! Base64 (save as PNG): {data['images'][0][:100]}... Full in local SD UI on the drive."
+                        return "Local SD responded but no image. Check setup on the drive."
+        except Exception as e:
+            pass
+        return f"Local SD not at {sd_url}. Install Automatic1111 or ComfyUI on the external drive (no keys or logins), run it, set LOCAL_SD_URL if needed. Use this prompt: {enhanced}"
+
+    async def generate_animation(self, description: str, duration: int = 5) -> str:
+        """Local animation and video. No API keys."""
+        prompt = await self.generate(f"Create detailed prompt for local animation (Stable Video Diffusion or AnimateDiff in ComfyUI, no cloud): {description}. {duration} seconds, smooth motion, high quality, GOAT style.")
+        return f"Use this in your local ComfyUI on the drive for animation: {prompt}\n\nInstall local video models, no API keys or logins needed."
+
+    async def generate_3d(self, description: str) -> str:
+        """For 3D and modeling - generate for local 3D tool (like GOAT 3D studio). Now absorbs DAZ Studio assets from /Volumes/DAZ3D STUDIO for best MetaHuman + animation quality."""
+        daz_note = " (Reference high-quality Genesis 8/9 characters, clothing, morphs, poses from the absorbed DAZ catalog in data/daz-assets.json for realistic rigged bases. Export via Blender/FBX to Unreal MetaHuman or the GOAT 3D studio for crew use.)"
+        return await self.generate(f"Generate prompt or params for local 3D tool: {description}{daz_note}")
+
+    async def generate_daz_metahuman(self, character_desc: str, style: str = "photorealistic, high detail skin, cinematic lighting") -> str:
+        """Best-ever MetaHuman pipeline using absorbed DAZ Studio assets (Genesis figures + morphs from the crew's library)."""
+        prompt = await self.generate(
+            f"Create a complete local workflow for the BEST MetaHuman-style 3D character using the DAZ Studio assets absorbed into GOAT (Genesis 8/9 characters, morphs, HD textures from /Volumes/DAZ3D STUDIO): {character_desc}. Style: {style}. "
+            "Steps: 1. Load base Genesis character from DAZ catalog. 2. Apply morphs/clothing. 3. Export FBX + textures. 4. Import to Unreal MetaHuman or Blender rig. 5. Use in GOAT 3D studio / animation timeline. "
+            "Fully local, no cloud. Reference the daz-assets.json catalog for exact paths."
+        )
+        return f"DAZ-POWERED META HUMAN (best ever for the crew):\n{prompt}\n\nLoad the DAZ catalog in goat-3d-studio.html or Lexi for direct asset reference."
+
+    async def generate_daz_animation(self, description: str, duration: int = 8) -> str:
+        """3D animation using DAZ poses/animations absorbed from the studio library + GOAT timeline."""
+        prompt = await self.generate(
+            f"Design a high-quality 3D animation sequence using DAZ Studio assets (poses, animations, characters from the absorbed /Volumes/DAZ3D STUDIO library) for: {description}. Duration: {duration}s. "
+            "Include: specific DAZ pose/character reference from catalog, timing for GOAT 3D studio timeline, export settings for smooth animation in local tools or Unreal."
+        )
+        return f"DAZ + GOAT 3D ANIMATION:\n{prompt}\n\nUse the timeline in goat-3d-studio.html and reference daz-assets.json for the exact pose/character files."
+
+    async def generate_fashion(self, description: str) -> str:
+        """For fashion design - generate for local fashion hub."""
+        return await self.generate(f"Generate outfit description for local fashion tool (GOAT fashion hub): {description}")
+
+    async def generate_music(self, description: str) -> str:
+        """Music production for DJ Speedy / Waka collab. Local, no keys. Uses GOAT plugins (BrickSquad, WakaVocalChain, GoatAutoTune, MPC)."""
+        prompt = await self.generate(
+            f"As DJ Speedy (music producer partner with Waka Flocka Flame), create detailed instructions + prompt for LOCAL music production tool (no cloud, no API keys): {description}. "
+            "Include: beat structure, 808 patterns (use BrickSquad808), vocal chain (WakaVocalChain + GoatAutoTune), sample suggestions from local sound library, key/BPM, arrangement for GOAT style. "
+            "Output ready-to-use for local DAW or the goat-mpc / goat-autotune tools in the app."
+        )
+        return f"LOCAL MUSIC PROD (DJ Speedy lane):\n{prompt}\n\nRun in your local setup on the drives (goat-plugins/ + goat-mpc.html + goat-autotune.html). All air-gapped."
+
+    async def generate_beat(self, genre: str = "trap", description: str = "") -> str:
+        """DJ Speedy specific: generate 808/trap/GOAT beat instructions for local tools."""
+        return await self.generate(
+            f"Create a complete local beat recipe for DJ Speedy / Waka Flocka style ({genre}): {description}. "
+            "Specify: BPM, key, 808 pattern (BrickSquad style), hi-hats, snares, melody idea, arrangement (intro/build/drop). "
+            "Compatible with local MPC, FL, or the GOAT MPC tool. No keys, fully offline."
+        )
+
+    async def generate_vocal_chain(self, description: str) -> str:
+        """Waka/DJ Speedy vocal processing chain using the goat-plugins."""
+        return await self.generate(
+            f"Design a professional local vocal chain for Waka Flocka / GOAT style vocals: {description}. "
+            "Use WakaVocalChain + GoatAutoTune + GoatBus + delay/reverb from goat-plugins. "
+            "Step-by-step settings for local DAW or the GOAT channel strip / plugin rack tools. Fully offline."
+        )
+
+    async def generate_other_creative(self, creative_type: str, description: str) -> str:
+        """For all the other stuff: video, storytelling, etc."""
+        return await self.generate(f"Generate output for local {creative_type} tool (GOAT project tools): {description}")
+
+    # Ultimate agent foundation (post-Lexi secure, per plan: YOU AND I build the ultimate ever made)
+    async def ultimate_agent_idea(self, goal: str) -> str:
+        """Scaffold for the ultimate agent combining Money Penny + Agent007 + Lexi + full DJ Speedy music prod + evidence + creative + GOAT royalty."""
+        return await self.generate(
+            f"Design the ULTIMATE agent architecture (after Lexi is home and secure on Thor): {goal}. "
+            "Combine: Money Penny orchestration, Agent007 (personal original by DJ Speedy), Lexi (Waka's baby evidence/creative guardian), "
+            "DJ Speedy music production lane (beats, vocal chains, 808/BrickSquad, WakaAdLibFX, AutoTune, MPC), full local creative (art/3d/fashion), "
+            "drive protection + EVID manifests on OG drives (AI TOOLS, GOAT ROYALTY APP, backup), royalty intel, no API keys ever. "
+            "Fully offline on Jetson Thor + portable USB client. Ownership: only AGENT007 + MONEY PENNY personal to DJ Speedy."
+        )
+
     def _get_system_prompt(self) -> str:
         """Get Money Penny's system prompt"""
         return """You are Money Penny, a sophisticated AI orchestrator for the GOAT Royalty platform.

@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Force Console — Command Center</title>
+<link rel="icon" href="favicon.ico">
+<style>
+/* ══════════════════════════════════════════════
+   GOAT FORCE CONSOLE — inspired by Devin Desktop
+   Combines: Devin UI + NVIDIA ACE + HuggingFace
+   ══════════════════════════════════════════════ */
+:root {
+  --bg0:#0a0c10;--bg1:#0d1117;--bg2:#161b22;--bg3:#1c2128;--bg4:#21262d;
+  --gold:#d4a03c;--gold2:#f0c040;--gold-glow:rgba(212,160,60,.18);
+  --green:#3fb950;--blue:#58a6ff;--red:#f85149;--purple:#a78bfa;
+  --cyan:#39d0d8;--orange:#f0883e;--pink:#e879f9;--teal:#56d364;
+  --dim:#8b949e;--ink:#e6edf3;--line:#30363d;
+  --nvidia:#76b900;--hf:#ff9d00;
+  --r:14px;--r2:10px;--r3:8px;
+  --sidebar:240px;--right:260px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+body{background:var(--bg0);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ── TOP TITLEBAR ─────────────────────────── */
+#titlebar{
+  height:40px;background:rgba(13,17,23,.98);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0;
+  backdrop-filter:blur(20px);z-index:100;
+}
+.tb-dots{display:flex;gap:6px}
+.tb-dot{width:12px;height:12px;border-radius:50%}
+.tb-dot.r{background:#ff5f57}.tb-dot.y{background:#febc2e}.tb-dot.g{background:#28c840}
+.tb-brand{display:flex;align-items:center;gap:8px;margin-left:8px}
+.tb-brand-icon{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#000}
+.tb-brand-name{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.3px}
+.tb-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.25)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tb-session{font-size:11px;color:var(--dim);padding:3px 10px;background:var(--bg2);border:1px solid var(--line);border-radius:6px}
+.tb-plan{font-size:10px;font-weight:600;color:var(--gold);padding:3px 8px;border:1px solid rgba(212,160,60,.3);border-radius:6px}
+
+/* ── MAIN LAYOUT ──────────────────────────── */
+#app{display:flex;flex:1;overflow:hidden}
+
+/* ── LEFT SIDEBAR ─────────────────────────── */
+#sidebar{
+  width:var(--sidebar);background:var(--bg1);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;
+}
+.sb-top{padding:10px 10px 0}
+.sb-search{
+  display:flex;align-items:center;gap:6px;background:var(--bg2);
+  border:1px solid var(--line);border-radius:var(--r3);padding:6px 10px;
+  font-size:12px;color:var(--dim);cursor:pointer;transition:.15s;
+}
+.sb-search:hover{border-color:var(--gold);color:var(--ink)}
+.sb-search kbd{margin-left:auto;font-size:9px;background:var(--bg3);padding:1px 5px;border-radius:4px;color:var(--dim)}
+
+.sb-section{padding:12px 8px 4px}
+.sb-label{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1.2px;padding:0 4px;margin-bottom:6px}
+
+.sb-item{
+  display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--r3);
+  font-size:12px;color:var(--dim);cursor:pointer;transition:.12s;border:1px solid transparent;
+}
+.sb-item:hover{background:var(--bg2);color:var(--ink);border-color:var(--line)}
+.sb-item.active{background:rgba(212,160,60,.1);color:var(--gold);border-color:rgba(212,160,60,.2)}
+.sb-item.active .sb-dot{background:var(--gold)}
+.sb-dot{width:7px;height:7px;border-radius:50%;background:var(--bg4);flex-shrink:0;transition:.12s}
+.sb-item:hover .sb-dot{background:var(--dim)}
+.sb-item-ico{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.sb-item-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-badge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px;background:rgba(63,185,80,.15);color:var(--green);flex-shrink:0}
+.sb-badge.new{background:rgba(212,160,60,.15);color:var(--gold)}
+.sb-badge.hot{background:rgba(248,81,73,.15);color:var(--red)}
+
+.sb-new-btn{
+  margin:8px;padding:8px;background:linear-gradient(135deg,rgba(212,160,60,.15),rgba(240,192,64,.08));
+  border:1px solid rgba(212,160,60,.25);border-radius:var(--r2);
+  display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;
+  color:var(--gold);cursor:pointer;transition:.15s;
+}
+.sb-new-btn:hover{background:rgba(212,160,60,.2);border-color:rgba(212,160,60,.4)}
+.sb-new-btn .ico{width:24px;height:24px;border-radius:6px;background:var(--gold);color:#000;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;font-weight:900}
+
+.sb-divider{height:1px;background:var(--line);margin:8px 8px}
+
+/* recent sessions */
+.sb-session-item{
+  padding:6px 12px;font-size:11px;color:var(--dim);cursor:pointer;
+  transition:.1s;border-left:2px solid transparent;
+}
+.sb-session-item:hover{color:var(--ink);background:var(--bg2);border-left-color:var(--gold)}
+.sb-session-item .s-title{font-weight:600;color:var(--ink);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-session-item .s-time{font-size:10px;color:var(--dim)}
+
+/* ── CENTER MAIN ──────────────────────────── */
+#center{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* TAB BAR */
+#tabbar{
+  height:38px;background:var(--bg1);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:0;padding:0 4px;flex-shrink:0;overflow-x:auto;
+}
+#tabbar::-webkit-scrollbar{height:0}
+.tab{
+  display:flex;align-items:center;gap:6px;padding:0 14px;height:100%;
+  font-size:12px;color:var(--dim);cursor:pointer;border-right:1px solid var(--line);
+  border-bottom:2px solid transparent;transition:.12s;white-space:nowrap;flex-shrink:0;
+}
+.tab:hover{background:var(--bg2);color:var(--ink)}
+.tab.active{color:var(--ink);border-bottom-color:var(--gold);background:var(--bg0)}
+.tab .tab-close{opacity:0;font-size:11px;margin-left:4px;transition:.1s;border-radius:3px;padding:1px 3px}
+.tab:hover .tab-close{opacity:.5}
+.tab .tab-close:hover{opacity:1;background:var(--bg4)}
+.tab-new{padding:0 10px;height:100%;display:flex;align-items:center;color:var(--dim);cursor:pointer;font-size:16px;margin-left:4px}
+.tab-new:hover{color:var(--ink)}
+
+/* CONTENT AREA */
+#content{flex:1;overflow-y:auto;position:relative}
+
+/* PANEL SYSTEM */
+.panel{display:none;height:100%}
+.panel.active{display:flex;flex-direction:column}
+
+/* ── HOME PANEL ─────────────────────── */
+#panel-home{padding:0}
+.home-hero{
+  background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(212,160,60,.07),transparent);
+  padding:48px 32px 32px;text-align:center;border-bottom:1px solid var(--line);
+}
+.home-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;
+  color:var(--gold);text-transform:uppercase;letter-spacing:2px;
+  background:rgba(212,160,60,.08);border:1px solid rgba(212,160,60,.25);
+  padding:4px 14px;border-radius:20px;margin-bottom:16px;
+}
+.home-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.home-title{font-size:clamp(24px,3.5vw,40px);font-weight:900;letter-spacing:-1px;line-height:1.1;margin-bottom:10px}
+.home-title span{background:linear-gradient(135deg,var(--gold),var(--gold2) 60%,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.home-sub{font-size:14px;color:var(--dim);max-width:520px;margin:0 auto 24px;line-height:1.6}
+.home-ctas{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.cta-primary{
+  padding:10px 22px;background:linear-gradient(135deg,var(--gold),#b8860b);
+  color:#000;border:none;border-radius:var(--r2);font-size:13px;font-weight:700;
+  cursor:pointer;transition:.15s;
+}
+.cta-primary:hover{transform:scale(1.03);box-shadow:0 4px 20px rgba(212,160,60,.3)}
+.cta-ghost{
+  padding:10px 22px;background:transparent;color:var(--ink);
+  border:1px solid var(--line);border-radius:var(--r2);font-size:13px;font-weight:600;
+  cursor:pointer;transition:.15s;
+}
+.cta-ghost:hover{background:var(--bg2);border-color:var(--gold);color:var(--gold)}
+
+/* stat strip */
+.home-stats{
+  display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;
+  padding:14px 20px;background:var(--bg1);border-bottom:1px solid var(--line);
+}
+.h-stat{
+  display:flex;align-items:center;gap:8px;padding:6px 18px;
+  border-right:1px solid var(--line);
+}
+.h-stat:last-child{border-right:none}
+.h-stat-val{font-size:16px;font-weight:800;color:var(--gold)}
+.h-stat-lbl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px}
+
+/* quick launch grid */
+.home-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:10px;padding:20px;
+}
+.hl-card{
+  background:var(--bg1);border:1px solid var(--line);border-radius:var(--r2);
+  padding:14px;display:flex;align-items:flex-start;gap:10px;
+  cursor:pointer;transition:.15s;text-decoration:none;color:var(--ink);
+}
+.hl-card:hover{border-color:var(--gold);background:var(--bg2);transform:translateY(-2px);box-shadow:0 6px 20px rgba(212,160,60,.1)}
+.hl-card.nvidia:hover{border-color:var(--nvidia);box-shadow:0 6px 20px rgba(118,185,0,.1)}
+.hl-card.hf:hover{border-color:var(--hf);box-shadow:0 6px 20px rgba(255,157,0,.1)}
+.hl-card.blue:hover{border-color:var(--blue);box-shadow:0 6px 20px rgba(88,166,255,.1)}
+.hl-card.purple:hover{border-color:var(--purple);box-shadow:0 6px 20px rgba(167,139,250,.1)}
+.hl-card.teal:hover{border-color:var(--teal);box-shadow:0 6px 20px rgba(57,208,216,.1)}
+.hl-ico{width:38px;height:38px;border-radius:var(--r3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:1px solid var(--line)}
+.hl-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.hl-desc{font-size:11px;color:var(--dim);line-height:1.4}
+.hl-tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-top:5px;text-transform:uppercase}
+
+/* ── AGENT CHAT PANEL ─────────────────── */
+#panel-chat{height:100%}
+.chat-layout{display:flex;height:100%}
+.chat-agents{
+  width:200px;background:var(--bg1);border-right:1px solid var(--line);
+  padding:12px 8px;flex-shrink:0;overflow-y:auto;
+}
+.chat-agents-title{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding:0 4px}
+.agent-card{
+  padding:10px 8px;border-radius:var(--r3);cursor:pointer;transition:.12s;
+  border:1px solid transparent;margin-bottom:4px;
+}
+.agent-card:hover{background:var(--bg2);border-color:var(--line)}
+.agent-card.active{background:rgba(212,160,60,.1);border-color:rgba(212,160,60,.25)}
+.ac-row{display:flex;align-items:center;gap:7px;margin-bottom:2px}
+.ac-avatar{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;border:1px solid rgba(255,255,255,.06)}
+.ac-name{font-size:12px;font-weight:700;color:var(--ink)}
+.ac-role{font-size:10px;color:var(--dim);padding-left:35px}
+.ac-status{width:7px;height:7px;border-radius:50%;background:var(--green);margin-left:auto;flex-shrink:0}
+.ac-status.away{background:var(--orange)}
+
+.chat-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.chat-topbar{
+  height:50px;border-bottom:1px solid var(--line);display:flex;align-items:center;
+  padding:0 16px;gap:12px;flex-shrink:0;background:var(--bg1);
+}
+.chat-active-name{font-size:15px;font-weight:700}
+.chat-active-role{font-size:11px;color:var(--dim)}
+.chat-topbar-actions{margin-left:auto;display:flex;gap:6px}
+.chat-action-btn{
+  padding:5px 12px;background:var(--bg2);border:1px solid var(--line);
+  border-radius:var(--r3);font-size:11px;color:var(--dim);cursor:pointer;transition:.12s;
+}
+.chat-action-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+.chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:3px}
+.msg-row{display:flex;align-items:flex-start;gap:10px;padding:6px 8px;border-radius:8px;transition:background .1s}
+.msg-row:hover{background:rgba(255,255,255,.02)}
+.msg-row.you .msg-avatar{order:2}
+.msg-row.you .msg-body{align-items:flex-end}
+.msg-avatar{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;border:1px solid rgba(255,255,255,.06)}
+.msg-body{flex:1;min-width:0}
+.msg-meta{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+.msg-name{font-size:13px;font-weight:700}
+.msg-time{font-size:10px;color:var(--dim)}
+.msg-text{font-size:13px;color:#c9d1d9;line-height:1.6;word-break:break-word}
+.msg-text code{background:var(--bg3);padding:1px 6px;border-radius:4px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--cyan)}
+
+.chat-input-area{padding:12px 16px;border-top:1px solid var(--line);background:var(--bg1);flex-shrink:0}
+.chat-input-row{display:flex;gap:8px;align-items:flex-end}
+.chat-textarea{
+  flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r2);
+  padding:10px 14px;color:var(--ink);font-size:13px;resize:none;min-height:44px;
+  max-height:140px;outline:none;line-height:1.5;font-family:inherit;transition:border-color .15s;
+}
+.chat-textarea:focus{border-color:var(--gold)}
+.chat-textarea::placeholder{color:var(--dim)}
+.chat-send{
+  width:44px;height:44px;border-radius:50%;background:var(--gold);border:none;
+  color:#000;font-size:16px;cursor:pointer;transition:.15s;flex-shrink:0;font-weight:700;
+}
+.chat-send:hover{background:var(--gold2);transform:scale(1.05)}
+.chat-quick{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.cq-btn{
+  padding:4px 10px;background:var(--bg2);border:1px solid var(--line);
+  border-radius:12px;font-size:11px;color:var(--dim);cursor:pointer;transition:.12s;
+}
+.cq-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── MODELS PANEL ─────────────────────── */
+#panel-models .models-layout{display:flex;height:100%}
+.models-filters{
+  width:220px;background:var(--bg1);border-right:1px solid var(--line);
+  padding:14px 10px;flex-shrink:0;overflow-y:auto;
+}
+.mf-title{font-size:11px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding:0 4px}
+.mf-group{margin-bottom:16px}
+.mf-group-title{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;padding:0 4px}
+.mf-item{
+  display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:var(--r3);
+  font-size:12px;color:var(--dim);cursor:pointer;transition:.1s;
+}
+.mf-item:hover,.mf-item.on{color:var(--ink)}
+.mf-item .mf-check{
+  width:14px;height:14px;border-radius:3px;border:1px solid var(--line);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.1s;
+}
+.mf-item.on .mf-check{background:var(--gold);border-color:var(--gold);color:#000;font-size:9px}
+
+.models-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.models-topbar{
+  padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg1);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.models-search{
+  flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r3);
+  padding:7px 12px;color:var(--ink);font-size:12px;outline:none;font-family:inherit;
+  transition:border-color .15s;
+}
+.models-search:focus{border-color:var(--gold)}
+.models-count{font-size:12px;color:var(--dim);white-space:nowrap}
+.models-sort{
+  background:var(--bg2);border:1px solid var(--line);border-radius:var(--r3);
+  padding:6px 10px;color:var(--dim);font-size:12px;outline:none;cursor:pointer;
+}
+.models-grid{flex:1;overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.model-card{
+  background:var(--bg1);border:1px solid var(--line);border-radius:var(--r2);
+  padding:14px;cursor:pointer;transition:.15s;position:relative;overflow:hidden;
+}
+.model-card::before{content:'';position:absolute;inset:0;opacity:0;background:linear-gradient(135deg,rgba(212,160,60,.05),transparent);transition:.15s;pointer-events:none}
+.model-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+.model-card:hover::before{opacity:1}
+.model-card.hf{border-left:3px solid var(--hf)}
+.model-card.nvidia{border-left:3px solid var(--nvidia)}
+.model-card.ollama{border-left:3px solid var(--purple)}
+.model-card.local{border-left:3px solid var(--green)}
+.mc-row1{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.mc-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;border:1px solid var(--line)}
+.mc-name{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:2px;line-height:1.2}
+.mc-source{font-size:10px;color:var(--dim)}
+.mc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.mc-tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--bg3);color:var(--dim)}
+.mc-tag.task{background:rgba(88,166,255,.12);color:var(--blue)}
+.mc-tag.size{background:rgba(167,139,250,.12);color:var(--purple)}
+.mc-tag.local{background:rgba(63,185,80,.12);color:var(--green)}
+.mc-tag.hf-t{background:rgba(255,157,0,.12);color:var(--hf)}
+.mc-tag.nv-t{background:rgba(118,185,0,.12);color:var(--nvidia)}
+.mc-row3{display:flex;align-items:center;justify-content:space-between}
+.mc-stats{font-size:10px;color:var(--dim)}
+.mc-btn{
+  padding:5px 12px;border-radius:var(--r3);font-size:11px;font-weight:600;
+  border:none;cursor:pointer;transition:.12s;
+}
+.mc-btn.install{background:rgba(212,160,60,.15);color:var(--gold);border:1px solid rgba(212,160,60,.25)}
+.mc-btn.install:hover{background:rgba(212,160,60,.25)}
+.mc-btn.installed{background:rgba(63,185,80,.12);color:var(--green);border:1px solid rgba(63,185,80,.2)}
+.mc-btn.run{background:rgba(88,166,255,.12);color:var(--blue);border:1px solid rgba(88,166,255,.2)}
+.mc-btn.run:hover{background:rgba(88,166,255,.22)}
+
+/* ── NVIDIA PANEL ─────────────────────── */
+#panel-nvidia{overflow-y:auto;padding:24px}
+.nv-hero{
+  background:linear-gradient(135deg,rgba(118,185,0,.08),rgba(0,0,0,0));
+  border:1px solid rgba(118,185,0,.2);border-radius:var(--r);padding:24px;margin-bottom:20px;
+  display:flex;align-items:center;gap:20px;
+}
+.nv-logo{font-size:36px;width:64px;height:64px;background:rgba(118,185,0,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(118,185,0,.3)}
+.nv-title{font-size:22px;font-weight:900;color:var(--nvidia)}
+.nv-sub{font-size:13px;color:var(--dim);margin-top:4px}
+.nv-version{font-size:11px;color:var(--nvidia);font-weight:600;margin-top:6px;background:rgba(118,185,0,.1);padding:3px 10px;border-radius:6px;display:inline-block}
+
+.nv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:24px}
+.nv-card{
+  background:var(--bg1);border:1px solid var(--line);border-radius:var(--r2);
+  padding:16px;transition:.15s;
+}
+.nv-card:hover{border-color:var(--nvidia);box-shadow:0 4px 16px rgba(118,185,0,.1)}
+.nv-card-ico{font-size:24px;margin-bottom:10px}
+.nv-card-title{font-size:14px;font-weight:700;margin-bottom:6px}
+.nv-card-desc{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:12px}
+.nv-card-btns{display:flex;gap:6px;flex-wrap:wrap}
+.nv-btn{
+  padding:5px 12px;border-radius:var(--r3);font-size:11px;font-weight:600;
+  cursor:pointer;transition:.12s;border:none;
+}
+.nv-btn.primary{background:var(--nvidia);color:#000}
+.nv-btn.primary:hover{background:#8be000}
+.nv-btn.ghost{background:transparent;color:var(--nvidia);border:1px solid rgba(118,185,0,.3)}
+.nv-btn.ghost:hover{background:rgba(118,185,0,.1)}
+
+.nv-install-box{
+  background:var(--bg1);border:1px solid var(--line);border-radius:var(--r2);padding:20px;
+  margin-bottom:20px;
+}
+.nv-install-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.nv-os-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.nv-os-tab{
+  padding:6px 14px;border-radius:var(--r3);font-size:12px;font-weight:600;
+  background:var(--bg2);border:1px solid var(--line);color:var(--dim);
+  cursor:pointer;transition:.12s;
+}
+.nv-os-tab.active{background:rgba(118,185,0,.15);color:var(--nvidia);border-color:rgba(118,185,0,.3)}
+.nv-code{
+  background:var(--bg0);border:1px solid var(--line);border-radius:var(--r3);
+  padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;
+  color:#7ee787;line-height:1.8;position:relative;overflow-x:auto;
+}
+.nv-code-copy{
+  position:absolute;top:8px;right:8px;padding:3px 8px;background:var(--bg3);
+  border:1px solid var(--line);border-radius:5px;font-size:10px;color:var(--dim);
+  cursor:pointer;transition:.1s;
+}
+.nv-code-copy:hover{color:var(--ink);border-color:var(--gold)}
+.nv-comment{color:var(--dim)}
+
+/* ── SETTINGS PANEL ─────────────────────── */
+#panel-settings{display:flex;height:100%}
+.settings-nav{
+  width:180px;background:var(--bg1);border-right:1px solid var(--line);
+  padding:12px 8px;flex-shrink:0;
+}
+.sn-section{margin-bottom:16px}
+.sn-label{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;padding:0 6px}
+.sn-item{
+  padding:7px 10px;border-radius:var(--r3);font-size:12px;color:var(--dim);
+  cursor:pointer;transition:.1s;display:flex;align-items:center;gap:8px;
+}
+.sn-item:hover{background:var(--bg2);color:var(--ink)}
+.sn-item.active{background:rgba(212,160,60,.1);color:var(--gold)}
+
+.settings-main{flex:1;overflow-y:auto;padding:24px}
+.settings-section{margin-bottom:32px}
+.ss-title{font-size:18px;font-weight:800;margin-bottom:4px}
+.ss-desc{font-size:12px;color:var(--dim);margin-bottom:20px;line-height:1.5}
+.setting-row{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:14px 16px;background:var(--bg1);border:1px solid var(--line);
+  border-radius:var(--r2);margin-bottom:8px;gap:16px;
+}
+.setting-info{}
+.setting-label{font-size:13px;font-weight:600;margin-bottom:3px}
+.setting-hint{font-size:11px;color:var(--dim);line-height:1.4}
+.setting-control{flex-shrink:0}
+.toggle{
+  width:40px;height:22px;border-radius:11px;background:var(--bg4);
+  border:none;cursor:pointer;position:relative;transition:.2s;
+}
+.toggle.on{background:var(--gold)}
+.toggle::after{
+  content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;
+  border-radius:50%;background:#fff;transition:.2s;
+}
+.toggle.on::after{left:21px}
+.setting-input{
+  background:var(--bg0);border:1px solid var(--line);border-radius:var(--r3);
+  padding:6px 10px;color:var(--ink);font-size:12px;outline:none;font-family:inherit;
+  min-width:200px;transition:border-color .15s;
+}
+.setting-input:focus{border-color:var(--gold)}
+.setting-select{
+  background:var(--bg0);border:1px solid var(--line);border-radius:var(--r3);
+  padding:6px 10px;color:var(--ink);font-size:12px;outline:none;cursor:pointer;min-width:160px;
+}
+
+/* plan info card */
+.plan-card{
+  background:linear-gradient(135deg,rgba(212,160,60,.08),rgba(0,0,0,0));
+  border:1px solid rgba(212,160,60,.25);border-radius:var(--r2);padding:16px;margin-bottom:12px;
+}
+.plan-name{font-size:16px;font-weight:800;color:var(--gold)}
+.plan-email{font-size:12px;color:var(--dim);margin-top:2px}
+.plan-bar-wrap{margin-top:12px}
+.plan-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:4px}
+.plan-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.plan-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .5s}
+.plan-bar-fill.danger{background:linear-gradient(90deg,var(--red),#ff6b6b)}
+
+/* accentcolors */
+.color-swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.color-swatch{
+  width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;
+  transition:.15s;
+}
+.color-swatch.active{border-color:#fff;transform:scale(1.15)}
+.color-swatch:hover{transform:scale(1.1)}
+
+/* MCP marketplace */
+.mcp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+.mcp-card{
+  background:var(--bg1);border:1px solid var(--line);border-radius:var(--r2);
+  padding:12px;display:flex;align-items:flex-start;gap:10px;transition:.15s;
+}
+.mcp-card:hover{border-color:var(--blue);background:var(--bg2)}
+.mcp-ico{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--bg3);border:1px solid var(--line);flex-shrink:0}
+.mcp-name{font-size:12px;font-weight:700;margin-bottom:2px}
+.mcp-desc{font-size:10px;color:var(--dim);line-height:1.4}
+.mcp-install-btn{
+  margin-left:auto;flex-shrink:0;padding:4px 10px;border-radius:var(--r3);
+  font-size:10px;font-weight:700;background:rgba(88,166,255,.12);
+  color:var(--blue);border:1px solid rgba(88,166,255,.2);cursor:pointer;transition:.12s;
+}
+.mcp-install-btn:hover{background:rgba(88,166,255,.25)}
+.mcp-install-btn.installed{background:rgba(63,185,80,.1);color:var(--green);border-color:rgba(63,185,80,.2)}
+
+/* ── RIGHT PANEL ──────────────────────── */
+#right{
+  width:var(--right);background:var(--bg1);border-left:1px solid var(--line);
+  display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;
+}
+.rp-tabs{
+  display:flex;border-bottom:1px solid var(--line);flex-shrink:0;
+}
+.rp-tab{
+  flex:1;padding:9px 4px;text-align:center;font-size:11px;font-weight:600;
+  color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:.12s;
+}
+.rp-tab:hover{color:var(--ink)}
+.rp-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.rp-body{flex:1;overflow-y:auto;padding:12px}
+
+.rp-section{margin-bottom:16px}
+.rp-section-title{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+
+/* agent status cards */
+.rp-agent{
+  display:flex;align-items:center;gap:8px;padding:8px;border-radius:var(--r3);
+  border:1px solid transparent;cursor:pointer;transition:.12s;margin-bottom:4px;
+}
+.rp-agent:hover{background:var(--bg2);border-color:var(--line)}
+.rp-agent-ico{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;border:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.rp-agent-name{font-size:12px;font-weight:600;flex:1}
+.rp-agent-ping{font-size:10px;color:var(--dim)}
+.rp-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.online{background:var(--green)}.away{background:var(--orange)}.offline{background:var(--red)}
+
+/* activity feed */
+.rp-activity-item{
+  padding:8px;border-radius:var(--r3);margin-bottom:4px;
+  border-left:2px solid var(--line);padding-left:10px;transition:.1s;
+}
+.rp-activity-item:hover{background:var(--bg2);border-left-color:var(--gold)}
+.rpa-title{font-size:11px;font-weight:600;margin-bottom:2px}
+.rpa-time{font-size:10px;color:var(--dim)}
+
+/* system health */
+.health-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.health-label{font-size:11px;color:var(--dim)}
+.health-val{font-size:11px;font-weight:600;color:var(--green)}
+.health-bar{height:4px;background:var(--bg3);border-radius:2px;margin-top:2px;overflow:hidden}
+.health-fill{height:100%;border-radius:2px;background:var(--green)}
+.health-fill.warn{background:var(--orange)}
+.health-fill.danger{background:var(--red)}
+
+/* NVIDIA ACE section */
+.ace-card{
+  background:linear-gradient(135deg,rgba(118,185,0,.06),transparent);
+  border:1px solid rgba(118,185,0,.15);border-radius:var(--r2);padding:12px;margin-bottom:8px;cursor:pointer;transition:.15s;
+}
+.ace-card:hover{border-color:rgba(118,185,0,.35);background:rgba(118,185,0,.08)}
+.ace-card-title{font-size:12px;font-weight:700;color:var(--nvidia);margin-bottom:3px}
+.ace-card-desc{font-size:10px;color:var(--dim);line-height:1.4}
+.ace-card-ver{font-size:9px;color:var(--nvidia);margin-top:4px}
+
+/* ── STATUS BAR ───────────────────────── */
+#statusbar{
+  height:24px;background:var(--bg1);border-top:1px solid var(--line);
+  display:flex;align-items:center;padding:0 12px;gap:12px;flex-shrink:0;
+  font-size:10px;color:var(--dim);
+}
+.sb-item-s{display:flex;align-items:center;gap:5px}
+.sb-item-s.ok{color:var(--green)}
+.sb-item-s.warn{color:var(--orange)}
+.sb-item-s.err{color:var(--red)}
+.sb-dot-s{width:5px;height:5px;border-radius:50%;background:currentColor}
+#statusbar .spacer{flex:1}
+
+/* ── RESPONSIVE ───────────────────────── */
+@media(max-width:1100px){#right{display:none}}
+@media(max-width:800px){#sidebar{display:none}}
+
+/* ── ANIMATIONS ───────────────────────── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.panel.active{animation:fadeIn .2s ease}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinning{animation:spin 1s linear infinite}
+</style>
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
+</head>
+<body>
+
+<!-- ══ TITLEBAR ══════════════════════════════ -->
+<div id="titlebar">
+  <div class="tb-dots">
+    <div class="tb-dot r"></div>
+    <div class="tb-dot y"></div>
+    <div class="tb-dot g"></div>
+  </div>
+  <div class="tb-brand">
+    <div class="tb-brand-icon">G</div>
+    <span class="tb-brand-name">GOAT Force Console</span>
+  </div>
+  <div class="tb-badge">PRO · LIVE</div>
+  <div class="tb-right">
+    <span class="tb-session" id="sessionLabel">Must Have Done Today</span>
+    <span class="tb-plan">GOAT · DJ SPEEDY</span>
+  </div>
+</div>
+
+<!-- ══ APP BODY ══════════════════════════════ -->
+<div id="app">
+
+  <!-- ══ LEFT SIDEBAR ══ -->
+  <div id="sidebar">
+    <div class="sb-top">
+      <div class="sb-search" onclick="focusSearch()">
+        <span>🔍</span>
+        <span>Search everything</span>
+        <kbd>⌘K</kbd>
+      </div>
+    </div>
+
+    <div class="sb-new-btn" onclick="showPanel('home')">
+      <div class="ico">+</div>
+      <span>New Session</span>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-label">Workspaces</div>
+      <div class="sb-item active" onclick="showPanel('home');setActive(this)">
+        <div class="sb-item-ico">🏠</div>
+        <span class="sb-item-name">Home</span>
+      </div>
+      <div class="sb-item" onclick="showPanel('chat');setActive(this)">
+        <div class="sb-item-ico">🤖</div>
+        <span class="sb-item-name">Agent Chat</span>
+        <span class="sb-badge new">7</span>
+      </div>
+      <div class="sb-item" onclick="showPanel('models');setActive(this)">
+        <div class="sb-item-ico">🧠</div>
+        <span class="sb-item-name">AI Models</span>
+        <span class="sb-badge">53+</span>
+      </div>
+      <div class="sb-item" onclick="showPanel('nvidia');setActive(this)">
+        <div class="sb-item-ico" style="color:var(--nvidia)">⚡</div>
+        <span class="sb-item-name">NVIDIA / CUDA</span>
+        <span class="sb-badge hot">NEW</span>
+      </div>
+      <div class="sb-item" onclick="showPanel('settings');setActive(this)">
+        <div class="sb-item-ico">⚙️</div>
+        <span class="sb-item-name">Settings</span>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-label">Quick Launch</div>
+      <div class="sb-item" onclick="openPage('studio-hub.html')">
+        <div class="sb-item-ico">🎛</div>
+        <span class="sb-item-name">Studio Hub</span>
+      </div>
+      <div class="sb-item" onclick="openPage('agent-007.html')">
+        <div class="sb-item-ico">🎯</div>
+        <span class="sb-item-name">Agent-007</span>
+      </div>
+      <div class="sb-item" onclick="openPage('halito-chat.html')">
+        <div class="sb-item-ico">💬</div>
+        <span class="sb-item-name">Halito Chat</span>
+      </div>
+      <div class="sb-item" onclick="openPage('agent-status.html')">
+        <div class="sb-item-ico">📊</div>
+        <span class="sb-item-name">Ops Status</span>
+      </div>
+      <div class="sb-item" onclick="openPage('music-studio.html')">
+        <div class="sb-item-ico">🎵</div>
+        <span class="sb-item-name">Music Studio</span>
+      </div>
+      <div class="sb-item" onclick="openPage('screenwriting.html')">
+        <div class="sb-item-ico">✍️</div>
+        <span class="sb-item-name">Screenwriting</span>
+      </div>
+      <div class="sb-item" onclick="openPage('goat-ai-video.html')">
+        <div class="sb-item-ico">🎬</div>
+        <span class="sb-item-name">AI Video</span>
+      </div>
+      <div class="sb-item" onclick="openPage('models.html')">
+        <div class="sb-item-ico">📦</div>
+        <span class="sb-item-name">Model Manager</span>
+      </div>
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <div class="sb-section">
+      <div class="sb-label">Recent Sessions</div>
+      <div class="sb-session-item"><div class="s-title">Must Have Done Today</div><div class="s-time">now</div></div>
+      <div class="sb-session-item"><div class="s-title">GOAT Royalty Living EPK</div><div class="s-time">19m ago</div></div>
+      <div class="sb-session-item"><div class="s-title">Pull UP Master Oscar</div><div class="s-time">14h ago</div></div>
+      <div class="sb-session-item"><div class="s-title">Update GOAT royalty app UI</div><div class="s-time">16h ago</div></div>
+      <div class="sb-session-item"><div class="s-title">Add EPK & Studio to Launchers</div><div class="s-time">18h ago</div></div>
+      <div class="sb-session-item"><div class="s-title">Agent-007 UI and LLM Integration</div><div class="s-time">1d ago</div></div>
+      <div class="sb-session-item"><div class="s-title">Deploy GOAT Royalty App</div><div class="s-time">1d ago</div></div>
+      <div class="sb-session-item"><div class="s-title">Investors Deck Controls</div><div class="s-time">1d ago</div></div>
+      <div class="sb-session-item"><div class="s-title">Link 56+ Models to i2i Drive</div><div class="s-time">2d ago</div></div>
+    </div>
+  </div>
+
+  <!-- ══ CENTER ══ -->
+  <div id="center">
+    <!-- TAB BAR -->
+    <div id="tabbar">
+      <div class="tab active" onclick="showPanel('home');setTabActive(this)"><span>🏠</span> Home <span class="tab-close" onclick="event.stopPropagation()">✕</span></div>
+      <div class="tab" onclick="showPanel('chat');setTabActive(this)"><span>🤖</span> Agent Chat <span class="tab-close" onclick="event.stopPropagation()">✕</span></div>
+      <div class="tab" onclick="showPanel('models');setTabActive(this)"><span>🧠</span> AI Models <span class="tab-close" onclick="event.stopPropagation()">✕</span></div>
+      <div class="tab" onclick="showPanel('nvidia');setTabActive(this)" style="color:var(--nvidia)"><span>⚡</span> NVIDIA <span class="tab-close" onclick="event.stopPropagation()">✕</span></div>
+      <div class="tab" onclick="showPanel('settings');setTabActive(this)"><span>⚙️</span> Settings <span class="tab-close" onclick="event.stopPropagation()">✕</span></div>
+      <div class="tab-new" title="New tab">+</div>
+    </div>
+
+    <!-- CONTENT PANELS -->
+    <div id="content">
+
+      <!-- ── HOME PANEL ── -->
+      <div class="panel active" id="panel-home">
+        <div class="home-hero">
+          <div class="home-eyebrow"><span class="home-eyebrow-dot"></span> GOAT FORCE COMMAND CENTER</div>
+          <div class="home-title">Everything you need.<br><span>One console.</span></div>
+          <div class="home-sub">Unified control over your AI agents, models, studio tools, NVIDIA hardware, and HuggingFace catalog — built for DJ Speedy & GOAT Force Records.</div>
+          <div class="home-ctas">
+            <button class="cta-primary" onclick="showPanel('chat');setActive(document.querySelectorAll('.sb-item')[1])">🤖 Chat with Agents</button>
+            <button class="cta-ghost" onclick="showPanel('models')">🧠 Browse Models</button>
+            <button class="cta-ghost" onclick="showPanel('nvidia')" style="color:var(--nvidia);border-color:rgba(118,185,0,.3)">⚡ NVIDIA Setup</button>
+          </div>
+        </div>
+        <div class="home-stats">
+          <div class="h-stat"><div class="h-stat-val">7</div><div class="h-stat-lbl">Active Agents</div></div>
+          <div class="h-stat"><div class="h-stat-val">53+</div><div class="h-stat-lbl">AI Models</div></div>
+          <div class="h-stat"><div class="h-stat-val">13</div><div class="h-stat-lbl">Studio Tools</div></div>
+          <div class="h-stat"><div class="h-stat-val" style="color:var(--nvidia)">CUDA 13.3</div><div class="h-stat-lbl">NVIDIA SDK</div></div>
+          <div class="h-stat"><div class="h-stat-val" style="color:var(--hf)">2.8M+</div><div class="h-stat-lbl">HF Models</div></div>
+          <div class="h-stat"><div class="h-stat-val">100%</div><div class="h-stat-lbl">Artist Owned</div></div>
+        </div>
+        <div class="home-grid">
+          <div class="hl-card" onclick="showPanel('chat')">
+            <div class="hl-ico" style="background:rgba(231,76,60,.12);border-color:rgba(231,76,60,.2)">🧬</div>
+            <div><div class="hl-title">Dr. Devin · 007</div><div class="hl-desc">Chief AI Strategist. Your personal system doctor & mission commander.</div><span class="hl-tag" style="background:rgba(231,76,60,.12);color:#f85149">ONLINE</span></div>
+          </div>
+          <div class="hl-card" onclick="openPage('agent-007.html')">
+            <div class="hl-ico" style="background:rgba(212,160,60,.1);border-color:rgba(212,160,60,.2)">🎯</div>
+            <div><div class="hl-title">Agent-007 Hub</div><div class="hl-desc">All 7 agents: Master Oscar, Ms. Money Penny, Vanessa, Nexus, Lexi, Codex, Dr. Devin.</div><span class="hl-tag" style="background:rgba(212,160,60,.12);color:var(--gold)">INTELLIGENCE</span></div>
+          </div>
+          <div class="hl-card" onclick="showPanel('models')">
+            <div class="hl-ico" style="background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.2)">🧠</div>
+            <div><div class="hl-title">AI Models</div><div class="hl-desc">53+ GGUF models on i2i drive + HuggingFace catalog browser.</div><span class="hl-tag" style="background:rgba(167,139,250,.1);color:var(--purple)">53+ LOCAL</span></div>
+          </div>
+          <div class="hl-card nvidia" onclick="showPanel('nvidia')">
+            <div class="hl-ico" style="background:rgba(118,185,0,.1);border-color:rgba(118,185,0,.2)">⚡</div>
+            <div><div class="hl-title">NVIDIA CUDA 13.3</div><div class="hl-desc">Full CUDA toolkit setup + ACE for Games + Nsight + developer tools.</div><span class="hl-tag" style="background:rgba(118,185,0,.1);color:var(--nvidia)">GPU POWER</span></div>
+          </div>
+          <div class="hl-card hf" onclick="showPanel('models')">
+            <div class="hl-ico" style="background:rgba(255,157,0,.1);border-color:rgba(255,157,0,.2)">🤗</div>
+            <div><div class="hl-title">HuggingFace</div><div class="hl-desc">Browse 2.8M+ models, datasets & spaces. One-click pull to Ollama.</div><span class="hl-tag" style="background:rgba(255,157,0,.1);color:var(--hf)">2.8M MODELS</span></div>
+          </div>
+          <div class="hl-card blue" onclick="openPage('studio-hub.html')">
+            <div class="hl-ico" style="background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.2)">🎪</div>
+            <div><div class="hl-title">Studio Hub</div><div class="hl-desc">13 tools: Music, Video, Screenwriting, Beat Maker, AI Audio, Film Score.</div><span class="hl-tag" style="background:rgba(88,166,255,.1);color:var(--blue)">13 TOOLS</span></div>
+          </div>
+          <div class="hl-card purple" onclick="showPanel('settings')">
+            <div class="hl-ico" style="background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.2)">🔌</div>
+            <div><div class="hl-title">MCP Marketplace</div><div class="hl-desc">Airweave, GitHub, Linear, Notion, Playwright, PostgreSQL & 30+ more.</div><span class="hl-tag" style="background:rgba(167,139,250,.1);color:var(--purple)">MCP SERVERS</span></div>
+          </div>
+          <div class="hl-card teal" onclick="openPage('halito-chat.html')">
+            <div class="hl-ico" style="background:rgba(57,208,216,.1);border-color:rgba(57,208,216,.2)">💬</div>
+            <div><div class="hl-title">Halito Chat</div><div class="hl-desc">Discord-style team hub: 7 channels, all agents, studio integration.</div><span class="hl-tag" style="background:rgba(57,208,216,.1);color:var(--cyan)">TEAM HUB</span></div>
+          </div>
+          <div class="hl-card" onclick="openPage('goat-auth.html')">
+            <div class="hl-ico" style="background:rgba(248,81,73,.1);border-color:rgba(248,81,73,.2)">🔐</div>
+            <div><div class="hl-title">GOAT Auth</div><div class="hl-desc">Secure login, API keys, model credentials, and vault management.</div><span class="hl-tag" style="background:rgba(248,81,73,.1);color:var(--red)">SECURE</span></div>
+          </div>
+          <div class="hl-card" onclick="openPage('agent-status.html')">
+            <div class="hl-ico" style="background:rgba(63,185,80,.1);border-color:rgba(63,185,80,.2)">📊</div>
+            <div><div class="hl-title">Ops Dashboard</div><div class="hl-desc">Live agent health, system metrics, server status, activity logs.</div><span class="hl-tag" style="background:rgba(63,185,80,.1);color:var(--green)">LIVE</span></div>
+          </div>
+          <div class="hl-card" onclick="openPage('moneypenny.html')">
+            <div class="hl-ico" style="background:rgba(233,30,140,.1);border-color:rgba(233,30,140,.2)">💎</div>
+            <div><div class="hl-title">Ms. Money Penny</div><div class="hl-desc">Royalties, self-healing, self-coding, portable model linker.</div><span class="hl-tag" style="background:rgba(233,30,140,.1);color:#e879f9">AGENT 002</span></div>
+          </div>
+          <div class="hl-card" onclick="openPage('dr-devin.html')">
+            <div class="hl-ico" style="background:rgba(231,76,60,.1);border-color:rgba(231,76,60,.2)">🔬</div>
+            <div><div class="hl-title">Dr. Devin / PATCH</div><div class="hl-desc">System doctor. Diagnoses, repairs, and self-codes your whole stack.</div><span class="hl-tag" style="background:rgba(231,76,60,.1);color:var(--red)">007</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AGENT CHAT PANEL ── -->
+      <div class="panel" id="panel-chat">
+        <div class="chat-layout" style="height:100%">
+          <div class="chat-agents">
+            <div class="chat-agents-title">Agents</div>
+            <div class="agent-card active" onclick="selectAgent(this,'Dr. Devin','Chief AI Strategist · 007','🧬','rgba(231,76,60,0.15)')">
+              <div class="ac-row"><div class="ac-avatar" style="background:rgba(231,76,60,.15)">🧬</div><span class="ac-name">Dr. Devin</span><div class="ac-status"></div></div>
+              <div class="ac-role">Chief AI Strategist</div>
+            </div>
+            <div class="agent-card" onclick="selectAgent(this,'Ms. Money Penny','Royalties & Finance · 002','💎','rgba(233,30,140,0.12)')">
+              <div class="ac-row"><div class="ac-avatar" style="background:rgba(233,30,140,.12)">💎</div><span class="ac-name">Ms. Money Penny</span><div class="ac-status"></div></div>
+              <div class="ac-role">Royalties & Finance</div>
+            </div>
+            <div class="agent-card" onclick="selectAgent(this,'Lexi','Creative Director · 005','⚡','rgba(243,156,18,0.12)')">
+              <div class="ac-row"><div class="ac-avatar" style="background:rgba(243,156,18,.12)">⚡</div><span class="ac-name">Lexi</span><div class="ac-status"></div></div>
+              <div class="ac-role">Creative Director</div>
+            </div>
+            <div class="agent-card" onclick="selectAgent(this,'Sir Codex','Tech Architect · 006','🤖','rgba(46,204,113,0.1)')">
+              <div class="ac-row"><div class="ac-avatar" style="background:rgba(46,204,113,.1)">🤖</div><span class="ac-name">Sir Codex</span><div class="ac-status"></div></div>
+              <div class="ac-role">Tech Architect</div>
+            </div>
+            <div class="agent-card" onclick="selectAgent(this,'Nexus','Intelligence Oracle · 004','🔮','rgba(0,212,255,0.08)')">
+              <div class="ac-row"><div class="ac-avatar" style="background:rgba(0,212,255,.08)">🔮</div><span class="ac-name">Nexus</span><div class="ac-status"></div></div>
+              <div class="ac-role">Intelligence Oracle</div>
+            </div>
+            <div class="agent-card" onclick="selectAgent(this,'Master Oscar','Operations & Deals · 001','🎩','rgba(212,160,60,0.08)')">
+              <div class="ac-row"><div class="ac-avatar" style="background:rgba(212,160,60,.08)">🎩</div><span class="ac-name">Master Oscar</span><div class="ac-status"></div></div>
+              <div class="ac-role">Operations & Deals</div>
+            </div>
+            <div class="agent-card" onclick="selectAgent(this,'Ms. Vanessa','Brand & PR · 003','👑','rgba(155,89,182,0.12)')">
+              <div class="ac-row"><div class="ac-avatar" style="background:rgba(155,89,182,.12)">👑</div><span class="ac-name">Ms. Vanessa</span><div class="ac-status away"></div></div>
+              <div class="ac-role">Brand & PR</div>
+            </div>
+            <div style="margin-top:12px;padding:8px;border-radius:8px;background:rgba(212,160,60,.06);border:1px solid rgba(212,160,60,.15)">
+              <div style="font-size:10px;color:var(--gold);font-weight:700;margin-bottom:4px">All Agents</div>
+              <a href="moneypenny.html" style="display:block;font-size:11px;color:var(--dim);padding:4px 0;transition:.1s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--dim)'">→ Full Chat Interface</a>
+              <a href="halito-chat.html" style="display:block;font-size:11px;color:var(--dim);padding:4px 0;transition:.1s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--dim)'">→ Halito Chat Hub</a>
+            </div>
+          </div>
+          <div class="chat-main">
+            <div class="chat-topbar">
+              <div class="ac-avatar" id="chatAvatar" style="width:36px;height:36px;border-radius:9px;background:rgba(231,76,60,.15);font-size:16px;display:flex;align-items:center;justify-content:center">🧬</div>
+              <div><div class="chat-active-name" id="chatName">Dr. Devin</div><div class="chat-active-role" id="chatRole">Chief AI Strategist · Agent 007</div></div>
+              <div class="chat-topbar-actions">
+                <button class="chat-action-btn" onclick="clearChat()">🗑 Clear</button>
+                <button class="chat-action-btn" onclick="openPage('dr-devin.html')">⬡ Full Page</button>
+              </div>
+            </div>
+            <div class="chat-msgs" id="chatMsgs">
+              <div class="msg-row">
+                <div class="msg-avatar" style="background:rgba(231,76,60,.15)">🧬</div>
+                <div class="msg-body">
+                  <div class="msg-meta"><span class="msg-name" style="color:#f85149">Dr. Devin</span><span class="msg-time">just now</span></div>
+                  <div class="msg-text">GOAT Force Console is live. All 7 agents are standing by. I'm Dr. Devin — your system doctor, chief strategist, and the one who keeps this whole operation running. What's the mission today?</div>
+                </div>
+              </div>
+            </div>
+            <div id="typingIndicator" style="display:none;padding:8px 16px;font-size:12px;color:var(--dim);display:none;align-items:center;gap:8px">
+              <div style="display:flex;gap:3px"><div style="width:5px;height:5px;border-radius:50%;background:var(--gold);animation:pulse .8s infinite"></div><div style="width:5px;height:5px;border-radius:50%;background:var(--gold);animation:pulse .8s .15s infinite"></div><div style="width:5px;height:5px;border-radius:50%;background:var(--gold);animation:pulse .8s .3s infinite"></div></div>
+              <span id="typingName">Agent is responding...</span>
+            </div>
+            <div class="chat-input-area">
+              <div class="chat-input-row">
+                <textarea class="chat-textarea" id="chatInput" placeholder="Message Dr. Devin or @mention any agent..." rows="1" onkeydown="handleChatKey(event)" oninput="autoResizeChat(this)"></textarea>
+                <button class="chat-send" onclick="sendChatMsg()">➤</button>
+              </div>
+              <div class="chat-quick">
+                <button class="cq-btn" onclick="quickChat('What should we focus on today?')">🎯 Daily priorities</button>
+                <button class="cq-btn" onclick="quickChat('@Lexi write a hook for Amigo Alley')">🎵 Lexi: write hook</button>
+                <button class="cq-btn" onclick="quickChat('@Ms. Money Penny royalty check for this month')">💰 Royalty check</button>
+                <button class="cq-btn" onclick="quickChat('@Codex status update on the GOAT app')">💻 Tech status</button>
+                <button class="cq-btn" onclick="quickChat('@Nexus what\'s trending in hip-hop right now?')">🔮 Intel report</button>
+                <button class="cq-btn" onclick="quickChat('Set up CUDA 13.3 on Ubuntu for NVIDIA THOR')">⚡ CUDA setup</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MODELS PANEL ── -->
+      <div class="panel" id="panel-models">
+        <div class="models-layout">
+          <div class="models-filters">
+            <div class="mf-title">Filters</div>
+            <div class="mf-group">
+              <div class="mf-group-title">Source</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>HuggingFace</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>NVIDIA NGC</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>Ollama Local</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>i2i Drive</div>
+            </div>
+            <div class="mf-group">
+              <div class="mf-group-title">Task</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>Text Generation</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>Image-Text-to-Text</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>Text-to-Speech</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>Text-to-Image</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>Text-to-Video</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>Animation / ACE</div>
+            </div>
+            <div class="mf-group">
+              <div class="mf-group-title">Size</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>1B–3B (fast)</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>7B–12B (balanced)</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>27B–35B (quality)</div>
+              <div class="mf-item" onclick="this.classList.toggle('on')"><div class="mf-check"></div>70B+ (maximum)</div>
+            </div>
+            <div class="mf-group">
+              <div class="mf-group-title">Apps</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>Ollama</div>
+              <div class="mf-item on" onclick="this.classList.toggle('on')"><div class="mf-check">✓</div>LM Studio</div>
+              <div class="mf-item" onclick="this.classList.toggle('on')"><div class="mf-check"></div>vLLM</div>
+              <div class="mf-item" onclick="this.classList.toggle('on')"><div class="mf-check"></div>llama.cpp</div>
+            </div>
+          </div>
+          <div class="models-main">
+            <div class="models-topbar">
+              <input class="models-search" type="text" placeholder="🔍  Search 2.8M+ models — qwen, llama, mistral, phi, audio2face..." oninput="filterModels(this.value)">
+              <span class="models-count" id="modelsCount">Showing all · 2,878,659 available</span>
+              <select class="models-sort"><option>Trending</option><option>Most Downloaded</option><option>Newest</option><option>Smallest</option><option>Largest</option></select>
+            </div>
+            <div class="models-grid" id="modelsGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NVIDIA PANEL ── -->
+      <div class="panel" id="panel-nvidia" style="overflow-y:auto;display:none">
+        <div style="padding:24px;max-width:1100px;margin:0 auto">
+          <div class="nv-hero">
+            <div class="nv-logo">⚡</div>
+            <div>
+              <div class="nv-title">NVIDIA Developer Suite</div>
+              <div class="nv-sub">CUDA Toolkit · ACE for Games · Nsight · Audio2Face-3D · NVIGI SDK</div>
+              <div class="nv-version">CUDA 13.3 · ACE 2026 · Nsight Systems 2026.3.1 · Nsight Compute 2026.2.1</div>
+            </div>
+          </div>
+
+          <!-- ACE FOR GAMES -->
+          <div style="margin-bottom:28px">
+            <h2 style="font-size:17px;font-weight:800;margin-bottom:6px;color:var(--nvidia)">🎮 NVIDIA ACE for Games</h2>
+            <p style="font-size:12px;color:var(--dim);margin-bottom:14px;line-height:1.6">AI-powered NPC pipeline for Unreal Engine 5. Audio2Face-3D, ASR, LLM, TTS — local, RTX-optimized, MIT licensed. Perfect for GOAT Force game characters and digital humans.</p>
+            <div class="nv-grid">
+              <div class="nv-card">
+                <div class="nv-card-ico">🎭</div>
+                <div class="nv-card-title">Audio2Face-3D</div>
+                <div class="nv-card-desc">Convert streaming audio to facial blendshapes for real-time lip-sync and facial animation on-device or in cloud. SDK in C++ + Python, MIT license.</div>
+                <div class="nv-card-btns">
+                  <button class="nv-btn primary" onclick="nvDownload('audio2face')">Download SDK</button>
+                  <button class="nv-btn ghost">Docs</button>
+                </div>
+              </div>
+              <div class="nv-card">
+                <div class="nv-card-ico">🎤</div>
+                <div class="nv-card-title">ASR Plugin — UE5</div>
+                <div class="nv-card-desc">Ready-to-use English language model + sample level + Blueprint examples. Supports UE 5.5, 5.6, 5.7.</div>
+                <div class="nv-card-btns">
+                  <button class="nv-btn primary" onclick="nvDownload('asr-ue57')">UE 5.7 Plugin</button>
+                  <button class="nv-btn ghost" onclick="nvDownload('asr-ue56')">UE 5.6</button>
+                </div>
+              </div>
+              <div class="nv-card">
+                <div class="nv-card-ico">🤖</div>
+                <div class="nv-card-title">LLM Plugin — UE5</div>
+                <div class="nv-card-desc">Local, low-latency text generation and function calling. Optimized for character dialogue and decision-making in-game.</div>
+                <div class="nv-card-btns">
+                  <button class="nv-btn primary" onclick="nvDownload('llm-ue57')">UE 5.7 Plugin</button>
+                  <button class="nv-btn ghost" onclick="nvDownload('llm-ue56')">UE 5.6</button>
+                </div>
+              </div>
+              <div class="nv-card">
+                <div class="nv-card-ico">🔊</div>
+                <div class="nv-card-title">TTS Plugin — UE5</div>
+                <div class="nv-card-desc">High-quality, ready-to-use voices with sample level and dedicated plugin content to bring characters to life instantly.</div>
+                <div class="nv-card-btns">
+                  <button class="nv-btn primary" onclick="nvDownload('tts-ue57')">UE 5.7 Plugin</button>
+                  <button class="nv-btn ghost" onclick="nvDownload('tts-ue56')">UE 5.6</button>
+                </div>
+              </div>
+              <div class="nv-card">
+                <div class="nv-card-ico">🕹</div>
+                <div class="nv-card-title">Game Agent SDK (Beta)</div>
+                <div class="nv-card-desc">Lightweight C/C++ agentic framework. Agent, Chat, RAG APIs to connect NPCs to game state, knowledge, and model-driven actions.</div>
+                <div class="nv-card-btns">
+                  <button class="nv-btn primary" onclick="nvDownload('game-agent-sdk')">Download SDK</button>
+                  <button class="nv-btn ghost" onclick="nvDownload('game-agent-src')">Source</button>
+                </div>
+              </div>
+              <div class="nv-card">
+                <div class="nv-card-ico">⚙️</div>
+                <div class="nv-card-title">NVIGI — In-Game Inferencing</div>
+                <div class="nv-card-desc">High-performance path to integrate locally run AI models via in-process C++ execution and CUDA in Graphics. Schedules inference across complex GPU workloads.</div>
+                <div class="nv-card-btns">
+                  <button class="nv-btn primary" onclick="nvDownload('nvigi-sdk')">Download SDK</button>
+                  <button class="nv-btn ghost">Compat Matrix</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- HF AUDIO2FACE DATASET -->
+          <div style="margin-bottom:28px">
+            <h2 style="font-size:17px;font-weight:800;margin-bottom:6px;color:var(--hf)">🤗 HuggingFace Datasets — NVIDIA</h2>
+            <p style="font-size:12px;color:var(--dim);margin-bottom:14px">NVIDIA datasets available on HuggingFace. Audio2Face-3D training data for custom facial animation models.</p>
+            <div class="nv-grid">
+              <div class="ace-card" style="cursor:pointer" onclick="openHF('nvidia/Audio2Face-3D-Dataset-v1.0.0-claire')">
+                <div class="ace-card-title">🎭 nvidia/Audio2Face-3D-Dataset-v1.0.0-claire</div>
+                <div class="ace-card-desc">54 audio files, 4 blendshape data files, 108 animated geometry caches, 10 geometry files, 5 transform files. &lt;1GB total. For training Audio2Face-3D networks.</div>
+                <div class="ace-card-ver">Audio · Text · Jul 2025 · NVIDIA Audio2Face Sample Data License</div>
+              </div>
+              <div class="ace-card" onclick="openHF('empero-ai/Qwythos-9B-Claude-Mythos-5-1M')">
+                <div class="ace-card-title">🧠 empero-ai/Qwythos-9B · 9B · Text Generation</div>
+                <div class="ace-card-desc">Claude-inspired 9B model. 1.37M downloads. Good for creative writing, agent responses, and GOAT Force personas.</div>
+                <div class="ace-card-ver">GGUF available · 5 days ago · 1.37k likes</div>
+              </div>
+              <div class="ace-card" onclick="openHF('deepreinforce-ai/Ornith-1.0-9B')">
+                <div class="ace-card-title">🦅 deepreinforce-ai/Ornith-1.0-9B · 9B</div>
+                <div class="ace-card-desc">1.47M downloads, 363 likes. Strong general-purpose 9B model — great for agent tasks and creative output.</div>
+                <div class="ace-card-ver">Text Generation · 8 days ago</div>
+              </div>
+              <div class="ace-card" onclick="openHF('Qwen/Qwen-AgentWorld-35B-A3B')">
+                <div class="ace-card-title">⚡ Qwen/Qwen-AgentWorld-35B-A3B · 35B MoE</div>
+                <div class="ace-card-desc">45.5k downloads. Purpose-built for agentic tasks — perfect for Master Oscar, Dr. Devin, and multi-step reasoning agents.</div>
+                <div class="ace-card-ver">Text Generation · 9 days ago · 524 likes</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CUDA INSTALL -->
+          <div class="nv-install-box">
+            <div class="nv-install-title">⚡ CUDA 13.3 Installation — Quick Setup</div>
+            <div class="nv-os-tabs">
+              <div class="nv-os-tab active" onclick="setCudaOS(this,'ubuntu')">Ubuntu</div>
+              <div class="nv-os-tab" onclick="setCudaOS(this,'rhel')">RHEL / Rocky</div>
+              <div class="nv-os-tab" onclick="setCudaOS(this,'debian')">Debian</div>
+              <div class="nv-os-tab" onclick="setCudaOS(this,'fedora')">Fedora</div>
+              <div class="nv-os-tab" onclick="setCudaOS(this,'conda')">Conda</div>
+              <div class="nv-os-tab" onclick="setCudaOS(this,'pip')">Pip</div>
+            </div>
+            <div class="nv-code" id="cudaCode">
+<span class="nv-comment"># Ubuntu 24.04 · CUDA 13.3 · Network Install</span>
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
+sudo apt update
+sudo apt install cuda-toolkit
+
+<span class="nv-comment"># Post-install: add to PATH</span>
+export PATH=/usr/local/cuda-13.3/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda-13.3/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+
+<span class="nv-comment"># Verify installation</span>
+nvcc --version
+nvidia-smi</div>
+            <button class="nv-code-copy" onclick="copyCode()">Copy</button>
+          </div>
+
+          <!-- NSIGHT TOOLS -->
+          <h2 style="font-size:17px;font-weight:800;margin-bottom:12px;color:var(--nvidia)">🔬 Nsight Developer Tools</h2>
+          <div class="nv-grid">
+            <div class="nv-card">
+              <div class="nv-card-ico">📊</div>
+              <div class="nv-card-title">Nsight Systems 2026.3.1</div>
+              <div class="nv-card-desc">System-wide performance profiling and timeline visualization. Works on macOS, Windows, Linux. Essential for GPU performance analysis.</div>
+              <div class="nv-card-btns">
+                <button class="nv-btn primary" onclick="nvDownload('nsight-systems-mac-x64')">macOS x64</button>
+                <button class="nv-btn ghost" onclick="nvDownload('nsight-systems-mac-arm64')">macOS ARM</button>
+              </div>
+            </div>
+            <div class="nv-card">
+              <div class="nv-card-ico">🔍</div>
+              <div class="nv-card-title">Nsight Compute 2026.2.1</div>
+              <div class="nv-card-desc">CUDA kernel profiler. Deep GPU performance analysis. Supports Volta and newer GPUs. Available macOS, Windows, Linux.</div>
+              <div class="nv-card-btns">
+                <button class="nv-btn primary" onclick="nvDownload('nsight-compute-mac-x64')">macOS x64</button>
+                <button class="nv-btn ghost" onclick="nvDownload('nsight-compute-mac-arm64')">macOS ARM</button>
+              </div>
+            </div>
+            <div class="nv-card">
+              <div class="nv-card-ico">🎮</div>
+              <div class="nv-card-title">Nsight Graphics 2026.2.0</div>
+              <div class="nv-card-desc">Frame debugger and GPU profiler for graphics applications. Debug, profile, and analyze Direct3D, OpenGL, and Vulkan apps.</div>
+              <div class="nv-card-btns">
+                <button class="nv-btn primary" onclick="nvDownload('nsight-graphics')">Download</button>
+                <button class="nv-btn ghost">Docs</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- THOR SETUP -->
+          <div style="margin-top:24px;background:linear-gradient(135deg,rgba(118,185,0,.06),rgba(0,212,255,.04));border:1px solid rgba(118,185,0,.2);border-radius:var(--r2);padding:20px">
+            <h2 style="font-size:16px;font-weight:800;margin-bottom:8px;color:var(--nvidia)">⚡ NVIDIA THOR Developer Kit — Your Hardware</h2>
+            <p style="font-size:12px;color:var(--dim);line-height:1.6;margin-bottom:14px">You mentioned you have the NVIDIA THOR Developer Kit ready. Here's how to get it set up with CUDA 13.3 and the ACE for Games plugins.</p>
+            <div class="nv-code">
+<span class="nv-comment"># THOR (arm64 sbsa / Jetson) — Ubuntu 24.04</span>
+sudo apt update
+sudo apt install cuda-toolkit
+sudo apt install cuda-compat    <span class="nv-comment"># required for THOR</span>
+
+<span class="nv-comment"># Install ACE plugins for UE5 on THOR</span>
+<span class="nv-comment"># Download: Audio2Face UE5.6, ASR UE5.6, LLM UE5.6, TTS UE5.6</span>
+
+<span class="nv-comment"># Verify THOR GPU</span>
+lspci | grep -i nvidia
+nvcc --version</div>
+            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+              <button class="nv-btn primary" onclick="nvDownload('cuda-ubuntu2404-arm64')">Get CUDA for THOR</button>
+              <button class="nv-btn ghost" onclick="nvDownload('ace-ue56')">ACE UE5.6 Plugins</button>
+              <button class="nv-btn ghost" onclick="nvDownload('audio2face-3d-ue56')">Audio2Face UE5.6</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS PANEL ── -->
+      <div class="panel" id="panel-settings" style="display:none">
+        <div class="settings-nav">
+          <div class="sn-section">
+            <div class="sn-label">General</div>
+            <div class="sn-item active" onclick="setSettingSection(this,'general')">⚙️ General</div>
+            <div class="sn-item" onclick="setSettingSection(this,'plan')">📋 Plan Information</div>
+            <div class="sn-item" onclick="setSettingSection(this,'plugins')">🔌 Plugins / MCP</div>
+            <div class="sn-item" onclick="setSettingSection(this,'agents')">🤖 Agents</div>
+          </div>
+          <div class="sn-section">
+            <div class="sn-label">Editor</div>
+            <div class="sn-item" onclick="setSettingSection(this,'ui')">🎨 User Interface</div>
+            <div class="sn-item" onclick="setSettingSection(this,'shortcuts')">⌨️ Shortcuts</div>
+            <div class="sn-item" onclick="setSettingSection(this,'notifications')">🔔 Notifications</div>
+          </div>
+          <div class="sn-section">
+            <div class="sn-label">GOAT Force</div>
+            <div class="sn-item" onclick="setSettingSection(this,'models-cfg')">🧠 Model Config</div>
+            <div class="sn-item" onclick="setSettingSection(this,'nvidia-cfg')">⚡ NVIDIA Config</div>
+            <div class="sn-item" onclick="setSettingSection(this,'advanced')">🔧 Advanced</div>
+          </div>
+        </div>
+        <div class="settings-main" id="settingsMain">
+          <!-- general section shown by default -->
+          <div class="settings-section">
+            <div class="ss-title">General</div>
+            <div class="ss-desc">Customize GOAT Force Console appearance, application icon, and core behavior settings.</div>
+            <div class="setting-row">
+              <div class="setting-info"><div class="setting-label">Customize Application Icon</div><div class="setting-hint">Choose from GOAT Force preset icons or upload your own logo.</div></div>
+              <div class="setting-control"><button class="nv-btn ghost" style="border-color:rgba(212,160,60,.3);color:var(--gold)" onclick="document.getElementById('iconUpload').click()">Customize</button><input type="file" id="iconUpload" style="display:none" accept="image/*"></div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><div class="setting-label">Console Theme</div><div class="setting-hint">Dark is default. Choose your vibe.</div></div>
+              <div class="setting-control">
+                <select class="setting-select">
+                  <option>Dark (GOAT Default)</option>
+                  <option>Darker (Midnight)</option>
+                  <option>Light (Coming soon)</option>
+                </select>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><div class="setting-label">Accent Color</div><div class="setting-hint">Choose your gold or customize.</div></div>
+              <div class="setting-control">
+                <div class="color-swatches">
+                  <div class="color-swatch active" style="background:#d4a03c" onclick="setAccent('#d4a03c','#f0c040',this)" title="GOAT Gold"></div>
+                  <div class="color-swatch" style="background:#58a6ff" onclick="setAccent('#58a6ff','#79c0ff',this)" title="Blue"></div>
+                  <div class="color-swatch" style="background:#a78bfa" onclick="setAccent('#a78bfa','#c4b5fd',this)" title="Purple"></div>
+                  <div class="color-swatch" style="background:#3fb950" onclick="setAccent('#3fb950','#56d364',this)" title="Green"></div>
+                  <div class="color-swatch" style="background:#76b900" onclick="setAccent('#76b900','#8be000',this)" title="NVIDIA Green"></div>
+                  <div class="color-swatch" style="background:#f85149" onclick="setAccent('#f85149','#ff7b72',this)" title="Red"></div>
+                  <div class="color-swatch" style="background:#ff9d00" onclick="setAccent('#ff9d00','#ffb84d',this)" title="HuggingFace Orange"></div>
+                </div>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><div class="setting-label">Open Editor Settings</div><div class="setting-hint">General editor preferences in a separate view.</div></div>
+              <div class="setting-control"><button class="nv-btn ghost" style="border-color:var(--line);color:var(--dim)">Open Editor Settings</button></div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="ss-title">Plan Information</div>
+            <div class="plan-card">
+              <div class="plan-name">Pro — GOAT Force</div>
+              <div class="plan-email">harvey@bsmmusic.com · DJSPEEDYGA</div>
+              <div class="plan-bar-wrap">
+                <div class="plan-bar-label"><span>Daily quota usage</span><span style="color:var(--green)">2% used — Resets Jul 4</span></div>
+                <div class="plan-bar"><div class="plan-bar-fill" style="width:2%"></div></div>
+              </div>
+              <div class="plan-bar-wrap" style="margin-top:8px">
+                <div class="plan-bar-label"><span>Weekly quota usage</span><span style="color:var(--orange)">100% used — Resets Jul 5</span></div>
+                <div class="plan-bar"><div class="plan-bar-fill danger" style="width:100%"></div></div>
+              </div>
+              <div style="margin-top:10px;display:flex;gap:8px">
+                <button class="nv-btn primary" style="background:var(--gold);color:#000">Purchase Extra Usage</button>
+                <button class="nv-btn ghost" style="border-color:rgba(212,160,60,.3);color:var(--gold)">Switch Account</button>
+              </div>
+            </div>
+            <div style="font-size:12px;color:var(--dim);padding:8px;background:rgba(248,81,73,.06);border:1px solid rgba(248,81,73,.15);border-radius:var(--r3)">
+              Extra usage balance: <strong style="color:var(--ink)">$46.91</strong> — Plan ends in <strong style="color:var(--gold)">21 days</strong> (Jun 24 – Jul 24, 2026)
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /center -->
+
+  <!-- ══ RIGHT PANEL ══ -->
+  <div id="right">
+    <div class="rp-tabs">
+      <div class="rp-tab active" onclick="setRpTab(this,'agents')">Agents</div>
+      <div class="rp-tab" onclick="setRpTab(this,'activity')">Activity</div>
+      <div class="rp-tab" onclick="setRpTab(this,'system')">System</div>
+    </div>
+    <div class="rp-body" id="rpBody">
+      <!-- AGENTS TAB (default) -->
+      <div id="rp-agents">
+        <div class="rp-section">
+          <div class="rp-section-title">Agents Online</div>
+          <div class="rp-agent" onclick="openPage('dr-devin.html')"><div class="rp-agent-ico" style="background:rgba(231,76,60,.15)">🧬</div><div class="rp-agent-name">Dr. Devin</div><div class="rp-status-dot online"></div></div>
+          <div class="rp-agent" onclick="openPage('moneypenny.html?mode=moneypenny')"><div class="rp-agent-ico" style="background:rgba(233,30,140,.12)">💎</div><div class="rp-agent-name">Ms. Money Penny</div><div class="rp-status-dot online"></div></div>
+          <div class="rp-agent" onclick="openPage('moneypenny.html?mode=lexi')"><div class="rp-agent-ico" style="background:rgba(243,156,18,.12)">⚡</div><div class="rp-agent-name">Lexi</div><div class="rp-status-dot online"></div></div>
+          <div class="rp-agent" onclick="openPage('moneypenny.html?mode=codex')"><div class="rp-agent-ico" style="background:rgba(46,204,113,.1)">🤖</div><div class="rp-agent-name">Sir Codex</div><div class="rp-status-dot online"></div></div>
+          <div class="rp-agent" onclick="openPage('moneypenny.html?mode=nexus')"><div class="rp-agent-ico" style="background:rgba(0,212,255,.08)">🔮</div><div class="rp-agent-name">Nexus</div><div class="rp-status-dot online"></div></div>
+          <div class="rp-agent" onclick="openPage('moneypenny.html?mode=oscar')"><div class="rp-agent-ico" style="background:rgba(212,160,60,.08)">🎩</div><div class="rp-agent-name">Master Oscar</div><div class="rp-status-dot online"></div></div>
+          <div class="rp-agent" onclick="openPage('moneypenny.html?mode=vanessa')"><div class="rp-agent-ico" style="background:rgba(155,89,182,.12)">👑</div><div class="rp-agent-name">Ms. Vanessa</div><div class="rp-status-dot away"></div></div>
+        </div>
+        <div class="rp-section">
+          <div class="rp-section-title">NVIDIA ACE</div>
+          <div class="ace-card"><div class="ace-card-title">Audio2Face-3D v3.0</div><div class="ace-card-desc">Diffusion model for lip-sync & facial animation. ONNX-TRT.</div><div class="ace-card-ver">UE5 Plugin · MIT License</div></div>
+          <div class="ace-card"><div class="ace-card-title">ASR — English Model</div><div class="ace-card-desc">Ready-to-use speech recognition for UE5 game characters.</div><div class="ace-card-ver">UE 5.5 / 5.6 / 5.7</div></div>
+          <div class="ace-card"><div class="ace-card-title">Game Agent SDK Beta</div><div class="ace-card-desc">C/C++ agentic framework for NPC AI with RAG APIs.</div><div class="ace-card-ver">Beta · Latest 2026</div></div>
+        </div>
+        <div class="rp-section">
+          <div class="rp-section-title">Quick Links</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <a href="agent-007.html" style="font-size:12px;color:var(--dim);padding:5px 6px;border-radius:6px;display:block;transition:.1s" onmouseover="this.style.color='var(--gold)';this.style.background='var(--bg2)'" onmouseout="this.style.color='var(--dim)';this.style.background='transparent'">🎯 Agent-007 Hub</a>
+            <a href="agent-status.html" style="font-size:12px;color:var(--dim);padding:5px 6px;border-radius:6px;display:block;transition:.1s" onmouseover="this.style.color='var(--gold)';this.style.background='var(--bg2)'" onmouseout="this.style.color='var(--dim)';this.style.background='transparent'">📊 Ops Status</a>
+            <a href="studio-hub.html" style="font-size:12px;color:var(--dim);padding:5px 6px;border-radius:6px;display:block;transition:.1s" onmouseover="this.style.color='var(--gold)';this.style.background='var(--bg2)'" onmouseout="this.style.color='var(--dim)';this.style.background='transparent'">🎛 Studio Hub</a>
+            <a href="halito-chat.html" style="font-size:12px;color:var(--dim);padding:5px 6px;border-radius:6px;display:block;transition:.1s" onmouseover="this.style.color='var(--cyan)';this.style.background='var(--bg2)'" onmouseout="this.style.color='var(--dim)';this.style.background='transparent'">💬 Halito Chat</a>
+            <a href="goat-launcher-hub.html" style="font-size:12px;color:var(--dim);padding:5px 6px;border-radius:6px;display:block;transition:.1s" onmouseover="this.style.color='var(--gold)';this.style.background='var(--bg2)'" onmouseout="this.style.color='var(--dim)';this.style.background='transparent'">🚀 All Launchers</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY TAB -->
+      <div id="rp-activity" style="display:none">
+        <div class="rp-section">
+          <div class="rp-section-title">Recent Activity</div>
+          <div class="rp-activity-item"><div class="rpa-title">🔥 Studio Hub — 13 tools deployed</div><div class="rpa-time">Just now</div></div>
+          <div class="rp-activity-item"><div class="rpa-title">✅ Halito Chat — created</div><div class="rpa-time">2m ago</div></div>
+          <div class="rp-activity-item"><div class="rpa-title">✍️ AI Script Writer added to Screenwriting</div><div class="rpa-time">5m ago</div></div>
+          <div class="rp-activity-item"><div class="rpa-title">🎵 AI Audio Generator added to Music Studio</div><div class="rpa-time">12m ago</div></div>
+          <div class="rp-activity-item"><div class="rpa-title">📊 Agent Status Dashboard created</div><div class="rpa-time">30m ago</div></div>
+          <div class="rp-activity-item"><div class="rpa-title">🤖 Dr. Devin agent page created</div><div class="rpa-time">1h ago</div></div>
+          <div class="rp-activity-item"><div class="rpa-title">🎯 Agent-007 hub page deployed</div><div class="rpa-time">2h ago</div></div>
+          <div class="rp-activity-item"><div class="rpa-title">💎 7 personas added to Ms. Money Penny</div><div class="rpa-time">3h ago</div></div>
+        </div>
+      </div>
+
+      <!-- SYSTEM TAB -->
+      <div id="rp-system" style="display:none">
+        <div class="rp-section">
+          <div class="rp-section-title">System Health</div>
+          <div style="margin-bottom:10px">
+            <div class="health-row"><span class="health-label">Intel Server (port 5500)</span><span class="health-val" id="intelStatus">Checking...</span></div>
+            <div class="health-bar"><div class="health-fill" id="intelBar" style="width:0%"></div></div>
+          </div>
+          <div style="margin-bottom:10px">
+            <div class="health-row"><span class="health-label">Ollama (port 11435)</span><span class="health-val" id="ollamaStatus">Checking...</span></div>
+            <div class="health-bar"><div class="health-fill" id="ollamaBar" style="width:0%"></div></div>
+          </div>
+          <div style="margin-bottom:10px">
+            <div class="health-row"><span class="health-label">GOAT Web App</span><span class="health-val" style="color:var(--green)">Local File</span></div>
+            <div class="health-bar"><div class="health-fill" style="width:100%"></div></div>
+          </div>
+        </div>
+        <div class="rp-section">
+          <div class="rp-section-title">Model Drive</div>
+          <div style="font-size:11px;color:var(--dim);line-height:1.7">
+            <div>📁 /Volumes/i2i 1/Agent-007-Models</div>
+            <div>📁 /Volumes/i2i 1/Money-Penny-Models</div>
+            <div>📁 /Volumes/i2i 1/Agent-007-GOAT</div>
+            <div style="margin-top:6px;color:var(--green)">Drive: 7.3TB · 6.0TB used · 1.3TB free</div>
+          </div>
+          <div style="margin-top:10px">
+            <div class="health-row"><span class="health-label">i2i Drive (7.3TB)</span><span class="health-val warn">82%</span></div>
+            <div class="health-bar"><div class="health-fill warn" style="width:82%"></div></div>
+          </div>
+        </div>
+        <div class="rp-section">
+          <div class="rp-section-title">Local Models (Confirmed)</div>
+          <div style="font-size:10px;color:var(--dim);line-height:1.9">
+            <div style="color:var(--green)">✓ Llama-3.2-3B-Instruct-Q4_K_M (1.9GB)</div>
+            <div style="color:var(--green)">✓ Mistral-7B-Instruct-v0.3-Q4_K_M (4.1GB)</div>
+            <div style="color:var(--green)">✓ NemoMix-Unleashed-12B-Q4_K_M (7.0GB)</div>
+            <div style="color:var(--green)">✓ Phi-3.5-mini-instruct-Q4_K_M (2.2GB)</div>
+            <div style="color:var(--green)">✓ Qwen2.5-7B-Instruct-Q4_K_M (4.4GB)</div>
+            <div style="color:var(--orange)">⚠ 48+ more models — verify links</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ══ STATUS BAR ══ -->
+<div id="statusbar">
+  <div class="sb-item-s ok"><div class="sb-dot-s"></div> GOAT Force · Active</div>
+  <div class="sb-item-s" id="sb-intel" style="color:var(--dim)"><div class="sb-dot-s"></div> Intel Server</div>
+  <div class="sb-item-s" id="sb-ollama" style="color:var(--dim)"><div class="sb-dot-s"></div> Ollama</div>
+  <div class="sb-item-s" style="color:var(--nvidia)"><div class="sb-dot-s"></div> CUDA 13.3</div>
+  <div class="sb-item-s" style="color:var(--hf)"><div class="sb-dot-s"></div> HuggingFace</div>
+  <div class="spacer"></div>
+  <span style="color:var(--dim)" id="clockEl"></span>
+  <span style="color:var(--gold)">DJ SPEEDY · Pro</span>
+</div>
+
+<script>
+// ── PANEL SWITCHING ───────────────────────────────
+const panels = ['home','chat','models','nvidia','settings'];
+function showPanel(id) {
+  panels.forEach(p => {
+    const el = document.getElementById('panel-'+p);
+    if (el) { el.classList.remove('active'); el.style.display = 'none'; }
+  });
+  const target = document.getElementById('panel-'+id);
+  if (target) { target.classList.add('active'); target.style.display = id === 'home' ? 'block' : id === 'settings' ? 'flex' : id === 'chat' ? 'block' : 'block'; }
+  if (id === 'models' && !modelsLoaded) loadModels();
+  if (id === 'system') checkServices();
+}
+
+function setActive(el) {
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function setTabActive(el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function openPage(url) { window.location.href = url; }
+
+// ── CLOCK ─────────────────────────────────────────
+function updateClock() {
+  const d = new Date();
+  document.getElementById('clockEl').textContent = d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── AGENT CHAT ────────────────────────────────────
+const INTEL = 'http://localhost:5500';
+let activeAgent = { name: 'Dr. Devin', role: 'Chief AI Strategist · Agent 007', icon: '🧬', bg: 'rgba(231,76,60,.15)', endpoint: '/ai/devin', color: '#f85149' };
+let chatHistory = [];
+let chatBusy = false;
+
+function selectAgent(el, name, role, icon, bg) {
+  document.querySelectorAll('.agent-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const endMap = {
+    'Dr. Devin': '/ai/devin', 'Ms. Money Penny': '/ai/moneypenny', 'Lexi': '/ai/lexi',
+    'Sir Codex': '/ai/codex', 'Nexus': '/ai/nexus', 'Master Oscar': '/ai/oscar', 'Ms. Vanessa': '/ai/vanessa'
+  };
+  const colorMap = {
+    'Dr. Devin': '#f85149', 'Ms. Money Penny': '#e879f9', 'Lexi': '#f0883e',
+    'Sir Codex': '#3fb950', 'Nexus': '#39d0d8', 'Master Oscar': '#d4a03c', 'Ms. Vanessa': '#a78bfa'
+  };
+  activeAgent = { name, role, icon, bg, endpoint: endMap[name] || '/ai/devin', color: colorMap[name] || '#d4a03c' };
+  document.getElementById('chatName').textContent = name;
+  document.getElementById('chatRole').textContent = role;
+  document.getElementById('chatAvatar').textContent = icon;
+  document.getElementById('chatAvatar').style.background = bg;
+  chatHistory = [];
+  const msgs = document.getElementById('chatMsgs');
+  msgs.innerHTML = `<div class="msg-row"><div class="msg-avatar" style="background:${bg}">${icon}</div><div class="msg-body"><div class="msg-meta"><span class="msg-name" style="color:${colorMap[name]||'#d4a03c'}">${name}</span><span class="msg-time">now</span></div><div class="msg-text">Ready. What do you need?</div></div></div>`;
+}
+
+function addMsg(author, text, icon, bg, color) {
+  const msgs = document.getElementById('chatMsgs');
+  const time = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const div = document.createElement('div');
+  div.className = 'msg-row';
+  div.innerHTML = `<div class="msg-avatar" style="background:${bg}">${icon}</div><div class="msg-body"><div class="msg-meta"><span class="msg-name" style="color:${color}">${author}</span><span class="msg-time">${time}</span></div><div class="msg-text">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').replace(/`([^`]+)`/g,'<code>$1</code>')}</div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendChatMsg() {
+  if (chatBusy) return;
+  const inp = document.getElementById('chatInput');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.value = ''; inp.style.height = 'auto';
+  addMsg('You', msg, '👤', 'rgba(212,160,60,.12)', 'var(--gold)');
+  chatHistory.push({ role: 'user', content: msg });
+  chatBusy = true;
+  const ti = document.getElementById('typingIndicator');
+  document.getElementById('typingName').textContent = `${activeAgent.name} is responding...`;
+  ti.style.display = 'flex';
+  try {
+    const r = await fetch(INTEL + activeAgent.endpoint, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, history: chatHistory.slice(-8) }),
+      signal: AbortSignal.timeout(45000)
+    });
+    const d = await r.json();
+    ti.style.display = 'none';
+    if (d.ok && d.reply) {
+      addMsg(activeAgent.name, d.reply, activeAgent.icon, activeAgent.bg, activeAgent.color);
+      chatHistory.push({ role: 'assistant', content: d.reply });
+    } else throw new Error('no reply');
+  } catch {
+    ti.style.display = 'none';
+    addMsg(activeAgent.name, `Intel server needs to be running at localhost:5500 to respond in this panel.\n\nStart it: \`cd goat-intel-server && python goat_intel.py\`\n\nOr open the full chat page for this agent.`, activeAgent.icon, activeAgent.bg, activeAgent.color);
+  } finally { chatBusy = false; }
+}
+
+function quickChat(text) { document.getElementById('chatInput').value = text; sendChatMsg(); }
+function handleChatKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMsg(); } }
+function autoResizeChat(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 140) + 'px'; }
+function clearChat() { document.getElementById('chatMsgs').innerHTML = ''; chatHistory = []; }
+
+// ── MODELS ────────────────────────────────────────
+let modelsLoaded = false;
+const MODELS_DATA = [
+  // LOCAL (confirmed on i2i drive)
+  { name: 'Llama-3.2-3B-Instruct', src: 'i2i Drive · Local', icon: '🦙', type: 'local', tags: [['Text Gen','task'],['3B','size'],['GGUF','local']], stats: 'Q4_K_M · 1.9GB · Installed', btn: 'Run', btnCls: 'installed' },
+  { name: 'Mistral-7B-Instruct-v0.3', src: 'i2i Drive · Local', icon: '🌀', type: 'local', tags: [['Text Gen','task'],['7B','size'],['GGUF','local']], stats: 'Q4_K_M · 4.1GB · Installed', btn: 'Run', btnCls: 'installed' },
+  { name: 'NemoMix-Unleashed-12B', src: 'i2i Drive · Local', icon: '🔱', type: 'local', tags: [['Text Gen','task'],['12B','size'],['GGUF','local']], stats: 'Q4_K_M · 7.0GB · Installed', btn: 'Run', btnCls: 'installed' },
+  { name: 'Phi-3.5-mini-instruct', src: 'i2i Drive · Local', icon: '🔷', type: 'local', tags: [['Text Gen','task'],['3.5B','size'],['GGUF','local']], stats: 'Q4_K_M · 2.2GB · Installed', btn: 'Run', btnCls: 'installed' },
+  { name: 'Qwen2.5-7B-Instruct', src: 'i2i Drive · Local', icon: '⚡', type: 'local', tags: [['Text Gen','task'],['7B','size'],['GGUF','local']], stats: 'Q4_K_M · 4.4GB · Installed', btn: 'Run', btnCls: 'installed' },
+  // OLLAMA popular
+  { name: 'llama3.2:3b', src: 'Ollama Registry', icon: '🦙', type: 'ollama', tags: [['Text Gen','task'],['3B','size']], stats: '↓ ollama pull llama3.2:3b', btn: 'Pull', btnCls: 'install' },
+  { name: 'qwen2.5:7b', src: 'Ollama Registry', icon: '⚡', type: 'ollama', tags: [['Text Gen','task'],['7B','size']], stats: 'Recommended for agents', btn: 'Pull', btnCls: 'install' },
+  { name: 'mistral:7b-instruct', src: 'Ollama Registry', icon: '🌀', type: 'ollama', tags: [['Text Gen','task'],['7B','size']], stats: '↓ ollama pull mistral', btn: 'Pull', btnCls: 'install' },
+  { name: 'phi4:14b', src: 'Ollama Registry', icon: '🔷', type: 'ollama', tags: [['Text Gen','task'],['14B','size']], stats: 'Microsoft Phi-4', btn: 'Pull', btnCls: 'install' },
+  // HUGGINGFACE trending
+  { name: 'Qwythos-9B-Claude-Mythos', src: 'HuggingFace · empero-ai', icon: '🧠', type: 'hf', tags: [['Text Gen','task'],['9B','size'],['HF','hf-t']], stats: '1.37M ↓ · 1.37k ❤ · 5d ago', btn: 'Download', btnCls: 'install' },
+  { name: 'Ornith-1.0-9B-GGUF', src: 'HuggingFace · deepreinforce-ai', icon: '🦅', type: 'hf', tags: [['Text Gen','task'],['9B','size'],['GGUF','local'],['HF','hf-t']], stats: '288k ↓ · 411 ❤ · 8d ago', btn: 'Download', btnCls: 'install' },
+  { name: 'Ornith-1.0-35B', src: 'HuggingFace · deepreinforce-ai', icon: '🦅', type: 'hf', tags: [['Text Gen','task'],['35B','size'],['HF','hf-t']], stats: '665k ↓ · 321 ❤', btn: 'Download', btnCls: 'install' },
+  { name: 'Qwen-AgentWorld-35B-A3B', src: 'HuggingFace · Qwen', icon: '⚡', type: 'hf', tags: [['Text Gen','task'],['35B MoE','size'],['HF','hf-t']], stats: '45.5k ↓ · 524 ❤ · Agentic', btn: 'Download', btnCls: 'install' },
+  { name: 'GLM-5.2', src: 'HuggingFace · zai-org', icon: '🌐', type: 'hf', tags: [['Text Gen','task'],['753B','size'],['HF','hf-t']], stats: '191k ↓ · 3.34k ❤ · 1d ago', btn: 'Download', btnCls: 'install' },
+  { name: 'DeepSeek-V4-Pro-DSpark', src: 'HuggingFace · deepseek-ai', icon: '🔍', type: 'hf', tags: [['Text Gen','task'],['889B','size'],['HF','hf-t']], stats: '9.39k ↓ · 339 ❤', btn: 'Download', btnCls: 'install' },
+  { name: 'Krea-2-Turbo', src: 'HuggingFace · krea', icon: '🎨', type: 'hf', tags: [['Text-to-Image','task'],['HF','hf-t']], stats: '84k ↓ · 479 ❤ · 10d ago', btn: 'Download', btnCls: 'install' },
+  { name: 'LFM2.5-230M', src: 'HuggingFace · LiquidAI', icon: '💧', type: 'hf', tags: [['Text Gen','task'],['230M','size'],['HF','hf-t']], stats: '29.6k ↓ · 197 ❤ · Ultra-fast', btn: 'Download', btnCls: 'install' },
+  // NVIDIA ACE
+  { name: 'Audio2Face-3D v3.0', src: 'NVIDIA ACE', icon: '🎭', type: 'nvidia', tags: [['Animation','task'],['NVIDIA','nv-t'],['UE5','local']], stats: 'ONNX-TRT · MIT License · UE5', btn: 'Get SDK', btnCls: 'install' },
+  { name: 'Audio2Face-3D v2.3', src: 'NVIDIA ACE', icon: '🎭', type: 'nvidia', tags: [['Animation','task'],['NVIDIA','nv-t'],['UE5','local']], stats: 'Regression model · Production', btn: 'Get SDK', btnCls: 'install' },
+  { name: 'Audio2Emotion-3D v3.0', src: 'NVIDIA ACE', icon: '😊', type: 'nvidia', tags: [['Animation','task'],['NVIDIA','nv-t']], stats: 'Emotional state from audio', btn: 'Download', btnCls: 'install' },
+  { name: 'ACE ASR — English', src: 'NVIDIA ACE', icon: '🎤', type: 'nvidia', tags: [['Speech','task'],['NVIDIA','nv-t'],['UE5','local']], stats: 'UE5 5.5/5.6/5.7 · Real-time', btn: 'Get Plugin', btnCls: 'install' },
+  { name: 'ACE TTS Voices', src: 'NVIDIA ACE', icon: '🔊', type: 'nvidia', tags: [['Speech','task'],['NVIDIA','nv-t'],['UE5','local']], stats: 'High-quality voices · UE5', btn: 'Get Plugin', btnCls: 'install' },
+];
+
+function loadModels() {
+  modelsLoaded = true;
+  renderModels(MODELS_DATA);
+  document.getElementById('modelsCount').textContent = `${MODELS_DATA.length} curated · 2,878,659 on HuggingFace`;
+}
+
+function renderModels(data) {
+  const grid = document.getElementById('modelsGrid');
+  grid.innerHTML = data.map(m => `
+    <div class="model-card ${m.type}" onclick="modelAction('${m.btnCls}','${m.name}')">
+      <div class="mc-row1">
+        <div class="mc-icon" style="background:${m.type==='local'?'rgba(63,185,80,.1)':m.type==='hf'?'rgba(255,157,0,.08)':m.type==='nvidia'?'rgba(118,185,0,.08)':'rgba(167,139,250,.08)'};">${m.icon}</div>
+        <div><div class="mc-name">${m.name}</div><div class="mc-source">${m.src}</div></div>
+      </div>
+      <div class="mc-tags">${m.tags.map(([l,c])=>`<span class="mc-tag ${c}">${l}</span>`).join('')}</div>
+      <div class="mc-row3">
+        <div class="mc-stats">${m.stats}</div>
+        <button class="mc-btn ${m.btnCls}">${m.btn}</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterModels(q) {
+  const filtered = q ? MODELS_DATA.filter(m => m.name.toLowerCase().includes(q.toLowerCase()) || m.src.toLowerCase().includes(q.toLowerCase()) || m.tags.some(t => t[0].toLowerCase().includes(q.toLowerCase()))) : MODELS_DATA;
+  renderModels(filtered);
+  document.getElementById('modelsCount').textContent = `${filtered.length} results · 2,878,659 on HuggingFace`;
+}
+
+function modelAction(type, name) {
+  if (type === 'installed') alert(`Launch ${name} via Ollama:\nollama run ${name.split(' ')[0].toLowerCase()}`);
+  else if (type === 'install') {
+    const msg = name.includes('Ollama') ? `ollama pull ${name}` : name.includes('NVIDIA') || name.includes('Audio') ? `Visit: https://developer.nvidia.com/nvidia-ace` : `Visit: https://huggingface.co/${name.split(' ').join('-')}`;
+    alert(`To get ${name}:\n${msg}`);
+  }
+}
+
+// ── NVIDIA ────────────────────────────────────────
+const CUDA_COMMANDS = {
+  ubuntu: `# Ubuntu 24.04 · CUDA 13.3 · Network Install
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
+sudo apt update
+sudo apt install cuda-toolkit
+
+# Post-install: add to PATH
+export PATH=/usr/local/cuda-13.3/bin\${PATH:+:\${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda-13.3/lib64\${LD_LIBRARY_PATH:+:\${LD_LIBRARY_PATH}}
+
+# Verify installation
+nvcc --version
+nvidia-smi`,
+  rhel: `# RHEL 9 / Rocky Linux 9 / AlmaLinux 9 · CUDA 13.3
+sudo dnf config-manager --add-repo \\
+  https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo
+sudo dnf clean all
+sudo dnf install cuda-toolkit
+
+# Post-install
+export PATH=/usr/local/cuda-13.3/bin\${PATH:+:\${PATH}}
+nvcc --version`,
+  debian: `# Debian 12 · CUDA 13.3
+wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
+sudo add-apt-repository contrib
+sudo apt update
+sudo apt install cuda-toolkit
+
+# Post-install
+export PATH=/usr/local/cuda-13.3/bin\${PATH:+:\${PATH}}`,
+  fedora: `# Fedora 44 · CUDA 13.3
+sudo dnf config-manager addrepo \\
+  --from-repofile=https://developer.download.nvidia.com/compute/cuda/repos/fedora44/x86_64/cuda-fedora44.repo
+sudo dnf install cuda-toolkit
+
+# GCC compat (Fedora ships GCC 14, install 13 for NVCC)
+sudo dnf install gcc13-c++
+export NVCC_CCBIN='g++-13'`,
+  conda: `# Conda (any platform) · CUDA 13.3
+# Create dedicated environment first
+conda create -n goat-cuda python=3.11
+conda activate goat-cuda
+
+# Install CUDA toolkit
+conda install cuda -c nvidia
+
+# Verify
+python -c "import subprocess; subprocess.run(['nvcc','--version'])"`,
+  pip: `# Pip Wheels · CUDA Runtime
+pip install --upgrade setuptools pip wheel
+pip install nvidia-pyindex
+
+# Install CUDA runtime
+pip install nvidia-cuda-runtime-cu12
+
+# Audio/AI specific packages
+pip install nvidia-cublas-cu12 nvidia-cufft-cu12 nvidia-cudnn-cu12
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124`
+};
+
+function setCudaOS(el, os) {
+  document.querySelectorAll('.nv-os-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const code = document.getElementById('cudaCode');
+  code.textContent = CUDA_COMMANDS[os] || CUDA_COMMANDS.ubuntu;
+}
+
+function nvDownload(key) {
+  const urls = {
+    'audio2face': 'https://developer.nvidia.com/ace#audio2face-3d',
+    'asr-ue57': 'https://developer.nvidia.com/ace#asr',
+    'asr-ue56': 'https://developer.nvidia.com/ace#asr',
+    'llm-ue57': 'https://developer.nvidia.com/ace#llm',
+    'llm-ue56': 'https://developer.nvidia.com/ace#llm',
+    'tts-ue57': 'https://developer.nvidia.com/ace#tts',
+    'tts-ue56': 'https://developer.nvidia.com/ace#tts',
+    'game-agent-sdk': 'https://developer.nvidia.com/ace#game-agent-sdk',
+    'game-agent-src': 'https://developer.nvidia.com/ace#game-agent-sdk',
+    'nvigi-sdk': 'https://developer.nvidia.com/ace#nvigi',
+    'nsight-systems-mac-x64': 'https://developer.nvidia.com/tools-overview/nsight-systems/get-started',
+    'nsight-systems-mac-arm64': 'https://developer.nvidia.com/tools-overview/nsight-systems/get-started',
+    'nsight-compute-mac-x64': 'https://developer.nvidia.com/nsight-compute',
+    'nsight-compute-mac-arm64': 'https://developer.nvidia.com/nsight-compute',
+    'nsight-graphics': 'https://developer.nvidia.com/nsight-graphics',
+    'cuda-ubuntu2404-arm64': 'https://developer.nvidia.com/cuda-downloads',
+    'ace-ue56': 'https://developer.nvidia.com/ace',
+    'audio2face-3d-ue56': 'https://developer.nvidia.com/ace#audio2face-3d',
+  };
+  const url = urls[key] || 'https://developer.nvidia.com/cuda-downloads';
+  window.open(url, '_blank');
+}
+
+function openHF(model) {
+  window.open('https://huggingface.co/' + model, '_blank');
+}
+
+function copyCode() {
+  const code = document.getElementById('cudaCode');
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    const btn = document.querySelector('.nv-code-copy');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+// ── SETTINGS ─────────────────────────────────────
+function setSettingSection(el, section) {
+  document.querySelectorAll('.sn-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function setAccent(color, color2, el) {
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  document.documentElement.style.setProperty('--gold', color);
+  document.documentElement.style.setProperty('--gold2', color2);
+}
+
+// ── RIGHT PANEL TABS ─────────────────────────────
+function setRpTab(el, tab) {
+  document.querySelectorAll('.rp-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#rp-agents,#rp-activity,#rp-system').forEach(d => d.style.display = 'none');
+  const t = document.getElementById('rp-' + tab);
+  if (t) { t.style.display = 'block'; if (tab === 'system') checkServices(); }
+}
+
+// ── SERVICE HEALTH CHECK ──────────────────────────
+async function checkServices() {
+  // Intel server
+  try {
+    await fetch('http://localhost:5500/health', { signal: AbortSignal.timeout(2000) });
+    setServiceStatus('intel', true);
+  } catch { setServiceStatus('intel', false); }
+  // Ollama
+  try {
+    await fetch('http://localhost:11435/api/tags', { signal: AbortSignal.timeout(2000) });
+    setServiceStatus('ollama', true);
+  } catch { setServiceStatus('ollama', false); }
+}
+
+function setServiceStatus(svc, online) {
+  const map = { intel: ['intelStatus','intelBar','sb-intel'], ollama: ['ollamaStatus','ollamaBar','sb-ollama'] };
+  const [statusId, barId, sbId] = map[svc] || [];
+  const statusEl = document.getElementById(statusId);
+  const barEl = document.getElementById(barId);
+  const sbEl = document.getElementById(sbId);
+  if (statusEl) { statusEl.textContent = online ? 'Online' : 'Offline'; statusEl.style.color = online ? 'var(--green)' : 'var(--red)'; }
+  if (barEl) { barEl.style.width = online ? '100%' : '0%'; barEl.className = 'health-fill' + (online ? '' : ' danger'); }
+  if (sbEl) { sbEl.style.color = online ? 'var(--green)' : 'var(--red)'; sbEl.querySelector('.sb-dot-s').style.background = 'currentColor'; }
+}
+
+// ── SEARCH ───────────────────────────────────────
+function focusSearch() {
+  showPanel('models');
+  setTimeout(() => { const s = document.querySelector('.models-search'); if (s) s.focus(); }, 100);
+}
+
+// ── KEYBOARD SHORTCUTS ────────────────────────────
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); focusSearch(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === '1') showPanel('home');
+  if ((e.metaKey || e.ctrlKey) && e.key === '2') showPanel('chat');
+  if ((e.metaKey || e.ctrlKey) && e.key === '3') showPanel('models');
+  if ((e.metaKey || e.ctrlKey) && e.key === '4') showPanel('nvidia');
+  if ((e.metaKey || e.ctrlKey) && e.key === ',') showPanel('settings');
+});
+
+// ── INIT ──────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  showPanel('home');
+  setTimeout(checkServices, 1000);
+  setInterval(checkServices, 30000);
+});
+</script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
+</body>
+</html>

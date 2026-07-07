@@ -85,7 +85,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .bus-btn{padding:5px;border-radius:4px;border:1px solid var(--border);background:var(--bg4);color:var(--sub);cursor:pointer;font-size:9px;text-align:center;transition:all .2s;font-family:inherit}
 .bus-btn:hover,.bus-btn.on{border-color:var(--gold);color:var(--gold);background:rgba(212,160,60,.1)}
 </style>
-<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+
+  <link rel="stylesheet" href="css/goat-touch.css">
+
+<script src="lib/supabase-client.js"></script>
 </head>
 <body>
 <div id="app">
@@ -99,9 +102,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
     <button class="tb-btn" onclick="muteAll()">M ALL</button>
     <button class="tb-btn" onclick="clearSolo()">CLR SOLO</button>
     <div class="spacer"></div>
-    <a href="studio.html"><button class="tb-btn">DAW</button></a>
-    <a href="vocal-studio.html"><button class="tb-btn">Vocal</button></a>
+    <!-- DAW Quick Launch -->
+    <button class="tb-btn" onclick="sslLaunchDAW('FL Studio 2025')" title="FL Studio 2025" style="color:#ff8c00;border-color:rgba(255,140,0,0.3)">FL 2025</button>
+    <button class="tb-btn" onclick="sslLaunchDAW('FL Studio 2024')" title="FL Studio 2024">FL 2024</button>
+    <button class="tb-btn" onclick="sslLaunchDAW('Ableton Live 12 Suite')" title="Ableton Live 12 Suite" style="color:#00d4ff;border-color:rgba(0,212,255,0.2)">Ableton</button>
+    <button class="tb-btn" onclick="sslLaunchDAW('Logic Pro')" title="Logic Pro" style="color:#2ecc71;border-color:rgba(46,204,113,0.2)">Logic</button>
+    <button class="tb-btn" onclick="sslLaunchDAW('Pro Tools')" title="Pro Tools" style="color:#9b59b6;border-color:rgba(155,89,182,0.2)">Pro Tools</button>
+    <button class="tb-btn" onclick="sslLaunchDAW('MPC 3')" title="MPC 3" style="color:#e8533a;border-color:rgba(232,83,58,0.2)">MPC 3</button>
+    <div style="width:1px;height:18px;background:var(--border);margin:0 4px;"></div>
+    <a href="beat-maker.html"><button class="tb-btn" title="GOAT Beat Machine">🥁 Beat Maker</button></a>
+    <a href="music-studio.html"><button class="tb-btn" title="Music Studio">🎵 Studio</button></a>
+    <a href="vocal-studio.html"><button class="tb-btn">🎤 Vocal</button></a>
     <a href="powerhouse.html"><button class="tb-btn">⬅ Home</button></a>
+    <div id="ssl-launch-toast" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2336;border:1px solid var(--gold);border-radius:6px;padding:8px 18px;font-size:11px;color:var(--text);z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.5);"></div>
   </div>
 
   <!-- MAIN -->
@@ -158,6 +171,151 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
         <button class="tb-btn" style="width:100%;margin-bottom:4px;text-align:center" onclick="openExport()">📤 Export Mix</button>
         <button class="tb-btn" style="width:100%;text-align:center">🎛 Save Recall</button>
       </div>
+
+      <!-- DAW LAUNCH PANEL -->
+      <div class="mp-card" id="daw-launch-card">
+        <div class="mp-title">🚀 DAW Launch</div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px;">
+
+          <button onclick="sslLaunchDAW('FL Studio 2025')"
+            style="width:100%;padding:7px 8px;background:#1e2030;border:1px solid rgba(255,140,0,0.3);border-radius:4px;color:#ff8c00;font-size:10px;font-weight:700;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.12s;"
+            onmouseover="this.style.background='#252840'" onmouseout="this.style.background='#1e2030'">
+            <span style="font-size:16px;">🎹</span>
+            <span style="flex:1;">FL Studio 2025</span>
+            <span style="font-size:8px;color:#666;">2025</span>
+          </button>
+
+          <button onclick="sslLaunchDAW('FL Studio 2024')"
+            style="width:100%;padding:7px 8px;background:#1e2030;border:1px solid rgba(255,140,0,0.15);border-radius:4px;color:#c8780a;font-size:10px;font-weight:700;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.12s;"
+            onmouseover="this.style.background='#252840'" onmouseout="this.style.background='#1e2030'">
+            <span style="font-size:16px;">🎹</span>
+            <span style="flex:1;">FL Studio 2024</span>
+            <span style="font-size:8px;color:#666;">2024</span>
+          </button>
+
+          <button onclick="sslLaunchDAW('Ableton Live 12 Suite')"
+            style="width:100%;padding:7px 8px;background:#1e2030;border:1px solid rgba(0,212,255,0.2);border-radius:4px;color:#00d4ff;font-size:10px;font-weight:700;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.12s;"
+            onmouseover="this.style.background='#1e2a30'" onmouseout="this.style.background='#1e2030'">
+            <span style="font-size:16px;">🎛</span>
+            <span style="flex:1;">Ableton Live 12 Suite</span>
+            <span style="font-size:8px;color:#666;">Suite</span>
+          </button>
+
+          <button onclick="sslLaunchDAW('Logic Pro')"
+            style="width:100%;padding:7px 8px;background:#1e2030;border:1px solid rgba(46,204,113,0.2);border-radius:4px;color:#2ecc71;font-size:10px;font-weight:700;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.12s;"
+            onmouseover="this.style.background='#1e2820'" onmouseout="this.style.background='#1e2030'">
+            <span style="font-size:16px;">🎼</span>
+            <span style="flex:1;">Logic Pro</span>
+            <span style="font-size:8px;color:#666;">Apple</span>
+          </button>
+
+          <button onclick="sslLaunchDAW('Pro Tools')"
+            style="width:100%;padding:7px 8px;background:#1e2030;border:1px solid rgba(155,89,182,0.2);border-radius:4px;color:#9b59b6;font-size:10px;font-weight:700;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.12s;"
+            onmouseover="this.style.background='#221e30'" onmouseout="this.style.background='#1e2030'">
+            <span style="font-size:16px;">🎚</span>
+            <span style="flex:1;">Pro Tools</span>
+            <span style="font-size:8px;color:#666;">Avid</span>
+          </button>
+
+          <button onclick="sslLaunchDAW('MPC 3')"
+            style="width:100%;padding:7px 8px;background:#1e2030;border:1px solid rgba(232,83,58,0.2);border-radius:4px;color:#e8533a;font-size:10px;font-weight:700;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.12s;"
+            onmouseover="this.style.background='#281e1e'" onmouseout="this.style.background='#1e2030'">
+            <span style="font-size:16px;">🥁</span>
+            <span style="flex:1;">MPC 3</span>
+            <span style="font-size:8px;color:#666;">AKAI</span>
+          </button>
+
+          <button onclick="sslLaunchDAW('MPC Beats')"
+            style="width:100%;padding:7px 8px;background:#1e2030;border:1px solid rgba(232,83,58,0.1);border-radius:4px;color:#b84430;font-size:10px;font-weight:700;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.12s;"
+            onmouseover="this.style.background='#281e1e'" onmouseout="this.style.background='#1e2030'">
+            <span style="font-size:16px;">🎵</span>
+            <span style="flex:1;">MPC Beats</span>
+            <span style="font-size:8px;color:#666;">AKAI</span>
+          </button>
+
+        </div>
+
+        <div style="width:100%;height:1px;background:#222;margin:4px 0;"></div>
+        <div style="font-size:8px;color:var(--sub);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:2px;">Spectral &amp; Mastering</div>
+
+        <button onclick="sslLaunchDAW('SpectraLayers 11')"
+          style="width:100%;padding:7px 8px;background:#1e2030;border:1px solid rgba(236,72,153,0.25);border-radius:4px;color:#ec4899;font-size:10px;font-weight:700;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.12s;"
+          onmouseover="this.style.background='#251828'" onmouseout="this.style.background='#1e2030'">
+          <span style="font-size:16px;">🔬</span>
+          <span style="flex:1;">SpectraLayers 11</span>
+          <span style="font-size:8px;color:#666;">Steinberg</span>
+        </button>
+
+        <button onclick="sslLaunchDAW('iZotope RX 12')"
+          style="width:100%;padding:7px 8px;background:#1e2030;border:1px solid rgba(236,72,153,0.15);border-radius:4px;color:#d4538a;font-size:10px;font-weight:700;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.12s;"
+          onmouseover="this.style.background='#251828'" onmouseout="this.style.background='#1e2030'">
+          <span style="font-size:16px;">🎧</span>
+          <span style="flex:1;">iZotope RX 12</span>
+          <span style="font-size:8px;color:#666;">Repair</span>
+        </button>
+
+        <button onclick="sslLaunchDAW('Lurssen Mastering Console')"
+          style="width:100%;padding:7px 8px;background:#1e2030;border:1px solid rgba(212,160,60,0.2);border-radius:4px;color:#d4a03c;font-size:10px;font-weight:700;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.12s;"
+          onmouseover="this.style.background='#252018'" onmouseout="this.style.background='#1e2030'">
+          <span style="font-size:16px;">🏅</span>
+          <span style="flex:1;">Lurssen Mastering</span>
+          <span style="font-size:8px;color:#666;">Master</span>
+        </button>
+
+        <button onclick="sslLaunchDAW('T-RackS 5')"
+          style="width:100%;padding:7px 8px;background:#1e2030;border:1px solid rgba(212,160,60,0.12);border-radius:4px;color:#c8900a;font-size:10px;font-weight:700;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.12s;"
+          onmouseover="this.style.background='#201810'" onmouseout="this.style.background='#1e2030'">
+          <span style="font-size:16px;">🏆</span>
+          <span style="flex:1;">T-RackS 5</span>
+          <span style="font-size:8px;color:#666;">IK Multi</span>
+        </button>
+
+        <button onclick="sslLaunchDAW('THE OVEN')"
+          style="width:100%;padding:7px 8px;background:#1e2030;border:1px solid rgba(255,120,60,0.15);border-radius:4px;color:#ff7840;font-size:10px;font-weight:700;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.12s;"
+          onmouseover="this.style.background='#281e18'" onmouseout="this.style.background='#1e2030'">
+          <span style="font-size:16px;">🔥</span>
+          <span style="flex:1;">THE OVEN</span>
+          <span style="font-size:8px;color:#666;">Plugin Alliance</span>
+        </button>
+
+        <!-- Internal page links -->
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+          <div style="font-size:8px;color:var(--sub);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:2px;">GOAT Tools</div>
+          <a href="beat-maker.html" style="text-decoration:none;">
+            <div style="padding:6px 8px;background:#141c28;border:1px solid var(--border);border-radius:4px;color:var(--gold);font-size:10px;font-weight:700;display:flex;align-items:center;gap:6px;transition:all 0.1s;"
+              onmouseover="this.style.background='#1a2336'" onmouseout="this.style.background='#141c28'">
+              🥁 <span>GOAT Beat Machine</span>
+            </div>
+          </a>
+          <a href="music-studio.html" style="text-decoration:none;">
+            <div style="padding:6px 8px;background:#141c28;border:1px solid var(--border);border-radius:4px;color:var(--gold);font-size:10px;font-weight:700;display:flex;align-items:center;gap:6px;transition:all 0.1s;"
+              onmouseover="this.style.background='#1a2336'" onmouseout="this.style.background='#141c28'">
+              🎵 <span>Music Studio</span>
+            </div>
+          </a>
+          <a href="goat-fx-rack.html" style="text-decoration:none;">
+            <div style="padding:6px 8px;background:#141c28;border:1px solid var(--border);border-radius:4px;color:var(--sub);font-size:10px;display:flex;align-items:center;gap:6px;transition:all 0.1s;"
+              onmouseover="this.style.background='#1a2336'" onmouseout="this.style.background='#141c28'">
+              ⚡ <span>FX Rack</span>
+            </div>
+          </a>
+          <a href="vocal-studio.html" style="text-decoration:none;">
+            <div style="padding:6px 8px;background:#141c28;border:1px solid var(--border);border-radius:4px;color:var(--sub);font-size:10px;display:flex;align-items:center;gap:6px;transition:all 0.1s;"
+              onmouseover="this.style.background='#1a2336'" onmouseout="this.style.background='#141c28'">
+              🎤 <span>Vocal Studio</span>
+            </div>
+          </a>
+          <a href="mastering.html" style="text-decoration:none;">
+            <div style="padding:6px 8px;background:#141c28;border:1px solid var(--border);border-radius:4px;color:var(--sub);font-size:10px;display:flex;align-items:center;gap:6px;transition:all 0.1s;"
+              onmouseover="this.style.background='#1a2336'" onmouseout="this.style.background='#141c28'">
+              🔊 <span>Mastering</span>
+            </div>
+          </a>
+        </div>
+
+        <div id="daw-launch-status" style="font-size:9px;color:var(--sub);text-align:center;margin-top:8px;min-height:14px;"></div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -447,6 +605,53 @@ function clearSolo(){channels.forEach(c=>{c.solo=false;c.mute=false;});buildCons
 function autoAll(){channels.forEach(c=>{c.hpf=true;c.comp.thr=0.6;});buildConsole();}
 function openExport(){alert('Export Mix\n• WAV Stereo Mix\n• Stems (32 tracks)\n• Broadcast WAV\n• FLAC Lossless\n\n[Connect to export engine]');}
 
+// ── DAW LAUNCHER ──────────────────────────────────────────────
+const SSL_DAW_COLORS = {
+  'FL Studio 2025': '#ff8c00',
+  'FL Studio 2024': '#c8780a',
+  'Ableton Live 12 Suite': '#00d4ff',
+  'Logic Pro': '#2ecc71',
+  'Pro Tools': '#9b59b6',
+  'MPC 3': '#e8533a',
+  'MPC Beats': '#b84430',
+};
+
+let _sslToastTimer = null;
+function sslToast(msg, color) {
+  const t = document.getElementById('ssl-launch-toast');
+  const s = document.getElementById('daw-launch-status');
+  if (t) {
+    t.textContent = msg;
+    t.style.display = 'block';
+    t.style.borderColor = color || 'var(--gold)';
+    t.style.color = color || 'var(--text)';
+    clearTimeout(_sslToastTimer);
+    _sslToastTimer = setTimeout(() => { t.style.display = 'none'; }, 3500);
+  }
+  if (s) { s.textContent = msg; s.style.color = color || 'var(--sub)'; }
+}
+
+async function sslLaunchDAW(appName) {
+  const color = SSL_DAW_COLORS[appName] || 'var(--gold)';
+  sslToast(`⚡ Launching ${appName}…`, color);
+  try {
+    const r = await fetch('http://localhost:5500/system/launch-app', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ app: appName }),
+      signal: AbortSignal.timeout(8000)
+    });
+    const d = await r.json();
+    if (d.ok) {
+      sslToast(`✅ ${appName} launched!`, color);
+    } else {
+      sslToast(`❌ ${d.error || 'Not installed'}`, '#e74c3c');
+    }
+  } catch(e) {
+    sslToast(`⚠️ Intel server offline — open ${appName} from Applications`, '#f39c12');
+  }
+}
+
 // ── INIT ──
 function init(){
   buildConsole();
@@ -458,5 +663,7 @@ function init(){
 }
 window.addEventListener('DOMContentLoaded', init);
 </script>
+  <script src="js/goat-touch.js"></script>
+  <script src="js/goat-agent-controls.js"></script>
 </body>
 </html>
