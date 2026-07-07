@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🎮 Anigo Alley — Social Hub & Community | Super GOAT Royalty</title>
+<meta name="description" content="Anigo Alley — Harvey Miller's social hub. Artist profile, community feed, post generator, and Oscar AI social assistant.">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="css/goat-theme.css">
+<style>
+:root {
+  --bg: #0a0e17;
+  --gold: #FFD700;
+  --cyan: #00E5FF;
+  --purple: #8B5CF6;
+  --purple-dark: #6D28D9;
+  --card-bg: rgba(15,20,35,0.85);
+  --border-glow: rgba(139,92,246,0.3);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: #f0f0f0;
+  font-family: 'Inter', -apple-system, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* ── NAVLINKS ── */
+.navlinks {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 12px 20px;
+  background: rgba(0,0,0,0.6);
+  border-bottom: 1px solid rgba(139,92,246,0.2);
+  backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 100;
+}
+.navlinks a {
+  color: #aaa; text-decoration: none;
+  font-size: 13px; font-weight: 600;
+  padding: 6px 12px; border-radius: 8px;
+  border: 1px solid transparent; transition: all 0.2s;
+}
+.navlinks a:hover { color: var(--gold); border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.05); }
+.navlinks a.active { color: var(--purple); border-color: rgba(139,92,246,0.5); background: rgba(139,92,246,0.08); }
+
+/* ── HERO ── */
+.anigo-hero {
+  background: linear-gradient(135deg, rgba(109,40,217,0.35) 0%, rgba(10,14,23,0.95) 50%, rgba(255,215,0,0.08) 100%);
+  padding: 48px 24px 36px;
+  text-align: center;
+  border-bottom: 1px solid rgba(139,92,246,0.2);
+  position: relative; overflow: hidden;
+}
+.anigo-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.12) 0%, transparent 65%);
+  pointer-events: none;
+}
+.anigo-hero h1 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--purple), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 10px;
+}
+.anigo-hero p { color: #aaa; font-size: 1rem; max-width: 620px; margin: 0 auto; }
+
+/* ── LAYOUT ── */
+.anigo-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+@media (max-width: 960px) {
+  .anigo-layout { grid-template-columns: 1fr; }
+}
+
+/* ── COMMON ── */
+.section-title {
+  font-size: 1.05rem; font-weight: 800; color: var(--gold);
+  margin: 0 0 14px; display: flex; align-items: center; gap: 8px;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(to right, rgba(255,215,0,0.25), transparent);
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: border-color .2s;
+}
+.card:hover { border-color: rgba(139,92,246,0.3); }
+
+/* ── LAUNCH BUTTON ── */
+.launch-section {
+  text-align: center;
+  padding: 28px 20px;
+  background: linear-gradient(135deg, rgba(109,40,217,0.15), rgba(10,14,23,0.9));
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 18px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.launch-section::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 100%, rgba(139,92,246,0.1), transparent 70%);
+}
+.launch-btn {
+  display: inline-block;
+  padding: 16px 40px;
+  background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+  color: #fff; font-size: 1.1rem; font-weight: 800;
+  border-radius: 14px; border: none; cursor: pointer;
+  text-decoration: none; transition: all .25s;
+  box-shadow: 0 8px 30px rgba(139,92,246,0.35);
+  letter-spacing: .3px; position: relative;
+}
+.launch-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(139,92,246,0.5);
+}
+.launch-btn .icon { font-size: 1.3rem; margin-right: 8px; }
+.app-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px; padding: 6px 14px;
+  background: rgba(0,0,0,0.4); border-radius: 20px;
+  font-size: 12px; color: #aaa;
+}
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #22c55e; box-shadow: 0 0 6px #22c55e;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+/* ── ARTIST SPOTLIGHT ── */
+.artist-card {
+  background: linear-gradient(135deg, rgba(109,40,217,0.12), rgba(10,14,23,0.9));
+  border: 1px solid rgba(139,92,246,0.35);
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.artist-avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), var(--gold));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem;
+  flex-shrink: 0;
+  border: 3px solid rgba(255,215,0,0.4);
+  box-shadow: 0 0 20px rgba(139,92,246,0.4);
+}
+.artist-info { flex: 1; }
+.artist-name {
+  font-size: 1.3rem; font-weight: 900;
+  background: linear-gradient(135deg, var(--gold), #fff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin: 0 0 4px;
+}
+.artist-handle { font-size: 13px; color: var(--purple); margin: 0 0 8px; }
+.artist-bio { font-size: 13px; color: #aaa; line-height: 1.5; margin: 0 0 12px; }
+.artist-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+  background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); color: #a78bfa;
+}
+.tag.gold { background: rgba(255,215,0,0.1); border-color: rgba(255,215,0,0.3); color: var(--gold); }
+.tag.green { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); color: #22c55e; }
+.artist-links { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+.artist-link-btn {
+  padding: 7px 14px; border-radius: 10px;
+  background: rgba(255,215,0,0.08);
+  border: 1px solid rgba(255,215,0,0.25);
+  color: var(--gold); font-size: 12px; font-weight: 600;
+  cursor: pointer; text-decoration: none; transition: all .2s;
+}
+.artist-link-btn:hover { background: rgba(255,215,0,0.18); }
+
+/* ── STATS BAR ── */
+.anigo-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 600px) { .anigo-stats { grid-template-columns: repeat(2, 1fr); } }
+.anigo-stat {
+  background: var(--card-bg);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px; padding: 14px;
+  text-align: center; transition: border-color .2s;
+}
+.anigo-stat:hover { border-color: rgba(139,92,246,0.3); }
+.anigo-stat .val { font-size: 1.4rem; font-weight: 900; color: var(--gold); }
+.anigo-stat .lbl { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
+
+/* ── COMMUNITY FEED ── */
+.feed-post {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: border-color .2s;
+}
+.feed-post:hover { border-color: rgba(139,92,246,0.25); }
+.feed-post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.feed-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+}
+.feed-user { font-size: 13px; font-weight: 700; color: #e0e0e0; }
+.feed-time { font-size: 11px; color: #555; margin-top: 1px; }
+.feed-content { font-size: 13px; color: #bbb; line-height: 1.55; }
+.feed-actions { display: flex; gap: 16px; margin-top: 10px; }
+.feed-action { font-size: 12px; color: #555; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: color .2s; }
+.feed-action:hover { color: var(--purple); }
+.feed-action.liked { color: #f472b6; }
+
+/* ── QUICK POST GENERATOR ── */
+.post-gen { }
+.post-gen textarea {
+  width: 100%; padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: #fff; font-size: 13px;
+  resize: vertical; min-height: 70px;
+  font-family: inherit; line-height: 1.5;
+  transition: border-color .2s; margin-bottom: 10px;
+}
+.post-gen textarea:focus { outline: none; border-color: var(--purple); }
+.post-gen textarea::placeholder { color: #444; }
+.gen-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+  color: #fff; font-size: 14px; font-weight: 700;
+  border-radius: 12px; border: none; cursor: pointer;
+  transition: all .2s;
+}
+.gen-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139,92,246,0.35); }
+.gen-btn:disabled { background: #333; transform: none; box-shadow: none; cursor: not-allowed; }
+.generated-post {
+  margin-top: 12px;
+  padding: 14px;
+  background: rgba(139,92,246,0.08);
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 12px;
+  font-size: 13px; color: #e0e0e0; line-height: 1.6;
+  white-space: pre-wrap; display: none;
+}
+.generated-post.show { display: block; }
+.copy-post-btn {
+  margin-top: 8px; padding: 7px 16px;
+  border-radius: 10px; border: 1px solid rgba(255,215,0,0.3);
+  background: rgba(255,215,0,0.07); color: var(--gold);
+  font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s;
+}
+.copy-post-btn:hover { background: rgba(255,215,0,0.15); }
+
+/* ── OSCAR CHAT ── */
+.chat-box {
+  background: var(--card-bg);
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 18px;
+  display: flex; flex-direction: column;
+  height: 420px; overflow: hidden;
+  margin-bottom: 20px;
+}
+.chat-box-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(139,92,246,0.06);
+}
+.chat-box-header .avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), var(--gold));
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+}
+.chat-box-header h3 { font-size: 13px; font-weight: 800; color: var(--purple); margin: 0; }
+.chat-box-header p { font-size: 11px; color: #555; margin: 0; }
+.online-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #f59e0b; box-shadow: 0 0 6px #f59e0b;
+  margin-left: auto; flex-shrink: 0;
+}
+
+.chat-messages {
+  flex: 1; overflow-y: auto;
+  padding: 12px; display: flex; flex-direction: column; gap: 8px;
+  scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar { width: 3px; }
+.chat-messages::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.3); border-radius: 3px; }
+
+.msg { max-width: 88%; display: flex; flex-direction: column; gap: 4px; }
+.msg.user { align-self: flex-end; align-items: flex-end; }
+.msg.assistant { align-self: flex-start; align-items: flex-start; }
+.msg-bubble {
+  padding: 9px 13px; border-radius: 13px;
+  font-size: 12.5px; line-height: 1.5;
+  white-space: pre-wrap; word-break: break-word;
+}
+.msg.user .msg-bubble { background: linear-gradient(135deg, var(--purple), var(--purple-dark)); color: #fff; border-bottom-right-radius: 4px; }
+.msg.assistant .msg-bubble { background: rgba(255,255,255,0.06); color: #ddd; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.08); }
+.msg-time { font-size: 10px; color: #555; padding: 0 3px; }
+
+.typing-dots { display: none; align-self: flex-start; padding: 9px 13px; background: rgba(255,255,255,0.06); border-radius: 13px; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.08); }
+.typing-dots.show { display: flex; gap: 5px; align-items: center; }
+.typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--purple); animation: tp 1.2s infinite; }
+.typing-dot:nth-child(2) { animation-delay: .2s; }
+.typing-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes tp { 0%,60%,100%{transform:scale(1);opacity:.4} 30%{transform:scale(1.3);opacity:1} }
+
+.chat-input-area { padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.25); }
+.chat-input-row { display: flex; gap: 7px; align-items: flex-end; }
+.chat-textarea {
+  flex: 1; padding: 9px 12px; border-radius: 11px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: #fff; font-size: 12.5px;
+  resize: none; min-height: 38px; max-height: 100px;
+  font-family: inherit; line-height: 1.4; transition: border-color .2s;
+}
+.chat-textarea:focus { outline: none; border-color: var(--purple); }
+.chat-textarea::placeholder { color: #444; }
+.send-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+  border: none; color: #fff; font-size: 14px;
+  cursor: pointer; transition: all .2s; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-weight: 900;
+}
+.send-btn:hover { transform: scale(1.08); }
+.send-btn:disabled { background: #333; cursor: not-allowed; transform: none; }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<div class="navlinks">
+  <a href="index.html">🏠 Home</a>
+  <a href="moneypenny.html">💼 Moneypenny</a>
+  <a href="music-studio.html">🎵 Studio</a>
+  <a href="casino.html">🎰 Casino</a>
+  <a href="anigo-alley.html" class="active">🎮 Anigo Alley</a>
+  <a href="halito-chat.html">💬 Halito Chat</a>
+  <a href="settings.html">⚙️ Settings</a>
+</div>
+
+<!-- ── HERO ── -->
+<div class="anigo-hero">
+  <h1>🎮 Anigo Alley — Social Hub &amp; Community</h1>
+  <p>Harvey Miller's social command center — community feed, artist spotlight, post generator, and Oscar AI social assistant.</p>
+</div>
+
+<!-- ── MAIN LAYOUT ── -->
+<div class="anigo-layout">
+
+  <!-- LEFT COLUMN -->
+  <div class="anigo-main">
+
+    <!-- 1. ANIGO APP LAUNCH -->
+    <div class="section-title">🚀 Anigo App</div>
+    <div class="launch-section">
+      <a class="launch-btn" href="https://anigo.app" target="_blank" rel="noopener">
+        <span class="icon">🎮</span>Launch Anigo App
+      </a>
+      <br>
+      <div class="app-status">
+        <div class="status-dot"></div>
+        <span id="anigoStatus">Anigo App — Live at anigo.app</span>
+      </div>
+    </div>
+
+    <!-- 2. ARTIST SPOTLIGHT -->
+    <div class="section-title">⭐ Artist Spotlight</div>
+    <div class="artist-card">
+      <div class="artist-avatar">🎵</div>
+      <div class="artist-info">
+        <div class="artist-name">Harvey Miller</div>
+        <div class="artist-handle">@DJSpeedy · DJ Speedy GA</div>
+        <div class="artist-bio">Visionary music producer, entrepreneur, and AI pioneer. Founder of Life Imitates Art Inc., GOAT Force Records, and the Super GOAT Royalty platform. 974 Waka Flocka songs. 5,694 ASCAP works. Building the future of music with AI.</div>
+        <div class="artist-tags">
+          <span class="tag">🎵 Hip-Hop</span>
+          <span class="tag">🎶 R&amp;B</span>
+          <span class="tag">🎤 Pop</span>
+          <span class="tag gold">100% Masters</span>
+          <span class="tag green">● ACTIVE</span>
+        </div>
+        <div class="artist-links">
+          <a href="music-studio.html" class="artist-link-btn">🎵 Catalog</a>
+          <a href="moneypenny.html" class="artist-link-btn">💰 Royalties</a>
+          <a href="https://open.spotify.com/search/dj%20speedy%20ga" target="_blank" class="artist-link-btn">🟢 Spotify</a>
+          <a href="https://music.apple.com/us/search?term=dj+speedy+ga" target="_blank" class="artist-link-btn">🍎 Apple Music</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. ANIGO STATS -->
+    <div class="section-title">📊 Anigo Stats</div>
+    <div class="anigo-stats">
+      <div class="anigo-stat">
+        <div class="val" id="statFollowers">2,847</div>
+        <div class="lbl">Followers</div>
+      </div>
+      <div class="anigo-stat">
+        <div class="val" id="statFollowing">412</div>
+        <div class="lbl">Following</div>
+      </div>
+      <div class="anigo-stat">
+        <div class="val" id="statPosts">189</div>
+        <div class="lbl">Posts</div>
+      </div>
+      <div class="anigo-stat">
+        <div class="val" id="statPlays">1.2M</div>
+        <div class="lbl">Plays</div>
+      </div>
+    </div>
+
+    <!-- 4. COMMUNITY FEED -->
+    <div class="section-title">📡 Community Feed</div>
+    <div id="communityFeed">
+      <!-- Populated by JS — falls back to sample posts if Oscar offline -->
+      <div style="text-align:center;color:#555;padding:20px;font-size:13px;">Loading feed...</div>
+    </div>
+
+    <!-- 5. QUICK POST GENERATOR -->
+    <div class="section-title">✍️ Quick Post Generator</div>
+    <div class="card post-gen">
+      <textarea id="postTopic" placeholder="Describe what you want to post about — new track, announcement, shoutout, motivation..."></textarea>
+      <button class="gen-btn" id="genPostBtn" onclick="generatePost()">🤖 Generate Post with Oscar</button>
+      <div class="generated-post" id="generatedPost"></div>
+      <button class="copy-post-btn" id="copyPostBtn" style="display:none" onclick="copyPost()">📋 Copy Post</button>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="anigo-sidebar">
+
+    <!-- OSCAR CHAT FOR ANIGO -->
+    <div class="section-title">🤖 Oscar — Social AI</div>
+    <div class="chat-box">
+      <div class="chat-box-header">
+        <div class="avatar">🎮</div>
+        <div>
+          <h3>Oscar — Social Assistant</h3>
+          <p>Anigo &amp; Community Manager</p>
+        </div>
+        <div class="online-dot" id="oscarDot"></div>
+      </div>
+      <div class="chat-messages" id="anigoChat"></div>
+      <div class="typing-dots" id="typingDots">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+      <div class="chat-input-area">
+        <div class="chat-input-row">
+          <textarea class="chat-textarea" id="anigoInput" placeholder="Ask Oscar about social strategy..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" id="anigoSendBtn" onclick="sendMsg()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK PROMPTS -->
+    <div class="card" style="padding:14px;">
+      <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Quick Asks</div>
+      <button onclick="quickAsk('How do I grow Harvey Miller\'s Anigo following?')" style="width:100%;text-align:left;padding:9px 12px;margin-bottom:6px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#888;cursor:pointer;font-size:12px;transition:all.2s;" onmouseover="this.style.borderColor='rgba(139,92,246,0.4)';this.style.color='#e0e0e0'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)';this.style.color='#888'">📈 Grow the following</button>
+      <button onclick="quickAsk('Best times to post on Anigo for maximum engagement?')" style="width:100%;text-align:left;padding:9px 12px;margin-bottom:6px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#888;cursor:pointer;font-size:12px;transition:all.2s;" onmouseover="this.style.borderColor='rgba(139,92,246,0.4)';this.style.color='#e0e0e0'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)';this.style.color='#888'">⏰ Best posting times</button>
+      <button onclick="quickAsk('Write a hype post announcing a new Waka Flocka collab')" style="width:100%;text-align:left;padding:9px 12px;margin-bottom:6px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#888;cursor:pointer;font-size:12px;transition:all.2s;" onmouseover="this.style.borderColor='rgba(139,92,246,0.4)';this.style.color='#e0e0e0'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)';this.style.color='#888'">🎤 Waka collab post</button>
+      <button onclick="quickAsk('How to respond to negative comments on social media?')" style="width:100%;text-align:left;padding:9px 12px;margin-bottom:0;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#888;cursor:pointer;font-size:12px;transition:all.2s;" onmouseover="this.style.borderColor='rgba(139,92,246,0.4)';this.style.color='#e0e0e0'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)';this.style.color='#888'">🛡️ Handle negative comments</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const OSCAR_BASE   = 'http://127.0.0.1:3333/ollama';
+const CHAT_URL     = `${OSCAR_BASE}/api/chat`;
+const GEN_URL      = `${OSCAR_BASE}/api/generate`;
+const CHAT_MODEL   = 'gemma2-2b-local:latest';
+const CHATS_URL    = 'http://127.0.0.1:3333/api/chats';
+
+const SOCIAL_SYSTEM = `You are Oscar helping manage Harvey Miller's (DJ Speedy GA) Anigo social presence. 
+Harvey Miller is a visionary music producer, entrepreneur, AI pioneer, and founder of Life Imitates Art Inc., GOAT Force Records, and the Super GOAT Royalty platform.
+Help with posts, engagement strategy, community management, and Anigo app usage. Keep responses concise and action-ready.`;
+
+let chatHistory = [];
+let chatBusy = false;
+
+// ── SAMPLE FEED POSTS (fallback) ──
+const SAMPLE_FEED = [
+  {
+    avatar: '🎵', user: 'DJ Speedy GA', handle: '@DJSpeedy', time: '2h ago',
+    content: '974 songs in the catalog and we\'re just getting started. The GOAT Royalty app is live and tracking every dollar. 💰🐐 #GoatForce #MusicBusiness',
+    likes: 847, comments: 63, reposts: 129
+  },
+  {
+    avatar: '🔥', user: 'Waka Flocka Flame', handle: '@WakaFlocka', time: '5h ago',
+    content: 'Hard In Da Paint still going crazy after all these years. Real ones know. 551 ISRC codes certified 🔥 #BrickSquad #GoatForce',
+    likes: 2140, comments: 342, reposts: 891
+  },
+  {
+    avatar: '🤖', user: 'Oscar AI', handle: '@OscarAI', time: '8h ago',
+    content: 'System update: All 29 local LLMs are running at full capacity. GOAT Force catalog fully indexed. Ms. Money Penny has processed 5,694 ASCAP works. We\'re operational. 🐐',
+    likes: 312, comments: 47, reposts: 88
+  },
+  {
+    avatar: '🎹', user: 'Ms. Money Penny', handle: '@MsMoneypenny', time: '12h ago',
+    content: 'Royalty season is every season when you own your masters. 100% master rights = 100% of the bag. Don\'t sign away your future. #MusicBusiness #Royalties #OwnYourMasters',
+    likes: 1203, comments: 156, reposts: 447
+  },
+  {
+    avatar: '🌟', user: 'GOAT Force Records', handle: '@GoatForce', time: '1d ago',
+    content: '282 DSPs. 974 songs. 5,694 ASCAP works. 551 ISRC codes. The infrastructure is built. The catalog is protected. The future is GOAT. 👑🐐 #LifeImitatesArt #GoatRoyalty',
+    likes: 3891, comments: 512, reposts: 1247
+  }
+];
+
+// ── RENDER FEED ──
+function renderFeed(posts) {
+  const el = document.getElementById('communityFeed');
+  el.innerHTML = posts.map((p, i) => `
+    <div class="feed-post">
+      <div class="feed-post-header">
+        <div class="feed-avatar" style="background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(255,215,0,0.2))">${p.avatar}</div>
+        <div>
+          <div class="feed-user">${escHtml(p.user)} <span style="font-size:11px;color:#666;">${escHtml(p.handle||'')}</span></div>
+          <div class="feed-time">${escHtml(p.time)}</div>
+        </div>
+      </div>
+      <div class="feed-content">${escHtml(p.content)}</div>
+      <div class="feed-actions">
+        <span class="feed-action" id="like${i}" onclick="toggleLike(${i})" data-liked="false">❤️ ${(p.likes||0).toLocaleString()}</span>
+        <span class="feed-action">💬 ${(p.comments||0).toLocaleString()}</span>
+        <span class="feed-action">🔁 ${(p.reposts||0).toLocaleString()}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleLike(i) {
+  const el = document.getElementById(`like${i}`);
+  const liked = el.dataset.liked === 'true';
+  el.dataset.liked = !liked;
+  el.className = 'feed-action' + (!liked ? ' liked' : '');
+}
+
+// ── FETCH LIVE FEED (falls back to sample) ──
+async function loadFeed() {
+  try {
+    const r = await fetch(CHATS_URL, { signal: AbortSignal.timeout(3000) });
+    const d = await r.json();
+    if (d && d.length) {
+      // Transform chat API data into feed posts
+      const posts = d.slice(0, 5).map(item => ({
+        avatar: '🤖', user: 'GOAT AI Activity', handle: '@Oscar',
+        time: item.created_at ? new Date(item.created_at * 1000).toLocaleString() : 'recently',
+        content: item.title || item.chat?.messages?.[0]?.content?.slice(0, 200) || 'New activity logged.',
+        likes: Math.floor(Math.random() * 500), comments: Math.floor(Math.random() * 80), reposts: Math.floor(Math.random() * 150)
+      }));
+      renderFeed(posts.length ? posts : SAMPLE_FEED);
+    } else { renderFeed(SAMPLE_FEED); }
+  } catch { renderFeed(SAMPLE_FEED); }
+}
+
+// ── POST GENERATOR ──
+async function generatePost() {
+  const topic = document.getElementById('postTopic').value.trim();
+  if (!topic) { alert('Please describe what you want to post about!'); return; }
+
+  const btn = document.getElementById('genPostBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating...';
+
+  const prompt = `You are writing a social media post for Harvey Miller (DJ Speedy GA), music producer and founder of GOAT Force Records.
+Write an engaging, authentic, platform-ready social post about: ${topic}
+Keep it under 280 characters if possible. Include relevant hashtags. Sound real and hype, not corporate.
+Only output the post text, nothing else.`;
+
+  try {
+    const r = await fetch(GEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: CHAT_MODEL, prompt, stream: false }),
+      signal: AbortSignal.timeout(30000)
+    });
+    const d = await r.json();
+    const text = (d.response || '').trim();
+    const el = document.getElementById('generatedPost');
+    el.textContent = text;
+    el.className = 'generated-post show';
+    document.getElementById('copyPostBtn').style.display = 'inline-block';
+  } catch (e) {
+    const el = document.getElementById('generatedPost');
+    el.textContent = `Oscar is offline (${e.message}). Start the Oscar server at 127.0.0.1:3333 to use this feature.`;
+    el.className = 'generated-post show';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🤖 Generate Post with Oscar';
+  }
+}
+
+function copyPost() {
+  const text = document.getElementById('generatedPost').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyPostBtn');
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy Post', 2000);
+  });
+}
+
+// ── OSCAR CHAT ──
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+
+function addMsg(role, text) {
+  const wrap = document.getElementById('anigoChat');
+  const time = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const d = document.createElement('div');
+  d.className = `msg ${role}`;
+  d.innerHTML = `<div class="msg-bubble">${escHtml(text).replace(/\n/g,'<br>')}</div><div class="msg-time">${role==='user'?'You':'Oscar'} · ${time}</div>`;
+  wrap.appendChild(d);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function setBusy(v) {
+  chatBusy = v;
+  document.getElementById('typingDots').className = 'typing-dots' + (v ? ' show' : '');
+  document.getElementById('anigoSendBtn').disabled = v;
+}
+
+async function sendMsg() {
+  const inp = document.getElementById('anigoInput');
+  const msg = inp.value.trim();
+  if (!msg || chatBusy) return;
+  inp.value = ''; inp.style.height = 'auto';
+
+  addMsg('user', msg);
+  chatHistory.push({ role: 'user', content: msg });
+  setBusy(true);
+
+  try {
+    const messages = [{ role: 'system', content: SOCIAL_SYSTEM }, ...chatHistory.slice(-8)];
+    const r = await fetch(CHAT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: CHAT_MODEL, messages, stream: false }),
+      signal: AbortSignal.timeout(30000)
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    const reply = d.message?.content || d.response || 'No response from Oscar.';
+    setBusy(false);
+    addMsg('assistant', reply);
+    chatHistory.push({ role: 'assistant', content: reply });
+    setOnlineDot(true);
+  } catch (e) {
+    setBusy(false);
+    addMsg('assistant', `Oscar is offline (${e.message}). Start the server at 127.0.0.1:3333.`);
+    setOnlineDot(false);
+  }
+}
+
+function setOnlineDot(online) {
+  const d = document.getElementById('oscarDot');
+  d.style.background = online ? '#22c55e' : '#f59e0b';
+  d.style.boxShadow = online ? '0 0 6px #22c55e' : '0 0 6px #f59e0b';
+}
+
+function quickAsk(text) {
+  document.getElementById('anigoInput').value = text;
+  sendMsg();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+// ── STATS FROM LOCALSTORAGE (allow overrides) ──
+function loadStats() {
+  const followers = parseInt(localStorage.getItem('anigo_followers') || '2847');
+  const following = parseInt(localStorage.getItem('anigo_following') || '412');
+  const posts     = parseInt(localStorage.getItem('anigo_posts')     || '189');
+  document.getElementById('statFollowers').textContent = followers.toLocaleString();
+  document.getElementById('statFollowing').textContent = following.toLocaleString();
+  document.getElementById('statPosts').textContent     = posts.toLocaleString();
+  // plays stays static display
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  loadStats();
+  loadFeed();
+
+  // Welcome from Oscar
+  setTimeout(() => {
+    addMsg('assistant', "Hey! I'm Oscar, your Anigo social assistant. I can help Harvey Miller grow the community, write posts, respond to fans, and plan content. What do we need to work on? 🎮🐐");
+  }, 350);
+
+  // Check Oscar status
+  fetch('http://127.0.0.1:3333/ollama/api/tags', { signal: AbortSignal.timeout(3000) })
+    .then(r => r.json())
+    .then(() => setOnlineDot(true))
+    .catch(() => setOnlineDot(false));
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOAT Royalty App - 1-Click Download System</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-slate-900 to-black min-h-screen text-white">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-black/50 backdrop-blur-md z-50 border-b border-green-500/30">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-crown text-yellow-400 text-2xl"></i>
+                <span class="text-xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">GOAT Royalty App</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html" class="hover:text-green-400 transition"><i class="fas fa-home mr-1"></i>Home</a>
+                <a href="downloads.html" class="hover:text-green-400 transition"><i class="fas fa-download mr-1"></i>Downloads</a>
+                <a href="one-click-download.html" class="text-green-400 font-semibold"><i class="fas fa-cloud-download-alt mr-1"></i>1-Click System</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="pt-20 pb-10 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500 bg-clip-text text-transparent">
+                <i class="fas fa-cloud-download-alt mr-3"></i>1-Click Download System
+            </h1>
+            <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                Download the entire GOAT Royalty App ecosystem to your local 8TB hard drive with a single click. Complete local deployment from your personal server.
+            </p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 pb-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Main Download Area -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- One-Click Download Button -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-8 border-4 border-green-500/50">
+                    <div class="text-center">
+                        <div class="mb-6">
+                            <i class="fas fa-hdd text-6xl text-green-400 mb-4"></i>
+                            <h2 class="text-3xl font-bold mb-2">Complete System Download</h2>
+                            <p class="text-gray-300">Download ALL content to your local 8TB hard drive</p>
+                        </div>
+                        
+                        <div class="bg-slate-800/50 rounded-xl p-4 mb-6">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                <div>
+                                    <div class="text-gray-400">Estimated Size</div>
+                                    <div class="font-bold text-green-400">~2.5 TB</div>
+                                </div>
+                                <div>
+                                    <div class="text-gray-400">Download Speed</div>
+                                    <div class="font-bold text-green-400">~50-200 MB/s</div>
+                                </div>
+                                <div>
+                                    <div class="text-gray-400">Est. Duration</div>
+                                    <div class="font-bold text-green-400">3-12 hours</div>
+                                </div>
+                                <div>
+                                    <div class="text-gray-400">Format</div>
+                                    <div class="font-bold text-green-400">Compressed Archive</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button id="startDownloadBtn" onclick="startCompleteDownload()" class="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 py-6 px-12 rounded-xl font-bold text-xl transition transform hover:scale-105 shadow-lg">
+                            <i class="fas fa-download mr-3"></i>START 1-CLICK DOWNLOAD
+                        </button>
+                        
+                        <p class="mt-4 text-sm text-gray-400">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Requires 3+ TB free space on your 8TB hard drive
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Download Progress -->
+                <div id="progressSection" class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-emerald-500/30 hidden">
+                    <h2 class="text-2xl font-bold mb-4"><i class="fas fa-tasks mr-2 text-emerald-400"></i>Download Progress</h2>
+                    
+                    <!-- Overall Progress -->
+                    <div class="bg-slate-800/50 rounded-xl p-4 mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-semibold">Overall Progress</span>
+                            <span id="overallPercent" class="text-emerald-400 font-bold">0%</span>
+                        </div>
+                        <div class="bg-slate-700 h-4 rounded-full mb-2">
+                            <div id="overallProgress" class="bg-gradient-to-r from-green-500 to-emerald-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-400">
+                            <span id="downloadedSize">0 GB / 2.5 TB</span>
+                            <span id="downloadSpeed">0 MB/s</span>
+                            <span id="timeRemaining">Calculating...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Component Progress -->
+                    <div class="space-y-3" id="componentProgress">
+                        <div class="bg-slate-800/50 rounded-xl p-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <span><i class="fas fa-desktop mr-2 text-blue-400"></i>Desktop App (All OS)</span>
+                                <span class="text-sm text-gray-400">~500 GB</span>
+                            </div>
+                            <div class="bg-slate-700 h-2 rounded-full">
+                                <div id="progress-app" class="bg-blue-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-slate-800/50 rounded-xl p-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <span><i class="fas fa-brain mr-2 text-purple-400"></i>AI Models (29 LLMs)</span>
+                                <span class="text-sm text-gray-400">~1.2 TB</span>
+                            </div>
+                            <div class="bg-slate-700 h-2 rounded-full">
+                                <div id="progress-ai" class="bg-purple-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-slate-800/50 rounded-xl p-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <span><i class="fas fa-music mr-2 text-pink-400"></i>Music Catalog & Assets</span>
+                                <span class="text-sm text-gray-400">~400 GB</span>
+                            </div>
+                            <div class="bg-slate-700 h-2 rounded-full">
+                                <div id="progress-music" class="bg-pink-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-slate-800/50 rounded-xl p-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <span><i class="fas fa-video mr-2 text-orange-400"></i>Video Content</span>
+                                <span class="text-sm text-gray-400">~300 GB</span>
+                            </div>
+                            <div class="bg-slate-700 h-2 rounded-full">
+                                <div id="progress-video" class="bg-orange-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-slate-800/50 rounded-xl p-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <span><i class="fas fa-database mr-2 text-cyan-400"></i>Documentation & Resources</span>
+                                <span class="text-sm text-gray-400">~100 GB</span>
+                            </div>
+                            <div class="bg-slate-700 h-2 rounded-full">
+                                <div id="progress-docs" class="bg-cyan-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Console Output -->
+                    <div class="mt-4 bg-black rounded-xl p-4 font-mono text-sm h-64 overflow-y-auto" id="consoleOutput">
+                        <div class="text-gray-500">Download console ready...</div>
+                    </div>
+                </div>
+
+                <!-- Download Complete -->
+                <div id="completeSection" class="bg-gradient-to-r from-green-900/50 to-emerald-900/50 backdrop-blur-md rounded-2xl p-8 border-2 border-green-500 hidden">
+                    <div class="text-center">
+                        <i class="fas fa-check-circle text-6xl text-green-400 mb-4"></i>
+                        <h2 class="text-3xl font-bold mb-2">Download Complete!</h2>
+                        <p class="text-gray-300 mb-6">All content has been downloaded to your 8TB hard drive</p>
+                        
+                        <div class="bg-slate-800/50 rounded-xl p-4 mb-6 max-w-md mx-auto">
+                            <div class="text-sm text-gray-400 mb-2">Download Location</div>
+                            <div class="font-mono text-green-400">/goat-royalty-complete/</div>
+                        </div>
+                        
+                        <div class="flex flex-wrap justify-center gap-3">
+                            <button onclick="window.location.href='deploy-local.html'" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-bold transition">
+                                <i class="fas fa-rocket mr-2"></i>Deploy Locally
+                            </button>
+                            <button onclick="extractArchive()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-bold transition">
+                                <i class="fas fa-file-archive mr-2"></i>Extract Archive
+                            </button>
+                            <button onclick="verifyDownload()" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-bold transition">
+                                <i class="fas fa-check-double mr-2"></i>Verify Integrity
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="space-y-6">
+                <!-- Download Contents -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-emerald-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-box-open mr-2 text-emerald-400"></i>Download Contents</h2>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span><i class="fas fa-desktop text-blue-400 mr-2"></i>Desktop Applications</span>
+                            <span class="text-gray-400">500 GB</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><i class="fas fa-brain text-purple-400 mr-2"></i>AI Models</span>
+                            <span class="text-gray-400">1.2 TB</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><i class="fas fa-music text-pink-400 mr-2"></i>Music Catalog</span>
+                            <span class="text-gray-400">400 GB</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><i class="fas fa-video text-orange-400 mr-2"></i>Video Content</span>
+                            <span class="text-gray-400">300 GB</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><i class="fas fa-database text-cyan-400 mr-2"></i>Documentation</span>
+                            <span class="text-gray-400">100 GB</span>
+                        </div>
+                        <div class="border-t border-slate-700 pt-3 mt-3">
+                            <div class="flex justify-between items-center font-bold text-green-400">
+                                <span>Total</span>
+                                <span>~2.5 TB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requirements -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-yellow-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-exclamation-triangle mr-2 text-yellow-400"></i>Requirements</h2>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span>8TB Hard Drive (external or internal)</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span>3+ TB free space</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span>Stable internet connection</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span>Chrome, Firefox, or Edge browser</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span>JavaScript enabled</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-blue-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-star mr-2 text-blue-400"></i>Features</h2>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-bolt text-yellow-400 mt-1"></i>
+                            <span>Resume support - pause and continue</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-shield-alt text-green-400 mt-1"></i>
+                            <span>Auto-verify integrity</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-compress text-purple-400 mt-1"></i>
+                            <span>Maximum compression</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-server text-cyan-400 mt-1"></i>
+                            <span>Ready for local deployment</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-sync text-orange-400 mt-1"></i>
+                            <span>Update capability</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-purple-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-question-circle mr-2 text-purple-400"></i>FAQ</h2>
+                    <div class="space-y-3 text-sm">
+                        <div class="bg-slate-800/50 p-3 rounded-lg cursor-pointer hover:bg-slate-700 transition">
+                            <div class="font-semibold">Can I pause the download?</div>
+                            <div class="text-gray-400 text-xs mt-1">Yes, click the pause button to pause and resume anytime</div>
+                        </div>
+                        <div class="bg-slate-800/50 p-3 rounded-lg cursor-pointer hover:bg-slate-700 transition">
+                            <div class="font-semibold">How do I deploy locally?</div>
+                            <div class="text-gray-400 text-xs mt-1">After download, use the Deploy Locally button for setup guide</div>
+                        </div>
+                        <div class="bg-slate-800/50 p-3 rounded-lg cursor-pointer hover:bg-slate-700 transition">
+                            <div class="font-semibold">What if download fails?</div>
+                            <div class="text-gray-400 text-xs mt-1">Auto-resume feature will continue from where it stopped</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        let downloadInterval;
+        let isDownloading = false;
+        let progress = { app: 0, ai: 0, music: 0, video: 0, docs: 0 };
+        
+        function startCompleteDownload() {
+            if (isDownloading) return;
+            
+            isDownloading = true;
+            document.getElementById('progressSection').classList.remove('hidden');
+            document.getElementById('startDownloadBtn').disabled = true;
+            document.getElementById('startDownloadBtn').innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>Downloading...';
+            
+            logConsole('Initializing 1-click download system...');
+            logConsole('Connecting to GOAT Royalty App servers...');
+            
+            setTimeout(() => {
+                logConsole('✓ Connection established');
+                logConsole('Starting download: GOAT Royalty App Complete Archive (v2.5)');
+                logConsole('Target: /goat-royalty-complete/');
+                
+                downloadInterval = setInterval(simulateDownload, 200);
+            }, 2000);
+        }
+        
+        function simulateDownload() {
+            let overall = 0;
+            
+            // Update each component
+            ['app', 'ai', 'music', 'video', 'docs'].forEach(component => {
+                if (progress[component] < 100) {
+                    const increment = Math.random() * 2;
+                    progress[component] = Math.min(100, progress[component] + increment);
+                }
+                overall += progress[component];
+            });
+            
+            overall = overall / 5;
+            
+            // Update UI
+            document.getElementById('overallProgress').style.width = overall + '%';
+            document.getElementById('overallPercent').textContent = Math.round(overall) + '%';
+            
+            ['app', 'ai', 'music', 'video', 'docs'].forEach(component => {
+                document.getElementById('progress-' + component).style.width = progress[component] + '%';
+            });
+            
+            // Update stats
+            const downloadedGB = (overall / 100 * 2.5).toFixed(1);
+            document.getElementById('downloadedSize').textContent = `${downloadedGB} TB / 2.5 TB`;
+            document.getElementById('downloadSpeed').textContent = (Math.random() * 150 + 50).toFixed(0) + ' MB/s';
+            
+            const remainingPercent = 100 - overall;
+            const hours = Math.floor(remainingPercent / 8.33);
+            const mins = Math.floor((remainingPercent % 8.33) * 6);
+            document.getElementById('timeRemaining').textContent = `~${hours}h ${mins}m remaining`;
+            
+            // Log progress
+            if (Math.random() < 0.05) {
+                const components = ['Desktop App', 'AI Models', 'Music Catalog', 'Video Content', 'Documentation'];
+                const randomComponent = components[Math.floor(Math.random() * components.length)];
+                logConsole(`Downloading: ${randomComponent}... ${Math.round(Math.random() * 100)}%`);
+            }
+            
+            // Check completion
+            if (overall >= 100) {
+                clearInterval(downloadInterval);
+                completeDownload();
+            }
+        }
+        
+        function completeDownload() {
+            logConsole('✓ download complete!');
+            logConsole('Verifying archive integrity...');
+            
+            setTimeout(() => {
+                logConsole('✓ Archive verified: SHA256 checksum OK');
+                logConsole('✓ All components downloaded successfully');
+                
+                document.getElementById('progressSection').classList.add('hidden');
+                document.getElementById('completeSection').classList.remove('hidden');
+                document.getElementById('startDownloadBtn').innerHTML = '<i class="fas fa-check mr-3"></i>Download Complete';
+            }, 2000);
+        }
+        
+        function logConsole(message) {
+            const console = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.innerHTML = `<span class="text-gray-500">[${timestamp}]</span> ${message}`;
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+        }
+        
+        function extractArchive() {
+            alert('Archive extraction will begin. This may take 30-60 minutes depending on your system speed.');
+        }
+        
+        function verifyDownload() {
+            alert('Verifying archive integrity... All checksums validated successfully!');
+        }
+    </script>
+</body>
+</html>

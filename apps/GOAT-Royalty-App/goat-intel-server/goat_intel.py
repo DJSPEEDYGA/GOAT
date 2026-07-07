@@ -7013,8 +7013,8 @@ def system_open_folder():
 FS_ALLOWED_ROOTS = [
     '/Volumes/backup/LEXICON AKA LEXI',
     '/Users/be100radio/GOAT-Royalty-App',
-    '/Volumes/i2i 1/Ms.Money-Penny/Shared',
-    '/Volumes/i2i 1/Agent-007-GOAT/Shared',
+    '/Volumes/i2i 1/Ms.Money-Penny/Shared',  # legacy path alias
+    '/Volumes/i2i 1/Agent-007-GOAT/Shared',  # current path on i2i 1
     '/Volumes/i2i 1/Drive-Intake',
     '/Volumes/The C Room',
 ]

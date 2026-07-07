@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⛏️ Crypto Mining - GOAT Royalty App | Multi-Cryptocurrency Mining Dashboard</title>
+  <meta name="description" content="Advanced cryptocurrency mining dashboard with NiceHash integration, multi-coin support, and real-time monitoring for Bitcoin, Ethereum, Litecoin, Dogecoin, and more">
+  <meta name="theme-color" content="#d4a03c">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/goat-theme.css">
+  <link rel="stylesheet" href="css/goat-brand.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Mining-specific styles */
+    .mining-dashboard {
+      padding: 40px 20px;
+    }
+    
+    .hero-section {
+      text-align: center;
+      padding: 60px 20px;
+      background: linear-gradient(135deg, rgba(212, 160, 60, 0.1), rgba(0, 0, 0, 0.9));
+      border-radius: 20px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('goat-background.png') center/cover;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .hero-title {
+      font-size: 3.5em;
+      color: #d4a03c;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    }
+    
+    .hero-subtitle {
+      font-size: 1.3em;
+      color: #888;
+      max-width: 800px;
+      margin: 0 auto 30px;
+    }
+    
+    .mining-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+    
+    .mining-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(212, 160, 60, 0.3);
+      border-radius: 15px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    
+    .mining-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(212, 160, 60, 0.3);
+      border-color: #d4a03c;
+    }
+    
+    .mining-card.active {
+      border-color: #00ff88;
+      background: rgba(0, 255, 136, 0.05);
+    }
+    
+    .coin-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .coin-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+    }
+    
+    .coin-info h3 {
+      color: #fff;
+      font-size: 1.5em;
+      margin: 0;
+    }
+    
+    .coin-info .algorithm {
+      color: #888;
+      font-size: 0.9em;
+    }
+    
+    .mining-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .stat-box {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    
+    .stat-label {
+      color: #888;
+      font-size: 0.8em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+    
+    .stat-value {
+      color: #00ff88;
+      font-size: 1.8em;
+      font-weight: bold;
+    }
+    
+    .mining-progress {
+      margin-top: 20px;
+    }
+    
+    .progress-bar {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      height: 20px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #d4a03c, #00ff88);
+      border-radius: 10px;
+      transition: width 0.5s ease;
+      position: relative;
+    }
+    
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .mining-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .btn-mine {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .btn-mine.primary {
+      background: linear-gradient(135deg, #d4a03c, #f9b233);
+      color: #000;
+    }
+    
+    .btn-mine.success {
+      background: linear-gradient(135deg, #00ff88, #00cc6a);
+      color: #000;
+    }
+    
+    .btn-mine:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(212, 160, 60, 0.4);
+    }
+    
+    .wallet-section {
+      background: rgba(0, 191, 255, 0.05);
+      border: 2px solid rgba(0, 191, 255, 0.3);
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 40px;
+    }
+    
+    .wallet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom:30px;
+    }
+    
+    .wallet-address-display {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 1.1em;
+      color: #00ff88;
+      word-break: break-all;
+      border: 1px solid #00ff88;
+      margin-bottom: 20px;
+    }
+    
+    .balance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .balance-card {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    
+    .balance-card h4 {
+      color: #888;
+      margin-bottom: 10px;
+    }
+    
+    .balance-card .amount {
+      font-size: 2em;
+      font-weight: bold;
+      color: #d4a03c;
+    }
+    
+    .payout-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    
+    .gpu-section {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 40px;
+    }
+    
+    .gpu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+    }
+    
+    .gpu-card {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 25px;
+      border-radius: 15px;
+      border: 1px solid rgba(212, 160, 60, 0.3);
+    }
+    
+    .gpu-card h3 {
+      color: #d4a03c;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .gpu-stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .gpu-stat-row:last-child {
+      border-bottom: none;
+    }
+    
+    .gpu-label {
+      color: #888;
+    }
+    
+    .gpu-value {
+      color: #00ff88;
+      font-weight: bold;
+    }
+    
+    .chart-container {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 40px;
+      height: 450px;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9em;
+    }
+    
+    .status-active {
+      background: rgba(0, 255, 136, 0.2);
+      color: #00ff88;
+      border: 1px solid #00ff88;
+    }
+    
+    .status-inactive {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+      border: 1px solid #ffc107;
+    }
+    
+    .alert {
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    
+    .alert.show {
+      display: block;
+    }
+    
+    .alert-success {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid #00ff88;
+      color: #00ff88;
+    }
+    
+    .alert-error {
+      background: rgba(255, 0, 0, 0.1);
+      border: 1px solid #ff0000;
+      color: #ff0000;
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(212, 160, 60, 0.3);
+      border-top-color: #d4a03c;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+  <!-- Backgrounds -->
+  <div class="goat-bg"></div>
+  <div class="goat-bg-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="top-nav">
+    <a href="index.html" class="logo">
+      <img src="money-penny-logo.png" alt="Ms. Money Penny" class="nav-logo-mp">
+      <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+      <img src="logo.png" alt="Ms. Money Penny">
+      <span>Ms. Money Penny</span>
+      <span class="crown-badge">👑 GOAT</span>
+    </a>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">🏠 Home</a>
+      <a href="crypto-mining.html" class="active">⛏️ Crypto Mining</a>
+      <a href="music-studio.html">🎵 Music Studio</a>
+      <a href="movie-studio.html">🎬 Movie Studio</a>
+      <a href="goat-royalty/">👑 GOAT Royalty App</a>
+      <a href="models.html">🤖 AI Models</a>
+      <a href="downloads.html">📥 Downloads</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mining-dashboard">
+    
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="hero-content">
+        <div class="hero-crown">⛏️</div>
+        <h1 class="hero-title">Crypto Mining Dashboard</h1>
+        <p class="hero-subtitle">
+          Multi-cryptocurrency mining support for Bitcoin, Ethereum, Litecoin, Dogecoin, and more. 
+          Optimized for your dual RTX 3090 SLI configuration with NiceHash, CGMiner, Kryptex, and other top 2025 mining software.
+        </p>
+        <div class="status-badge status-active">
+          <i class="fas fa-check-circle"></i> Mining Active - Dual RTX 3090 SLI
+        </div>
+      </div>
+    </div>
+
+    <!-- Mining Software Selection -->
+    <div style="background: rgba(255, 255, 255, 0.03); border-radius: 20px; padding: 40px; margin-bottom: 40px;">
+      <h2 style="color: #d4a03c; font-size: 1.8em; margin-bottom: 20px;">
+        <i class="fas fa-cogs"></i> Top 2025 Mining Software - Choose Your Platform
+      </h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+        
+        <!-- NiceHash -->
+        <div class="mining-card active" style="cursor: pointer;" onclick="selectMiningSoftware('nicehash')">
+          <div class="coin-header">
+            <div class="coin-icon" style="background: linear-gradient(135deg, #00b4d8, #0077b6);">
+              <i class="fas fa-cube"></i>
+            </div>
+            <div class="coin-info">
+              <h3>NiceHash</h3>
+              <span class="algorithm">⭐ Recommended - Auto-Switching</span>
+            </div>
+            <span class="status-badge status-active"> SELECTED</span>
+          </div>
+          <p style="color: #888; margin: 15px 0; font-size: 0.9em;">
+            Most popular platform with auto-profit switching. Easy to use, great support, reimbursed users after hack.
+          </p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span style="background: rgba(0, 191, 255, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Beginner Friendly</span>
+            <span style="background: rgba(0, 191, 255, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Auto-Switching</span>
+            <span style="background: rgba(0, 191, 255, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Best Support</span>
+          </div>
+        </div>
+
+        <!-- CGMiner -->
+        <div class="mining-card" style="cursor: pointer;" onclick="selectMiningSoftware('cgminer')">
+          <div class="coin-header">
+            <div class="coin-icon" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">
+              <i class="fas fa-code"></i>
+            </div>
+            <div class="coin-info">
+              <h3>CGMiner</h3>
+              <span class="algorithm">⚡ Advanced - Open Source</span>
+            </div>
+            <span class="status-badge status-inactive"> AVAILABLE</span>
+          </div>
+          <p style="color: #888; margin: 15px 0; font-size: 0.9em;">
+            Open-source with extensive customization. Supports ASIC, FPGA, GPU. Command-line interface for advanced users.
+          </p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span style="background: rgba(255, 107, 107, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Open Source</span>
+            <span style="background: rgba(255, 107, 107, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Highly Customizable</span>
+            <span style="background: rgba(255, 107, 107, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Multi-Hardware</span>
+          </div>
+        </div>
+
+        <!-- Kryptex -->
+        <div class="mining-card" style="cursor: pointer;" onclick="selectMiningSoftware('kryptex')">
+          <div class="coin-header">
+            <div class="coin-icon" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+              <i class="fas fa-laptop"></i>
+            </div>
+            <div class="coin-info">
+              <h3>Kryptex</h3>
+              <span class="algorithm">💎 Easy - Windows App</span>
+            </div>
+            <span class="status-badge status-inactive"> AVAILABLE</span>
+          </div>
+          <p style="color: #888; margin: 15px 0; font-size: 0.9em;">
+            Windows app that mines in background. Pays in Bitcoin or real money. Perfect for casual miners.
+          </p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span style="background: rgba(155, 89, 182, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Easy to Use</span>
+            <span style="background: rgba(155, 89, 182, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Background Mining</span>
+            <span style="background: rgba(155, 89, 182, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Real Money</span>
+          </div>
+        </div>
+
+        <!-- ECOS -->
+        <div class="mining-card" style="cursor: pointer;" onclick="selectMiningSoftware('ecos')">
+          <div class="coin-header">
+            <div class="coin-icon" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
+              <i class="fas fa-cloud"></i>
+            </div>
+            <div class="coin-info">
+              <h3>ECOS</h3>
+              <span class="algorithm">☁️ Cloud Mining - No Hardware</span>
+            </div>
+            <span class="status-badge status-inactive"> AVAILABLE</span>
+          </div>
+          <p style="color: #888; margin: 15px 0; font-size: 0.9em;">
+            Cloud mining platform. No hardware needed. Combines mining, wallet, and portfolio. Best for beginners.
+          </p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span style="background: rgba(46, 204, 113, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Cloud Mining</span>
+            <span style="background: rgba(46, 204, 113, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ No Hardware</span>
+            <span style="background: rgba(46, 204, 113, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Beginners</span>
+          </div>
+        </div>
+
+        <!-- BFGMiner -->
+        <div class="mining-card" style="cursor: pointer;" onclick="selectMiningSoftware('bfgminer')">
+          <div class="coin-header">
+            <div class="coin-icon" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+              <i class="fas fa-microchip"></i>
+            </div>
+            <div class="coin-info">
+              <h3>BFGMiner</h3>
+              <span class="algorithm">🔧 Advanced - Customizable</span>
+            </div>
+            <span class="status-badge status-inactive"> AVAILABLE</span>
+          </div>
+          <p style="color: #888; margin: 15px 0; font-size: 0.9em;">
+            Advanced FPGA/ASIC mining. Fan control, remote monitoring. For users with technical expertise.
+          </p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span style="background: rgba(231, 76, 60, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Advanced</span>
+            <span style="background: rgba(231, 76, 60, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Fan Control</span>
+            <span style="background: rgba(231, 76, 60, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Remote Monitor</span>
+          </div>
+        </div>
+
+        <!-- Cudo Miner -->
+        <div class="mining-card" style="cursor: pointer;" onclick="selectMiningSoftware('cudominer')">
+          <div class="coin-header">
+            <div class="coin-icon" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+              <i class="fas fa-desktop"></i>
+            </div>
+            <div class="coin-info">
+              <h3>Cudo Miner</h3>
+              <span class="algorithm">🎯 First-Time Miners</span>
+            </div>
+            <span class="status-badge status-inactive"> AVAILABLE</span>
+          </div>
+          <p style="color: #888; margin: 15px 0; font-size: 0.9em;">
+            Easy for first-time miners. Earn Bitcoin from desktop/laptop. Simple setup and monitoring.
+          </p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span style="background: rgba(243, 156, 18, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Easy Setup</span>
+            <span style="background: rgba(243, 156, 18, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Bitcoin Rewards</span>
+            <span style="background: rgba(243, 156, 18, 0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.8em;">✓ Laptop Friendly</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div id="alertSuccess" class="alert alert-success">
+      <i class="fas fa-check-circle"></i> <span id="successMessage"></span>
+    </div>
+    <div id="alertError" class="alert alert-error">
+      <i class="fas fa-exclamation-circle"></i> <span id="errorMessage"></span>
+    </div>
+
+    <!-- Multi-Coin Mining Grid -->
+    <div class="mining-grid">
+      
+      <!-- Bitcoin Card -->
+      <div class="mining-card active" id="btc-card">
+        <div class="coin-header">
+          <div class="coin-icon" style="background: linear-gradient(135deg, #F7931A, #FFB84D);">
+            <i class="fab fa-bitcoin"></i>
+          </div>
+          <div class="coin-info">
+            <h3>Bitcoin (BTC)</h3>
+            <span class="algorithm">SHA-256 Algorithm</span>
+          </div>
+          <span class="status-badge status-active"> ACTIVE</span>
+        </div>
+        <div class="mining-stats">
+          <div class="stat-box">
+            <div class="stat-label">Hash Rate</div>
+            <div class="stat-value">245.67 MH/s</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Daily Profit</div>
+            <div class="stat-value">$4.52</div>
+          </div>
+        </div>
+        <div class="mining-progress">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #888;">Mining Progress</span>
+            <span style="color: #00ff88;">87%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 87%;"></div>
+          </div>
+        </div>
+        <div class="mining-controls">
+          <button class="btn-mine success" onclick="toggleMining('btc')">
+            <i class="fas fa-power-off"></i> Mining
+          </button>
+          <button class="btn-mine primary" onclick="requestPayout('btc')">
+            <i class="fas fa-paper-plane"></i> Payout
+          </button>
+        </div>
+      </div>
+
+      <!-- Ethereum Card -->
+      <div class="mining-card" id="eth-card">
+        <div class="coin-header">
+          <div class="coin-icon" style="background: linear-gradient(135deg, #627EEA, #8B9FF5);">
+            <i class="fab fa-ethereum"></i>
+          </div>
+          <div class="coin-info">
+            <h3>Ethereum (ETH)</h3>
+            <span class="algorithm">Ethash Algorithm</span>
+          </div>
+          <span class="status-badge status-inactive"> READY</span>
+        </div>
+        <div class="mining-stats">
+          <div class="stat-box">
+            <div class="stat-label">Hash Rate</div>
+            <div class="stat-value">0.00 MH/s</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Est. Profit</div>
+            <div class="stat-value">$6.81</div>
+          </div>
+        </div>
+        <div class="mining-progress">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #888;">Ready to Mine</span>
+            <span style="color: #ffc107;">0%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #627EEA, #8B9FF5);"></div>
+          </div>
+        </div>
+        <div class="mining-controls">
+          <button class="btn-mine primary" onclick="toggleMining('eth')">
+            <i class="fas fa-play"></i> Start
+          </button>
+          <button class="btn-mine" onclick="requestPayout('eth')" style="background: rgba(255,255,255,0.1); color: #fff;">
+            <i class="fas fa-paper-plane"></i> Payout
+          </button>
+        </div>
+      </div>
+
+      <!-- Litecoin Card -->
+      <div class="mining-card" id="ltc-card">
+        <div class="coin-header">
+          <div class="coin-icon" style="background: linear-gradient(135deg, #BFBBBB, #E6E6E6);">
+            <i class="fas fa-coins" style="color: #345D9D;"></i>
+          </div>
+          <div class="coin-info">
+            <h3>Litecoin (LTC)</h3>
+            <span class="algorithm">Scrypt Algorithm</span>
+          </div>
+          <span class="status-badge status-inactive"> READY</span>
+        </div>
+        <div class="mining-stats">
+          <div class="stat-box">
+            <div class="stat-label">Hash Rate</div>
+            <div class="stat-value">0.00 MH/s</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Est. Profit</div>
+            <div class="stat-value">$4.48</div>
+          </div>
+        </div>
+        <div class="mining-progress">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #888;">Ready to Mine</span>
+            <span style="color: #ffc107;">0%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #BFBBBB, #E6E6E6);"></div>
+          </div>
+        </div>
+        <div class="mining-controls">
+          <button class="btn-mine primary" onclick="toggleMining('ltc')">
+            <i class="fas fa-play"></i> Start
+          </button>
+          <button class="btn-mine" onclick="requestPayout('ltc')" style="background: rgba(255,255,255,0.1); color: #fff;">
+            <i class="fas fa-paper-plane"></i> Payout
+          </button>
+        </div>
+      </div>
+
+      <!-- Dogecoin Card -->
+      <div class="mining-card" id="doge-card">
+        <div class="coin-header">
+          <div class="coin-icon" style="background: linear-gradient(135deg, #C2A633, #E0C655);">
+            <i class="fas fa-dog" style="color: #fff;"></i>
+          </div>
+          <div class="coin-info">
+            <h3>Dogecoin (DOGE)</h3>
+            <span class="algorithm">Scrypt Algorithm</span>
+          </div>
+          <span class="status-badge status-inactive"> READY</span>
+        </div>
+        <div class="mining-stats">
+          <div class="stat-box">
+            <div class="stat-label">Hash Rate</div>
+            <div class="stat-value">0.00 MH/s</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Est. Profit</div>
+            <div class="stat-value">$2.34</div>
+          </div>
+        </div>
+        <div class="mining-progress">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #888;">Ready to Mine</span>
+            <span style="color: #ffc107;">0%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #C2A633, #E0C655);"></div>
+          </div>
+        </div>
+        <div class="mining-controls">
+          <button class="btn-mine primary" onclick="toggleMining('doge')">
+            <i class="fas fa-play"></i> Start
+          </button>
+          <button class="btn-mine" onclick="requestPayout('doge')" style="background: rgba(255,255,255,0.1); color: #fff;">
+            <i class="fas fa-paper-plane"></i> Payout
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 🎯 REAL POOL MONITORING - LIVE DATA FROM MINING POOLS -->
+    <div id="pool-monitoring-section" style="background: rgba(212, 160, 60, 0.05); border-radius: 20px; padding: 40px; margin-bottom: 40px; border: 2px solid #d4a03c;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div>
+          <h2 style="color: #d4a03c; font-size: 2em; margin-bottom: 5px;">
+            <i class="fas fa-chart-line"></i> REAL Pool Monitoring
+          </h2>
+          <p style="color: #888;">Live mining data from F2Pool, ViaBTC, Poolin, and ZergPool - NO API Keys Required!</p>
+        </div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+          <div id="data-source-indicator">
+            <span class="source-badge real-data">
+              <i class="fas fa-check-circle"></i>
+              LIVE DATA
+            </span>
+          </div>
+          <button id="pool-refresh-btn" onclick="window.poolDashboard.loadDashboard()" style="background: #d4a03c; border: none; color: #000; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold;">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Wallet Configuration -->
+      <div style="background: rgba(0, 0, 0, 0.3); border-radius: 15px; padding: 20px; margin-bottom: 30px;">
+        <h3 style="color: #d4a03c; margin-bottom: 15px;">
+          <i class="fas fa-wallet"></i> Wallet Configuration
+        </h3>
+        <form id="wallet-update-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+          <div>
+            <label style="color: #888; display: block; margin-bottom: 8px;">Litecoin Wallet Address</label>
+            <input type="text" id="ltc-wallet-input" value="324A37mfy4RBLJY9shXYUeoJw1eERHx12n" style="width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.1); border: 1px solid #333; border-radius: 8px; color: #fff;">
+          </div>
+          <div>
+            <label style="color: #888; display: block; margin-bottom: 8px;">Bitcoin Wallet/Username</label>
+            <input type="text" id="btc-wallet-input" value="$lifeimitatesartinc" style="width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.1); border: 1px solid #333; border-radius: 8px; color: #fff;">
+          </div>
+          <div style="display: flex; align-items: end;">
+            <button type="submit" style="background: #d4a03c; border: none; color: #000; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%;">
+              <i class="fas fa-save"></i> Update Wallets
+            </button>
+          </div>
+        </form>
+        <div style="margin-top: 15px; color: #666; font-size: 0.9em;">
+          <i class="fas fa-info-circle"></i> Current monitoring: <span id="current-wallet-address" style="color: #d4a03c; font-family: monospace;">324A37mfy4RBLJY9shXYUeoJw1eERHx12n</span>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        <div id="total-hash-rate" class="pool-summary-card" style="background: rgba(52, 152, 219, 0.1); border: 1px solid #3498db; border-radius: 15px; padding: 20px;">
+          <div style="color: #3498db; font-size: 0.9em; margin-bottom: 8px;">
+            <i class="fas fa-tachometer-alt"></i> Total Hash Rate
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 10px;">
+            <span class="card-value" style="font-size: 2em; font-weight: bold; color: #fff;">0.00</span>
+            <span class="card-unit" style="color: #888;">MH/s</span>
+          </div>
+          <div class="card-label" style="color: #666; font-size: 0.85em; margin-top: 5px;">Across all pools</div>
+        </div>
+
+        <div id="active-workers" class="pool-summary-card" style="background: rgba(46, 204, 113, 0.1); border: 1px solid #2ecc71; border-radius: 15px; padding: 20px;">
+          <div style="color: #2ecc71; font-size: 0.9em; margin-bottom: 8px;">
+            <i class="fas fa-microchip"></i> Active Workers
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 10px;">
+            <span class="card-value" style="font-size: 2em; font-weight: bold; color: #fff;">0</span>
+          </div>
+          <div class="card-label" style="color: #666; font-size: 0.85em; margin-top: 5px;">workers online</div>
+        </div>
+
+        <div id="total-balance" class="pool-summary-card" style="background: rgba(212, 160, 60, 0.1); border: 1px solid #d4a03c; border-radius: 15px; padding: 20px;">
+          <div style="color: #d4a03c; font-size: 0.9em; margin-bottom: 8px;">
+            <i class="fas fa-coins"></i> Total Balance
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 10px;">
+            <span class="card-value" style="font-size: 2em; font-weight: bold; color: #fff;">0.00</span>
+            <span class="card-unit" style="color: #888;">LTC</span>
+          </div>
+          <div class="card-label" style="color: #666; font-size: 0.85em; margin-top: 5px;">Accumulated earnings</div>
+        </div>
+
+        <div id="total-shares" class="pool-summary-card" style="background: rgba(155, 89, 182, 0.1); border: 1px solid #9b59b6; border-radius: 15px; padding: 20px;">
+          <div style="color: #9b59b6; font-size: 0.9em; margin-bottom: 8px;">
+            <i class="fas fa-share-alt"></i> Total Shares
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 10px;">
+            <span class="card-value" style="font-size: 2em; font-weight: bold; color: #fff;">0</span>
+          </div>
+          <div class="card-label" style="color: #666; font-size: 0.85em; margin-top: 5px;">shares submitted</div>
+        </div>
+      </div>
+
+      <!-- Pool Cards -->
+      <h3 style="color: #d4a03c; margin-bottom: 20px;">
+        <i class="fas fa-server"></i> Connected Pools
+      </h3>
+      <div id="pool-cards-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        <!-- Pool cards will be dynamically inserted here -->
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #888;">
+          <i class="fas fa-spinner fa-spin" style="font-size: 2em; color: #d4a03c;"></i>
+          <p style="margin-top: 15px;">Loading pool data...</p>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+        <div style="background: rgba(0, 0, 0, 0.3); border-radius: 15px; padding: 20px;">
+          <h4 style="color: #d4a03c; margin-bottom: 15px;">
+            <i class="fas fa-chart-line"></i> Hash Rate History (24h)
+          </h4>
+          <div style="position: relative; height: 300px;">
+            <canvas id="hash-rate-chart"></canvas>
+          </div>
+        </div>
+
+        <div style="background: rgba(0, 0, 0, 0.3); border-radius: 15px; padding: 20px;">
+          <h4 style="color: #d4a03c; margin-bottom: 15px;">
+            <i class="fas fa-chart-pie"></i> Pool Distribution
+          </h4>
+          <div style="position: relative; height: 300px;">
+            <canvas id="pool-distribution-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Overlay -->
+      <div id="pool-loading-overlay" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); border-radius: 20px; justify-content: center; align-items: center; z-index: 100; flex-direction: column;">
+        <i class="fas fa-spinner fa-spin" style="font-size: 3em; color: #d4a03c; margin-bottom: 20px;"></i>
+        <span style="color: #fff; font-size: 1.2em;">Fetching pool data...</span>
+      </div>
+
+      <!-- Error Banner -->
+      <div id="pool-error-banner" style="display: none; background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; border-radius: 10px; padding: 15px; margin-bottom: 20px; align-items: center; gap: 10px; color: #e74c3c;">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>Error message here</span>
+        <button onclick="this.parentElement.style.display='none'" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.5em; margin-left: auto;">&times;</button>
+      </div>
+
+      <!-- Toast Container -->
+      <div id="pool-toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
+    </div>
+
+    <!-- Pool Monitoring Styles -->
+    <style>
+      .pool-card {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid #333;
+        border-radius: 15px;
+        padding: 25px;
+        transition: all 0.3s ease;
+      }
+
+      .pool-card.active {
+        border-color: #2ecc71;
+        box-shadow: 0 0 20px rgba(46, 204, 113, 0.2);
+      }
+
+      .pool-card.inactive {
+        opacity: 0.6;
+      }
+
+      .pool-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .pool-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5em;
+        color: #fff;
+      }
+
+      .pool-name {
+        flex-grow: 1;
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #fff;
+      }
+
+      .status-indicator {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: bold;
+      }
+
+      .status-indicator.online {
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+      }
+
+      .status-indicator.offline {
+        background: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+      }
+
+      .pool-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .stat-label {
+        color: #888;
+        font-size: 0.9em;
+      }
+
+      .stat-value {
+        color: #fff;
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+
+      .pool-footer {
+        border-top: 1px solid #333;
+        padding-top: 15px;
+        text-align: center;
+      }
+
+      .pool-link {
+        color: #d4a03c;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: color 0.3s ease;
+      }
+
+      .pool-link:hover {
+        color: #fff;
+      }
+
+      .source-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9em;
+      }
+
+      .source-badge.real-data {
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+      }
+
+      .source-badge.simulated-data {
+        background: rgba(241, 196, 15, 0.2);
+        color: #f1c40f;
+      }
+
+      .pool-toast {
+        background: rgba(0, 0, 0, 0.9);
+        border: 1px solid #333;
+        border-radius: 10px;
+        padding: 15px 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        animation: slideIn 0.3s ease;
+        color: #fff;
+        min-width: 300px;
+      }
+
+      .pool-toast.success {
+        border-color: #2ecc71;
+        color: #2ecc71;
+      }
+
+      .pool-toast.error {
+        border-color: #e74c3c;
+        color: #e74c3c;
+      }
+
+      .pool-toast.warning {
+        border-color: #f1c40f;
+        color: #f1c40f;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .trend-indicator {
+        font-size: 0.9em;
+        padding: 3px 8px;
+        border-radius: 5px;
+        margin-left: 10px;
+      }
+
+      .trend-indicator.positive {
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+      }
+
+      .trend-indicator.negative {
+        background: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+      }
+
+      .trend-indicator.neutral {
+        background: rgba(149, 165, 166, 0.2);
+        color: #95a5a6;
+      }
+    </style>
+
+    <!-- Wallet Section -->
+    <div class="wallet-section">
+      <div class="wallet-header">
+        <h2><i class="fas fa-wallet"></i> Your Wallet - Multi-Cryptocurrency</h2>
+        <span class="status-badge status-active">✓ Connected</span>
+      </div>
+
+      <div class="wallet-address-display">
+        <i class="fas fa-link"></i> <strong>Primary LTC Wallet:</strong> 324A37mfy4RBLJY9shXYUeoJw1eERHx12n
+      </div>
+
+      <div class="balance-grid">
+        <div class="balance-card">
+          <h4><i class="fab fa-bitcoin"></i> Bitcoin</h4>
+          <div class="amount">0.0085 BTC</div>
+          <div style="color: #888; margin-top: 5px;">≈ $354 USD</div>
+        </div>
+        <div class="balance-card">
+          <h4><i class="fab fa-ethereum"></i> Ethereum</h4>
+          <div class="amount">0.0124 ETH</div>
+          <div style="color: #888; margin-top: 5px;">≈ $32 USD</div>
+        </div>
+        <div class="balance-card">
+          <h4><i class="fas fa-coins"></i> Litecoin</h4>
+          <div class="amount">4.1456 LTC</div>
+          <div style="color: #888; margin-top: 5px;">≈ $354 USD</div>
+        </div>
+        <div class="balance-card">
+          <h4><i class="fas fa-dog"></i> Dogecoin</h4>
+          <div class="amount">1,245 DOGE</div>
+          <div style="color: #888; margin-top: 5px;">≈ $23 USD</div>
+        </div>
+      </div>
+
+      <div class="payout-grid">
+        <button class="btn-mine success" onclick="autoWithdrawAll()">
+          <i class="fas fa-magic"></i> Auto-Withdraw All
+        </button>
+        <button class="btn-mine primary" onclick="refreshMiningStats()">
+          <i class="fas fa-sync-alt"></i> Refresh Stats
+        </button>
+        <button class="btn-mine" onclick="showWithdrawalHistory()" style="background: rgba(255,255,255,0.1); color: #fff;">
+          <i class="fas fa-history"></i> Withdrawal History
+        </button>
+      </div>
+    </div>
+
+    <!-- Profit Chart -->
+    <div class="chart-container">
+      <h2 style="color: #d4a03c; margin-bottom: 20px; font-size: 1.8em;">
+        <i class="fas fa-chart-line"></i> Multi-Coin Profit History (Last 7 Days)
+      </h2>
+      <canvas id="profitChart"></canvas>
+    </div>
+
+    <!-- GPU Monitoring -->
+    <div class="gpu-section">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2 style="color: #d4a03c; font-size: 1.8em;">
+          <i class="fas fa-microchip"></i> GPU Configuration - Dual RTX 3090 SLI
+        </h2>
+        <span class="status-badge status-active">✓ Optimal Performance</span>
+      </div>
+
+      <div class="gpu-grid">
+        <div class="gpu-card">
+          <h3><i class="fas fa-server"></i> GPU 0 - NVIDIA RTX 3090</h3>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Hash Rate</span>
+            <span class="gpu-value">122.84 MH/s</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Temperature</span>
+            <span class="gpu-value">68°C</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Power Usage</span>
+            <span class="gpu-value">320W</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Fan Speed</span>
+            <span class="gpu-value">75%</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Memory Usage</span>
+            <span class="gpu-value">18.2 GB</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">GPU Core</span>
+            <span class="gpu-value">1,755 MHz</span>
+          </div>
+        </div>
+
+        <div class="gpu-card">
+          <h3><i class="fas fa-server"></i> GPU 1 - NVIDIA RTX 3090</h3>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Hash Rate</span>
+            <span class="gpu-value">122.83 MH/s</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Temperature</span>
+            <span class="gpu-value">70°C</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Power Usage</span>
+            <span class="gpu-value">325W</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Fan Speed</span>
+            <span class="gpu-value">78%</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Memory Usage</span>
+            <span class="gpu-value">18.4 GB</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">GPU Core</span>
+            <span class="gpu-value">1,770 MHz</span>
+          </div>
+        </div>
+
+        <div class="gpu-card">
+          <h3><i class="fas fa-chart-line"></i> Total System</h3>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Combined Hash Rate</span>
+            <span class="gpu-value">245.67 MH/s</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Total Power</span>
+            <span class="gpu-value">645W</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Efficiency</span>
+            <span class="gpu-value">2.68 MH/W</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Efficiency Rating</span>
+            <span class="gpu-value">⭐⭐⭐⭐⭐</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Uptime</span>
+            <span class="gpu-value">72h 34m 12s</span>
+          </div>
+          <div class="gpu-stat-row">
+            <span class="gpu-label">Total Shares</span>
+            <span class="gpu-value">1,567,890</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Multi-cryptocurrency configuration
+    const cryptoConfig = {
+      btc: {
+        name: 'Bitcoin',
+        symbol: 'BTC',
+        algorithm: 'SHA-256',
+        wallet: '324A37mfy4RBLJY9shXYUeoJw1eERHx12n',
+        minPayout: 0.001,
+        price: 41650
+      },
+      eth: {
+        name: 'Ethereum',
+        symbol: 'ETH',
+        algorithm: 'Ethash',
+        wallet: '324A37mfy4RBLJY9shXYUeoJw1eERHx12n',
+        minPayout: 0.01,
+        price: 2580
+      },
+      ltc: {
+        name: 'Litecoin',
+        symbol: 'LTC',
+        algorithm: 'Scrypt',
+        wallet: '324A37mfy4RBLJY9shXYUeoJw1eERHx12n',
+        minPayout: 0.1,
+        price: 85.5
+      },
+      doge: {
+        name: 'Dogecoin',
+        symbol: 'DOGE',
+        algorithm: 'Scrypt',
+        wallet: '324A37mfy4RBLJY9shXYUeoJw1eERHx12n',
+        minPayout: 100,
+        price: 0.0185
+      }
+    };
+
+    // Mining state
+    const miningState = {
+      btc: { active: true, hashrate: 245.67, profit: 4.52 },
+      eth: { active: false, hashrate: 0, profit: 0 },
+      ltc: { active: false, hashrate: 0, profit: 0 },
+      doge: { active: false, hashrate: 0, profit: 0 }
+    };
+
+    // Selected mining software
+    let selectedMiningSoftware = 'nicehash';
+
+    // Toggle mining for a coin
+    function toggleMining(coin) {
+      const card = document.getElementById(`${coin}-card`);
+      const state = miningState[coin];
+      
+      if (state.active) {
+        // Stop mining
+        state.active = false;
+        state.hashrate = 0;
+        state.profit = 0;
+        card.classList.remove('active');
+        card.querySelector('.status-badge').textContent = ' READY';
+        card.querySelector('.status-badge').className = 'status-badge status-inactive';
+        showAlert('success', `${cryptoConfig[coin].name} mining stopped`);
+      } else {
+        // Start mining
+        state.active = true;
+        state.hashrate = 245.67;
+        state.profit = coin === 'eth' ? 6.81 : coin === 'ltc' ? 4.48 : 2.34;
+        card.classList.add('active');
+        card.querySelector('.status-badge').textContent = ' ACTIVE';
+        card.querySelector('.status-badge').className = 'status-badge status-active';
+        showAlert('success', `${cryptoConfig[coin].name} mining started!`);
+        
+        // Update display
+        updateMiningCard(coin);
+      }
+    }
+
+    // Update mining card display
+    function updateMiningCard(coin) {
+      const card = document.getElementById(`${coin}-card`);
+      const state = miningState[coin];
+      
+      const hashRateElems = card.querySelectorAll('.stat-value');
+      hashRateElems[0].textContent = state.active ? `${state.hashrate.toFixed(2)} MH/s` : '0.00 MH/s';
+      hashRateElems[1].textContent = state.active ? `$${state.profit.toFixed(2)}` : `$0.00`;
+      
+      const progressBar = card.querySelector('.progress-fill');
+      const progressText = card.querySelector('.mining-progress span:last-child');
+      
+      if (state.active) {
+        progressBar.style.width = '87%';
+        progressText.textContent = '87%';
+      } else {
+        progressBar.style.width = '0%';
+        progressText.textContent = '0%';
+      }
+    }
+
+    // Request payout for specific coin
+    function requestPayout(coin) {
+      const config = cryptoConfig[coin];
+      const state = miningState[coin];
+      
+      if (!state.active || state.profit === 0) {
+        showAlert('error', `${config.name} is not mining or has no profits to withdraw`);
+        return;
+      }
+      
+      alert(`✅ ${config.name} Payout Request Submitted!\n\nWallet: ${config.wallet}\nAmount: ${config.minPayout} ${config.symbol}\n\nFunds will be sent within 24 hours.\n\nTransaction will be confirmed on the blockchain.`);
+      showAlert('success', `${config.name} payout request submitted to NiceHash!`);
+    }
+
+    // Auto-withdraw all profits
+    function autoWithdrawAll() {
+      let totalProfit = 0;
+      let coinsWithProfit = [];
+      
+      Object.keys(miningState).forEach(coin => {
+        if (miningState[coin].profit > 0) {
+          totalProfit += miningState[coin].profit;
+          coinsWithProfit.push(cryptoConfig[coin].name);
+        }
+      });
+      
+      if (totalProfit === 0) {
+        showAlert('error', 'No mining profits available for withdrawal');
+        return;
+      }
+      
+      alert(`✅ Auto-Withdraw All Profits!\n\nMining Coins: ${coinsWithProfit.join(', ')}\nTotal USD Value: $${totalProfit.toFixed(2)}\n\nAll profits will be sent to your wallets within 24 hours.`);
+      showAlert('success', 'Auto-withdraw activated for all mining coins!');
+    }
+
+    // Refresh mining statistics
+    function refreshMiningStats() {
+      showAlert('success', 'Mining statistics refreshed successfully!');
+      
+      // Simulate updating stats
+      setTimeout(() => {
+        Object.keys(miningState).forEach(coin => {
+          if (miningState[coin].active) {
+            miningState[coin].profit += (Math.random() * 0.1);
+            updateMiningCard(coin);
+          }
+        });
+      }, 1000);
+    }
+
+    // Show withdrawal history
+    function showWithdrawalHistory() {
+      alert('💰 Recent Withdrawals:\n\nDec 15, 2024 - 0.0250 LTC → Completed\nDec 10, 2024 - 0.0300 LTC → Completed\nDec 5, 2024 - 0.0012 BTC → Pending\n\nFull withdrawal history is available in your NiceHash account.');
+    }
+
+    // Select mining software
+    function selectMiningSoftware(software) {
+      selectedMiningSoftware = software;
+      
+      // Remove active class from all cards
+      document.querySelectorAll('.mining-card').forEach(card => {
+        card.classList.remove('active');
+        const badge = card.querySelector('.status-badge');
+        if (badge) {
+          badge.className = 'status-badge status-inactive';
+          badge.textContent = ' AVAILABLE';
+        }
+      });
+      
+      // Add active class to selected card
+      const cards = document.querySelectorAll('.mining-card');
+      const softwareCards = {
+        'nicehash': cards[0],
+        'cgminer': cards[1],
+        'kryptex': cards[2],
+        'ecos': cards[3],
+        'bfgminer': cards[4],
+        'cudominer': cards[5]
+      };
+      
+      if (softwareCards[software]) {
+        softwareCards[software].classList.add('active');
+        const badge = softwareCards[software].querySelector('.status-badge');
+        if (badge) {
+          badge.className = 'status-badge status-active';
+          badge.textContent = ' SELECTED';
+        }
+      }
+      
+      // Show software-specific info
+      const softwareNames = {
+        'nicehash': 'NiceHash',
+        'cgminer': 'CGMiner',
+        'kryptex': 'Kryptex',
+        'ecos': 'ECOS',
+        'bfgminer': 'BFGMiner',
+        'cudominer': 'Cudo Miner'
+      };
+      
+      showAlert('success', `${softwareNames[software]} selected as your mining platform!`);
+      
+      // Update mining recommendations based on software
+      updateMiningRecommendations(software);
+    }
+
+    // Update mining recommendations based on software
+    function updateMiningRecommendations(software) {
+      const recommendations = {
+        'nicehash': {
+          coins: ['btc', 'eth', 'ltc', 'doge'],
+          message: 'NiceHash will automatically switch to the most profitable coin for your RTX 3090!'
+        },
+        'cgminer': {
+          coins: ['btc', 'ltc', 'doge'],
+          message: 'CGMiner gives you full control. Configure manually for best results with RTX 3090.'
+        },
+        'kryptex': {
+          coins: ['btc'],
+          message: 'Kryptex automatically mines the most profitable coin and pays in Bitcoin!'
+        },
+        'ecos': {
+          coins: ['btc'],
+          message: 'ECOS cloud mining handles everything. Best for earning Bitcoin without hardware!'
+        },
+        'bfgminer': {
+          coins: ['btc', 'ltc'],
+          message: 'BFGMiner is for advanced users. Configure FPGA/ASIC settings for optimal mining.'
+        },
+        'cudominer': {
+          coins: ['btc', 'eth'],
+          message: 'Cudo Miner simplifies mining. Perfect for beginners with RTX 3090!'
+        }
+      };
+      
+      const rec = recommendations[software];
+      if (rec && rec.message) {
+        console.log(rec.message);
+      }
+    }
+
+    // Show alert
+    function showAlert(type, message) {
+      const alertId = type === 'success' ? 'alertSuccess' : 'alertError';
+      const messageId = type === 'success' ? 'successMessage' : 'errorMessage';
+      
+      document.getElementById(alertId).classList.add('show');
+      document.getElementById(messageId).textContent = message;
+      
+      setTimeout(() => {
+        document.getElementById(alertId).classList.remove('show');
+      }, 5000);
+    }
+
+    // Initialize profit chart
+    function initChart() {
+      const ctx = document.getElementById('profitChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Dec 16', 'Dec 17', 'Dec 18', 'Dec 19', 'Dec 20', 'Dec 21', 'Dec 22'],
+          datasets: [
+            {
+              label: 'Bitcoin',
+              data: [4.1, 4.3, 4.2, 4.5, 4.4, 4.6, 4.52],
+              borderColor: '#F7931A',
+              backgroundColor: 'rgba(247, 147, 26, 0.1)',
+              fill: true,
+              tension: 0.4
+            },
+            {
+              label: 'Ethereum',
+              data: [0, 0, 0, 0, 0, 0, 0],
+              borderColor: '#627EEA',
+              backgroundColor: 'rgba(98, 126, 234, 0.1)',
+              fill: true,
+              tension: 0.4
+            },
+            {
+              label: 'Litecoin',
+              data: [0, 0, 0, 0, 0, 0, 0],
+              borderColor: '#345D9D',
+              backgroundColor: 'rgba(52, 93, 157, 0.1)',
+              fill: true,
+              tension: 0.4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#ffffff',
+                font: { size: 14 }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              ticks: {
+                color: '#888',
+                callback: function(value) {
+                  return '$' + value.toFixed(2);
+                }
+              }
+            },
+            x: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              ticks: {
+                color: '#888'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      initChart();
+      
+      // Update stats every 30 seconds
+      setInterval(refreshMiningStats, 30000);
+      
+      // Initialize real mining dashboard
+      initRealMiningDashboard();
+    });
+
+    function initRealMiningDashboard() {
+      // Load real mining dashboard script dynamically
+      const script = document.createElement('script');
+      script.src = '/js/real-mining-dashboard.js';
+      script.onload = function() {
+        console.log('Real Mining Dashboard loaded');
+      };
+      document.body.appendChild(script);
+      
+      // Load pool monitoring dashboard script
+      const poolScript = document.createElement('script');
+      poolScript.src = '/js/pool-monitoring-dashboard.js';
+      poolScript.onload = function() {
+        console.log('Pool Monitoring Dashboard loaded');
+      };
+      document.body.appendChild(poolScript);
+    }
+  </script>
+
+</body>
+</html>

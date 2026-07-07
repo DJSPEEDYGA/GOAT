@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎨 Art Lab — AI Creative Studio | GOAT Royalty Records</title>
+  <meta name="description" content="AI Art generation hub for Harvey Miller (DJ Speedy). ComfyUI integration, vision models, art prompt generator, and gallery.">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/goat-theme.css">
+  <style>
+    :root {
+      --bg:#0a0e17; --card:#121826; --border:#1e2535;
+      --text:#e4e4e7; --gold:#FFD700; --cyan:#00E5FF;
+      --green:#10b981; --red:#ef4444; --purple:#8b5cf6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; min-height: 100vh; }
+
+    /* ── TOP NAV ── */
+    .top-nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 28px;
+      background: rgba(10,14,23,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-brand img { height: 32px; border-radius: 6px; }
+    .nav-brand span { font-weight: 900; font-size: 16px; background: linear-gradient(90deg, var(--gold), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .crown-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: rgba(255,215,0,0.15); color: var(--gold); border: 1px solid rgba(255,215,0,0.3); -webkit-text-fill-color: var(--gold); }
+    .nav-links { display: flex; gap: 4px; flex-wrap: wrap; }
+    .nav-links a { padding: 6px 12px; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 13px; transition: background 0.2s; }
+    .nav-links a:hover, .nav-links a.active { background: rgba(255,215,0,0.1); color: var(--gold); }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--text); margin: 5px 0; border-radius: 2px; }
+    @media (max-width: 768px) {
+      .hamburger { display: block; }
+      .nav-links { display: none; position: absolute; top: 60px; left: 0; right: 0; background: rgba(10,14,23,0.98); flex-direction: column; padding: 16px; gap: 4px; border-bottom: 1px solid var(--border); }
+      .nav-links.open { display: flex; }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #0d0a1a 0%, #0a0e17 50%, #0a1220 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 64px 32px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 30% 50%, rgba(139,92,246,0.08) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 50%, rgba(0,229,255,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--purple) 0%, #a78bfa 40%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .hero p { color: #a1a1aa; font-size: 1.05rem; max-width: 640px; margin: 0 auto; position: relative; }
+
+    /* ── MAIN LAYOUT ── */
+    .main { max-width: 1300px; margin: 0 auto; padding: 40px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+    .full-width { grid-column: 1 / -1; }
+
+    /* ── SHARED CARD ── */
+    .lab-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 24px; position: relative; overflow: hidden;
+    }
+    .lab-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--purple), var(--cyan), transparent);
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      font-size: 1.1rem; font-weight: 800; color: var(--text);
+      margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+    }
+    .section-badge {
+      font-size: 10px; padding: 2px 8px; border-radius: 20px;
+      background: rgba(139,92,246,0.15); color: var(--purple); border: 1px solid rgba(139,92,246,0.35);
+    }
+    .local-badge {
+      font-size: 10px; padding: 2px 8px; border-radius: 20px;
+      background: rgba(0,229,255,0.1); color: var(--cyan); border: 1px solid rgba(0,229,255,0.3);
+    }
+    .online-badge {
+      font-size: 10px; padding: 2px 8px; border-radius: 20px;
+      background: rgba(16,185,129,0.1); color: var(--green); border: 1px solid rgba(16,185,129,0.3);
+    }
+    .offline-badge {
+      font-size: 10px; padding: 2px 8px; border-radius: 20px;
+      background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.3);
+    }
+
+    /* ── STATUS INDICATOR ── */
+    .status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 10px 14px; background: rgba(0,0,0,0.25); border-radius: 10px; border: 1px solid var(--border); }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+    .status-dot.red { background: var(--red); }
+    .status-dot.yellow { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .status-text { font-size: 0.88rem; font-weight: 600; flex: 1; }
+
+    /* ── INPUTS & BUTTONS ── */
+    .input-group { margin-bottom: 14px; }
+    .input-group label { display: block; font-size: 0.78rem; color: #71717a; margin-bottom: 6px; }
+    .input-group input, .input-group textarea, .input-group select {
+      width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border); border-radius: 10px; color: var(--text);
+      font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    .input-group input:focus, .input-group textarea:focus, .input-group select:focus { border-color: var(--purple); }
+    .input-group textarea { resize: vertical; min-height: 80px; }
+    .btn { padding: 10px 18px; border-radius: 10px; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s; border: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-purple { background: var(--purple); color: #fff; }
+    .btn-purple:hover { filter: brightness(1.15); transform: scale(1.02); }
+    .btn-cyan { background: rgba(0,229,255,0.12); color: var(--cyan); border: 1px solid rgba(0,229,255,0.35); }
+    .btn-cyan:hover { background: rgba(0,229,255,0.2); }
+    .btn-gold { background: var(--gold); color: #000; }
+    .btn-gold:hover { filter: brightness(1.1); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--purple); }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* ── COMFYUI SECTION ── */
+    .comfy-preview {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 10px;
+      height: 200px; display: flex; align-items: center; justify-content: center;
+      margin: 14px 0; color: #52525b; font-size: 0.9rem; text-align: center;
+      flex-direction: column; gap: 8px;
+    }
+    .comfy-preview iframe { width: 100%; height: 100%; border: none; border-radius: 10px; }
+
+    /* ── VISION MODELS ── */
+    .vision-output {
+      background: rgba(0,0,0,0.25); border: 1px solid rgba(139,92,246,0.15);
+      border-radius: 10px; padding: 14px; font-size: 0.88rem; color: #d4d4d8;
+      min-height: 100px; margin-top: 12px; white-space: pre-wrap; display: none;
+      line-height: 1.6;
+    }
+    .vision-output.visible { display: block; }
+
+    /* ── ART STYLE GENERATOR ── */
+    .prompt-output {
+      background: rgba(139,92,246,0.06); border: 1px solid rgba(139,92,246,0.2);
+      border-radius: 10px; padding: 16px; font-size: 0.88rem; color: var(--text);
+      margin-top: 14px; line-height: 1.7; display: none; position: relative;
+    }
+    .prompt-output.visible { display: block; }
+    .copy-btn {
+      position: absolute; top: 10px; right: 10px;
+      padding: 4px 10px; font-size: 11px; background: rgba(139,92,246,0.2);
+      color: var(--purple); border: 1px solid rgba(139,92,246,0.35);
+      border-radius: 6px; cursor: pointer; transition: all 0.2s;
+    }
+    .copy-btn:hover { background: rgba(139,92,246,0.35); }
+
+    /* ── GALLERY ── */
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-top: 16px; }
+    .gallery-empty { text-align: center; padding: 48px 24px; color: #52525b; font-size: 0.9rem; }
+    .gallery-empty .emoji { font-size: 48px; display: block; margin-bottom: 12px; }
+    .gallery-card {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; transition: all 0.2s;
+    }
+    .gallery-card:hover { border-color: var(--purple); transform: translateY(-2px); }
+    .gallery-card .gc-title { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .gallery-card .gc-preview { font-size: 0.75rem; color: #71717a; line-height: 1.5; }
+    .gallery-card .gc-date { font-size: 0.7rem; color: #52525b; margin-top: 8px; }
+    .gallery-card .gc-icon { font-size: 32px; text-align: center; margin-bottom: 8px; }
+
+    /* ── TOOLS GRID ── */
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+    .tool-card {
+      background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 12px;
+      padding: 18px 16px; text-align: center; text-decoration: none; color: var(--text);
+      transition: all 0.25s; position: relative;
+    }
+    .tool-card:hover { border-color: var(--cyan); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,229,255,0.08); }
+    .tool-card .tool-icon { font-size: 32px; margin-bottom: 10px; }
+    .tool-card .tool-name { font-size: 0.9rem; font-weight: 700; }
+    .tool-card .tool-desc { font-size: 0.72rem; color: #71717a; margin-top: 4px; }
+    .tool-badge { position: absolute; top: 10px; right: 10px; font-size: 9px; padding: 2px 6px; border-radius: 6px; font-weight: 700; }
+    .tool-badge.local { background: rgba(0,229,255,0.15); color: var(--cyan); border: 1px solid rgba(0,229,255,0.3); }
+    .tool-badge.ext { background: rgba(139,92,246,0.1); color: var(--purple); border: 1px solid rgba(139,92,246,0.2); }
+
+    /* ── STATUS MESSAGES ── */
+    .msg-ok { padding: 10px 14px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); border-radius: 8px; color: var(--green); font-size: 0.85rem; margin-top: 10px; }
+    .msg-err { padding: 10px 14px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; color: var(--red); font-size: 0.85rem; margin-top: 10px; }
+    .msg-info { padding: 10px 14px; background: rgba(0,229,255,0.06); border: 1px solid rgba(0,229,255,0.18); border-radius: 8px; color: var(--cyan); font-size: 0.85rem; margin-top: 10px; }
+    .thinking { color: var(--purple); font-size: 0.82rem; margin-top: 8px; display: none; }
+
+    /* ── FOOTER ── */
+    footer { text-align: center; padding: 40px 24px; border-top: 1px solid var(--border); color: #52525b; font-size: 0.85rem; margin-top: 40px; }
+    footer span { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+  <!-- TOP NAV -->
+  <nav class="top-nav">
+    <a href="index.html" class="nav-brand">
+      <img src="money-penny-logo.png" alt="Ms. Money Penny">
+      <span>GOAT Royalty</span>
+      <span class="crown-badge">👑 GOAT</span>
+    </a>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">🏠 Home</a>
+      <a href="models.html">🧠 Models</a>
+      <a href="music-studio.html">🎵 Music</a>
+      <a href="tv-streaming.html">📺 TV</a>
+      <a href="art-lab.html" class="active">🎨 Art Lab</a>
+      <a href="ai-dashboard.html">📊 Dashboard</a>
+      <a href="settings.html">⚙️ Settings</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>🎨 Art Lab — AI Creative Studio</h1>
+    <p>ComfyUI · Vision Models · Art Direction · Gallery — Full AI art pipeline for GOAT Royalty Records album covers, promo art, and creative assets.</p>
+  </section>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- ══ COMFYUI INTEGRATION ══ -->
+    <div class="lab-card">
+      <div class="section-title">🖥️ ComfyUI <span class="local-badge">LOCAL</span> <span class="section-badge">Port 8188</span></div>
+
+      <div class="status-row">
+        <div class="status-dot" id="comfyDot"></div>
+        <span class="status-text" id="comfyStatusText">Checking ComfyUI...</span>
+        <button class="btn btn-outline" style="padding:6px 12px;font-size:11px" onclick="checkComfy()">🔄 Recheck</button>
+      </div>
+
+      <div class="comfy-preview" id="comfyPreview">
+        <span style="font-size:36px">🎨</span>
+        <span>ComfyUI preview will appear here when connected</span>
+        <button class="btn btn-purple" onclick="openComfyUI()">🖥️ Open ComfyUI</button>
+      </div>
+
+      <div class="input-group">
+        <label>Image Generation Prompt</label>
+        <textarea id="comfyPrompt" placeholder="A luxury dark hip-hop album cover for DJ Speedy, gold and black, crown motif, ultra-detailed, 8K, photorealistic..."></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-purple" onclick="generateComfy()">✨ Generate with ComfyUI</button>
+        <a href="http://127.0.0.1:8188" target="_blank" class="btn btn-outline">🔗 Open in Browser</a>
+      </div>
+      <div id="comfyResult"></div>
+    </div>
+
+    <!-- ══ VISION MODELS ══ -->
+    <div class="lab-card">
+      <div class="section-title">👁️ Vision Models <span class="local-badge">OSCAR</span></div>
+      <p style="color:#71717a;font-size:0.82rem;margin-bottom:16px;">Analyze images with Oscar's vision AI. Paste an image URL or describe what you want analyzed.</p>
+
+      <div class="input-group">
+        <label>Vision Model</label>
+        <select id="visionModel">
+          <option value="moondream:1.8b">moondream:1.8b — Fast, lightweight</option>
+          <option value="llava:7b">llava:7b — Balanced</option>
+          <option value="llava-llama3:8b">llava-llama3:8b — High quality</option>
+          <option value="llama3.2-vision:11b">llama3.2-vision:11b — Best quality</option>
+          <option value="qwen2.5vl:7b">qwen2.5vl:7b — Multi-lingual vision</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Image URL (or describe what to analyze)</label>
+        <input id="visionImageUrl" type="text" placeholder="https://example.com/album-cover.jpg or describe the image...">
+      </div>
+
+      <div class="input-group">
+        <label>Your question / analysis request</label>
+        <textarea id="visionPrompt" placeholder="Describe this image in detail. What artistic style is used? What colors dominate? How does it convey luxury and music culture?"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-purple" onclick="analyzeVision()">👁️ Analyze with Vision AI</button>
+        <button class="btn btn-outline" onclick="clearVision()">🗑️ Clear</button>
+      </div>
+      <div class="thinking" id="visionThinking">🔮 Vision model analyzing...</div>
+      <div class="vision-output" id="visionOutput"></div>
+    </div>
+
+    <!-- ══ ART STYLE GENERATOR ══ -->
+    <div class="lab-card">
+      <div class="section-title">✍️ Art Style Generator <span class="section-badge">Oscar AI</span></div>
+      <p style="color:#71717a;font-size:0.82rem;margin-bottom:16px;">Generate detailed AI art prompts for Midjourney, DALL-E, or Stable Diffusion. Optimized for Harvey Miller / DJ Speedy / GOAT Royalty Records branding.</p>
+
+      <div class="input-group">
+        <label>Genre / Content Type</label>
+        <input id="artGenre" type="text" placeholder="Hip-Hop Album Cover, Promo Poster, Social Media Banner, Music Video Still...">
+      </div>
+
+      <div class="input-group">
+        <label>Mood / Aesthetic</label>
+        <input id="artMood" type="text" placeholder="dark, luxury, royal, gold, cinematic, street, futuristic...">
+      </div>
+
+      <div class="input-group">
+        <label>Additional Details</label>
+        <input id="artDetails" type="text" placeholder="DJ equipment, crown, GOAT logo, studio setting...">
+      </div>
+
+      <div class="input-group">
+        <label>Oscar Model for Generation</label>
+        <select id="artModel">
+          <option value="gemma3:12b">gemma3:12b — Best creative writing</option>
+          <option value="gemma2:2b">gemma2:2b — Fast generation</option>
+          <option value="llama3.2:3b">llama3.2:3b — Balanced</option>
+          <option value="mistral:7b">mistral:7b — Creative</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="generateArtPrompt()">🎨 Generate Art Prompt</button>
+        <button class="btn btn-outline" onclick="clearArt()">🗑️ Clear</button>
+      </div>
+
+      <div class="thinking" id="artThinking">✨ Oscar is crafting your prompt...</div>
+
+      <div class="prompt-output" id="artOutput">
+        <button class="copy-btn" onclick="copyPrompt()">📋 Copy</button>
+        <div id="artPromptText"></div>
+      </div>
+    </div>
+
+    <!-- ══ GALLERY ══ -->
+    <div class="lab-card">
+      <div class="section-title">🖼️ Concept Gallery <span class="section-badge">localStorage</span></div>
+      <p style="color:#71717a;font-size:0.82rem;margin-bottom:8px;">Generated art prompts and vision analyses saved locally.</p>
+      <div class="btn-row" style="margin-bottom:16px">
+        <button class="btn btn-outline" onclick="clearGallery()" style="font-size:11px;padding:6px 12px">🗑️ Clear Gallery</button>
+      </div>
+      <div id="galleryContainer">
+        <div class="gallery-empty">
+          <span class="emoji">🎨</span>
+          Generate your first art concept above.<br>
+          Your concepts will appear here automatically.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TOOLS GRID ══ -->
+    <div class="lab-card full-width">
+      <div class="section-title">🛠️ AI Art Tools</div>
+      <div class="tools-grid">
+
+        <a href="https://midjourney.com" target="_blank" class="tool-card">
+          <span class="tool-badge ext">External</span>
+          <div class="tool-icon">🌌</div>
+          <div class="tool-name">Midjourney</div>
+          <div class="tool-desc">Industry-leading image generation. Best for album covers.</div>
+        </a>
+
+        <a href="https://labs.openai.com" target="_blank" class="tool-card">
+          <span class="tool-badge ext">External</span>
+          <div class="tool-icon">🤖</div>
+          <div class="tool-name">DALL-E 3</div>
+          <div class="tool-desc">OpenAI's image generator. Excellent text-in-image.</div>
+        </a>
+
+        <div class="tool-card" id="sdCard" onclick="openSD()" style="cursor:pointer">
+          <span class="tool-badge local">Local</span>
+          <div class="tool-icon">⚡</div>
+          <div class="tool-name">Stable Diffusion</div>
+          <div class="tool-desc" id="sdDesc">Checking local A1111 at port 7860...</div>
+          <div id="sdStatus" style="margin-top:6px;font-size:10px;color:#71717a"></div>
+        </div>
+
+        <a href="https://runwayml.com" target="_blank" class="tool-card">
+          <span class="tool-badge ext">External</span>
+          <div class="tool-icon">🎬</div>
+          <div class="tool-name">RunwayML</div>
+          <div class="tool-desc">AI video generation. Perfect for music video concepts.</div>
+        </a>
+
+        <a href="http://127.0.0.1:8188" target="_blank" class="tool-card" id="comfyCard">
+          <span class="tool-badge local">Local</span>
+          <div class="tool-icon">🎨</div>
+          <div class="tool-name">ComfyUI</div>
+          <div class="tool-desc" id="comfyToolDesc">Advanced node-based AI art. Port 8188.</div>
+        </a>
+
+        <a href="https://www.adobe.com/products/firefly.html" target="_blank" class="tool-card">
+          <span class="tool-badge ext">External</span>
+          <div class="tool-icon">🔥</div>
+          <div class="tool-name">Adobe Firefly</div>
+          <div class="tool-desc">Commercial-safe AI art. Great for marketing materials.</div>
+        </a>
+
+        <a href="https://ideogram.ai" target="_blank" class="tool-card">
+          <span class="tool-badge ext">External</span>
+          <div class="tool-icon">✏️</div>
+          <div class="tool-name">Ideogram</div>
+          <div class="tool-desc">Best for text-heavy designs, logos, posters.</div>
+        </a>
+
+        <a href="https://leonardo.ai" target="_blank" class="tool-card">
+          <span class="tool-badge ext">External</span>
+          <div class="tool-icon">🦁</div>
+          <div class="tool-name">Leonardo AI</div>
+          <div class="tool-desc">High-quality character and scene generation.</div>
+        </a>
+
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <footer>
+    © 2024 Life Imitates Art Inc. · <span>GOAT Royalty Records</span> · Harvey Miller (DJ Speedy) · Art Lab v2.0
+  </footer>
+
+<script>
+// ── CONSTANTS ──
+const OSCAR_BASE = 'http://127.0.0.1:3333';
+const COMFY_BASE = 'http://127.0.0.1:8188';
+const SD_BASE = 'http://127.0.0.1:7860';
+
+// ══════════════════════════════════
+// COMFYUI
+// ══════════════════════════════════
+
+let comfyOnline = false;
+
+async function checkComfy() {
+  const dot = document.getElementById('comfyDot');
+  const text = document.getElementById('comfyStatusText');
+  const previewEl = document.getElementById('comfyPreview');
+  const toolDesc = document.getElementById('comfyToolDesc');
+  dot.className = 'status-dot yellow';
+  text.textContent = 'Checking ComfyUI at 127.0.0.1:8188...';
+  try {
+    const r = await fetch(COMFY_BASE + '/system_stats', { signal: AbortSignal.timeout(3000), mode: 'no-cors' });
+    // no-cors returns opaque, but if no error is thrown, it's reachable
+    dot.className = 'status-dot green';
+    text.textContent = 'ComfyUI Online ✅ — Running at 127.0.0.1:8188';
+    toolDesc.textContent = 'Online ✅ — Ready to generate.';
+    comfyOnline = true;
+    previewEl.innerHTML = `
+      <div style="text-align:center;padding:16px">
+        <div style="font-size:28px;margin-bottom:8px">✅</div>
+        <div style="font-size:0.9rem;color:var(--green);margin-bottom:12px">ComfyUI is online and ready</div>
+        <a href="${COMFY_BASE}" target="_blank" class="btn btn-purple">🖥️ Open ComfyUI Full Interface</a>
+      </div>`;
+  } catch(e) {
+    dot.className = 'status-dot red';
+    text.textContent = 'ComfyUI Offline — Start it first (python main.py or run launch script)';
+    toolDesc.textContent = 'Offline — Start ComfyUI first.';
+    comfyOnline = false;
+  }
+}
+
+function openComfyUI() {
+  window.open(COMFY_BASE, '_blank');
+}
+
+async function generateComfy() {
+  const prompt = document.getElementById('comfyPrompt').value.trim();
+  const resultEl = document.getElementById('comfyResult');
+  if (!prompt) { resultEl.innerHTML = '<div class="msg-err">Please enter a prompt first.</div>'; return; }
+  if (!comfyOnline) {
+    resultEl.innerHTML = '<div class="msg-err">ComfyUI is offline. Start ComfyUI at http://127.0.0.1:8188 first, then click Recheck.</div>';
+    window.open(COMFY_BASE, '_blank');
+    return;
+  }
+  resultEl.innerHTML = '<div class="msg-info">⏳ Sending to ComfyUI... Check the ComfyUI window for progress.</div>';
+  try {
+    // ComfyUI API — send a basic txt2img workflow
+    const workflow = {
+      "3": { "inputs": { "seed": Math.floor(Math.random()*1e9), "steps": 20, "cfg": 7, "sampler_name": "euler", "scheduler": "normal", "denoise": 1, "model": ["4",0], "positive": ["6",0], "negative": ["7",0], "latent_image": ["5",0] }, "class_type": "KSampler" },
+      "4": { "inputs": { "ckpt_name": "v1-5-pruned-emaonly.ckpt" }, "class_type": "CheckpointLoaderSimple" },
+      "5": { "inputs": { "width": 512, "height": 512, "batch_size": 1 }, "class_type": "EmptyLatentImage" },
+      "6": { "inputs": { "text": prompt, "clip": ["4",1] }, "class_type": "CLIPTextEncode" },
+      "7": { "inputs": { "text": "blurry, low quality, watermark, text, amateur", "clip": ["4",1] }, "class_type": "CLIPTextEncode" },
+      "8": { "inputs": { "samples": ["3",0], "vae": ["4",2] }, "class_type": "VAEDecode" },
+      "9": { "inputs": { "filename_prefix": "GOAT_ArtLab", "images": ["8",0] }, "class_type": "SaveImage" }
+    };
+    const r = await fetch(COMFY_BASE + '/prompt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: workflow, client_id: 'goat-royalty' })
+    });
+    if (r.ok) {
+      const d = await r.json();
+      resultEl.innerHTML = `<div class="msg-ok">✅ Queued in ComfyUI! Prompt ID: ${d.prompt_id || 'generated'}. <a href="${COMFY_BASE}" target="_blank" style="color:var(--cyan)">View in ComfyUI →</a></div>`;
+      // Save to gallery
+      saveToGallery({ type: 'comfyui', title: prompt.substring(0,60) + '...', content: prompt, icon: '🎨' });
+    } else {
+      throw new Error('HTTP ' + r.status);
+    }
+  } catch(e) {
+    resultEl.innerHTML = `<div class="msg-err">❌ Could not send to ComfyUI: ${e.message}. <a href="${COMFY_BASE}" target="_blank" style="color:var(--cyan)">Open ComfyUI manually →</a></div>`;
+  }
+}
+
+// ══════════════════════════════════
+// VISION MODELS
+// ══════════════════════════════════
+
+async function analyzeVision() {
+  const model = document.getElementById('visionModel').value;
+  const imgUrl = document.getElementById('visionImageUrl').value.trim();
+  const userPrompt = document.getElementById('visionPrompt').value.trim();
+  const outputEl = document.getElementById('visionOutput');
+  const thinkingEl = document.getElementById('visionThinking');
+
+  if (!userPrompt) {
+    outputEl.className = 'vision-output visible';
+    outputEl.textContent = 'Please enter a question or analysis request.';
+    return;
+  }
+
+  thinkingEl.style.display = 'block';
+  outputEl.className = 'vision-output';
+
+  let promptText = userPrompt;
+  if (imgUrl) promptText = `Image URL: ${imgUrl}\n\n${userPrompt}`;
+
+  try {
+    const payload = { model: model, prompt: promptText, stream: false };
+    if (imgUrl && (imgUrl.startsWith('http') || imgUrl.startsWith('data:'))) {
+      payload.images = [imgUrl];
+    }
+    const r = await fetch(OSCAR_BASE + '/ollama/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    const reply = d.response || 'No response from vision model.';
+    outputEl.className = 'vision-output visible';
+    outputEl.textContent = reply;
+    // Save to gallery
+    saveToGallery({ type: 'vision', title: (imgUrl || userPrompt).substring(0,60) + '...', content: reply, icon: '👁️', model: model });
+  } catch(e) {
+    outputEl.className = 'vision-output visible';
+    outputEl.style.borderColor = 'rgba(239,68,68,0.3)';
+    outputEl.textContent = '❌ Oscar vision engine offline. Start Oscar at ' + OSCAR_BASE;
+  }
+  thinkingEl.style.display = 'none';
+}
+
+function clearVision() {
+  document.getElementById('visionImageUrl').value = '';
+  document.getElementById('visionPrompt').value = '';
+  document.getElementById('visionOutput').className = 'vision-output';
+  document.getElementById('visionOutput').textContent = '';
+}
+
+// ══════════════════════════════════
+// ART STYLE GENERATOR
+// ══════════════════════════════════
+
+async function generateArtPrompt() {
+  const genre = document.getElementById('artGenre').value.trim() || 'Hip-Hop Album Cover';
+  const mood = document.getElementById('artMood').value.trim() || 'dark, luxury, royal';
+  const details = document.getElementById('artDetails').value.trim();
+  const model = document.getElementById('artModel').value;
+  const outputEl = document.getElementById('artOutput');
+  const promptText = document.getElementById('artPromptText');
+  const thinkingEl = document.getElementById('artThinking');
+
+  thinkingEl.style.display = 'block';
+  outputEl.className = 'prompt-output';
+
+  const systemMsg = `You are an expert AI art director specializing in music industry visuals. Generate detailed, cinematic AI art prompts optimized for Midjourney, DALL-E 3, and Stable Diffusion. Output ONLY the prompt — no explanation, no preamble. Make it vivid, detailed, and production-ready.`;
+  const userMsg = `Generate a detailed AI art prompt for a ${genre} with ${mood} aesthetic for Harvey Miller (DJ Speedy) — GOAT Royalty Records.${details ? ` Include: ${details}.` : ''} Include style modifiers, lighting description, color palette, camera angle, and quality tags.`;
+
+  try {
+    const r = await fetch(OSCAR_BASE + '/ollama/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: model, prompt: userMsg, system: systemMsg, stream: false })
+    });
+    const d = await r.json();
+    const reply = d.response || 'Could not generate prompt.';
+    promptText.textContent = reply;
+    outputEl.className = 'prompt-output visible';
+    // Save to gallery
+    saveToGallery({ type: 'art-prompt', title: genre + ' · ' + mood, content: reply, icon: '✍️', model: model });
+  } catch(e) {
+    promptText.textContent = '❌ Oscar engine offline at ' + OSCAR_BASE + '. Start Oscar and retry.';
+    outputEl.className = 'prompt-output visible';
+    outputEl.style.borderColor = 'rgba(239,68,68,0.3)';
+  }
+  thinkingEl.style.display = 'none';
+}
+
+function clearArt() {
+  document.getElementById('artGenre').value = '';
+  document.getElementById('artMood').value = '';
+  document.getElementById('artDetails').value = '';
+  document.getElementById('artOutput').className = 'prompt-output';
+  document.getElementById('artPromptText').textContent = '';
+}
+
+function copyPrompt() {
+  const text = document.getElementById('artPromptText').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    const orig = btn.textContent;
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+// ══════════════════════════════════
+// GALLERY
+// ══════════════════════════════════
+
+function saveToGallery(item) {
+  const gallery = JSON.parse(localStorage.getItem('goat_art_gallery') || '[]');
+  gallery.unshift({ ...item, date: new Date().toISOString(), id: Date.now() });
+  if (gallery.length > 50) gallery.pop(); // keep last 50
+  localStorage.setItem('goat_art_gallery', JSON.stringify(gallery));
+  renderGallery();
+}
+
+function renderGallery() {
+  const container = document.getElementById('galleryContainer');
+  const gallery = JSON.parse(localStorage.getItem('goat_art_gallery') || '[]');
+  if (gallery.length === 0) {
+    container.innerHTML = `<div class="gallery-empty"><span class="emoji">🎨</span>Generate your first art concept above.<br>Your concepts will appear here automatically.</div>`;
+    return;
+  }
+  const grid = gallery.map(item => `
+    <div class="gallery-card">
+      <div class="gc-icon">${item.icon || '🎨'}</div>
+      <div class="gc-title">${escHtml(item.title)}</div>
+      <div class="gc-preview">${escHtml((item.content || '').substring(0, 120))}${item.content && item.content.length > 120 ? '...' : ''}</div>
+      <div class="gc-date">${new Date(item.date).toLocaleDateString()} · ${item.type}${item.model ? ' · ' + item.model : ''}</div>
+    </div>
+  `).join('');
+  container.innerHTML = `<div class="gallery-grid">${grid}</div>`;
+}
+
+function clearGallery() {
+  if (!confirm('Clear all saved art concepts from gallery?')) return;
+  localStorage.removeItem('goat_art_gallery');
+  renderGallery();
+}
+
+// ══════════════════════════════════
+// STABLE DIFFUSION CHECK
+// ══════════════════════════════════
+
+async function checkSD() {
+  const desc = document.getElementById('sdDesc');
+  const status = document.getElementById('sdStatus');
+  try {
+    await fetch(SD_BASE + '/sdapi/v1/options', { signal: AbortSignal.timeout(2000), mode: 'no-cors' });
+    desc.textContent = 'Local A1111 — Online ✅';
+    status.innerHTML = '<span style="color:var(--green)">● Running at 127.0.0.1:7860</span>';
+  } catch(e) {
+    desc.textContent = 'Local A1111 — Offline (click to open)';
+    status.innerHTML = '<span style="color:#52525b">● Not running at :7860</span>';
+  }
+}
+
+function openSD() {
+  window.open(SD_BASE, '_blank');
+}
+
+// ══════════════════════════════════
+// UTILS
+// ══════════════════════════════════
+
+function escHtml(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ══════════════════════════════════
+// INIT
+// ══════════════════════════════════
+checkComfy();
+checkSD();
+renderGallery();
+</script>
+
+</body>
+</html>

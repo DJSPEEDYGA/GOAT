@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOAT Royalty App - Local Deployment Guide</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 min-h-screen text-white">
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Ms. Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms. Money Penny">
+    <span>Ms. Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-black/50 backdrop-blur-md z-50 border-b border-blue-500/30">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-crown text-yellow-400 text-2xl"></i>
+                <span class="text-xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">GOAT Royalty App</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html" class="hover:text-blue-400 transition"><i class="fas fa-home mr-1"></i>Home</a>
+                <a href="one-click-download.html" class="hover:text-blue-400 transition"><i class="fas fa-cloud-download-alt mr-1"></i>1-Click Download</a>
+                <a href="deploy-local.html" class="text-blue-400 font-semibold"><i class="fas fa-server mr-1"></i>Deploy Locally</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="pt-20 pb-10 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 bg-clip-text text-transparent">
+                <i class="fas fa-server mr-3"></i>Local Deployment Guide
+            </h1>
+            <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                Deploy GOAT Royalty App from your personal server with local drives and web access. Complete offline-capable system.
+            </p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 pb-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Prerequisites -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-blue-500/30">
+                    <h2 class="text-2xl font-bold mb-4"><i class="fas fa-rocket mr-2 text-blue-400"></i>Prerequisites</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-800/50 p-4 rounded-xl">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <i class="fas fa-hdd text-2xl text-blue-400"></i>
+                                <h3 class="font-bold">Hardware</h3>
+                            </div>
+                            <ul class="text-sm text-gray-300 space-y-1">
+                                <li>• 8TB Hard Drive (downloaded content)</li>
+                                <li>• 16GB+ RAM</li>
+                                <li>• Multi-core CPU (4 cores recommended)</li>
+                                <li>• GPU with 8GB+ VRAM (for AI)</li>
+                            </ul>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded-xl">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <i class="fas fa-code text-2xl text-purple-400"></i>
+                                <h3 class="font-bold">Software</h3>
+                            </div>
+                            <ul class="text-sm text-gray-300 space-y-1">
+                                <li>• Node.js 18.x or later</li>
+                                <li>• Docker & Docker Compose</li>
+                                <li>• Nginx (optional)</li>
+                                <li>• Git</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 1: Extract -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-green-500/30">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="font-bold text-xl">1</span>
+                        </div>
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold mb-2">Extract Downloaded Archive</h2>
+                            <p class="text-gray-300 mb-4">Extract the complete archive to your local system</p>
+                            
+                            <div class="bg-slate-900 rounded-xl p-4 font-mono text-sm overflow-x-auto">
+                                <div class="text-gray-500"># Navigate to download location</div>
+                                <div class="text-green-400">cd /path/to/downloads/</div>
+                                <div class="text-gray-500 mt-2"># Extract archive</div>
+                                <div class="text-blue-400">tar -xzf goat-royalty-complete.tar.gz</div>
+                                <div class="text-gray-500 mt-2"># Or on Windows:</div>
+                                <div class="text-blue-400">tar -xzf goat-royalty-complete.tar.gz</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Configure -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-purple-500/30">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="font-bold text-xl">2</span>
+                        </div>
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold mb-2">Configure Environment</h2>
+                            <p class="text-gray-300 mb-4">Set up your local environment configuration</p>
+                            
+                            <div class="bg-slate-900 rounded-xl p-4 font-mono text-sm overflow-x-auto">
+                                <div class="text-gray-500"># Navigate to extracted directory</div>
+                                <div class="text-green-400">cd goat-royalty-complete/</div>
+                                <div class="text-gray-500 mt-2"># Copy environment template</div>
+                                <div class="text-blue-400">cp .env.example .env</div>
+                                <div class="text-gray-500 mt-2"># Edit .env with your settings</div>
+                                <div class="text-blue-400">nano .env</div>
+                            </div>
+                            
+                            <div class="mt-4 bg-yellow-900/20 border border-yellow-500/30 p-4 rounded-xl">
+                                <h4 class="font-bold text-yellow-400 mb-2"><i class="fas fa-lightbulb mr-2"></i>Key Settings</h4>
+                                <ul class="text-sm text-gray-300 space-y-1">
+                                    <li>• Set your local IP address</li>
+                                    <li>• Configure port numbers</li>
+                                    <li>• Set path to 8TB hard drive</li>
+                                    <li>• Configure AI model locations</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Docker Setup -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-cyan-500/30">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-cyan-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="font-bold text-xl">3</span>
+                        </div>
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold mb-2">Start with Docker</h2>
+                            <p class="text-gray-300 mb-4">Launch all services using Docker Compose</p>
+                            
+                            <div class="bg-slate-900 rounded-xl p-4 font-mono text-sm overflow-x-auto">
+                                <div class="text-gray-500"># Start all services</div>
+                                <div class="text-green-400">docker-compose up -d</div>
+                                <div class="text-gray-500 mt-2"># Check status</div>
+                                <div class="text-blue-400">docker-compose ps</div>
+                                <div class="text-gray-500 mt-2"># View logs</div>
+                                <div class="text-blue-400">docker-compose logs -f</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Access -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-orange-500/30">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="font-bold text-xl">4</span>
+                        </div>
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold mb-2">Access Your Local Instance</h2>
+                            <p class="text-gray-300 mb-4">Open your browser and access the application</p>
+                            
+                            <div class="bg-slate-800/50 rounded-xl p-4">
+                                <div class="text-sm text-gray-400 mb-2">Local URL:</div>
+                                <div class="text-2xl font-bold text-green-400">http://localhost:3000</div>
+                            </div>
+                            
+                            <div class="mt-4 bg-slate-800/50 rounded-xl p-4">
+                                <div class="text-sm text-gray-400 mb-2">Network Access (if configured):</div>
+                                <div class="text-xl font-bold text-blue-400">http://YOUR-LOCAL-IP:3000</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Troubleshooting -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-red-500/30">
+                    <h2 class="text-2xl font-bold mb-4"><i class="fas fa-wrench mr-2 text-red-400"></i>Troubleshooting</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-slate-800/50 p-4 rounded-xl">
+                            <h3 class="font-bold text-red-400 mb-2">Services won't start?</h3>
+                            <p class="text-sm text-gray-300">Check if ports are already in use: <code class="bg-slate-900 px-2 py-1 rounded">netstat -tulpn</code></p>
+                        </div>
+                        
+                        <div class="bg-slate-800/50 p-4 rounded-xl">
+                            <h3 class="font-bold text-red-400 mb-2">Can't access from other devices?</h3>
+                            <p class="text-sm text-gray-300">Check firewall settings and ensure the app is binding to 0.0.0.0 instead of localhost</p>
+                        </div>
+                        
+                        <div class="bg-slate-800/50 p-4 rounded-xl">
+                            <h3 class="font-bold text-red-400 mb-2">AI models not loading?</h3>
+                            <p class="text-sm text-gray-300">Verify the AI model path in .env points to your 8TB hard drive</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="space-y-6">
+                <!-- Quick Start -->
+                <div class="bg-gradient-to-br from-green-900/30 to-emerald-900/30 backdrop-blur-md rounded-2xl p-6 border border-green-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-bolt mr-2 text-green-400"></i>Quick Start</h2>
+                    <div class="space-y-3">
+                        <button onclick="deployQuick()" class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-bold transition flex items-center justify-center">
+                            <i class="fas fa-play mr-2"></i>Auto Deploy (Recommended)
+                        </button>
+                        <button class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-bold transition flex items-center justify-center">
+                            <i class="fas fa-terminal mr-2"></i>Manual Deploy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Architecture -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-blue-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-sitemap mr-2 text-blue-400"></i>Architecture</h2>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                            <span>Next.js Frontend</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span>Node.js Backend</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                            <span>AI Model Server</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-pink-500 rounded-full"></div>
+                            <span>Media Storage (8TB)</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-cyan-500 rounded-full"></div>
+                            <span>Database</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                            <span>Redis Cache</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-purple-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-star mr-2 text-purple-400"></i>Local Features</h2>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span>Complete offline capability</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span>Full-speed local AI processing</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span>No API costs</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span>Data stays on your hardware</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span>Web access from LAN</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span>Docker updates</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Support -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-yellow-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-life-ring mr-2 text-yellow-400"></i>Support</h2>
+                    <div class="space-y-3">
+                        <a href="#" class="block bg-slate-700/50 p-3 rounded-lg hover:bg-slate-700 transition">
+                            <i class="fas fa-book mr-2 text-blue-400"></i>Documentation
+                        </a>
+                        <a href="#" class="block bg-slate-700/50 p-3 rounded-lg hover:bg-slate-700 transition">
+                            <i class="fas fa-question-circle mr-2 text-green-400"></i>FAQ
+                        </a>
+                        <a href="#" class="block bg-slate-700/50 p-3 rounded-lg hover:bg-slate-700 transition">
+                            <i class="fas fa-comments mr-2 text-purple-400"></i>Community Support
+                        </a>
+                        <a href="#" class="block bg-slate-700/50 p-3 rounded-lg hover:bg-slate-700 transition">
+                            <i class="fab fa-github mr-2 text-gray-400"></i>GitHub Issues
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function deployQuick() {
+            alert('Auto-deploy script will run!\n\nThis will:\n1. Check requirements\n2. Configure environment\n3. Start Docker containers\n4. Setup local access\n\nClick OK to begin...');
+            
+            // In a real implementation, this would download and run an install script
+            console.log('Starting auto-deploy...');
+        }
+    </script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>

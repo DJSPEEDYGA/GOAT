@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOAT Royalty App - Audio Fingerprinting</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/goat-theme.css">
+<link rel="stylesheet" href="css/goat-brand.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 min-h-screen text-white">
+<!-- Backgrounds -->
+<div class="goat-bg"></div>
+<div class="goat-bg-overlay"></div>
+
+<!-- Navigation -->
+<nav class="top-nav">
+  <a href="index.html" class="logo">
+    <img src="money-penny-logo.png" alt="Ms. Money Penny" class="nav-logo-mp">
+    <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+    <img src="logo.png" alt="Ms. Money Penny">
+    <span>Ms. Money Penny</span>
+    <span class="crown-badge">👑 GOAT</span>
+  </a>
+  <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">👑 About</a>
+    <a href="contact.html">📧 Contact</a>
+    <a href="crypto-mining.html">⛏️ Crypto Mining</a>
+    <a href="models.html">🤖 AI Models</a>
+    <a href="videos.html">🎬 Videos</a>
+    <a href="shop.html">🛍️ Shop</a>
+    <a href="studio.html">🎹 Studio DAW</a>
+    <a href="beat-maker.html">🎵 Beat Maker</a>
+    <a href="plugins.html">🔌 Plugins</a>
+    <a href="downloads.html">📥 Downloads</a>
+    <a href="tools.html">🛠️ Tools</a>
+  </div>
+</nav>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-black/50 backdrop-blur-md z-50 border-b border-indigo-500/30">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-crown text-yellow-400 text-2xl"></i>
+                <span class="text-xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">GOAT Royalty App</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html" class="hover:text-indigo-400 transition"><i class="fas fa-home mr-1"></i>Home</a>
+                <a href="agents.html" class="hover:text-indigo-400 transition"><i class="fas fa-robot mr-1"></i>AI Agents</a>
+                <a href="cryptoMining.html" class="hover:text-indigo-400 transition"><i class="fas fa-coins mr-1"></i>Crypto Mining</a>
+                <a href="recording-studio.html" class="hover:text-indigo-400 transition"><i class="fas fa-microphone mr-1"></i>Recording Studio</a>
+                <a href="production-studio.html" class="hover:text-indigo-400 transition"><i class="fas fa-film mr-1"></i>Production Studio</a>
+                <a href="audio-fingerprinting.html" class="text-indigo-400 font-semibold"><i class="fas fa-fingerprint mr-1"></i>Audio Fingerprinting</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="pt-20 pb-10 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                <i class="fas fa-fingerprint mr-3"></i>Audio Fingerprinting
+            </h1>
+            <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                Advanced audio recognition technology for copyright protection, content identification, and rights management. Identify any audio track instantly with our AI-powered fingerprinting system.
+            </p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 pb-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Main Fingerprinting Area -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Upload & Analysis -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-indigo-500/30">
+                    <h2 class="text-2xl font-bold mb-4"><i class="fas fa-upload mr-2 text-indigo-400"></i>Audio Identification</h2>
+                    
+                    <!-- Upload Zones -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div id="dropZone" class="border-2 border-dashed border-indigo-500/50 rounded-xl p-8 text-center hover:border-indigo-400 hover:bg-indigo-900/20 transition cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-5xl text-indigo-400 mb-4"></i>
+                            <p class="text-lg font-semibold mb-2">Drop Audio File Here</p>
+                            <p class="text-sm text-gray-400 mb-4">or click to browse</p>
+                            <input type="file" id="audioFile" accept="audio/*" class="hidden">
+                            <button onclick="document.getElementById('audioFile').click()" class="bg-indigo-600 hover:bg-indigo-700 px-6 py-2 rounded-lg transition">
+                                Select File
+                            </button>
+                            <div class="mt-4 text-xs text-gray-500">
+                                Supported: MP3, WAV, FLAC, AAC, OGG, M4A
+                            </div>
+                        </div>
+                        
+                        <div class="border-2 border-dashed border-purple-500/50 rounded-xl p-8 text-center hover:border-purple-400 hover:bg-purple-900/20 transition cursor-pointer">
+                            <i class="fas fa-microphone text-5xl text-purple-400 mb-4"></i>
+                            <p class="text-lg font-semibold mb-2">Record Live Audio</p>
+                            <p class="text-sm text-gray-400 mb-4">Record from microphone</p>
+                            <button id="recordBtn" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg transition">
+                                <i class="fas fa-microphone mr-2"></i>Start Recording
+                            </button>
+                            <div id="recordingTime" class="mt-4 text-sm text-gray-400 hidden">00:00:00</div>
+                        </div>
+                    </div>
+                    
+                    <!-- URL Input -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold mb-2 text-indigo-300"><i class="fas fa-link mr-1"></i>Or enter audio URL</label>
+                        <div class="flex space-x-2">
+                            <input type="url" id="audioUrl" placeholder="https://example.com/audio.mp3" class="flex-1 bg-slate-700 rounded-lg p-3 border border-indigo-500/30 focus:outline-none focus:border-indigo-500">
+                            <button id="analyzeUrlBtn" class="bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-lg transition font-semibold">
+                                <i class="fas fa-search mr-2"></i>Analyze
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Analysis Options -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold mb-2 text-indigo-300">Analysis Options</label>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <label class="flex items-center space-x-2 cursor-pointer bg-slate-700/50 p-2 rounded-lg hover:bg-slate-700 transition">
+                                <input type="checkbox" checked class="accent-indigo-500">
+                                <span class="text-sm">Song Identification</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer bg-slate-700/50 p-2 rounded-lg hover:bg-slate-700 transition">
+                                <input type="checkbox" checked class="accent-indigo-500">
+                                <span class="text-sm">Copyright Check</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer bg-slate-700/50 p-2 rounded-lg hover:bg-slate-700 transition">
+                                <input type="checkbox" class="accent-indigo-500">
+                                <span class="text-sm">Similarity Search</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer bg-slate-700/50 p-2 rounded-lg hover:bg-slate-700 transition">
+                                <input type="checkbox" class="accent-indigo-500">
+                                <span class="text-sm">Remix Detection</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button id="analyzeBtn" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 py-4 rounded-lg font-bold transition flex items-center justify-center text-lg">
+                        <i class="fas fa-fingerprint mr-2"></i>Generate Audio Fingerprint
+                    </button>
+                </div>
+
+                <!-- Analysis Results -->
+                <div id="resultsPanel" class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-purple-500/30 hidden">
+                    <h2 class="text-2xl font-bold mb-4"><i class="fas fa-check-circle mr-2 text-green-400"></i>Analysis Results</h2>
+                    
+                    <!-- Match Found -->
+                    <div id="matchFound" class="bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-xl p-6 mb-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-24 h-24 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-music text-4xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <span class="bg-green-500 text-black px-3 py-1 rounded-full text-sm font-bold">MATCH FOUND</span>
+                                    <span class="text-green-400 font-semibold">98.7% Confidence</span>
+                                </div>
+                                <h3 class="text-2xl font-bold mb-1">Blinding Lights</h3>
+                                <p class="text-gray-300 text-lg mb-2">The Weeknd</p>
+                                <p class="text-sm text-gray-400 mb-3">After Hours • 2020 • Republic Records</p>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                    <div><span class="text-gray-400">ISRC:</span> USUM72008067</div>
+                                    <div><span class="text-gray-400">UPC:</span> 190295449123</div>
+                                    <div><span class="text-gray-400">Duration:</span> 3:20</div>
+                                    <div><span class="text-gray-400">BPM:</span> 171</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fingerprint Data -->
+                    <div class="bg-slate-800/50 rounded-xl p-4 mb-6">
+                        <h3 class="text-lg font-bold mb-3 text-purple-400"><i class="fas fa-dna mr-2"></i>Fingerprint Details</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div class="bg-slate-700/50 p-3 rounded-lg">
+                                <div class="text-xs text-gray-400 mb-1">Fingerprint Hash</div>
+                                <div class="font-mono text-sm">a1b2c3d4e5f6...87654321</div>
+                            </div>
+                            <div class="bg-slate-700/50 p-3 rounded-lg">
+                                <div class="text-xs text-gray-400 mb-1">Spectral Analysis</div>
+                                <div class="text-sm">12,847 peaks detected</div>
+                            </div>
+                            <div class="bg-slate-700/50 p-3 rounded-lg">
+                                <div class="text-xs text-gray-400 mb-1">Chromagram</div>
+                                <div class="text-sm">16,384 frequency bins</div>
+                            </div>
+                            <div class="bg-slate-700/50 p-3 rounded-lg">
+                                <div class="text-xs text-gray-400 mb-1">Temporal Peaks</div>
+                                <div class="text-sm">24,192 landmarks</div>
+                            </div>
+                            <div class="bg-slate-700/50 p-3 rounded-lg">
+                                <div class="text-xs text-gray-400 mb-1">Processing Time</div>
+                                <div class="text-sm text-green-400">1.23 seconds</div>
+                            </div>
+                            <div class="bg-slate-700/50 p-3 rounded-lg">
+                                <div class="text-xs text-gray-400 mb-1">Database Search</div>
+                                <div class="text-sm">2.4M records scanned</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Audio Visualization -->
+                    <div class="bg-slate-800/50 rounded-xl p-4 mb-6">
+                        <h3 class="text-lg font-bold mb-3 text-cyan-400"><i class="fas fa-wave-square mr-2"></i>Spectral Visualization</h3>
+                        <canvas id="spectrogramCanvas" class="w-full h-48 bg-black rounded-lg"></canvas>
+                    </div>
+                    
+                    <!-- Copyright Status -->
+                    <div class="bg-slate-800/50 rounded-xl p-4 mb-6">
+                        <h3 class="text-lg font-bold mb-3 text-yellow-400"><i class="fas fa-shield-alt mr-2"></i>Copyright & Rights</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-green-900/20 border border-green-500/30 p-3 rounded-lg">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <i class="fas fa-check-circle text-green-400"></i>
+                                    <span class="font-semibold">Copyright Status</span>
+                                </div>
+                                <p class="text-sm text-gray-300">Protected - Valid registration</p>
+                            </div>
+                            <div class="bg-blue-900/20 border border-blue-500/30 p-3 rounded-lg">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <i class="fas fa-building text-blue-400"></i>
+                                    <span class="font-semibold">Rights Holder</span>
+                                </div>
+                                <p class="text-sm text-gray-300">Universal Music Group</p>
+                            </div>
+                            <div class="bg-purple-900/20 border border-purple-500/30 p-3 rounded-lg">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <i class="fas fa-users text-purple-400"></i>
+                                    <span class="font-semibold">Publishing</span>
+                                </div>
+                                <p class="text-sm text-gray-300">Kobalt Music Publishing</p>
+                            </div>
+                            <div class="bg-orange-900/20 border border-orange-500/30 p-3 rounded-lg">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <i class="fas fa-dollar-sign text-orange-400"></i>
+                                    <span class="font-semibold">Licensing</span>
+                                </div>
+                                <p class="text-sm text-gray-300">Standard licensing applies</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Similar Matches -->
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <h3 class="text-lg font-bold mb-3 text-pink-400"><i class="fas fa-list-ol mr-2"></i>Similar Matches</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between bg-slate-700/30 p-3 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="text-yellow-400 font-bold">#1</div>
+                                    <div>
+                                        <div class="font-semibold">Blinding Lights - Original Mix</div>
+                                        <div class="text-xs text-gray-400">The Weeknd • After Hours</div>
+                                    </div>
+                                </div>
+                                <div class="text-green-400 font-semibold">98.7%</div>
+                            </div>
+                            <div class="flex items-center justify-between bg-slate-700/30 p-3 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="text-gray-400 font-bold">#2</div>
+                                    <div>
+                                        <div class="font-semibold">Blinding Lights - Radio Edit</div>
+                                        <div class="text-xs text-gray-400">The Weeknd • After Hours</div>
+                                    </div>
+                                </div>
+                                <div class="text-yellow-400 font-semibold">87.3%</div>
+                            </div>
+                            <div class="flex items-center justify-between bg-slate-700/30 p-3 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="text-orange-400 font-bold">#3</div>
+                                    <div>
+                                        <div class="font-semibold">Blinding Lights - Acoustic</div>
+                                        <div class="text-xs text-gray-400">The Weeknd • After Hours</div>
+                                    </div>
+                                </div>
+                                <div class="text-orange-400 font-semibold">72.1%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="space-y-6">
+                <!-- Database Statistics -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-indigo-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-database mr-2 text-indigo-400"></i>Database Statistics</h2>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Total Tracks</span>
+                            <span class="font-bold text-indigo-400">2.4M</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Fingerprints</span>
+                            <span class="font-bold text-purple-400">8.7M</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Labels</span>
+                            <span class="font-bold text-pink-400">15,234</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Artists</span>
+                            <span class="font-bold text-cyan-400">342,891</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Daily Scans</span>
+                            <span class="font-bold text-green-400">1.2M</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Scans -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-purple-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-clock mr-2 text-purple-400"></i>Recent Scans</h2>
+                    <div class="space-y-3 max-h-64 overflow-y-auto">
+                        <div class="bg-slate-700/50 p-3 rounded-lg">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <i class="fas fa-check-circle text-green-400"></i>
+                                <span class="font-semibold text-sm">Blinding Lights</span>
+                            </div>
+                            <div class="text-xs text-gray-400">2 min ago • 98.7% match</div>
+                        </div>
+                        <div class="bg-slate-700/50 p-3 rounded-lg">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <i class="fas fa-check-circle text-green-400"></i>
+                                <span class="font-semibold text-sm">Shape of You</span>
+                            </div>
+                            <div class="text-xs text-gray-400">5 min ago • 95.2% match</div>
+                        </div>
+                        <div class="bg-slate-700/50 p-3 rounded-lg">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <i class="fas fa-times-circle text-red-400"></i>
+                                <span class="font-semibold text-sm">Unknown Recording</span>
+                            </div>
+                            <div class="text-xs text-gray-400">10 min ago • No match</div>
+                        </div>
+                        <div class="bg-slate-700/50 p-3 rounded-lg">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <i class="fas fa-check-circle text-green-400"></i>
+                                <span class="font-semibold text-sm">Uptown Funk</span>
+                            </div>
+                            <div class="text-xs text-gray-400">15 min ago • 92.8% match</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Access -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-cyan-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-code mr-2 text-cyan-400"></i>API Access</h2>
+                    <div class="bg-slate-800 rounded-lg p-3 mb-3">
+                        <code class="text-xs text-cyan-400">POST /api/v1/fingerprint</code>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-4">
+                        Integrate audio fingerprinting into your applications using our REST API.
+                    </p>
+                    <button class="w-full bg-cyan-600 hover:bg-cyan-700 py-2 rounded-lg transition text-sm">
+                        <i class="fas fa-book mr-1"></i>View Documentation
+                    </button>
+                </div>
+
+                <!-- Technology Info -->
+                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-green-500/30">
+                    <h2 class="text-xl font-bold mb-4"><i class="fas fa-info-circle mr-2 text-green-400"></i>Technology</h2>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-check text-green-400"></i>
+                            <span>Chromaprint Algorithm</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-check text-green-400"></i>
+                            <span>AcoustID Integration</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-check text-green-400"></i>
+                            <span>FFT Analysis</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-check text-green-400"></i>
+                            <span>Neural Network Matching</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-check text-green-400"></i>
+                            <span>Real-time Processing</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="lib/audio/fingerprinting-engine.js"></script>
+    <script src="lib/audio/spectral-analysis.js"></script>
+    <script src="lib/audio/copyright-detection.js"></script>
+    <script>
+        // Audio Fingerprinting Controller
+        const AudioFingerprinting = {
+            isRecording: false,
+            mediaRecorder: null,
+            audioChunks: [],
+            uploadedFile: null,
+            
+            init() {
+                this.setupEventListeners();
+                console.log('Audio Fingerprinting initialized');
+            },
+            
+            setupEventListeners() {
+                const dropZone = document.getElementById('dropZone');
+                const audioFile = document.getElementById('audioFile');
+                
+                dropZone.addEventListener('click', () => audioFile.click());
+                audioFile.addEventListener('change', (e) => this.handleFileUpload(e.target.files[0]));
+                
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('border-indigo-400', 'bg-indigo-900/20');
+                });
+                
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('border-indigo-400', 'bg-indigo-900/20');
+                });
+                
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('border-indigo-400', 'bg-indigo-900/20');
+                    if (e.dataTransfer.files.length > 0) {
+                        this.handleFileUpload(e.dataTransfer.files[0]);
+                    }
+                });
+                
+                document.getElementById('recordBtn').addEventListener('click', () => this.toggleRecording());
+                document.getElementById('analyzeBtn').addEventListener('click', () => this.analyzeAudio());
+                document.getElementById('analyzeUrlBtn').addEventListener('click', () => this.analyzeUrlAudio());
+            },
+            
+            handleFileUpload(file) {
+                if (!file || !file.type.startsWith('audio/')) {
+                    alert('Please upload a valid audio file');
+                    return;
+                }
+                
+                this.uploadedFile = file;
+                const dropZone = document.getElementById('dropZone');
+                dropZone.innerHTML = `
+                    <i class="fas fa-check-circle text-5xl text-green-400 mb-4"></i>
+                    <p class="text-lg font-semibold mb-2">${file.name}</p>
+                    <p class="text-sm text-gray-400 mb-2">${this.formatFileSize(file.size)}</p>
+                    <p class="text-sm text-gray-400">Ready to analyze</p>
+                `;
+            },
+            
+            async toggleRecording() {
+                const btn = document.getElementById('recordBtn');
+                const timeDisplay = document.getElementById('recordingTime');
+                
+                if (!this.isRecording) {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        this.mediaRecorder = new MediaRecorder(stream);
+                        this.audioChunks = [];
+                        
+                        this.mediaRecorder.ondataavailable = (e) => {
+                            if (e.data.size > 0) {
+                                this.audioChunks.push(e.data);
+                            }
+                        };
+                        
+                        this.mediaRecorder.start();
+                        this.isRecording = true;
+                        
+                        btn.innerHTML = '<i class="fas fa-stop mr-2"></i>Stop Recording';
+                        btn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+                        btn.classList.add('bg-red-600', 'hover:bg-red-700');
+                        timeDisplay.classList.remove('hidden');
+                        
+                        let seconds = 0;
+                        this.recordingInterval = setInterval(() => {
+                            seconds++;
+                            const mins = Math.floor(seconds / 60);
+                            const secs = seconds % 60;
+                            timeDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                        }, 1000);
+                        
+                    } catch (err) {
+                        alert('Could not access microphone');
+                        console.error(err);
+                    }
+                } else {
+                    this.mediaRecorder.stop();
+                    this.isRecording = false;
+                    clearInterval(this.recordingInterval);
+                    
+                    btn.innerHTML = '<i class="fas fa-microphone mr-2"></i>Start Recording';
+                    btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    btn.classList.add('bg-purple-600', 'hover:bg-purple-700');
+                    
+                    // Create blob from recordings
+                    this.uploadedFile = new Blob(this.audioChunks, { type: 'audio/webm' });
+                }
+            },
+            
+            async analyzeAudio() {
+                if (!this.uploadedFile) {
+                    alert('Please upload or record audio first');
+                    return;
+                }
+                
+                const btn = document.getElementById('analyzeBtn');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Analyzing...';
+                btn.disabled = true;
+                
+                // Simulate analysis
+                await new Promise(resolve => setTimeout(resolve, 2500));
+                
+                document.getElementById('resultsPanel').classList.remove('hidden');
+                this.drawSpectrogram();
+                
+                btn.innerHTML = '<i class="fas fa-fingerprint mr-2"></i>Generate Audio Fingerprint';
+                btn.disabled = false;
+            },
+            
+            async analyzeUrlAudio() {
+                const url = document.getElementById('audioUrl').value;
+                if (!url) {
+                    alert('Please enter a valid URL');
+                    return;
+                }
+                
+                const btn = document.getElementById('analyzeUrlBtn');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
+                btn.disabled = true;
+                
+                // Simulate URL analysis
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                document.getElementById('resultsPanel').classList.remove('hidden');
+                this.drawSpectrogram();
+                
+                btn.innerHTML = '<i class="fas fa-search mr-2"></i>Analyze';
+                btn.disabled = false;
+            },
+            
+            drawSpectrogram() {
+                const canvas = document.getElementById('spectrogramCanvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth * 2;
+                canvas.height = canvas.offsetHeight * 2;
+                
+                // Draw spectrogram visualization
+                const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+                gradient.addColorStop(0, '#1e3a5f');
+                gradient.addColorStop(0.25, '#2d5a87');
+                gradient.addColorStop(0.5, '#4a90a4');
+                gradient.addColorStop(0.75, '#7ec8e3');
+                gradient.addColorStop(1, '#d4a5a5');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Add some random patterns to simulate audio
+                for (let i = 0; i < 1000; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const size = Math.random() * 3;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.3})`;
+                    ctx.fillRect(x, y, size, size);
+                }
+            },
+            
+            formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            AudioFingerprinting.init();
+        });
+    </script>
+
+<script>
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+}
+</script>
+</body>
+</html>

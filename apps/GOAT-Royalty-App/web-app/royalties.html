@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 Royalties Management | GOAT Royalty App</title>
+    <link rel="stylesheet" href="css/goat-theme.css">
+    <link rel="stylesheet" href="css/goat-brand.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: rgba(212, 160, 60, 0.1);
+            border: 2px solid #d4a03c;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            color: #d4a03c;
+            font-weight: bold;
+        }
+        .royalty-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .royalty-table th, .royalty-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(212, 160, 60, 0.3);
+        }
+        .royalty-table th {
+            background: rgba(212, 160, 60, 0.2);
+            color: #d4a03c;
+        }
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        .status-approved { background: #28a745; color: white; }
+        .status-pending { background: #ffc107; color: black; }
+        .status-paid { background: #17a2b8; color: white; }
+        .status-disputed { background: #dc3545; color: white; }
+        .status-cancelled { background: #6c757d; color: white; }
+        .royalty-form {
+            background: rgba(212, 160, 60, 0.1);
+            border: 2px solid #d4a03c;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        .royalty-form input, .royalty-form select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #d4a03c;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.5);
+            color: #d4a03c;
+        }
+        .royalty-form button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #d4a03c, #b8860b);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .royalty-form button:hover {
+            transform: scale(1.02);
+        }
+        .source-breakdown {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .source-card {
+            background: rgba(212, 160, 60, 0.1);
+            border: 1px solid #d4a03c;
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 150px;
+        }
+    </style>
+    <script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="goat-bg"></div>
+    <div class="goat-bg-overlay"></div>
+
+    <nav class="top-nav">
+        <a href="index.html" class="logo">
+            <img src="money-penny-logo.png" alt="Ms. Money Penny" class="nav-logo-mp">
+            <img src="goat-logo.png" alt="GOAT" class="nav-logo-goat">
+            <span>Ms. Money Penny</span>
+            <span class="crown-badge">👑 GOAT</span>
+        </a>
+    </nav>
+
+    <div class="container" style="max-width: 1400px; margin: 40px auto; padding: 20px;">
+        <h1 style="text-align: center; color: #d4a03c; font-size: 3em;">💰 Royalties Management</h1>
+        <p style="text-align: center; color: #d4a03c; margin-bottom: 30px;">Track and manage all royalty payments</p>
+
+        <!-- Royalty Statistics -->
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-value">$<span id="totalRoyalties">0.00</span></div>
+                <div>Total Royalties</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">$<span id="totalPending">0.00</span></div>
+                <div>Pending Approval</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">$<span id="totalPaid">0.00</span></div>
+                <div>Paid Royalties</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="royaltyCount">0</div>
+                <div>Total Records</div>
+            </div>
+        </div>
+
+        <!-- Source Breakdown -->
+        <div style="margin: 30px 0;">
+            <h3 style="color: #d4a03c; margin-bottom: 15px;">Revenue by Source</h3>
+            <div class="source-breakdown" id="sourceBreakdown">
+                <div class="source-card">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Create New Royalty -->
+        <div class="royalty-form">
+            <h2 style="color: #d4a03c; margin-bottom: 20px;">Create Royalty Record</h2>
+            <form id="royaltyForm">
+                <label>Artist</label>
+                <select id="artistSelect" required>
+                    <option value="">Select Artist</option>
+                </select>
+                
+                <label>Work Title</label>
+                <input type="text" id="workTitle" placeholder="Song/Album name" required>
+                
+                <label>Work Type</label>
+                <select id="workType" required>
+                    <option value="song">Song</option>
+                    <option value="album">Album</option>
+                    <option value="video">Video</option>
+                    <option value="book">Book</option>
+                    <option value="software">Software</option>
+                    <option value="other">Other</option>
+                </select>
+                
+                <label>Source</label>
+                <select id="source" required>
+                    <option value="spotify">Spotify</option>
+                    <option value="apple">Apple Music</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="amazon">Amazon Music</option>
+                    <option value="physical">Physical Sales</option>
+                    <option value="digital">Digital Sales</option>
+                    <option value="other">Other</option>
+                </select>
+                
+                <label>Royalty Rate (%)</label>
+                <input type="number" id="royaltyRate" placeholder="Royalty percentage" required min="0" max="100" step="0.1">
+                
+                <label>Amount ($)</label>
+                <input type="number" id="royaltyAmount" placeholder="Royalty amount in USD" required min="0.01" step="0.01">
+                
+                <label>Period Start</label>
+                <input type="date" id="periodStart" required>
+                
+                <label>Period End</label>
+                <input type="date" id="periodEnd" required>
+                
+                <label>Units Sold</label>
+                <input type="number" id="unitsSold" placeholder="Number of units sold" min="0">
+                
+                <label>Streams</label>
+                <input type="number" id="streams" placeholder="Number of streams" min="0">
+                
+                <label>Downloads</label>
+                <input type="number" id="downloads" placeholder="Number of downloads" min="0">
+                
+                <label>Notes</label>
+                <input type="text" id="royaltyNotes" placeholder="Additional notes">
+                
+                <button type="submit">💰 Create Royalty Record</button>
+            </form>
+        </div>
+
+        <!-- Royalty History -->
+        <div style="margin-top: 40px;">
+            <h2 style="color: #d4a03c; margin-bottom: 20px;">Royalty History</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <select id="statusFilter" style="padding: 10px; border: 1px solid #d4a03c; border-radius: 8px; background: rgba(0,0,0,0.5); color: #d4a03c;">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="paid">Paid</option>
+                    <option value="disputed">Disputed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+                <select id="sourceFilter" style="padding: 10px; border: 1px solid #d4a03c; border-radius: 8px; background: rgba(0,0,0,0.5); color: #d4a03c;">
+                    <option value="">All Sources</option>
+                    <option value="spotify">Spotify</option>
+                    <option value="apple">Apple Music</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="amazon">Amazon Music</option>
+                    <option value="physical">Physical</option>
+                    <option value="digital">Digital</option>
+                    <option value="other">Other</option>
+                </select>
+                <select id="artistFilter" style="padding: 10px; border: 1px solid #d4a03c; border-radius: 8px; background: rgba(0,0,0,0.5); color: #d4a03c;">
+                    <option value="">All Artists</option>
+                </select>
+                <button onclick="loadRoyalties()" style="padding: 10px 20px; background: #d4a03c; border: none; border-radius: 8px; color: white; cursor: pointer;">🔄 Refresh</button>
+            </div>
+            
+            <table class="royalty-table">
+                <thead>
+                    <tr>
+                        <th>Work Title</th>
+                        <th>Artist</th>
+                        <th>Source</th>
+                        <th>Amount</th>
+                        <th>Rate</th>
+                        <th>Units</th>
+                        <th>Period</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="royaltyTableBody">
+                    <tr>
+                        <td colspan="9" style="text-align: center;">Loading royalties...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // API calls
+        async function loadRoyalties() {
+            try {
+                const statusFilter = document.getElementById('statusFilter').value;
+                const sourceFilter = document.getElementById('sourceFilter').value;
+                const artistFilter = document.getElementById('artistFilter').value;
+                
+                let url = '/api/royalties';
+                const params = new URLSearchParams();
+                if (statusFilter) params.append('status', statusFilter);
+                if (sourceFilter) params.append('source', sourceFilter);
+                if (artistFilter) params.append('artist', artistFilter);
+                if (params.toString()) url += '?' + params.toString();
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayRoyalties(data.data.royalties);
+                    updateRoyaltyAnalytics();
+                }
+            } catch (error) {
+                console.error('Error loading royalties:', error);
+            }
+        }
+        
+        async function updateRoyaltyAnalytics() {
+            try {
+                const response = await fetch('/api/royalties/analytics');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalRoyalties').textContent = data.data.summary.totalRoyalties.toFixed(2);
+                    document.getElementById('totalPending').textContent = data.data.summary.totalPending.toFixed(2);
+                    document.getElementById('totalPaid').textContent = data.data.summary.totalPaid.toFixed(2);
+                    document.getElementById('royaltyCount').textContent = data.data.summary.count;
+                    
+                    // Update source breakdown
+                    const sourceBreakdown = document.getElementById('sourceBreakdown');
+                    sourceBreakdown.innerHTML = '';
+                    
+                    const sources = {
+                        spotify: { name: 'Spotify', icon: '🎵' },
+                        apple: { name: 'Apple Music', icon: '🍎' },
+                        youtube: { name: 'YouTube', icon: '▶️' },
+                        amazon: { name: 'Amazon', icon: '📦' },
+                        physical: { name: 'Physical', icon: '💿' },
+                        digital: { name: 'Digital', icon: '💾' },
+                        other: { name: 'Other', icon: '📊' }
+                    };
+                    
+                    Object.entries(data.data.bySource).forEach(([source, amount]) => {
+                        const sourceInfo = sources[source] || { name: source, icon: '📊' };
+                        const card = document.createElement('div');
+                        card.className = 'source-card';
+                        card.innerHTML = `
+                            <div style="font-size: 1.5em;">${sourceInfo.icon}</div>
+                            <div style="color: #d4a03c; font-weight: bold; margin: 5px 0;">$${amount.toFixed(2)}</div>
+                            <div style="color: #d4a03c;">${sourceInfo.name}</div>
+                        `;
+                        sourceBreakdown.appendChild(card);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+        
+        function displayRoyalties(royalties) {
+            const tbody = document.getElementById('royaltyTableBody');
+            
+            if (royalties.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No royalties found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = royalties.map(royalty => `
+                <tr>
+                    <td><strong>${royalty.workTitle}</strong></td>
+                    <td>${royalty.artist?.name || 'Unknown'}</td>
+                    <td>${getSourceLabel(royalty.source)}</td>
+                    <td>$${royalty.amount.toFixed(2)}</td>
+                    <td>${royalty.royaltyRate}%</td>
+                    <td>${royalty.salesData?.unitsSold || 0} / ${royalty.salesData?.streams || 0} streams</td>
+                    <td>${formatDate(royalty.periodStart)} - ${formatDate(royalty.periodEnd)}</td>
+                    <td><span class="status-badge status-${royalty.status}">${royalty.status.toUpperCase()}</span></td>
+                    <td>
+                        <button onclick="approveRoyalty('${royalty._id}')" ${royalty.status !== 'pending' ? 'disabled' : ''} style="padding: 5px 10px; background: #28a745; border: none; border-radius: 5px; cursor: pointer; margin-right: 5px;">✓</button>
+                        <button onclick="viewRoyalty('${royalty._id}')" style="padding: 5px 10px; background: #d4a03c; border: none; border-radius: 5px; cursor: pointer;">View</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function getSourceLabel(source) {
+            const labels = {
+                'spotify': 'Spotify',
+                'apple': 'Apple Music',
+                'youtube': 'YouTube',
+                'amazon': 'Amazon',
+                'physical': 'Physical',
+                'digital': 'Digital',
+                'other': 'Other'
+            };
+            return labels[source] || source;
+        }
+        
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString();
+        }
+        
+        // Load artists
+        async function loadArtists() {
+            try {
+                const response = await fetch('/api/artists');
+                const data = await response.json();
+                
+                if (data.success && data.data.artists) {
+                    const artistSelect = document.getElementById('artistSelect');
+                    const artistFilter = document.getElementById('artistFilter');
+                    
+                    artistSelect.innerHTML = '<option value="">Select Artist</option>';
+                    artistFilter.innerHTML = '<option value="">All Artists</option>';
+                    
+                    data.data.artists.forEach(artist => {
+                        artistSelect.innerHTML += `<option value="${artist._id}">${artist.name}</option>`;
+                        artistFilter.innerHTML += `<option value="${artist._id}">${artist.name}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading artists:', error);
+            }
+        }
+        
+        // Create royalty
+        document.getElementById('royaltyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const royaltyData = {
+                artist: document.getElementById('artistSelect').value,
+                workTitle: document.getElementById('workTitle').value,
+                workType: document.getElementById('workType').value,
+                source: document.getElementById('source').value,
+                royaltyRate: parseFloat(document.getElementById('royaltyRate').value),
+                amount: parseFloat(document.getElementById('royaltyAmount').value),
+                periodStart: document.getElementById('periodStart').value,
+                periodEnd: document.getElementById('periodEnd').value,
+                salesData: {
+                    unitsSold: parseInt(document.getElementById('unitsSold').value) || 0,
+                    streams: parseInt(document.getElementById('streams').value) || 0,
+                    downloads: parseInt(document.getElementById('downloads').value) || 0
+                },
+                notes: document.getElementById('royaltyNotes').value
+            };
+            
+            try {
+                const response = await fetch('/api/royalties', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(royaltyData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Royalty record created successfully!');
+                    document.getElementById('royaltyForm').reset();
+                    loadRoyalties();
+                } else {
+                    alert('Error creating royalty: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error creating royalty: ' + error.message);
+            }
+        });
+        
+        // Approve royalty
+        async function approveRoyalty(royaltyId) {
+            if (!confirm('Are you sure you want to approve this royalty?')) return;
+            
+            try {
+                const response = await fetch(`/api/royalties/${royaltyId}/approve`, {
+                    method: 'PUT'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Royalty approved successfully!');
+                    loadRoyalties();
+                } else {
+                    alert('Error approving royalty: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error approving royalty: ' + error.message);
+            }
+        }
+        
+        // View royalty details
+        async function viewRoyalty(royaltyId) {
+            try {
+                const response = await fetch(`/api/royalties/${royaltyId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const royalty = data.data.royalty;
+                    alert(`Royalty Details:\n\nWork: ${royalty.workTitle}\nArtist: ${royalty.artist?.name || 'Unknown'}\nAmount: $${royalty.amount.toFixed(2)}\nRate: ${royalty.royaltyRate}%\nStatus: ${royalty.status.toUpperCase()}\nSource: ${getSourceLabel(royalty.source)}\nPeriod: ${formatDate(royalty.periodStart)} - ${formatDate(royalty.periodEnd)}\nUnits Sold: ${royalty.salesData?.unitsSold || 0}\nStreams: ${royalty.salesData?.streams || 0}\nDownloads: ${royalty.salesData?.downloads || 0}\nRemaining: $${royalty.remainingAmount.toFixed(2)}\nNotes: ${royalty.notes || 'None'}`);
+                }
+            } catch (error) {
+                console.error('Error viewing royalty:', error);
+                alert('Error loading royalty details');
+            }
+        }
+        
+        // Filter change events
+        document.getElementById('statusFilter').addEventListener('change', loadRoyalties);
+        document.getElementById('sourceFilter').addEventListener('change', loadRoyalties);
+        document.getElementById('artistFilter').addEventListener('change', loadRoyalties);
+        
+        // Load on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadArtists();
+            loadRoyalties();
+            
+            // Set default dates (last month)
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth(), 0);
+            
+            document.getElementById('periodStart').valueAsDate = firstDay;
+            document.getElementById('periodEnd').valueAsDate = lastDay;
+        });
+    </script>
+</body>
+</html>
