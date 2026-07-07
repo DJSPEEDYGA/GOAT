@@ -39,10 +39,10 @@ engine.on(s=>{focus=s.focus; spike=s.spike;});
 let alt=500, dist=0, scroll=0, crashed=false, crashT=0;
 const altEl=document.getElementById('alt'), distEl=document.getElementById('dist'), msg=document.getElementById('msg');
 
-const clouds=[]; for(let i=0;i<12;i++) clouds.push({x:Math.random()*2000,y:Math.random()*0.6,s:40+Math.random()*60});
+const clouds=[]; for(let i=0;i<7;i++) clouds.push({x:Math.random()*2200,y:Math.random()*0.55,s:260+Math.random()*260,spd:0.35+Math.random()*0.35,sprite:1+(i%2)});
 
 const IMG={};
-[['bg','assets/bg-sky.jpg?v=2'],['jet','assets/jet.png?v=3']]
+[['bg','assets/bg-sky.jpg?v=2'],['jet','assets/jet.png?v=3'],['cloud1','assets/cloud1.png?v=1'],['cloud2','assets/cloud2.png?v=1']]
   .forEach(([k,src])=>{const im=new Image(); im.src=src; IMG[k]=im;});
 
 function update(dt){
@@ -86,12 +86,19 @@ function draw(t){
   const groundY = H - 40 - (alt/3000)*(H*1.4);
   if (groundY < H+50){ cx.fillStyle='#123d22'; cx.fillRect(0,Math.max(groundY,H-60),W,H); }
 
-  // Clouds parallax
-  cx.fillStyle='rgba(255,255,255,0.75)';
+  // Clouds parallax (real photographic cutouts)
   clouds.forEach(c=>{
-    const x=((c.x - scroll*0.5) % (W+300)+ (W+300))% (W+300) -150;
-    const y=H*0.15 + c.y*H*0.5 + (alt/3000)*H*0.2;
-    cx.beginPath(); cx.arc(x,y,c.s*0.5,0,7); cx.arc(x+c.s*0.5,y-10,c.s*0.4,0,7); cx.arc(x+c.s,y,c.s*0.45,0,7); cx.fill();
+    const img=IMG['cloud'+c.sprite];
+    const span=W+c.s+400;
+    const x=((c.x - scroll*c.spd) % span + span)% span -c.s-200;
+    const y=H*0.1 + c.y*H*0.5 + (alt/3000)*H*0.2;
+    if (img && img.complete && img.naturalWidth){
+      const cw=c.s, ch=cw*img.naturalHeight/img.naturalWidth;
+      cx.globalAlpha=0.9; cx.drawImage(img, x, y, cw, ch); cx.globalAlpha=1;
+    } else {
+      cx.fillStyle='rgba(255,255,255,0.75)';
+      cx.beginPath(); cx.arc(x,y,c.s*0.12,0,7); cx.arc(x+c.s*0.12,y-10,c.s*0.1,0,7); cx.fill();
+    }
   });
 
   // Jet
