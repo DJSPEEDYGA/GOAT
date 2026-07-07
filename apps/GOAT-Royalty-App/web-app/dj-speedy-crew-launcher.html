@@ -292,7 +292,7 @@ body > * { position:relative; z-index:1; }
     <div class="header-actions">
       <button class="action-btn" onclick="launchAll()">⚡ All Agents</button>
       <button class="action-btn" onclick="window.open('http://127.0.0.1:8090/waka-crew-launcher.html','_blank')">🎤 Waka's View</button>
-      <button class="action-btn red" onclick="window.open('http://127.0.0.1:8090/agents-brain.html','_blank')">🧠 Brain</button>
+      <button class="action-btn red" onclick="window.open('http://127.0.0.1:8090/agents-brain-3d.html','_blank')">🧠 Brain 3D</button>
     </div>
   </div>
 </header>
@@ -368,12 +368,16 @@ body > * { position:relative; z-index:1; }
       <div class="section-header">
         <div class="section-accent"></div>
         <span class="section-label">Agent Brain — Live Neural Network</span>
-        <button class="brain-overlay-btn" style="position:static;margin-left:auto;" onclick="window.open('http://127.0.0.1:8090/agents-brain.html','_blank')">⛶ Full Screen</button>
+        <div style="display:flex;gap:8px;margin-left:auto;align-items:center;">
+          <button class="brain-overlay-btn" style="position:static;" onclick="toggleBrainMode()">🔄 Switch to 3D</button>
+          <button class="brain-overlay-btn" style="position:static;" onclick="window.open('http://127.0.0.1:8090/agents-brain-3d.html','_blank')">⛶ 3D Fullscreen</button>
+          <button class="brain-overlay-btn" style="position:static;" onclick="window.open('http://127.0.0.1:8090/agents-brain.html','_blank')">⛶ 2D Fullscreen</button>
+        </div>
       </div>
       <div class="brain-embed">
-        <iframe id="brainFrame" src="http://127.0.0.1:8090/agents-brain.html"
+        <iframe id="brainFrame" src="http://127.0.0.1:8090/agents-brain-3d.html"
           frameborder="0" allowfullscreen></iframe>
-        <button class="brain-overlay-btn" onclick="document.getElementById('brainFrame').src='http://127.0.0.1:8090/agents-brain.html?v='+Date.now()">↺ Reload</button>
+        <button class="brain-overlay-btn" onclick="document.getElementById('brainFrame').src=document.getElementById('brainFrame').src.split('?')[0]+'?v='+Date.now()">↺ Reload</button>
       </div>
     </div>
 
@@ -382,7 +386,7 @@ body > * { position:relative; z-index:1; }
       <div class="section-header">
         <div class="section-accent"></div>
         <span class="section-label">Core Squad — Your Agents</span>
-        <span class="section-count">9 agents</span>
+        <span class="section-count">11 agents</span>
       </div>
       <div class="agent-grid">
 
@@ -496,32 +500,37 @@ body > * { position:relative; z-index:1; }
           </div>
         </div>
 
-      </div>
-    </div>
+        <!-- HANNAH MILLER — AMIGO ALLEY WEB KEEPER -->
+        <div class="agent-card" style="--accent-color:#f97316;" onclick="launch('http://127.0.0.1:8090/hannah-miller-launcher.html','Hannah Miller')">
+          <div class="card-top">
+            <div class="card-icon">🌎</div>
+            <div class="card-info"><div class="card-name">Hannah Miller</div><div class="card-codename">AMIGO — Amigo Alley Web Keeper</div></div>
+          </div>
+          <div class="card-role">Manages Amigo Alley — the Latin crossover project web presence. Cultural bridge, web keeper.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/hannah-miller-launcher.html','Hannah Miller')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('Hannah Miller — AMIGO KEEPER')">App</button>
+          </div>
+        </div>
 
-    <!-- STUDIO CREW -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-accent" style="background:#2ecc71;"></div>
-        <span class="section-label">Studio Crew</span>
-        <span class="section-count">2 agents</span>
-      </div>
-      <div class="agent-grid">
+        <!-- GONBRAZY — STUDIO BOSS -->
         <div class="agent-card" style="--accent-color:#2ecc71;" onclick="launch('http://127.0.0.1:8090/gonbrazy-launcher.html','GONBRAZY')">
           <div class="card-top">
             <div class="card-icon">🎛️</div>
-            <div class="card-info"><div class="card-name">GONBRAZY</div><div class="card-codename">Studio Boss</div></div>
+            <div class="card-info"><div class="card-name">GONBRAZY</div><div class="card-codename">THE STUDIO BOSS</div></div>
           </div>
-          <div class="card-role">Mixing, mastering, session boss. Hard Liquor / Backroad Baptism.</div>
+          <div class="card-role">Mixing, mastering, session boss. Hard Liquor / Backroad Baptism. The C Room sessions.</div>
           <div class="card-actions">
             <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/gonbrazy-launcher.html','GONBRAZY')">Open</button>
             <button class="card-btn" onclick="event.stopPropagation();openApp('GONBRAZY — STUDIO BOSS')">App</button>
           </div>
         </div>
+
+        <!-- WOOH DA KID — THE GANGSTA NERD -->
         <div class="agent-card" style="--accent-color:#f97316;" onclick="launch('http://127.0.0.1:8090/wooh-da-kid-launcher.html','Wooh Da Kid')">
           <div class="card-top">
             <div class="card-icon">🎹</div>
-            <div class="card-info"><div class="card-name">Wooh Da Kid</div><div class="card-codename">Tony Starks — Gangsta Nerd</div></div>
+            <div class="card-info"><div class="card-name">Wooh Da Kid</div><div class="card-codename">Tony Starks — THE GANGSTA NERD</div></div>
           </div>
           <div class="card-role">Beat maestro, your personal production buddy, studio manager & tech guru.</div>
           <div class="card-actions">
@@ -529,6 +538,138 @@ body > * { position:relative; z-index:1; }
             <button class="card-btn" onclick="event.stopPropagation();openApp('Wooh Da Kid — TONY STARKS')">App</button>
           </div>
         </div>
+
+      </div>
+    </div>
+
+    <!-- EXPANDED AGENTS — 011 through 014 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-accent" style="background:#a855f7;"></div>
+        <span class="section-label">Expanded Agents — 011 through 014</span>
+        <span class="section-count">4 agents</span>
+      </div>
+      <div class="agent-grid">
+
+        <!-- LEGAL EAGLE — 011 -->
+        <div class="agent-card" style="--accent-color:#58a6ff;" onclick="launch('http://127.0.0.1:8090/legal-eagle-launcher.html','Legal Eagle')">
+          <div class="card-top">
+            <div class="card-icon">⚖️</div>
+            <div class="card-info"><div class="card-name">Legal Eagle</div><div class="card-codename">THE COUNSELOR · Music Law</div></div>
+            <span class="card-num">011</span>
+          </div>
+          <div class="card-role">Music law, contract review, IP protection, $3.3B lawsuit position. Protects the empire at all times.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/legal-eagle-launcher.html','Legal Eagle')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('Legal Eagle — THE COUNSELOR')">App</button>
+          </div>
+        </div>
+
+        <!-- A&R SCOUT — 012 -->
+        <div class="agent-card" style="--accent-color:#a855f7;" onclick="launch('http://127.0.0.1:8090/ar-scout-launcher.html','A&R Scout')">
+          <div class="card-top">
+            <div class="card-icon">👁️</div>
+            <div class="card-info"><div class="card-name">A&R Scout</div><div class="card-codename">THE EYE · Talent & Trends</div></div>
+            <span class="card-num">012</span>
+          </div>
+          <div class="card-role">Talent scouting, trend analysis, A&R intelligence. Spots what's next before everyone else.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/ar-scout-launcher.html','A&R Scout')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('AR Scout')">App</button>
+          </div>
+        </div>
+
+        <!-- CFO BRAIN — 013 -->
+        <div class="agent-card" style="--accent-color:#2ecc71;" onclick="launch('http://127.0.0.1:8090/cfo-brain-launcher.html','CFO Brain')">
+          <div class="card-top">
+            <div class="card-icon">💹</div>
+            <div class="card-info"><div class="card-name">CFO Brain</div><div class="card-codename">THE LEDGER · Finance & Royalties</div></div>
+            <span class="card-num">013</span>
+          </div>
+          <div class="card-role">Financial intelligence, royalty tracking, revenue optimization. Knows where every dollar is.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/cfo-brain-launcher.html','CFO Brain')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('CFO Brain')">App</button>
+          </div>
+        </div>
+
+        <!-- AUTOPILOT — 014 -->
+        <div class="agent-card" style="--accent-color:#14b8a6;" onclick="launch('http://127.0.0.1:8090/autopilot-launcher.html','Autopilot')">
+          <div class="card-top">
+            <div class="card-icon">🤖</div>
+            <div class="card-info"><div class="card-name">Autopilot</div><div class="card-codename">THE MACHINE · Multi-Agent Orchestration</div></div>
+            <span class="card-num">014</span>
+          </div>
+          <div class="card-role">Coordinates and orchestrates all 15 agents. Runs missions autonomously when Speedy is away.</div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="event.stopPropagation();launch('http://127.0.0.1:8090/autopilot-launcher.html','Autopilot')">Open</button>
+            <button class="card-btn" onclick="event.stopPropagation();openApp('Autopilot')">App</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DR. DEVIN STRATEGY + SIR CODEX INFRA — side by side -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-accent" style="background:#00d4aa;"></div>
+        <span class="section-label">Command Panels</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px;">
+
+        <!-- DR. DEVIN STRATEGY PANEL -->
+        <div style="background:var(--bg-card);border:1px solid rgba(0,212,170,0.25);border-radius:12px;padding:18px;">
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#00d4aa;margin-bottom:4px;">🩺 Dr. Devin — Strategy Panel</div>
+          <div style="font-size:10px;color:var(--fg-dim);margin-bottom:12px;">Agent 007 · WHAT'S UP DOC · Chief AI Strategist</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <button class="action-btn" style="text-align:left;font-size:11px;padding:7px 12px;" onclick="launch('http://127.0.0.1:8090/dr-devin.html','Dr. Devin')">🩺 Open Dr. Devin Launcher</button>
+            <button class="action-btn" style="text-align:left;font-size:11px;padding:7px 12px;border-color:rgba(0,212,170,0.3);color:#00d4aa;" onclick="window.open('http://127.0.0.1:5500/chat?agent=devin&msg=Give+me+a+morning+briefing+empire+status+active+projects+priority+actions','_blank')">📋 Morning Briefing</button>
+            <button class="action-btn" style="text-align:left;font-size:11px;padding:7px 12px;border-color:rgba(0,212,170,0.3);color:#00d4aa;" onclick="window.open('http://127.0.0.1:5500/chat?agent=devin&msg=3.3B+lawsuit+status+and+next+strategic+moves','_blank')">⚖️ $3.3B Lawsuit Strategy</button>
+            <button class="action-btn" style="text-align:left;font-size:11px;padding:7px 12px;border-color:rgba(0,212,170,0.3);color:#00d4aa;" onclick="window.open('http://127.0.0.1:5500/chat?agent=devin&msg=Full+agent+network+status+check','_blank')">🤖 Agent Network Check</button>
+            <button class="action-btn" style="text-align:left;font-size:11px;padding:7px 12px;border-color:rgba(0,212,170,0.3);color:#00d4aa;" onclick="window.open('http://127.0.0.1:5500/chat?agent=devin&msg=90+day+roadmap+GOAT+Royalty+App','_blank')">🗺️ 90-Day Roadmap</button>
+          </div>
+        </div>
+
+        <!-- SIR CODEX INFRASTRUCTURE PANEL -->
+        <div style="background:var(--bg-card);border:1px solid rgba(88,166,255,0.25);border-radius:12px;padding:18px;">
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#58a6ff;margin-bottom:4px;">🛡️ Sir Codex — Infrastructure Panel</div>
+          <div style="font-size:10px;color:var(--fg-dim);margin-bottom:12px;">Agent 006 · SENTINEL · Chief Technical Architect</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <button class="action-btn" style="text-align:left;font-size:11px;padding:7px 12px;" onclick="launch('http://127.0.0.1:8090/sir-codex-launcher.html','Sir Codex')">🛡️ Open Sir Codex Launcher</button>
+            <button class="action-btn" style="text-align:left;font-size:11px;padding:7px 12px;border-color:rgba(88,166,255,0.3);color:#58a6ff;" onclick="window.open('http://127.0.0.1:5500/chat?agent=codex&msg=Full+system+audit+server+health+endpoint+status+model+availability','_blank')">🔍 Full System Audit</button>
+            <button class="action-btn" style="text-align:left;font-size:11px;padding:7px 12px;border-color:rgba(88,166,255,0.3);color:#58a6ff;" onclick="window.open('http://127.0.0.1:5500/chat?agent=codex&msg=GOAT+Vault+Protocol+status+backup+nodes+sync+security','_blank')">🔐 Vault Protocol Check</button>
+            <button class="action-btn" style="text-align:left;font-size:11px;padding:7px 12px;border-color:rgba(88,166,255,0.3);color:#58a6ff;" onclick="window.open('http://127.0.0.1:5500/chat?agent=codex&msg=What+Ollama+models+are+loaded+56+model+pool+status','_blank')">🤖 Ollama Model Pool</button>
+            <button class="action-btn" style="text-align:left;font-size:11px;padding:7px 12px;border-color:rgba(88,166,255,0.3);color:#58a6ff;" onclick="launch('http://127.0.0.1:5500/health','Intel Health')">🌐 Intel Server /health</button>
+          </div>
+        </div>
+
+        <!-- VAULT PROTOCOL STATUS -->
+        <div style="background:var(--bg-card);border:1px solid rgba(193,18,31,0.3);border-radius:12px;padding:18px;">
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--red);margin-bottom:12px;">🔐 GOAT Vault Protocol v7.0</div>
+          <div style="display:flex;flex-direction:column;gap:5px;font-size:11px;">
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span style="color:var(--fg-dim);">Code Status</span><span style="color:var(--green);font-weight:700;">LIVE SYNC</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span style="color:var(--fg-dim);">Authority</span><span style="color:var(--gold);">OG // WAKA // MONEYPENNY</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span style="color:var(--fg-dim);">Activation</span><span style="color:var(--fg);">DrawOurGoat</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span style="color:var(--fg-dim);">Boot Signal</span><span style="color:var(--fg);">"Moneypenny, are you there?"</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span style="color:var(--fg-dim);">Bonding Code</span><span style="color:var(--gold);font-weight:700;">Trident University +2</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span style="color:var(--fg-dim);">Agents Trained</span><span style="color:var(--green);font-weight:700;">15 / 15 ✓</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;"><span style="color:var(--fg-dim);">Lawsuit Protected</span><span style="color:var(--red);font-weight:700;">$3.3B</span></div>
+          </div>
+        </div>
+
+        <!-- INTEL SERVER CONTROL -->
+        <div style="background:var(--bg-card);border:1px solid rgba(212,160,60,0.2);border-radius:12px;padding:18px;">
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:8px;">🧠 Intel Server Control</div>
+          <div id="intelStatusCrew" style="font-size:11px;color:var(--fg-dim);margin-bottom:12px;">Checking...</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <button class="action-btn" style="font-size:11px;padding:7px 12px;" onclick="bootIntelServer()">🚀 Boot Intel Server (5500)</button>
+            <button class="action-btn" style="font-size:11px;padding:7px 12px;border-color:rgba(212,160,60,0.3);" onclick="launch('http://127.0.0.1:5500/health','Intel Health')">🔍 Health Check</button>
+            <button class="action-btn" style="font-size:11px;padding:7px 12px;border-color:rgba(255,255,255,0.1);color:var(--fg-dim);" onclick="launch('http://127.0.0.1:5500/brain/agents','Agent List')">📋 Agent List (/brain/agents)</button>
+            <div style="margin-top:4px;font-size:10px;color:rgba(255,255,255,0.18);font-family:var(--font-mono);">cd goat-intel-server && python3 goat_intel.py</div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -619,15 +760,37 @@ function openApp(appName) {
   }).catch(() => log('Could not open ' + appName, 'warn'));
 }
 
+let _brainIs3D = true;
+function toggleBrainMode() {
+  const frame = document.getElementById('brainFrame');
+  const btn = document.querySelector('[onclick="toggleBrainMode()"]');
+  if (_brainIs3D) {
+    frame.src = 'http://127.0.0.1:8090/agents-brain.html';
+    if (btn) btn.textContent = '🔄 Switch to 3D';
+    _brainIs3D = false;
+    log('Brain switched to 2D view', 'ok');
+  } else {
+    frame.src = 'http://127.0.0.1:8090/agents-brain-3d.html';
+    if (btn) btn.textContent = '🔄 Switch to 2D';
+    _brainIs3D = true;
+    log('Brain switched to 3D view', 'ok');
+  }
+}
+
 function launchAll() {
   log('Launching all core agents...', 'ok');
   const agents = [
     {name:'Ms. Money Penny', url:'http://127.0.0.1:8090/money-penny-launcher.html'},
     {name:'THE GOAT',        url:'http://127.0.0.1:8090/the-goat-launcher.html'},
     {name:'Master Oscar',   url:'http://127.0.0.1:8090/master-oscar-launcher.html'},
+    {name:'Ms. Vanessa',    url:'http://127.0.0.1:8090/vanessa-launcher.html'},
+    {name:'Nexus',          url:'http://127.0.0.1:8090/nexus-launcher.html'},
     {name:'Lexi',           url:'http://127.0.0.1:8090/lexi-launcher.html'},
-    {name:'GONBRAZY',       url:'http://127.0.0.1:8090/gonbrazy-launcher.html'},
+    {name:'Sir Codex',      url:'http://127.0.0.1:8090/sir-codex-launcher.html'},
     {name:'Dr. Devin',      url:'http://127.0.0.1:8090/dr-devin.html'},
+    {name:'GONBRAZY',       url:'http://127.0.0.1:8090/gonbrazy-launcher.html'},
+    {name:'Wooh Da Kid',    url:'http://127.0.0.1:8090/wooh-da-kid-launcher.html'},
+    {name:'Hannah Miller',  url:'http://127.0.0.1:8090/hannah-miller-launcher.html'},
   ];
   agents.forEach((a,i) => setTimeout(() => { window.open(a.url,'_blank'); log('Opened '+a.name,'ok'); }, i*350));
 }
@@ -666,8 +829,54 @@ async function checkServices() {
   } catch(e) {}
 }
 
+async function bootIntelServer() {
+  log('Booting Intel Server on :5500...', 'warn');
+  const el = document.getElementById('intelStatusCrew');
+  if (el) el.textContent = 'Booting...';
+  try {
+    await fetch('http://127.0.0.1:5500/health', {signal: AbortSignal.timeout(500)});
+    log('Intel Server already running', 'ok');
+    if (el) el.textContent = '✅ Already online — http://127.0.0.1:5500';
+    return;
+  } catch(e) {}
+  try {
+    await fetch('/api/run', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({command:'cd /Users/be100radio/GOAT-Royalty-App/goat-intel-server && nohup python3 goat_intel.py >> /tmp/goat-intel.log 2>&1 &'}),
+      signal: AbortSignal.timeout(4000)
+    });
+  } catch(e) {
+    log('Cannot auto-boot from browser — run: cd goat-intel-server && python3 goat_intel.py', 'warn');
+  }
+  setTimeout(async () => {
+    try {
+      const r = await fetch('http://127.0.0.1:5500/health', {signal: AbortSignal.timeout(2500)});
+      if (r.ok || r.status < 500) {
+        log('Intel Server online', 'ok');
+        if (el) el.textContent = '✅ Intel Server ONLINE — http://127.0.0.1:5500';
+      } else throw new Error();
+    } catch(e) {
+      log('Intel Server still offline — start manually', 'warn');
+      if (el) el.textContent = '❌ Offline — start manually in terminal';
+    }
+  }, 4000);
+}
+
+async function checkIntelStatus() {
+  const el = document.getElementById('intelStatusCrew');
+  if (!el) return;
+  try {
+    const r = await fetch('http://127.0.0.1:5500/health', {signal: AbortSignal.timeout(2000)});
+    el.textContent = (r.ok || r.status < 500) ? '✅ ONLINE — http://127.0.0.1:5500' : '❌ OFFLINE — click Boot to start';
+  } catch(e) {
+    el.textContent = '❌ OFFLINE — click Boot to start';
+  }
+}
+
 window.addEventListener('load', () => {
   setTimeout(checkServices, 800);
+  setTimeout(checkIntelStatus, 1000);
+  setInterval(checkIntelStatus, 12000);
   log('DJ Speedy\'s Command Center loaded. Empire standing by.', 'ok');
 });
 </script>
