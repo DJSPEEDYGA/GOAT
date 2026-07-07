@@ -108,10 +108,28 @@ function draw(t){
   cx.fillStyle=og;
   cx.beginPath(); cx.arc(W/2,H/2,R,0,7); cx.fill();
 
+  // Orb bloom lighting the nebula around it
+  const bl=cx.createRadialGradient(W/2,H/2,R,W/2,H/2,R*2.6);
+  bl.addColorStop(0,`rgba(150,160,255,${0.10+coh*0.16})`); bl.addColorStop(1,'rgba(150,160,255,0)');
+  cx.fillStyle=bl; cx.beginPath(); cx.arc(W/2,H/2,R*2.6,0,7); cx.fill();
+
+  // Drifting energy particles orbiting the orb, denser with coherence
+  const n=8+Math.round(coh*14);
+  for(let i=0;i<n;i++){
+    const a=t/3000+i*(Math.PI*2/n), rr=R+40+Math.sin(t/900+i*1.7)*18;
+    cx.fillStyle=`rgba(190,200,255,${0.25+coh*0.45})`;
+    cx.beginPath(); cx.arc(W/2+Math.cos(a)*rr, H/2+Math.sin(a)*rr*0.8, 1.6+(i%3)*0.7, 0, 7); cx.fill();
+  }
+
   // Calm halo — brain side of the loop
   cx.strokeStyle=spike?'rgba(255,80,100,0.8)':`rgba(120,255,190,${0.2+calm/100*0.6})`;
   cx.lineWidth=6;
   cx.beginPath(); cx.arc(W/2,H/2,R+12,-Math.PI/2,-Math.PI/2+Math.PI*2*(calm/100)); cx.stroke();
+
+  // Cinematic vignette
+  const vg=cx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.45,W/2,H/2,Math.max(W,H)*0.72);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(2,4,14,0.5)');
+  cx.fillStyle=vg; cx.fillRect(0,0,W,H);
 }
 
 let last=performance.now();

@@ -101,10 +101,24 @@ function draw(t){
     }
   });
 
+  // Sun glare bloom (matches the sun baked into the sky photo)
+  const sgx=W*0.62, sgy=H*0.72 - (alt/3000)*H*0.1;
+  const sun=cx.createRadialGradient(sgx,sgy,10,sgx,sgy,W*0.22);
+  sun.addColorStop(0,'rgba(255,250,230,0.20)'); sun.addColorStop(1,'rgba(255,250,230,0)');
+  cx.fillStyle=sun; cx.fillRect(sgx-W*0.22,sgy-W*0.22,W*0.44,W*0.44);
+
   // Jet
   const px=W*0.3, py=H*0.75 - (alt/3000)*(H*0.6);
   const tilt = crashed ? 0.8 : spike ? 0.35 : focus>60 ? -0.12 : 0.1;
-  cx.save(); cx.translate(px,py); cx.rotate(tilt);
+  const bob = crashed?0:Math.sin(t/700)*4;
+  cx.save(); cx.translate(px,py+bob); cx.rotate(tilt);
+  // Engine heat shimmer / exhaust plume behind the engines
+  if (!crashed){
+    const ex=cx.createLinearGradient(-130,0,-320,0);
+    ex.addColorStop(0,'rgba(255,255,255,0.28)'); ex.addColorStop(1,'rgba(255,255,255,0)');
+    cx.fillStyle=ex; cx.beginPath();
+    cx.moveTo(-118,-2); cx.lineTo(-320,-14-Math.random()*4); cx.lineTo(-320,20+Math.random()*4); cx.lineTo(-118,12); cx.closePath(); cx.fill();
+  }
   if (IMG.jet.complete && IMG.jet.naturalWidth){
     const jw=260, jh=jw*IMG.jet.naturalHeight/IMG.jet.naturalWidth;
     if (crashed) cx.filter='grayscale(1)';
@@ -118,6 +132,13 @@ function draw(t){
   if (!crashed && focus>70){ cx.strokeStyle='rgba(255,255,255,0.5)'; cx.lineWidth=2;
     cx.beginPath(); cx.moveTo(-135,4); cx.lineTo(-215,4); cx.moveTo(-135,14); cx.lineTo(-195,14); cx.stroke(); }
   cx.restore();
+
+  // Altitude atmosphere: cooler, thinner light up high
+  cx.fillStyle=`rgba(180,205,255,${(alt/3000)*0.08})`; cx.fillRect(0,0,W,H);
+  // Cinematic vignette
+  const vg=cx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.5,W/2,H/2,Math.max(W,H)*0.75);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(10,20,40,0.35)');
+  cx.fillStyle=vg; cx.fillRect(0,0,W,H);
 
   if (crashed){ cx.fillStyle='#ff7043'; cx.font='bold 22px Segoe UI';
     cx.fillText('💥', px-10, py-20); }

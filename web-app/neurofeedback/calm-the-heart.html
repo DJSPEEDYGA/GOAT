@@ -87,12 +87,22 @@ function draw(t, dt){
     cx.fillStyle = g; cx.fillRect(0,0,W,H);
   }
 
-  // Boardwalk ground
-  cx.fillStyle = '#140a1e'; cx.fillRect(0, H*0.78, W, H*0.22);
+  // Boardwalk ground catching the sunset light
+  const gg=cx.createLinearGradient(0,H*0.78,0,H);
+  gg.addColorStop(0,`rgb(${40+warmth*50},${18+warmth*24},${34+warmth*18})`);
+  gg.addColorStop(1,'#0c0614');
+  cx.fillStyle=gg; cx.fillRect(0, H*0.78, W, H*0.22);
+  // Sky reflection sheen on the ground
+  const rf=cx.createLinearGradient(0,H*0.78,0,H*0.9);
+  rf.addColorStop(0,`rgba(255,170,90,${0.10+warmth*0.10})`); rf.addColorStop(1,'rgba(255,170,90,0)');
+  cx.fillStyle=rf; cx.fillRect(0,H*0.78,W,H*0.12);
 
-  // Warm glow scales with calm
-  cx.fillStyle = `rgba(255,200,120,${0.06+warmth*0.16})`;
-  cx.beginPath(); cx.arc(W/2, H*0.5, 220+warmth*90, 0, 7); cx.fill();
+  // Warm glow scales with calm (soft radial falloff)
+  const wr=220+warmth*90;
+  const wg=cx.createRadialGradient(W/2,H*0.5,10,W/2,H*0.5,wr);
+  wg.addColorStop(0,`rgba(255,200,120,${0.06+warmth*0.16})`); wg.addColorStop(1,'rgba(255,200,120,0)');
+  cx.fillStyle=wg;
+  cx.beginPath(); cx.arc(W/2, H*0.5, wr, 0, 7); cx.fill();
 
   const groundY = H*0.85;
   // Her (right)
@@ -113,11 +123,25 @@ function draw(t, dt){
     drawHeart(W/2, H*0.32, 40+Math.sin(t/300)*4, '#ff5c9e');
     cx.globalAlpha = 1;
   }
+
+  // Cinematic vignette
+  const vg=cx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.45,W/2,H/2,Math.max(W,H)*0.72);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(8,4,16,0.45)');
+  cx.fillStyle=vg; cx.fillRect(0,0,W,H);
 }
 
 function drawPerson(img, x, y, color, dress){
   if (img.complete && img.naturalWidth){
     const h=340, w=h*img.naturalWidth/img.naturalHeight;
+    // Soft contact shadow grounding the figure
+    const sg=cx.createRadialGradient(x,y-4,2,x,y-4,w*0.7);
+    sg.addColorStop(0,'rgba(0,0,0,0.5)'); sg.addColorStop(1,'rgba(0,0,0,0)');
+    cx.save(); cx.translate(x,y-4); cx.scale(1,0.12); cx.translate(-x,-(y-4));
+    cx.fillStyle=sg; cx.beginPath(); cx.arc(x,y-4,w*0.7,0,7); cx.fill(); cx.restore();
+    // Warm golden-hour rim light behind the figure
+    const rim=cx.createRadialGradient(x,y-h*0.55,10,x,y-h*0.55,h*0.62);
+    rim.addColorStop(0,`rgba(255,180,110,${0.05+(calm/100)*0.10})`); rim.addColorStop(1,'rgba(255,180,110,0)');
+    cx.fillStyle=rim; cx.beginPath(); cx.arc(x,y-h*0.55,h*0.62,0,7); cx.fill();
     cx.drawImage(img, x-w/2, y-h, w, h);
     return;
   }
@@ -130,6 +154,10 @@ function drawPerson(img, x, y, color, dress){
 }
 
 function drawHeart(x, y, s, color){
+  // Soft bloom around the heart
+  const hg=cx.createRadialGradient(x,y,2,x,y,s*3);
+  hg.addColorStop(0,'rgba(255,110,160,0.35)'); hg.addColorStop(1,'rgba(255,110,160,0)');
+  cx.fillStyle=hg; cx.beginPath(); cx.arc(x,y,s*3,0,7); cx.fill();
   cx.fillStyle = color;
   cx.beginPath();
   cx.moveTo(x, y+s*0.9);

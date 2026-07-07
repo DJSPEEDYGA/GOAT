@@ -69,10 +69,24 @@ function update(dt){
 function drawSprite(img,x,y,w,flash,t){
   if (!img.complete || !img.naturalWidth) return;
   const h=w*img.naturalHeight/img.naturalWidth;
+  // Soft contact shadow grounding the vehicle on the asphalt
+  const sg=cx.createRadialGradient(x,y-2,2,x,y-2,w*0.46);
+  sg.addColorStop(0,'rgba(0,0,0,0.55)'); sg.addColorStop(1,'rgba(0,0,0,0)');
+  cx.save(); cx.translate(x,y-2); cx.scale(1,0.18); cx.translate(-x,-(y-2));
+  cx.fillStyle=sg; cx.beginPath(); cx.arc(x,y-2,w*0.46,0,7); cx.fill(); cx.restore();
+  // Headlight beam throw onto the road ahead
+  const hb=cx.createLinearGradient(x+w*0.4,0,x+w*1.1,0);
+  hb.addColorStop(0,'rgba(255,240,190,0.22)'); hb.addColorStop(1,'rgba(255,240,190,0)');
+  cx.fillStyle=hb; cx.beginPath();
+  cx.moveTo(x+w*0.38,y-h*0.42); cx.lineTo(x+w*1.15,y-h*0.15); cx.lineTo(x+w*1.15,y+6); cx.lineTo(x+w*0.38,y-h*0.18); cx.closePath(); cx.fill();
   cx.drawImage(img, x-w/2, y-h, w, h);
   if (flash){ const on=Math.sin(t/80)>0;
-    cx.fillStyle=on?'rgba(255,40,60,0.8)':'rgba(40,90,255,0.8)';
-    cx.beginPath(); cx.arc(x, y-h*0.98, 9, 0, 7); cx.fill(); }
+    const col=on?'255,40,60':'40,90,255';
+    const lg=cx.createRadialGradient(x,y-h*0.98,2,x,y-h*0.98,46);
+    lg.addColorStop(0,`rgba(${col},0.9)`); lg.addColorStop(1,`rgba(${col},0)`);
+    cx.fillStyle=lg; cx.beginPath(); cx.arc(x,y-h*0.98,46,0,7); cx.fill();
+    cx.fillStyle=`rgba(${col},0.9)`;
+    cx.beginPath(); cx.arc(x, y-h*0.98, 8, 0, 7); cx.fill(); }
 }
 
 function draw(t){
@@ -97,6 +111,11 @@ function draw(t){
     cx.beginPath(); cx.moveTo(0,H*0.8); cx.lineTo(W,H*0.8); cx.stroke(); cx.setLineDash([]);
   }
 
+  // Atmospheric haze where the skyline meets the road (depth cue)
+  const hz=cx.createLinearGradient(0,H*0.52,0,H*0.66);
+  hz.addColorStop(0,'rgba(20,26,48,0)'); hz.addColorStop(0.55,'rgba(24,30,54,0.35)'); hz.addColorStop(1,'rgba(8,10,20,0)');
+  cx.fillStyle=hz; cx.fillRect(0,H*0.52,W,H*0.14);
+
   // Speed lines
   if (mph>120){ cx.strokeStyle='rgba(255,255,255,0.25)'; cx.lineWidth=2;
     for(let i=0;i<8;i++){ const y=H*0.62+((i*61)%(H*0.36)); const x=W-((roadScroll*2+i*173)%(W+200));
@@ -115,6 +134,11 @@ function draw(t){
   // Red/blue wash when heat is high
   if (heat>0.4){ const flash=Math.sin(t/90)>0;
     cx.fillStyle=flash?'rgba(255,0,60,0.07)':'rgba(0,80,255,0.07)'; cx.fillRect(0,0,W,H); }
+
+  // Cinematic vignette
+  const vg=cx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.45,W/2,H/2,Math.max(W,H)*0.72);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.42)');
+  cx.fillStyle=vg; cx.fillRect(0,0,W,H);
 }
 
 let last=performance.now();

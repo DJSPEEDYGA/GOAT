@@ -78,8 +78,23 @@ function drawGarden(t){
     g.addColorStop(1,`rgb(${10+day*60},${50+day*90},${30+day*40})`);
     cx.fillStyle=g; cx.fillRect(0,0,W,H);
   }
-  // Soil
-  cx.fillStyle='rgba(42,26,14,0.85)'; cx.fillRect(0,H*0.86,W,H*0.14);
+  // Sun shafts breaking through as calm rises
+  if (day>0.5){
+    cx.save(); cx.globalAlpha=(day-0.5)*0.5;
+    for(let i=0;i<3;i++){
+      const rx=W*(0.25+i*0.22)+Math.sin(t/4000+i)*30;
+      const ray=cx.createLinearGradient(rx,0,rx+140,H);
+      ray.addColorStop(0,'rgba(255,244,200,0.16)'); ray.addColorStop(1,'rgba(255,244,200,0)');
+      cx.fillStyle=ray;
+      cx.beginPath(); cx.moveTo(rx,0); cx.lineTo(rx+90,0); cx.lineTo(rx+240,H); cx.lineTo(rx+110,H); cx.closePath(); cx.fill();
+    }
+    cx.restore();
+  }
+
+  // Soil with depth gradient
+  const soil=cx.createLinearGradient(0,H*0.86,0,H);
+  soil.addColorStop(0,'rgba(58,38,20,0.9)'); soil.addColorStop(1,'rgba(20,12,6,0.95)');
+  cx.fillStyle=soil; cx.fillRect(0,H*0.86,W,H*0.14);
 
   // Main flower grows from center: revealed from the soil up as growth rises
   const baseX=W/2, baseY=H*0.88;
@@ -88,14 +103,32 @@ function drawGarden(t){
     const vis = 0.08 + growth*0.92;               // fraction of plant above the soil
     const srcH = IMG.flower.naturalHeight*vis;
     const sway = Math.sin(t/900)*8*growth;
+    // Contact shadow at the base of the plant
+    const ps=cx.createRadialGradient(baseX,baseY,2,baseX,baseY,fw*0.5);
+    ps.addColorStop(0,'rgba(0,0,0,0.45)'); ps.addColorStop(1,'rgba(0,0,0,0)');
+    cx.save(); cx.translate(baseX,baseY); cx.scale(1,0.12); cx.translate(-baseX,-baseY);
+    cx.fillStyle=ps; cx.beginPath(); cx.arc(baseX,baseY,fw*0.5,0,7); cx.fill(); cx.restore();
     cx.drawImage(IMG.flower, 0, IMG.flower.naturalHeight-srcH, IMG.flower.naturalWidth, srcH,
                  baseX-fw/2+sway, baseY-fullH*vis, fw, fullH*vis);
+    // Drifting pollen motes in the light
+    cx.fillStyle=`rgba(255,240,180,${0.25+day*0.35})`;
+    for(let i=0;i<14;i++){
+      const mx=(i*173+t*0.014*(10+i%5))%W, my=H*0.25+((i*97)%Math.round(H*0.55))+Math.sin(t/1200+i)*12;
+      cx.beginPath(); cx.arc(mx,my,1.4+(i%3)*0.6,0,7); cx.fill();
+    }
   } else {
     const stemH = 40 + growth*(H*0.42);
     cx.strokeStyle='#2f8f4e'; cx.lineWidth=8; cx.lineCap='round';
     cx.beginPath(); cx.moveTo(baseX,baseY);
     cx.quadraticCurveTo(baseX+Math.sin(t/900)*14, baseY-stemH*0.6, baseX, baseY-stemH); cx.stroke();
   }
+  vignette(W,H);
+}
+
+function vignette(W,H){
+  const vg=cx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.45,W/2,H/2,Math.max(W,H)*0.72);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,6,4,0.45)');
+  cx.fillStyle=vg; cx.fillRect(0,0,W,H);
 }
 
 const sparks=[];
@@ -135,6 +168,12 @@ function drawCampfire(t,dt){
   for(let i=sparks.length-1;i>=0;i--){ const s=sparks[i]; s.y+=s.vy*dt; s.x+=Math.sin(t/100+i)*0.6; s.life-=dt*0.7;
     if(s.life<=0){sparks.splice(i,1);continue;}
     cx.globalAlpha=s.life; cx.fillRect(s.x,s.y,3,3); cx.globalAlpha=1; }
+  // Firelight cast onto the ground
+  const fl=cx.createRadialGradient(W/2,H*0.8,10,W/2,H*0.8,W*0.3);
+  fl.addColorStop(0,`rgba(255,150,60,${0.08+glow*0.14})`); fl.addColorStop(1,'rgba(255,150,60,0)');
+  cx.save(); cx.translate(W/2,H*0.8); cx.scale(1,0.35); cx.translate(-W/2,-H*0.8);
+  cx.fillStyle=fl; cx.beginPath(); cx.arc(W/2,H*0.8,W*0.3,0,7); cx.fill(); cx.restore();
+  vignette(W,H);
 }
 
 let last=performance.now();
