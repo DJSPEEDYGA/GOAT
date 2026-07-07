@@ -70,7 +70,7 @@ function readMic(){
 let growth=0;  // 0..1 bloom progress (garden) ; glow (campfire uses calm directly)
 
 const IMG={};
-[['garden','assets/bg-garden.jpg?v=2'],['mountains','assets/bg-mountains.jpg?v=2'],['flower','assets/flower.png?v=2']]
+[['garden','assets/bg-garden.jpg?v=2'],['mountains','assets/bg-mountains.jpg?v=2'],['flower','assets/flower.png?v=2'],['logs','assets/campfire-logs.png?v=1']]
   .forEach(([k,src])=>{const im=new Image(); im.src=src; IMG[k]=im;});
 function update(dt){
   const rate = calm>60 ? (calm-60)/40*0.03 : calm<35 ? -0.015 : 0;
@@ -177,16 +177,33 @@ function drawCampfire(t,dt){
   hg.addColorStop(0,`rgba(255,140,40,${0.08+glow*0.26})`); hg.addColorStop(1,'rgba(255,140,40,0)');
   cx.fillStyle=hg;
   cx.beginPath(); cx.arc(W/2,H*0.7,hr,0,7); cx.fill();
-  // Logs
-  cx.fillStyle='#4a2c14';
-  cx.save(); cx.translate(W/2,H*0.78);
-  cx.rotate(0.3); cx.fillRect(-70,-9,140,18); cx.rotate(-0.6); cx.fillRect(-70,-9,140,18); cx.restore();
+  // Wood logs (photoreal teepee stack) with pulsing ember glow at the core
+  const logW=Math.min(W*0.24,260), baseY=H*0.815;
+  if (IMG.logs.complete && IMG.logs.naturalWidth){
+    const logH=logW*IMG.logs.naturalHeight/IMG.logs.naturalWidth;
+    // contact shadow under the stack
+    const lsh=cx.createRadialGradient(W/2,baseY,4,W/2,baseY,logW*0.55);
+    lsh.addColorStop(0,'rgba(0,0,0,0.5)'); lsh.addColorStop(1,'rgba(0,0,0,0)');
+    cx.save(); cx.translate(W/2,baseY); cx.scale(1,0.18); cx.translate(-W/2,-baseY);
+    cx.fillStyle=lsh; cx.beginPath(); cx.arc(W/2,baseY,logW*0.55,0,7); cx.fill(); cx.restore();
+    cx.drawImage(IMG.logs, W/2-logW/2, baseY-logH*0.92, logW, logH);
+    // flickering ember glow inside the teepee opening
+    const flick=0.75+0.25*Math.sin(t/90)+0.12*Math.sin(t/37);
+    const eg=cx.createRadialGradient(W/2,baseY-logH*0.32,2,W/2,baseY-logH*0.32,logW*0.34);
+    eg.addColorStop(0,`rgba(255,120,30,${(0.10+glow*0.22)*flick})`); eg.addColorStop(1,'rgba(255,80,20,0)');
+    cx.save(); cx.globalCompositeOperation='lighter';
+    cx.fillStyle=eg; cx.beginPath(); cx.arc(W/2,baseY-logH*0.32,logW*0.34,0,7); cx.fill(); cx.restore();
+  } else {
+    cx.fillStyle='#4a2c14';
+    cx.save(); cx.translate(W/2,H*0.78);
+    cx.rotate(0.3); cx.fillRect(-70,-9,140,18); cx.rotate(-0.6); cx.fillRect(-70,-9,140,18); cx.restore();
+  }
   // Volumetric flame body: additive-blended puffs rising through red→orange→yellow→white
   readMic();
   const fireLevel=Math.min(1, glow*(micOn?0.6:1) + micLevel*0.7);
   const rate=2+Math.round(fireLevel*9);
   for(let i=0;i<rate;i++){
-    flames.push({x:W/2+(Math.random()-0.5)*46, y:H*0.785,
+    flames.push({x:W/2+(Math.random()-0.5)*46, y:H*0.77,
       vx:(Math.random()-0.5)*22, vy:-(70+Math.random()*90)*(0.5+fireLevel),
       r:9+Math.random()*13, life:1, decay:1.1+Math.random()*0.7});
   }
