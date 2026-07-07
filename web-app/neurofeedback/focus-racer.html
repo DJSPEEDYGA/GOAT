@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Focus Racer — TAHS Neurofeedback</title>
+<style>
+  html,body{margin:0;height:100%;background:#050508;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;}
+  #game{display:block;width:100vw;height:100vh;}
+  #hud{position:fixed;top:14px;left:14px;z-index:10;}
+  #back{position:fixed;top:14px;right:14px;z-index:10;color:#ffd700;text-decoration:none;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:700;}
+  #speedo{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10;color:#ffd700;
+    background:rgba(10,10,14,.88);border:1px solid rgba(255,215,0,.4);border-radius:12px;
+    padding:8px 20px;font-size:18px;font-weight:900;letter-spacing:1px;}
+  #msg{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:10;color:#fff;
+    background:rgba(10,10,14,.88);border:1px solid rgba(255,215,0,.4);border-radius:12px;
+    padding:10px 22px;font-size:15px;max-width:700px;text-align:center;}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"></div>
+<a id="back" href="index.html">← Game Hub</a>
+<div id="speedo">🏎️ <span id="mph">0</span> MPH</div>
+<div id="msg">Sustained focus builds speed. Spike into stress and the police get on your tail!</div>
+
+<script src="signal-engine.js"></script>
+<script>
+Neurofeedback.injectStyles();
+const engine = Neurofeedback.mountSignalPanel(document.getElementById('hud'), {metric:'focus'});
+
+const cv=document.getElementById('game'), cx=cv.getContext('2d');
+function fit(){cv.width=innerWidth;cv.height=innerHeight;} fit(); addEventListener('resize',fit);
+
+let focus=50, spike=false;
+engine.on(s=>{focus=s.focus; spike=s.spike;});
+
+let mph=0, roadScroll=0, heat=0; // heat: 0..1 police pressure
+const mphEl=document.getElementById('mph'), msg=document.getElementById('msg');
+
+function update(dt){
+  const targetSpeed = focus*2.4;                    // focus 100 -> 240 mph
+  mph += (targetSpeed - mph) * dt * (mph<targetSpeed?0.5:1.2);
+  if (spike) heat = Math.min(1, heat + dt*1.2);     // spike summons police
+  else if (focus>65) heat = Math.max(0, heat - dt*0.25);
+  if (heat>0.2) mph = Math.min(mph, 150 - heat*70); // police pressure slows you
+  mph = Math.max(0, mph);
+  roadScroll += mph*dt*3;
+  mphEl.textContent = Math.round(mph);
+  msg.textContent = heat>0.5 ? '🚨 Police on your tail! Steady your focus to shake them.'
+    : spike ? '⚡ Stress spike — sirens behind you!'
+    : focus>75 ? 'Full send — the exotic is flying. Stay locked in.'
+    : focus>45 ? 'Building speed… deepen the focus.'
+    : 'Drifting off… the engine bogs down. Refocus.';
+}
+
+function drawCar(x,y,scale,body,accent,isPolice,t){
+  cx.save(); cx.translate(x,y); cx.scale(scale,scale);
+  // Low wide supercar silhouette
+  cx.fillStyle=body;
+  cx.beginPath();
+  cx.moveTo(-70,10); cx.lineTo(-62,-8); cx.lineTo(-30,-16); cx.lineTo(-8,-26);
+  cx.lineTo(34,-26); cx.lineTo(58,-12); cx.lineTo(70,8); cx.lineTo(70,14);
+  cx.lineTo(-70,14); cx.closePath(); cx.fill();
+  cx.fillStyle=accent;                                    // canopy
+  cx.beginPath(); cx.moveTo(-6,-25); cx.lineTo(30,-25); cx.lineTo(40,-13); cx.lineTo(-16,-13); cx.closePath(); cx.fill();
+  cx.fillStyle='#111';                                    // wheels
+  cx.beginPath(); cx.arc(-40,14,13,0,7); cx.arc(42,14,13,0,7); cx.fill();
+  cx.fillStyle='#444';
+  cx.beginPath(); cx.arc(-40,14,6,0,7); cx.arc(42,14,6,0,7); cx.fill();
+  if (isPolice){
+    const flash=Math.sin(t/80)>0;
+    cx.fillStyle=flash?'#ff3040':'#2060ff';
+    cx.fillRect(-2,-34,18,7);
+  }
+  cx.restore();
+}
+
+function draw(t){
+  const W=cv.width,H=cv.height;
+  // Night city sky
+  const g=cx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#0a0a18'); g.addColorStop(1,'#16162a');
+  cx.fillStyle=g; cx.fillRect(0,0,W,H*0.6);
+  // City skyline
+  cx.fillStyle='#0e0e20';
+  for(let i=0;i<14;i++){ const bx=(i*137)%W, bh=60+((i*89)%140); cx.fillRect(bx,H*0.6-bh,70,bh); }
+  cx.fillStyle='rgba(255,220,120,0.5)';
+  for(let i=0;i<40;i++){ cx.fillRect(((i*97)%W)+8, H*0.6-30-((i*53)%120), 4,4); }
+
+  // Road
+  cx.fillStyle='#1c1c22'; cx.fillRect(0,H*0.6,W,H*0.4);
+  cx.strokeStyle='#ffd700'; cx.lineWidth=5; cx.setLineDash([50,45]);
+  cx.lineDashOffset = -roadScroll % 95;
+  cx.beginPath(); cx.moveTo(0,H*0.8); cx.lineTo(W,H*0.8); cx.stroke(); cx.setLineDash([]);
+
+  // Speed lines
+  if (mph>120){ cx.strokeStyle='rgba(255,255,255,0.25)'; cx.lineWidth=2;
+    for(let i=0;i<8;i++){ const y=H*0.62+((i*61)%(H*0.36)); const x=W-((roadScroll*2+i*173)%(W+200));
+      cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+60+mph*0.4,y); cx.stroke(); } }
+
+  // Police behind (left), pulls closer with heat
+  if (heat>0.05){ drawCar(W*0.42 - (0.35-heat*0.28)*W, H*0.75, 1.0, '#0d1b3d', '#dfe9ff', true, t); }
+
+  // Player exotic
+  const shake = spike ? Math.sin(t/30)*3 : 0;
+  drawCar(W*0.55, H*0.75+shake, 1.25, '#c8102e', '#1a1a1a', false, t);
+  // Exhaust flame at high focus
+  if (mph>180){ cx.fillStyle=`rgba(80,160,255,${0.5+Math.sin(t/40)*0.3})`;
+    cx.beginPath(); cx.moveTo(W*0.55-88,H*0.75+8); cx.lineTo(W*0.55-120-Math.random()*25,H*0.75+11); cx.lineTo(W*0.55-88,H*0.75+16); cx.closePath(); cx.fill(); }
+
+  // Red/blue wash when heat is high
+  if (heat>0.4){ const flash=Math.sin(t/90)>0;
+    cx.fillStyle=flash?'rgba(255,0,60,0.07)':'rgba(0,80,255,0.07)'; cx.fillRect(0,0,W,H); }
+}
+
+let last=performance.now();
+(function loop(t){ const dt=Math.min(0.05,(t-last)/1000); last=t; update(dt); draw(t); requestAnimationFrame(loop); })(last);
+</script>
+</body>
+</html>

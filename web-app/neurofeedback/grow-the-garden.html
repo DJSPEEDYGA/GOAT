@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grow the Garden — TAHS Neurofeedback</title>
+<style>
+  html,body{margin:0;height:100%;background:#04120a;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;}
+  #game{display:block;width:100vw;height:100vh;}
+  #hud{position:fixed;top:14px;left:14px;z-index:10;}
+  #back{position:fixed;top:14px;right:14px;z-index:10;color:#ffd700;text-decoration:none;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:700;}
+  #toggle{position:fixed;top:64px;right:14px;z-index:10;color:#c8f7d0;cursor:pointer;
+    background:rgba(6,24,14,.85);border:1px solid rgba(120,255,160,.4);border-radius:10px;padding:8px 14px;font-weight:700;}
+  #msg{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:10;color:#eafff0;
+    background:rgba(6,24,14,.85);border:1px solid rgba(120,255,160,.4);border-radius:12px;
+    padding:10px 22px;font-size:15px;max-width:700px;text-align:center;}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"></div>
+<a id="back" href="index.html">← Game Hub</a>
+<div id="toggle">🔥 Switch to Campfire</div>
+<div id="msg">Breathe slow and stay calm — your calm is the sunlight this garden grows on.</div>
+
+<script src="signal-engine.js"></script>
+<script>
+Neurofeedback.injectStyles();
+const engine = Neurofeedback.mountSignalPanel(document.getElementById('hud'), {metric:'calm'});
+
+const cv=document.getElementById('game'), cx=cv.getContext('2d');
+function fit(){cv.width=innerWidth;cv.height=innerHeight;} fit(); addEventListener('resize',fit);
+
+let calm=50, spike=false;
+engine.on(s=>{calm=s.calm; spike=s.spike;});
+
+let mode='garden';
+const toggle=document.getElementById('toggle'), msg=document.getElementById('msg');
+toggle.onclick=()=>{ mode = mode==='garden'?'campfire':'garden';
+  toggle.textContent = mode==='garden' ? '🔥 Switch to Campfire' : '🌱 Switch to Garden'; };
+
+let growth=0;  // 0..1 bloom progress (garden) ; glow (campfire uses calm directly)
+function update(dt){
+  const rate = calm>60 ? (calm-60)/40*0.03 : calm<35 ? -0.015 : 0;
+  growth = Math.max(0, Math.min(1, growth + rate*dt*10));
+  if (mode==='garden'){
+    msg.textContent = spike ? '⚡ A gust of stress — the petals tremble. Ease back into calm.'
+      : growth>=1 ? '🌸 Full bloom! Your calm brought the whole garden to life.'
+      : calm>60 ? 'The plant is growing… gentle and steady wins.'
+      : calm<35 ? 'The garden wilts a little without your calm…'
+      : 'Hold a soft, easy calm and watch it grow.';
+  } else {
+    msg.textContent = spike ? '⚡ Stress! The fire sputters — slow your breath to bring it back.'
+      : calm>70 ? '🔥 A warm, golden fire. Perfectly tended.'
+      : calm>40 ? 'The embers glow… keep the calm coming.'
+      : 'The fire fades to embers without calm…';
+  }
+}
+
+function drawGarden(t){
+  const W=cv.width,H=cv.height;
+  const g=cx.createLinearGradient(0,0,0,H);
+  const day=calm/100;
+  g.addColorStop(0,`rgb(${20+day*100},${40+day*130},${70+day*110})`);
+  g.addColorStop(1,`rgb(${10+day*60},${50+day*90},${30+day*40})`);
+  cx.fillStyle=g; cx.fillRect(0,0,W,H);
+  // Sun
+  cx.fillStyle=`rgba(255,230,120,${0.3+day*0.7})`;
+  cx.beginPath(); cx.arc(W*0.8,H*0.2,36+day*14,0,7); cx.fill();
+  // Soil
+  cx.fillStyle='#2a1a0e'; cx.fillRect(0,H*0.82,W,H*0.18);
+
+  // Main plant grows from center
+  const baseX=W/2, baseY=H*0.82;
+  const stemH = 40 + growth*(H*0.42);
+  cx.strokeStyle='#2f8f4e'; cx.lineWidth=8; cx.lineCap='round';
+  cx.beginPath(); cx.moveTo(baseX,baseY);
+  cx.quadraticCurveTo(baseX+Math.sin(t/900)*14, baseY-stemH*0.6, baseX, baseY-stemH); cx.stroke();
+  // Leaves
+  const leaves=Math.floor(growth*6);
+  for(let i=1;i<=leaves;i++){
+    const ly=baseY - stemH*(i/7), dir=i%2?1:-1;
+    cx.fillStyle='#3fae62';
+    cx.beginPath(); cx.ellipse(baseX+dir*22, ly, 24,9, dir*0.5, 0,7); cx.fill();
+  }
+  // Bloom
+  if (growth>0.55){
+    const bs=(growth-0.55)/0.45;
+    const cxp=baseX, cyp=baseY-stemH;
+    for(let p=0;p<8;p++){ const a=p/8*Math.PI*2 + t/4000;
+      cx.fillStyle=`rgba(255,${120+bs*80},${170+bs*60},${0.85})`;
+      cx.beginPath(); cx.ellipse(cxp+Math.cos(a)*16*bs, cyp+Math.sin(a)*16*bs, 14*bs,7*bs, a, 0,7); cx.fill(); }
+    cx.fillStyle='#ffd700'; cx.beginPath(); cx.arc(cxp,cyp,8*bs,0,7); cx.fill();
+  }
+  // Background flowers appear at full growth
+  if (growth>0.85){ for(let i=0;i<10;i++){ const fx=(i*173)%W, fy=H*0.86+((i*37)%40);
+    cx.fillStyle=['#ff9ecb','#ffd700','#9f7eff'][i%3];
+    cx.beginPath(); cx.arc(fx,fy,6,0,7); cx.fill(); } }
+}
+
+const sparks=[];
+function drawCampfire(t,dt){
+  const W=cv.width,H=cv.height;
+  cx.fillStyle='#080604'; cx.fillRect(0,0,W,H);
+  // Stars
+  cx.fillStyle='rgba(255,255,255,0.7)';
+  for(let i=0;i<60;i++){ cx.fillRect((i*97)%W, (i*61)%(H*0.5), 2,2); }
+  const glow=calm/100;
+  // Fire glow halo
+  cx.fillStyle=`rgba(255,140,40,${0.05+glow*0.22})`;
+  cx.beginPath(); cx.arc(W/2,H*0.7,160+glow*140,0,7); cx.fill();
+  // Logs
+  cx.fillStyle='#4a2c14';
+  cx.save(); cx.translate(W/2,H*0.78);
+  cx.rotate(0.3); cx.fillRect(-70,-9,140,18); cx.rotate(-0.6); cx.fillRect(-70,-9,140,18); cx.restore();
+  // Flames scale with calm
+  const fh=30+glow*170;
+  for(let f=0;f<3;f++){
+    const fx=W/2+(f-1)*22, flick=Math.sin(t/90+f*2)*8*(1+glow);
+    const grad=cx.createLinearGradient(0,H*0.78,0,H*0.78-fh);
+    grad.addColorStop(0,'rgba(255,90,20,0.95)'); grad.addColorStop(0.6,'rgba(255,170,40,0.85)'); grad.addColorStop(1,'rgba(255,240,150,0)');
+    cx.fillStyle=grad;
+    cx.beginPath(); cx.moveTo(fx-20,H*0.78);
+    cx.quadraticCurveTo(fx-8+flick,H*0.78-fh*0.55, fx+flick*0.5,H*0.78-fh);
+    cx.quadraticCurveTo(fx+10+flick,H*0.78-fh*0.5, fx+20,H*0.78); cx.closePath(); cx.fill();
+  }
+  // Sparks
+  if (Math.random()<glow*0.5) sparks.push({x:W/2+(Math.random()-0.5)*30,y:H*0.75,vy:-40-Math.random()*60,life:1});
+  cx.fillStyle='#ffcf70';
+  for(let i=sparks.length-1;i>=0;i--){ const s=sparks[i]; s.y+=s.vy*dt; s.x+=Math.sin(t/100+i)*0.6; s.life-=dt*0.7;
+    if(s.life<=0){sparks.splice(i,1);continue;}
+    cx.globalAlpha=s.life; cx.fillRect(s.x,s.y,3,3); cx.globalAlpha=1; }
+}
+
+let last=performance.now();
+(function loop(t){ const dt=Math.min(0.05,(t-last)/1000); last=t; update(dt);
+  if (mode==='garden') drawGarden(t); else drawCampfire(t,dt);
+  requestAnimationFrame(loop); })(last);
+</script>
+</body>
+</html>

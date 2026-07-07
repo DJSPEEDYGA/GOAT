@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calm the Heart — TAHS Neurofeedback</title>
+<style>
+  html,body{margin:0;height:100%;background:#0b0614;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;}
+  #game{display:block;width:100vw;height:100vh;}
+  #hud{position:fixed;top:14px;left:14px;z-index:10;}
+  #back{position:fixed;top:14px;right:14px;z-index:10;color:#ffd700;text-decoration:none;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:700;}
+  #story{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:10;color:#f3e8ff;
+    background:rgba(20,8,30,.85);border:1px solid rgba(255,105,180,.4);border-radius:12px;
+    padding:10px 22px;font-size:15px;max-width:720px;text-align:center;}
+  #hr{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10;color:#ff7eb6;
+    background:rgba(20,8,30,.85);border:1px solid rgba(255,105,180,.4);border-radius:12px;
+    padding:8px 18px;font-size:16px;font-weight:800;}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"></div>
+<a id="back" href="index.html">← Game Hub</a>
+<div id="hr">💗 HEART RATE: <span id="bpm">96</span> BPM</div>
+<div id="story">Stay calm and steady… your calm brings her heart rate down, and he steps closer.</div>
+
+<script src="signal-engine.js"></script>
+<script>
+Neurofeedback.injectStyles();
+const engine = Neurofeedback.mountSignalPanel(document.getElementById('hud'), {metric:'calm'});
+
+const cv = document.getElementById('game'), cx = cv.getContext('2d');
+function fit(){cv.width=innerWidth;cv.height=innerHeight;} fit(); addEventListener('resize',fit);
+
+let calm = 50, spike = false;
+engine.on(s => { calm = s.calm; spike = s.spike; });
+
+// Game state
+let bpm = 96;              // her heart rate: 60 (serene) .. 120 (anxious)
+let approach = 0;          // 0..1 how close he is
+let won = false, wonAt = 0;
+const bpmEl = document.getElementById('bpm');
+const storyEl = document.getElementById('story');
+
+function update(dt){
+  // calm>60 lowers BPM; low calm or spikes raise it
+  const target = 120 - calm * 0.62;             // calm 100 -> 58bpm
+  bpm += (target - bpm) * dt * 0.5;
+  if (spike) bpm += 22 * dt;
+  bpm = Math.max(56, Math.min(128, bpm));
+  bpmEl.textContent = Math.round(bpm);
+
+  // He approaches while her heart is settled; retreats slightly when anxious
+  if (bpm < 78) approach = Math.min(1, approach + dt * 0.05);
+  else if (bpm > 100) approach = Math.max(0, approach - dt * 0.06);
+
+  if (!won && approach >= 1 && bpm < 72) { won = true; wonAt = performance.now(); }
+
+  storyEl.textContent = won
+    ? '💞 Her heart is at peace — the two connect. Session goal reached!'
+    : spike ? '⚡ A wave of nerves! Breathe… recover your calm.'
+    : bpm > 100 ? 'Her heart is racing — he pauses, giving space. Find your calm.'
+    : bpm > 78 ? 'She\'s settling… hold your calm and he moves a little closer.'
+    : 'Beautifully calm. He\'s almost there — keep it steady.';
+}
+
+let beatPhase = 0;
+function draw(t, dt){
+  const W=cv.width, H=cv.height;
+  // Evening park scene: sky warms with calm
+  const warmth = calm/100;
+  const g = cx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0, `rgb(${20+warmth*60},${8+warmth*20},${40+warmth*30})`);
+  g.addColorStop(1, `rgb(${60+warmth*120},${25+warmth*55},${70+warmth*40})`);
+  cx.fillStyle = g; cx.fillRect(0,0,W,H);
+
+  // Moon
+  cx.fillStyle = `rgba(255,244,214,${0.6+warmth*0.4})`;
+  cx.beginPath(); cx.arc(W*0.82, H*0.18, 40, 0, 7); cx.fill();
+
+  // Ground
+  cx.fillStyle = '#140a1e'; cx.fillRect(0, H*0.75, W, H*0.25);
+
+  // Lamp post glow scales with calm
+  cx.fillStyle = `rgba(255,200,120,${0.10+warmth*0.25})`;
+  cx.beginPath(); cx.arc(W/2, H*0.45, 190+warmth*80, 0, 7); cx.fill();
+
+  const groundY = H*0.78;
+  // Her (right)
+  const herX = W*0.62;
+  drawFigure(herX, groundY, '#ff9ecb', true);
+  // Him (left, walks toward her with approach)
+  const himX = W*0.18 + (herX - 90 - W*0.18) * approach;
+  drawFigure(himX, groundY, '#7ec8ff', false);
+
+  // Her heart above her head, beats at her BPM
+  beatPhase += dt * (bpm/60) * Math.PI * 2;
+  const beat = 1 + Math.sin(beatPhase) * 0.12 * (bpm/70);
+  drawHeart(herX, groundY-150, 16*beat, bpm>100 ? '#ff4757' : bpm>78 ? '#ff7eb6' : '#ff9ecb');
+
+  if (won){
+    const k = Math.min(1,(performance.now()-wonAt)/1500);
+    cx.globalAlpha = k;
+    drawHeart(W/2, H*0.32, 40+Math.sin(t/300)*4, '#ff5c9e');
+    cx.globalAlpha = 1;
+  }
+}
+
+function drawFigure(x, y, color, dress){
+  cx.strokeStyle = color; cx.fillStyle = color; cx.lineWidth = 5; cx.lineCap='round';
+  cx.beginPath(); cx.arc(x, y-115, 16, 0, 7); cx.fill();          // head
+  cx.beginPath(); cx.moveTo(x, y-98); cx.lineTo(x, y-45); cx.stroke(); // body
+  if (dress){ cx.beginPath(); cx.moveTo(x, y-70); cx.lineTo(x-20, y); cx.lineTo(x+20, y); cx.closePath(); cx.fill(); }
+  else { cx.beginPath(); cx.moveTo(x, y-45); cx.lineTo(x-12, y); cx.moveTo(x, y-45); cx.lineTo(x+12, y); cx.stroke(); }
+  cx.beginPath(); cx.moveTo(x-18, y-75); cx.lineTo(x+18, y-75); cx.stroke(); // arms
+}
+
+function drawHeart(x, y, s, color){
+  cx.fillStyle = color;
+  cx.beginPath();
+  cx.moveTo(x, y+s*0.9);
+  cx.bezierCurveTo(x-s*1.4, y-s*0.4, x-s*0.5, y-s*1.3, x, y-s*0.4);
+  cx.bezierCurveTo(x+s*0.5, y-s*1.3, x+s*1.4, y-s*0.4, x, y+s*0.9);
+  cx.fill();
+}
+
+let last = performance.now();
+(function loop(t){
+  const dt = Math.min(0.05, (t-last)/1000); last = t;
+  update(dt); draw(t, dt);
+  requestAnimationFrame(loop);
+})(last);
+</script>
+</body>
+</html>
