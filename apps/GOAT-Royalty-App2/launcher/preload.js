@@ -16,6 +16,9 @@ contextBridge.exposeInMainWorld('goatLauncher', {
   openExternal: (url) => ipcRenderer.send('open-external', url),
   openToolWindow: (opts) => ipcRenderer.send('open-tool-window', opts),
 
+  // Launch a whitelisted native creative/dev app (download fallback)
+  launchApp: (id) => ipcRenderer.invoke('launch-app', id),
+
   // Server management
   checkServer: () => ipcRenderer.invoke('check-server'),
   getConfig: () => ipcRenderer.invoke('get-config'),
@@ -29,7 +32,7 @@ contextBridge.exposeInMainWorld('goatLauncher', {
 
   // Event listeners
   on: (channel, callback) => {
-    const validChannels = ['server-status', 'tool-update', 'notification'];
+    const validChannels = ['server-status', 'tool-update', 'notification', 'app-launched'];
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, (_, data) => callback(data));
     }
