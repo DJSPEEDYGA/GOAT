@@ -888,6 +888,7 @@ h1, h2, h3 { text-shadow: none !important; }
       <button class="ops-btn" onclick="openSettingsPanel()">
         <span class="ops-icon">⚙️</span> Customize
       </button>
+      <button class="ops-btn" onclick="openBrainPanel()" title="Agent Brain 3D">🧠</button>
     </div>
 
 
@@ -1591,6 +1592,114 @@ async function saveMemoryPrompt() {
       <input type="text" id="customLogo" placeholder="URL to logo image" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;">
       <button class="goat-btn" style="margin-top:10px;" onclick="applyLogo()">Apply Logo</button>
     </div>
+  
+    <div class="deck-section">
+      <h4>AI Model — 59 Available</h4>
+      <select id="settingModel" onchange="saveSetting('model',this.value)" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.4);color:#fff;font-size:12px;">
+        <option value="llama3.1:70b" selected>llama3.1:70b — GOAT default ⭐</option>
+              <option value="grok-3-mini">grok-3-mini — xAI fast</option>
+              <option value="grok-3">grok-3 — xAI power</option>
+              <option value="gemini">gemini — Google</option>
+              <option value="bge-m3:latest">bge-m3:latest</option>
+              <option value="codegemma:7b">codegemma:7b</option>
+              <option value="codestral:22b">codestral:22b</option>
+              <option value="deepseek-r1:8b">deepseek-r1:8b</option>
+              <option value="deepseek-r1:14b">deepseek-r1:14b</option>
+              <option value="deepseek-r1:32b">deepseek-r1:32b</option>
+              <option value="deepseek-r1:70b">deepseek-r1:70b</option>
+              <option value="dolphin-local:latest">dolphin-local:latest</option>
+              <option value="gemma2-2b-local:latest">gemma2-2b-local:latest</option>
+              <option value="gemma3:4b">gemma3:4b</option>
+              <option value="gemma3:12b">gemma3:12b</option>
+              <option value="gpt-oss:20b">gpt-oss:20b</option>
+              <option value="gpt-oss:120b">gpt-oss:120b</option>
+              <option value="gpt-oss-safeguard:120b">gpt-oss-safeguard:120b</option>
+              <option value="llama3.1:8b">llama3.1:8b</option>
+              <option value="llama3.1:405b">llama3.1:405b</option>
+              <option value="llama3.2:3b">llama3.2:3b</option>
+              <option value="llama3.2-vision:11b">llama3.2-vision:11b</option>
+              <option value="llama3.2-vision:90b">llama3.2-vision:90b</option>
+              <option value="llama3.3:70b">llama3.3:70b</option>
+              <option value="llava:7b">llava:7b</option>
+              <option value="llava-llama3:8b">llava-llama3:8b</option>
+              <option value="mistral:7b">mistral:7b</option>
+              <option value="mistral-nemo:12b">mistral-nemo:12b</option>
+              <option value="mixtral:8x7b">mixtral:8x7b</option>
+              <option value="moondream:1.8b">moondream:1.8b</option>
+              <option value="mxbai-embed-large:latest">mxbai-embed-large:latest</option>
+              <option value="nemomix-local:latest">nemomix-local:latest</option>
+              <option value="nemotron-mini:4b">nemotron-mini:4b</option>
+              <option value="nemotron-3-nano:30b">nemotron-3-nano:30b</option>
+              <option value="nemotron3:33b">nemotron3:33b</option>
+              <option value="nomic-embed-text:latest">nomic-embed-text:latest</option>
+              <option value="phi3:mini">phi3:mini</option>
+              <option value="phi3-local:latest">phi3-local:latest</option>
+              <option value="phi4:14b">phi4:14b</option>
+              <option value="qwen-9b-uncensored-local:latest">qwen-9b-uncensored-local:latest</option>
+              <option value="qwen2.5:7b">qwen2.5:7b</option>
+              <option value="qwen2.5:14b">qwen2.5:14b</option>
+              <option value="qwen2.5:32b">qwen2.5:32b</option>
+              <option value="qwen2.5-coder:7b">qwen2.5-coder:7b</option>
+              <option value="qwen2.5-coder:14b">qwen2.5-coder:14b</option>
+              <option value="qwen2.5-coder:32b">qwen2.5-coder:32b</option>
+              <option value="qwen2.5vl:7b">qwen2.5vl:7b</option>
+              <option value="qwen2.5vl:32b">qwen2.5vl:32b</option>
+              <option value="qwen2.5vl:72b">qwen2.5vl:72b</option>
+              <option value="qwen3:8b">qwen3:8b</option>
+              <option value="qwen3:14b">qwen3:14b</option>
+              <option value="qwen3:30b">qwen3:30b</option>
+              <option value="qwen3:32b">qwen3:32b</option>
+              <option value="qwen3:235b">qwen3:235b</option>
+              <option value="qwen3-vl:32b">qwen3-vl:32b</option>
+              <option value="qwen3-vl:235b">qwen3-vl:235b</option>
+              <option value="smollm2:135m">smollm2:135m</option>
+              <option value="starcoder2:7b">starcoder2:7b</option>
+              <option value="starcoder2:15b">starcoder2:15b</option>
+      </select>
+    </div>
+    <div class="deck-section">
+      <h4>Permission Mode</h4>
+      <select id="settingMode" onchange="saveSetting('mode',this.value)" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.4);color:#fff;font-size:12px;">
+        <option value="normal">Normal (default)</option>
+        <option value="accept-edits">Accept Edits</option>
+        <option value="plan">Plan (read-only)</option>
+        <option value="bypass">Bypass (all approved)</option>
+      </select>
+    </div>
+    <div class="deck-section">
+      <h4>Connections</h4>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div>
+          <label style="font-size:10px;color:#8C8C8C;display:block;margin-bottom:3px;">Ollama Host</label>
+          <input id="settingOllama" value="127.0.0.1:11435" onchange="saveSetting('ollama_host',this.value)" style="width:100%;padding:7px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.4);color:#fff;font-size:12px;font-family:monospace;">
+        </div>
+        <div>
+          <label style="font-size:10px;color:#8C8C8C;display:block;margin-bottom:3px;">Intel Server</label>
+          <input id="settingIntel" value="http://127.0.0.1:5500" onchange="saveSetting('intel_host',this.value)" style="width:100%;padding:7px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.4);color:#fff;font-size:12px;font-family:monospace;">
+        </div>
+      </div>
+    </div>
+    <div class="deck-section">
+      <h4>Context Length</h4>
+      <select id="settingContext" onchange="saveSetting('context',this.value)" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.4);color:#fff;font-size:12px;">
+        <option value="4096">4096 (fast)</option>
+        <option value="8192" selected>8192 (balanced)</option>
+        <option value="32768">32768 (deep)</option>
+        <option value="131072">131072 (max)</option>
+      </select>
+    </div>
+    <div class="deck-section">
+      <h4>Toggles</h4>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:#8C8C8C;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="togNoCloud" checked onchange="saveSetting('no_cloud',this.checked)"> OLLAMA_NO_CLOUD — keep all inference local</label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="togOffline" checked onchange="saveSetting('offline',this.checked)"> Offline mode — no external downloads/telemetry</label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="togAutoLaunch" onchange="saveSetting('auto_launch',this.checked)"> Auto-launch on startup</label>
+      </div>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="goat-btn" onclick="saveAllSettings()" style="flex:none;">💾 Save Settings</button>
+      <button class="goat-btn" onclick="loadAllSettings()" style="flex:none;">↺ Restore</button>
+    </div>
   </div>
 </div>
 
@@ -1756,6 +1865,46 @@ function cancelTerminalConfirm() {
 <script src="lib/agents/patch/goat-generative-ui.js"></script>
 <script src="lib/agents/patch/patch-widget.js" data-agent="ar"></script>
 <script src="js/goat-touch.js"></script>
-<script src="js/goat-agent-controls.js"></script>
+<script src="js/goat-agent-controls.js">
+// ── Brain Panel ───────────────────────────────────────────────────
+let _brainIs3D = true;
+function openBrainPanel() { document.getElementById('brainPanel').classList.add('open'); }
+function closeBrainPanel() { document.getElementById('brainPanel').classList.remove('open'); }
+function toggleBrain3D() {
+  const frame = document.getElementById('agentBrainFrame');
+  const btn = document.querySelector('[onclick="toggleBrain3D()"]');
+  if (_brainIs3D) {
+    frame.src = 'http://127.0.0.1:8090/agents-brain.html?v=' + Date.now();
+    if (btn) btn.textContent = '🔄 Switch to 3D';
+    _brainIs3D = false;
+  } else {
+    frame.src = 'http://127.0.0.1:8090/agents-brain-3d.html?v=' + Date.now();
+    if (btn) btn.textContent = '🔄 Switch to 2D';
+    _brainIs3D = true;
+  }
+}
+function reloadBrain() {
+  const frame = document.getElementById('agentBrainFrame');
+  if (frame) frame.src = frame.src.split('?')[0] + '?v=' + Date.now();
+}
+</script>
+<div class="deck-panel" id="brainPanel" onclick="if(event.target.id==='brainPanel') closeBrainPanel()">
+  <div class="deck-box" style="max-width:1000px;width:95vw;">
+    <div class="deck-close" onclick="closeBrainPanel()">&times;</div>
+    <h2 style="color:#a855f7 !important;">🧠 Agent Brain — Live Neural Network</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+      <div style="font-size:11px;color:#8C8C8C;">All 15 agents · real-time connections · memory · vault · A&R Scout highlighted</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="goat-btn" style="padding:5px 12px;font-size:11px;" onclick="toggleBrain3D()">🔄 Switch to 2D</button>
+        <button class="goat-btn" style="padding:5px 12px;font-size:11px;" onclick="window.open('http://127.0.0.1:8090/agents-brain-3d.html','_blank')">⛶ 3D Full Screen</button>
+        <button class="goat-btn" style="padding:5px 12px;font-size:11px;" onclick="window.open('http://127.0.0.1:8090/agents-brain.html','_blank')">⛶ 2D Full Screen</button>
+        <button class="goat-btn" style="padding:5px 12px;font-size:11px;" onclick="reloadBrain()">↺ Reload</button>
+      </div>
+    </div>
+    <iframe id="agentBrainFrame" src="http://127.0.0.1:8090/agents-brain-3d.html"
+      style="width:100%;height:65vh;border:1px solid rgba(255,255,255,0.1);border-radius:8px;background:#080c14;"
+      frameborder="0" allowfullscreen></iframe>
+  </div>
+</div>
 </body>
 </html>
