@@ -144,9 +144,12 @@ function drawCampfire(t,dt){
   cx.fillStyle='rgba(255,255,255,0.7)';
   for(let i=0;i<60;i++){ cx.fillRect((i*97)%W, (i*61)%(H*0.5), 2,2); }
   const glow=calm/100;
-  // Fire glow halo
-  cx.fillStyle=`rgba(255,140,40,${0.05+glow*0.22})`;
-  cx.beginPath(); cx.arc(W/2,H*0.7,160+glow*140,0,7); cx.fill();
+  // Fire glow halo (soft radial falloff)
+  const hr=160+glow*140;
+  const hg=cx.createRadialGradient(W/2,H*0.7,10,W/2,H*0.7,hr);
+  hg.addColorStop(0,`rgba(255,140,40,${0.08+glow*0.26})`); hg.addColorStop(1,'rgba(255,140,40,0)');
+  cx.fillStyle=hg;
+  cx.beginPath(); cx.arc(W/2,H*0.7,hr,0,7); cx.fill();
   // Logs
   cx.fillStyle='#4a2c14';
   cx.save(); cx.translate(W/2,H*0.78);
