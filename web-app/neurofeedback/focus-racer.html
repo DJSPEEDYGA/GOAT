@@ -41,7 +41,7 @@ let mph=0, roadScroll=0, heat=0; // heat: 0..1 police pressure
 const mphEl=document.getElementById('mph'), msg=document.getElementById('msg');
 
 const IMG={};
-[['bg','assets/bg-city-night.jpg?v=2'],['car','assets/supercar.png?v=2'],['police','assets/police.png?v=2'],['bike','assets/motorcycle.png?v=2']]
+[['bg','assets/bg-city-night.jpg?v=2'],['road','assets/road-highway.jpg?v=1'],['car','assets/supercar.png?v=2'],['police','assets/police.png?v=2'],['bike','assets/motorcycle.png?v=2']]
   .forEach(([k,src])=>{const im=new Image(); im.src=src; IMG[k]=im;});
 
 let vehicle='car';
@@ -84,11 +84,18 @@ function draw(t){
     cx.drawImage(IMG.bg, (W-bw*sc)/2, H*0.62-bh*sc, bw*sc, bh*sc);
   } else { cx.fillStyle='#0a0a18'; cx.fillRect(0,0,W,H*0.62); }
 
-  // Road
-  cx.fillStyle='#1c1c22'; cx.fillRect(0,H*0.6,W,H*0.4);
-  cx.strokeStyle='#ffd700'; cx.lineWidth=5; cx.setLineDash([50,45]);
-  cx.lineDashOffset = -roadScroll % 95;
-  cx.beginPath(); cx.moveTo(0,H*0.8); cx.lineTo(W,H*0.8); cx.stroke(); cx.setLineDash([]);
+  // Divided-highway road surface, scrolling with speed
+  if (IMG.road.complete && IMG.road.naturalWidth){
+    const rh=H*0.4, rw=rh*IMG.road.naturalWidth/IMG.road.naturalHeight;
+    let x=-(roadScroll % rw);
+    for(; x<W; x+=rw) cx.drawImage(IMG.road, x, H*0.6, rw, rh);
+    cx.fillStyle='rgba(5,5,15,0.25)'; cx.fillRect(0,H*0.6,W,H*0.4);
+  } else {
+    cx.fillStyle='#1c1c22'; cx.fillRect(0,H*0.6,W,H*0.4);
+    cx.strokeStyle='#ffd700'; cx.lineWidth=5; cx.setLineDash([50,45]);
+    cx.lineDashOffset = -roadScroll % 95;
+    cx.beginPath(); cx.moveTo(0,H*0.8); cx.lineTo(W,H*0.8); cx.stroke(); cx.setLineDash([]);
+  }
 
   // Speed lines
   if (mph>120){ cx.strokeStyle='rgba(255,255,255,0.25)'; cx.lineWidth=2;
