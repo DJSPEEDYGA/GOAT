@@ -37,7 +37,7 @@ let focus=50, spike=false;
 engine.on(s=>{focus=s.focus; spike=s.spike;});
 
 const IMG={};
-[['bg','assets/bg-basketball.jpg?v=1'],['ball','assets/basketball.png?v=1']]
+[['bg','assets/bg-basketball.jpg?v=1'],['ball','assets/basketball-gold.png?v=1']]
   .forEach(([k,src])=>{const im=new Image(); im.src=src; IMG[k]=im;});
 
 // Cover-scale transform so we can locate the hoop inside the backdrop photo
@@ -51,6 +51,8 @@ function hoopPos(W,H){ const r=bgRect(W,H); return {x:r.x+768*r.sc, y:r.y+330*r.
 let charge=0, focusSum=0, focusN=0, spiked=false;
 let phase='charge';                       // charge | flight | result
 let flight=null, resultTimer=0, makes=0, shots=0, streak=0;
+let heat=0;                                // 0..1: ball heats up on sustained focus
+const flames=[];
 const scoreEl=document.getElementById('score'), msg=document.getElementById('msg');
 
 function startFlight(W,H){
@@ -64,12 +66,18 @@ function startFlight(W,H){
 }
 
 function update(dt){
+  // Heat: builds while focus holds above 70, cools when it drops, killed by spikes
+  if (spike) heat=Math.max(0,heat-dt*2.2);
+  else if (focus>=70) heat=Math.min(1,heat+dt*0.09);
+  else heat=Math.max(0,heat-dt*0.16);
   if (phase==='charge'){
     if (spike) spiked=true;
     const rate = focus>55 ? (focus-55)/45 : -0.35;
     charge=Math.max(0,Math.min(1,charge+rate*dt*0.42));
     focusSum+=focus; focusN++;
     msg.textContent = spike ? '⚡ Stress spike — your form breaks!'
+      : heat>0.95 ? '🔥 YOU’RE ON FIRE! Keep that focus burning.'
+      : heat>0.5 ? 'Heating up… the ball is starting to smolder.'
       : charge>0.75 ? 'Almost there… stay locked in.'
       : focus>55 ? 'Charging the shot — hold that focus.'
       : 'Focus dropped — the charge is fading.';
@@ -124,6 +132,37 @@ function draw(t,dt){
     cx.fillStyle= spiked ? '#ff5a5a' : '#ffd700';
     cx.fillRect(bx-mw/2, by+br+14, mw*charge, 10);
   }
+
+  // Heat aura + flame particles on the ball
+  if (bx>-500 && heat>0.08){
+    const inFlight=phase==='flight';
+    const hg=cx.createRadialGradient(bx,by,br*0.3,bx,by,br*(1.6+heat*1.1));
+    hg.addColorStop(0,`rgba(255,${Math.round(110+heat*70)},20,${0.22+heat*0.4})`);
+    hg.addColorStop(0.55,`rgba(255,70,0,${0.1+heat*0.22})`);
+    hg.addColorStop(1,'rgba(255,60,0,0)');
+    cx.save(); cx.globalCompositeOperation='lighter';
+    cx.fillStyle=hg; cx.beginPath(); cx.arc(bx,by,br*(1.6+heat*1.1),0,7); cx.fill(); cx.restore();
+    const n=Math.round(1+heat*(inFlight?14:9));
+    for(let i=0;i<n;i++){
+      const a=Math.random()*Math.PI*2;
+      flames.push({x:bx+Math.cos(a)*br*0.85, y:by+Math.sin(a)*br*0.85,
+        vx:(Math.random()-0.5)*30-(inFlight?(flight.x1-flight.x0)*0.35:0),
+        vy:-(50+Math.random()*70)*(0.4+heat),
+        r:(7+Math.random()*11)*(br/60), life:1, decay:1.0+Math.random()*0.7});
+    }
+  }
+  cx.save(); cx.globalCompositeOperation='lighter';
+  for(let i=flames.length-1;i>=0;i--){ const p=flames[i];
+    p.x+=p.vx*dt+Math.sin(t/120+i)*0.6; p.y+=p.vy*dt; p.r*=(1-0.9*dt); p.life-=p.decay*dt;
+    if (p.life<=0 || p.r<1){ flames.splice(i,1); continue; }
+    const L=p.life;
+    const g=cx.createRadialGradient(p.x,p.y,0.5,p.x,p.y,p.r);
+    g.addColorStop(0,`rgba(255,${Math.round(150+100*L)},${Math.round(190*L*L)},${0.5*L})`);
+    g.addColorStop(0.6,`rgba(255,${Math.round(70+80*L)},10,${0.32*L})`);
+    g.addColorStop(1,'rgba(180,20,0,0)');
+    cx.fillStyle=g; cx.beginPath(); cx.arc(p.x,p.y,p.r,0,7); cx.fill();
+  }
+  cx.restore();
 
   // Ball with contact shadow
   if (bx>-500){
