@@ -134,6 +134,60 @@
   }
 
   /*
+   * Reward-sound layer (classic neurofeedback audio feedback):
+   * a soft harmonic pad sustains while the trained metric holds above
+   * threshold, with a gentle bell every couple of seconds — so the brain
+   * gets rewarded even with eyes closed. Silence (plus a low thump on a
+   * stress spike) signals losing the state.
+   */
+  function createRewardSound() {
+    let ctx = null, pad = null, padGain = null, muted = false, lastBell = 0;
+    function ensure() {
+      if (ctx) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      ctx = new AC();
+      padGain = ctx.createGain(); padGain.gain.value = 0; padGain.connect(ctx.destination);
+      pad = [220, 277.18, 329.63].map((f, i) => {   // A3 major triad
+        const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+        const g = ctx.createGain(); g.gain.value = i === 0 ? 0.5 : 0.28;
+        o.connect(g); g.connect(padGain); o.start();
+        return o;
+      });
+    }
+    document.addEventListener('pointerdown', () => { ensure(); if (ctx && ctx.state === 'suspended') ctx.resume(); }, { capture: true });
+    function bell(f) {
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.4);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime + 1.5);
+    }
+    return {
+      update(v, spike) {
+        if (!ctx || muted || ctx.state !== 'running') return;
+        const inState = v >= STREAK_THRESHOLD && !spike;
+        const target = inState ? 0.02 + ((v - STREAK_THRESHOLD) / (100 - STREAK_THRESHOLD)) * 0.05 : 0;
+        padGain.gain.setTargetAtTime(target, ctx.currentTime, 0.4);
+        const now = Date.now();
+        if (inState && now - lastBell > 2600) { lastBell = now; bell(880 + (v - 70) * 8); }
+        if (spike && now - lastBell > 1500) {  // low thump marks the spike
+          lastBell = now;
+          const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = 90;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.15, ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
+          o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.55);
+        }
+      },
+      setMuted(m) { muted = m; if (muted && padGain && ctx) padGain.gain.setTargetAtTime(0, ctx.currentTime, 0.1); },
+      get muted() { return muted; },
+    };
+  }
+
+  /*
    * Standard control widget every game embeds: mode selector,
    * manual slider, spike button, a live signal bar, and a focus-streak
    * timer (longest continuous hold above threshold feeds the scoreboard).
@@ -166,6 +220,7 @@
           <span class="nf-streak">0.0s</span>
           <span class="nf-best">best 0.0s</span>
           <button class="nf-player" title="Change player name">👤</button>
+          <button class="nf-sound" title="Reward sounds on/off">🔊</button>
         </div>
       </div>`;
 
@@ -177,6 +232,14 @@
     const streakEl = container.querySelector('.nf-streak');
     const bestEl = container.querySelector('.nf-best');
     const playerBtn = container.querySelector('.nf-player');
+    const soundBtn = container.querySelector('.nf-sound');
+    const reward = createRewardSound();
+    if (localStorage.getItem('nf-sound') === 'off') { reward.setMuted(true); soundBtn.textContent = '🔇'; }
+    soundBtn.addEventListener('click', () => {
+      reward.setMuted(!reward.muted);
+      soundBtn.textContent = reward.muted ? '🔇' : '🔊';
+      localStorage.setItem('nf-sound', reward.muted ? 'off' : 'on');
+    });
 
     modeSel.addEventListener('change', () => {
       engine.setMode(modeSel.value);
@@ -200,6 +263,7 @@
       fill.style.background = s.spike ? '#ff4757'
         : v > 66 ? '#2ed573' : v > 33 ? '#ffa502' : '#ff6348';
       value.textContent = Math.round(v);
+      reward.update(v, s.spike);
 
       // streak: continuous hold above threshold, broken by dips or spikes
       if (v >= STREAK_THRESHOLD && !s.spike) {
@@ -242,6 +306,9 @@
     .nf-player{background:#1f2937;color:#eee;border:1px solid #444;border-radius:6px;
       padding:2px 8px;font-size:12px;cursor:pointer;}
     .nf-player:hover{border-color:#ffd700;}
+    .nf-sound{background:#1f2937;color:#eee;border:1px solid #444;border-radius:6px;
+      padding:2px 8px;font-size:12px;cursor:pointer;}
+    .nf-sound:hover{border-color:#ffd700;}
   `;
 
   function injectStyles() {

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha-Theta Twilight — TAHS Neurofeedback</title>
+<style>
+  html,body{margin:0;height:100%;background:#05030c;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;}
+  #game{display:block;width:100vw;height:100vh;}
+  #hud{position:fixed;top:14px;left:14px;z-index:10;}
+  #back{position:fixed;top:14px;right:14px;z-index:10;color:#ffd700;text-decoration:none;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:700;}
+  #story{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:10;color:#d8ccf5;
+    background:rgba(12,8,26,.85);border:1px solid rgba(150,110,255,.35);border-radius:12px;
+    padding:10px 22px;font-size:15px;max-width:720px;text-align:center;}
+  #bands{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10;color:#d8ccf5;
+    background:rgba(12,8,26,.85);border:1px solid rgba(150,110,255,.35);border-radius:12px;
+    padding:8px 18px;font-size:14px;font-weight:700;display:flex;gap:18px;}
+  .a{color:#6fd3ff}.th{color:#c79bff}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"></div>
+<a id="back" href="index.html">← Game Hub</a>
+<div id="bands"><span class="a">α ALPHA <span id="av">0</span></span><span class="th">θ THETA <span id="tv">0</span></span><span id="xo" style="color:#ffd700"></span></div>
+<div id="story">Close your eyes if you like — the tones will guide you. Relax into alpha, then drift deeper toward theta.</div>
+
+<script src="signal-engine.js?v=3"></script>
+<script>
+Neurofeedback.injectStyles();
+const engine = Neurofeedback.mountSignalPanel(document.getElementById('hud'), {metric:'calm', game:'Alpha-Theta Twilight'});
+
+const cv = document.getElementById('game'), cx = cv.getContext('2d');
+function fit(){cv.width=innerWidth;cv.height=innerHeight;} fit(); addEventListener('resize',fit);
+
+let calm = 50, spike = false;
+engine.on(s => { calm = s.calm; spike = s.spike; });
+
+/*
+ * Alpha-theta protocol (Van der Kolk ch.19): alpha = relaxed wakefulness,
+ * theta = the twilight, hypnagogic state where trauma material can be
+ * safely reprocessed. Alpha rises with calm; theta only builds after calm
+ * has been HELD deep for a while. The moment theta rises over alpha is
+ * the "crossover" — marked with a gong.
+ */
+let alpha = 20, theta = 8, deepTime = 0, crossed = false, crossAt = 0;
+const avEl=document.getElementById('av'), tvEl=document.getElementById('tv'),
+      xoEl=document.getElementById('xo'), storyEl=document.getElementById('story');
+
+function update(dt){
+  const aTarget = spike ? 12 : 15 + calm*0.72;               // alpha follows calm
+  alpha += (aTarget - alpha)*dt*0.5;
+  if (calm > 72 && !spike) deepTime += dt; else deepTime = Math.max(0, deepTime - dt*2);
+  // theta only grows out of sustained depth (twilight takes time to reach)
+  const thTarget = spike ? 5 : Math.min(95, 8 + deepTime*3.2 + Math.max(0,calm-72)*0.25);
+  theta += (thTarget - theta)*dt*0.3;
+  avEl.textContent = Math.round(alpha);
+  tvEl.textContent = Math.round(theta);
+
+  const nowCrossed = theta > alpha && theta > 40;
+  if (nowCrossed && !crossed){ crossed = true; crossAt = performance.now(); gong(); }
+  if (!nowCrossed) crossed = false;
+  xoEl.textContent = crossed ? '☯ CROSSOVER' : '';
+
+  storyEl.textContent = spike ? '⚡ A jolt — gently return. There is no rush.'
+    : crossed ? '☯ Crossover — theta above alpha. The twilight state. Just observe whatever comes.'
+    : theta > 30 ? 'Drifting deeper… images may start to float up. Let them pass.'
+    : alpha > 55 ? 'Good — soft, relaxed alpha. Stay here, let the body get heavy.'
+    : 'Settle in. Slow breath out… let the tones find you.';
+}
+
+/* Two session tones: a mid flute-like tone for alpha, a deep drone for
+   theta, each louder as its band rises. Gong marks each crossover. */
+let actx=null, aOsc=null, aGain=null, tOsc=null, tGain=null;
+document.addEventListener('pointerdown', ()=>{
+  if (actx) { if (actx.state==='suspended') actx.resume(); return; }
+  const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+  actx=new AC();
+  aOsc=actx.createOscillator(); aOsc.type='triangle'; aOsc.frequency.value=432;
+  aGain=actx.createGain(); aGain.gain.value=0; aOsc.connect(aGain); aGain.connect(actx.destination); aOsc.start();
+  tOsc=actx.createOscillator(); tOsc.type='sine'; tOsc.frequency.value=108;
+  tGain=actx.createGain(); tGain.gain.value=0; tOsc.connect(tGain); tGain.connect(actx.destination); tOsc.start();
+}, {capture:true});
+function gong(){
+  if(!actx || actx.state!=='running') return;
+  [72,144,216].forEach((f,i)=>{
+    const o=actx.createOscillator(); o.type='sine'; o.frequency.value=f;
+    const g=actx.createGain();
+    g.gain.setValueAtTime(0.0001,actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.16/(i+1),actx.currentTime+0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001,actx.currentTime+4.5);
+    o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+4.6);
+  });
+}
+setInterval(()=>{
+  if(!actx || actx.state!=='running') return;
+  aGain.gain.setTargetAtTime((alpha/100)*0.035, actx.currentTime, 0.6);
+  tGain.gain.setTargetAtTime((theta/100)*0.06, actx.currentTime, 0.8);
+}, 200);
+
+// Minimal, dim visuals on purpose — two slow breathing rings.
+const motes=[]; for(let i=0;i<40;i++) motes.push({x:Math.random(),y:Math.random(),s:0.5+Math.random()*1.6,ph:Math.random()*7});
+function draw(t){
+  const W=cv.width,H=cv.height;
+  cx.fillStyle='#05030c'; cx.fillRect(0,0,W,H);
+  const cxp=W/2, cyp=H*0.48;
+  // deep space gradient breathing with theta
+  const depth=theta/100;
+  const bg=cx.createRadialGradient(cxp,cyp,10,cxp,cyp,Math.max(W,H)*0.7);
+  bg.addColorStop(0,`rgba(${30+depth*30},${16+depth*10},${60+depth*60},0.9)`);
+  bg.addColorStop(1,'rgba(4,2,10,1)');
+  cx.fillStyle=bg; cx.fillRect(0,0,W,H);
+
+  // alpha ring (cool blue) and theta ring (violet), radius breathes slowly
+  const base=Math.min(W,H);
+  const aR=base*(0.16+ (alpha/100)*0.10) + Math.sin(t/2600)*8;
+  const tR=base*(0.08+ (theta/100)*0.16) + Math.sin(t/4100)*10;
+  ring(cxp,cyp,aR,`rgba(111,211,255,${0.10+(alpha/100)*0.35})`, 3+(alpha/100)*5);
+  ring(cxp,cyp,tR,`rgba(199,155,255,${0.10+(theta/100)*0.45})`, 3+(theta/100)*7);
+  if (crossed){
+    const k=Math.min(1,(performance.now()-crossAt)/2000);
+    ring(cxp,cyp,tR+18+k*24,`rgba(255,215,0,${0.35*(1-k)})`,2);
+  }
+
+  // drifting motes get denser/brighter as theta deepens
+  cx.save(); cx.globalCompositeOperation='lighter';
+  for(const m of motes){
+    m.y-=0.00006*(1+depth*3); if(m.y<0)m.y=1;
+    const a=(0.04+depth*0.30)*(0.5+0.5*Math.sin(t/900+m.ph));
+    cx.globalAlpha=a;
+    const g=cx.createRadialGradient(m.x*W,m.y*H,0.3,m.x*W,m.y*H,m.s*6);
+    g.addColorStop(0,'rgba(210,190,255,0.9)'); g.addColorStop(1,'rgba(140,110,255,0)');
+    cx.fillStyle=g; cx.beginPath(); cx.arc(m.x*W,m.y*H,m.s*6,0,7); cx.fill();
+  }
+  cx.restore(); cx.globalAlpha=1;
+}
+function ring(x,y,r,c,w){ cx.strokeStyle=c; cx.lineWidth=w; cx.beginPath(); cx.arc(x,y,Math.max(1,r),0,7); cx.stroke(); }
+
+let last=performance.now();
+(function loop(t){
+  const dt=Math.min(0.05,(t-last)/1000); last=t;
+  update(dt); draw(t);
+  requestAnimationFrame(loop);
+})(last);
+</script>
+</body>
+</html>
