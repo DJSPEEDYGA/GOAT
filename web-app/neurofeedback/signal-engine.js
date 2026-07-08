@@ -99,8 +99,44 @@
   }
 
   /*
+   * Focus-streak scoreboard (shared across games via localStorage).
+   * A streak is continuous time holding the trained metric >= STREAK_THRESHOLD
+   * without a stress spike. Best streaks per player+game are kept and shown
+   * on the hub scoreboard.
+   */
+  const STREAK_THRESHOLD = 70;
+  const BOARD_KEY = 'nf-scoreboard';
+  const PLAYER_KEY = 'nf-player';
+
+  function getPlayer() {
+    return localStorage.getItem(PLAYER_KEY) || 'Player';
+  }
+
+  function loadBoard() {
+    try { return JSON.parse(localStorage.getItem(BOARD_KEY)) || []; }
+    catch (_) { return []; }
+  }
+
+  function recordStreak(game, metric, seconds) {
+    if (seconds < 1) return;
+    const player = getPlayer();
+    const board = loadBoard();
+    const i = board.findIndex(e => e.player === player && e.game === game);
+    if (i >= 0) {
+      if (seconds <= board[i].seconds) return;
+      board[i].seconds = seconds;
+      board[i].date = Date.now();
+    } else {
+      board.push({ player, game, metric, seconds, date: Date.now() });
+    }
+    board.sort((a, b) => b.seconds - a.seconds);
+    localStorage.setItem(BOARD_KEY, JSON.stringify(board.slice(0, 50)));
+  }
+
+  /*
    * Standard control widget every game embeds: mode selector,
-   * manual slider, spike button, and a live signal bar.
+   * manual slider, spike button, a live signal bar, and a focus-streak
+   * timer (longest continuous hold above threshold feeds the scoreboard).
    * Returns the engine it created.
    */
   function mountSignalPanel(container, opts = {}) {
@@ -125,6 +161,12 @@
           <div class="nf-bar"><div class="nf-bar-fill"></div></div>
           <span class="nf-value">50</span>
         </div>
+        <div class="nf-row">
+          <span class="nf-metric-label">🏆 HOLD</span>
+          <span class="nf-streak">0.0s</span>
+          <span class="nf-best">best 0.0s</span>
+          <button class="nf-player" title="Change player name">👤</button>
+        </div>
       </div>`;
 
     const modeSel = container.querySelector('.nf-mode');
@@ -132,6 +174,9 @@
     const spikeBtn = container.querySelector('.nf-spike');
     const fill = container.querySelector('.nf-bar-fill');
     const value = container.querySelector('.nf-value');
+    const streakEl = container.querySelector('.nf-streak');
+    const bestEl = container.querySelector('.nf-best');
+    const playerBtn = container.querySelector('.nf-player');
 
     modeSel.addEventListener('change', () => {
       engine.setMode(modeSel.value);
@@ -139,6 +184,15 @@
     });
     slider.addEventListener('input', () => engine.setManual(Number(slider.value)));
     spikeBtn.addEventListener('click', () => engine.triggerSpike());
+    playerBtn.addEventListener('click', () => {
+      const p = (prompt('Player name for the scoreboard:', localStorage.getItem(PLAYER_KEY) || '') || '').trim().slice(0, 20);
+      if (p) localStorage.setItem(PLAYER_KEY, p);
+    });
+
+    const gameName = opts.game || document.title || 'Game';
+    const metricKey = opts.metric === 'focus' ? 'focus' : 'calm';
+    let streakStart = 0;
+    let bestStreak = 0;
 
     engine.on((s) => {
       const v = opts.metric === 'focus' ? s.focus : s.calm;
@@ -146,6 +200,23 @@
       fill.style.background = s.spike ? '#ff4757'
         : v > 66 ? '#2ed573' : v > 33 ? '#ffa502' : '#ff6348';
       value.textContent = Math.round(v);
+
+      // streak: continuous hold above threshold, broken by dips or spikes
+      if (v >= STREAK_THRESHOLD && !s.spike) {
+        if (!streakStart) streakStart = s.t;
+        const cur = (s.t - streakStart) / 1000;
+        streakEl.textContent = cur.toFixed(1) + 's';
+        streakEl.style.color = '#2ed573';
+        if (cur > bestStreak) {
+          bestStreak = cur;
+          bestEl.textContent = 'best ' + bestStreak.toFixed(1) + 's';
+          recordStreak(gameName, metricKey, Number(bestStreak.toFixed(1)));
+        }
+      } else {
+        streakStart = 0;
+        streakEl.textContent = '0.0s';
+        streakEl.style.color = '#9ca3af';
+      }
     });
 
     return engine;
@@ -166,6 +237,11 @@
     .nf-bar{flex:1;height:10px;background:#1f2937;border-radius:5px;overflow:hidden;}
     .nf-bar-fill{height:100%;width:50%;background:#ffa502;transition:width .12s linear;}
     .nf-value{width:28px;text-align:right;font-weight:800;font-size:13px;}
+    .nf-streak{font-weight:800;font-size:13px;color:#9ca3af;width:56px;}
+    .nf-best{font-size:11px;color:#ffd700;font-weight:700;flex:1;}
+    .nf-player{background:#1f2937;color:#eee;border:1px solid #444;border-radius:6px;
+      padding:2px 8px;font-size:12px;cursor:pointer;}
+    .nf-player:hover{border-color:#ffd700;}
   `;
 
   function injectStyles() {
@@ -176,5 +252,5 @@
     document.head.appendChild(s);
   }
 
-  global.Neurofeedback = { NeuroSignalEngine, mountSignalPanel, injectStyles };
+  global.Neurofeedback = { NeuroSignalEngine, mountSignalPanel, injectStyles, loadBoard, recordStreak };
 })(window);

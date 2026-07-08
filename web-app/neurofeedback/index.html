@@ -27,6 +27,18 @@
     border-radius:14px;padding:18px 22px;font-size:13.5px;color:#c4c9d4;line-height:1.6;}
   .note b{color:#ffd700;}
   #back{color:#ffd700;text-decoration:none;font-weight:700;}
+  .board{margin-top:36px;background:rgba(255,255,255,.04);border:1px solid rgba(255,215,0,.35);
+    border-radius:14px;padding:18px 22px;}
+  .board h2{margin:0 0 12px;color:#ffd700;font-size:20px;letter-spacing:1px;}
+  .board table{width:100%;border-collapse:collapse;font-size:14px;}
+  .board th{text-align:left;color:#9ca3af;font-size:11px;letter-spacing:1px;padding:6px 8px;
+    border-bottom:1px solid rgba(255,255,255,.15);}
+  .board td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.06);}
+  .board .rank{color:#ffd700;font-weight:900;width:34px;}
+  .board .sec{font-weight:800;color:#2ed573;}
+  .board .empty{color:#9ca3af;font-size:13.5px;padding:8px;}
+  .board .clear{float:right;background:#1f2937;color:#9ca3af;border:1px solid #444;
+    border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -76,6 +88,17 @@
     </a>
   </div>
 
+  <div class="board">
+    <button class="clear" onclick="if(confirm('Clear the scoreboard?')){localStorage.removeItem('nf-scoreboard');renderBoard();}">Clear</button>
+    <h2>🏆 Focus Hold Scoreboard</h2>
+    <p class="sub" style="margin-top:0">Longest continuous hold above 70 calm/focus without a stress spike. Set your name with the 👤 button inside any game.</p>
+    <table>
+      <thead><tr><th>#</th><th>PLAYER</th><th>GAME</th><th>METRIC</th><th>LONGEST HOLD</th><th>DATE</th></tr></thead>
+      <tbody id="board-body"></tbody>
+    </table>
+    <div class="empty" id="board-empty" style="display:none">No streaks yet — play any game and hold your calm/focus above 70 to get on the board!</div>
+  </div>
+
   <div class="note">
     <b>Signal modes (top-left panel in every game):</b><br>
     • <b>Simulated EEG</b> — realistic trainer dynamics, play instantly with no hardware.<br>
@@ -85,5 +108,24 @@
     Same games, real brainwaves — no code changes needed.
   </div>
 </div>
+<script src="signal-engine.js?v=2"></script>
+<script>
+function renderBoard(){
+  const body=document.getElementById('board-body'), empty=document.getElementById('board-empty');
+  const board=Neurofeedback.loadBoard().slice(0,10);
+  body.innerHTML='';
+  empty.style.display=board.length?'none':'block';
+  board.forEach((e,i)=>{
+    const tr=document.createElement('tr');
+    const d=new Date(e.date);
+    tr.innerHTML=`<td class="rank">${i+1}</td><td>${e.player}</td><td>${e.game}</td>`+
+      `<td>${(e.metric||'calm').toUpperCase()}</td><td class="sec">${e.seconds.toFixed(1)}s</td>`+
+      `<td>${d.toLocaleDateString()}</td>`;
+    body.appendChild(tr);
+  });
+}
+renderBoard();
+addEventListener('focus',renderBoard);
+</script>
 </body>
 </html>
