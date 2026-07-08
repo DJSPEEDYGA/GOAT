@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zen Archer — TAHS Neurofeedback</title>
+<style>
+  html,body{margin:0;height:100%;background:#0a0f08;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;}
+  #game{display:block;width:100vw;height:100vh;}
+  #hud{position:fixed;top:14px;left:14px;z-index:10;}
+  #back{position:fixed;top:14px;right:14px;z-index:10;color:#ffd700;text-decoration:none;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:700;}
+  #score{position:fixed;top:64px;right:14px;z-index:10;color:#fff;text-align:right;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:800;font-size:15px;}
+  #score small{color:#9ca3af;font-weight:600;}
+  #msg{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:10;color:#fff;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:12px;
+    padding:10px 22px;font-size:15px;max-width:700px;text-align:center;}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"></div>
+<a id="back" href="index.html">← Game Hub</a>
+<div id="score">🏹 0 pts <br><small>arrows 0</small></div>
+<div id="msg">Draw the bow with your calm — the arrow flies where the still mind aims.</div>
+
+<script src="signal-engine.js?v=2"></script>
+<script>
+Neurofeedback.injectStyles();
+const engine = Neurofeedback.mountSignalPanel(document.getElementById('hud'), {metric:'focus', game:'Zen Archer'});
+
+const cv=document.getElementById('game'), cx=cv.getContext('2d');
+function fit(){cv.width=innerWidth;cv.height=innerHeight;} fit(); addEventListener('resize',fit);
+
+let focus=50, spike=false;
+engine.on(s=>{focus=s.focus; spike=s.spike;});
+
+const IMG={};
+[['bg','assets/bg-archery.jpg?v=1']]
+  .forEach(([k,src])=>{const im=new Image(); im.src=src; IMG[k]=im;});
+
+function bgRect(W,H){
+  const bw=1536,bh=1024, sc=Math.max(W/bw,H/bh);
+  return {x:(W-bw*sc)/2, y:(H-bh*sc)/2, sc};
+}
+// Target face position inside the backdrop photo
+function targetPos(W,H){ const r=bgRect(W,H); return {x:r.x+770*r.sc, y:r.y+430*r.sc, R:62*r.sc}; }
+
+// Shot cycle: draw (charge) → loose (flight) → result → reset
+let draw01=0, spiked=false, phase='draw';
+let flight=null, resultTimer=0, points=0, arrows=0;
+const hits=[];                                  // stuck arrows {dx,dy} relative to target
+const scoreEl=document.getElementById('score'), msg=document.getElementById('msg');
+
+// Sway: the aim wanders more when focus is low
+let swayX=0, swayY=0;
+function sway(t){
+  const un=1-Math.max(0,Math.min(1,(focus-30)/70));
+  swayX=(Math.sin(t/620)*34+Math.sin(t/233)*18)*un;
+  swayY=(Math.cos(t/540)*26+Math.sin(t/301)*14)*un;
+  if (spike){ swayX*=2.4; swayY*=2.4; }
+}
+
+function loose(W,H){
+  const tp=targetPos(W,H);
+  const jitter=spiked?tp.R*1.6:0;
+  const dx=swayX*(tp.R/62)+(Math.random()-0.5)*jitter;
+  const dy=swayY*(tp.R/62)+(Math.random()-0.5)*jitter;
+  flight={t:0, dx, dy, dur:0.7};
+  phase='flight'; arrows++;
+}
+
+function ringScore(d,R){ return d<R*0.16?10 : d<R*0.36?9 : d<R*0.6?7 : d<R*0.85?5 : d<R*1.05?3 : 0; }
+
+function update(dt,W,H){
+  if (phase==='draw'){
+    if (spike) spiked=true;
+    const rate = focus>55 ? (focus-55)/45 : -0.3;
+    draw01=Math.max(0,Math.min(1,draw01+rate*dt*0.5));
+    msg.textContent = spike ? '⚡ Stress! The bow arm shakes…'
+      : draw01>0.75 ? 'Full draw coming… breathe, hold steady.'
+      : focus>55 ? 'Drawing back — smooth and calm.'
+      : 'Focus dropped — the draw eases off.';
+    if (draw01>=1) loose(W,H);
+  } else if (phase==='flight'){
+    flight.t+=dt/flight.dur;
+    if (flight.t>=1){
+      const tp=targetPos(W,H);
+      const d=Math.hypot(flight.dx,flight.dy);
+      const sc=ringScore(d,tp.R);
+      points+=sc;
+      hits.push({dx:flight.dx,dy:flight.dy});
+      if (hits.length>10) hits.shift();
+      phase='result'; resultTimer=1.3;
+      msg.textContent = sc===10 ? '🎯 BULLSEYE! Perfect stillness.'
+        : sc>=9 ? `Great shot — ${sc} points.`
+        : sc>=5 ? `${sc} points. A calmer hold tightens the group.`
+        : sc>0 ? `Caught the edge — ${sc} points.` 
+        : spiked ? '⚡ Wild miss — the spike threw the arrow wide.' : 'Missed! Settle the sway before full draw.';
+      scoreEl.innerHTML=`🏹 ${points} pts <br><small>arrows ${arrows}</small>`;
+    }
+  } else {
+    resultTimer-=dt;
+    if (resultTimer<=0){ phase='draw'; draw01=0; spiked=false; }
+  }
+}
+
+function render(t){
+  const W=cv.width,H=cv.height;
+  if (IMG.bg.complete && IMG.bg.naturalWidth){
+    const r=bgRect(W,H);
+    cx.drawImage(IMG.bg, r.x, r.y, 1536*r.sc, 1024*r.sc);
+  } else { cx.fillStyle='#12200e'; cx.fillRect(0,0,W,H); }
+
+  const tp=targetPos(W,H);
+
+  // Arrows stuck in the target
+  for(const h of hits){
+    const hx=tp.x+h.dx, hy=tp.y+h.dy;
+    cx.strokeStyle='#3a2c1a'; cx.lineWidth=2.5;
+    cx.beginPath(); cx.moveTo(hx,hy); cx.lineTo(hx+9,hy+16); cx.stroke();
+    cx.fillStyle='#e8e4da'; cx.beginPath(); cx.arc(hx,hy,2.6,0,7); cx.fill();
+  }
+
+  // Arrow in flight (shrinks toward the target)
+  if (phase==='flight'){
+    const p=flight.t;
+    const sx=W/2, sy=H*0.78;
+    const ex=tp.x+flight.dx, ey=tp.y+flight.dy;
+    const x=sx+(ex-sx)*p, y=sy+(ey-sy)*p - Math.sin(p*Math.PI)*H*0.06;
+    const sc=1-p*0.8;
+    cx.save(); cx.translate(x,y);
+    const ang=Math.atan2(ey-y, ex-x);
+    cx.rotate(ang);
+    cx.strokeStyle='#4a3720'; cx.lineWidth=4*sc;
+    cx.beginPath(); cx.moveTo(-38*sc,0); cx.lineTo(20*sc,0); cx.stroke();
+    cx.fillStyle='#d8d2c4';
+    cx.beginPath(); cx.moveTo(20*sc,0); cx.lineTo(8*sc,-5*sc); cx.lineTo(8*sc,5*sc); cx.closePath(); cx.fill();
+    cx.fillStyle='#c33'; 
+    cx.beginPath(); cx.moveTo(-38*sc,0); cx.lineTo(-30*sc,-6*sc); cx.lineTo(-26*sc,0); cx.lineTo(-30*sc,6*sc); cx.closePath(); cx.fill();
+    cx.restore();
+  }
+
+  // First-person bow + nocked arrow at the bottom while drawing
+  if (phase==='draw'){
+    sway(t);
+    const bx=W/2+swayX*0.4, by=H*0.995;
+    const pull=draw01*H*0.09;
+    cx.save();
+    cx.strokeStyle='#3d2b16'; cx.lineWidth=10; cx.lineCap='round';
+    cx.beginPath(); cx.moveTo(bx-W*0.13, by-H*0.05);
+    cx.quadraticCurveTo(bx, by-H*0.30, bx+W*0.13, by-H*0.05); cx.stroke();
+    // string
+    cx.strokeStyle='rgba(240,240,240,0.85)'; cx.lineWidth=2;
+    cx.beginPath(); cx.moveTo(bx-W*0.13, by-H*0.05);
+    cx.lineTo(bx, by-H*0.16+pull); cx.lineTo(bx+W*0.13, by-H*0.05); cx.stroke();
+    // arrow
+    cx.strokeStyle='#4a3720'; cx.lineWidth=5;
+    cx.beginPath(); cx.moveTo(bx, by-H*0.16+pull); cx.lineTo(bx, by-H*0.30); cx.stroke();
+    cx.fillStyle='#d8d2c4';
+    cx.beginPath(); cx.moveTo(bx, by-H*0.315); cx.lineTo(bx-6, by-H*0.295); cx.lineTo(bx+6, by-H*0.295); cx.closePath(); cx.fill();
+    cx.restore();
+
+    // Aim reticle drifting with the sway
+    const ax=tp.x+swayX, ay=tp.y+swayY;
+    const steadiness=Math.max(0,Math.min(1,(focus-40)/60));
+    cx.save();
+    cx.strokeStyle= spike ? 'rgba(255,70,70,0.9)' : steadiness>0.6 ? 'rgba(60,255,140,0.9)' : 'rgba(255,200,60,0.85)';
+    cx.lineWidth=2.5;
+    cx.beginPath(); cx.arc(ax,ay,tp.R*0.5,0,7); cx.stroke();
+    cx.beginPath(); cx.moveTo(ax-tp.R*0.75,ay); cx.lineTo(ax-tp.R*0.3,ay); cx.stroke();
+    cx.beginPath(); cx.moveTo(ax+tp.R*0.3,ay); cx.lineTo(ax+tp.R*0.75,ay); cx.stroke();
+    cx.beginPath(); cx.moveTo(ax,ay-tp.R*0.75); cx.lineTo(ax,ay-tp.R*0.3); cx.stroke();
+    cx.beginPath(); cx.moveTo(ax,ay+tp.R*0.3); cx.lineTo(ax,ay+tp.R*0.75); cx.stroke();
+    cx.restore();
+    // draw meter
+    const mw=W*0.16;
+    cx.fillStyle='rgba(0,0,0,0.55)'; cx.fillRect(W/2-mw/2, H*0.93, mw, 10);
+    cx.fillStyle= spiked ? '#ff5a5a' : '#ffd700';
+    cx.fillRect(W/2-mw/2, H*0.93, mw*draw01, 10);
+  }
+
+  // vignette
+  const vg=cx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.45,W/2,H/2,Math.max(W,H)*0.72);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(2,6,0,0.45)');
+  cx.fillStyle=vg; cx.fillRect(0,0,W,H);
+}
+
+let last=performance.now();
+(function loop(t){ const dt=Math.min(0.05,(t-last)/1000); last=t;
+  update(dt,cv.width,cv.height); render(t); requestAnimationFrame(loop); })(last);
+</script>
+</body>
+</html>

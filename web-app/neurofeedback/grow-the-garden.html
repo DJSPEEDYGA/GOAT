@@ -67,19 +67,40 @@ function readMic(){
   micLevel += (target-micLevel)*0.18;   // smooth
 }
 
-let growth=0;  // 0..1 bloom progress (garden) ; glow (campfire uses calm directly)
+let growth=0;  // 0..1 bloom progress of the lead flower (drives scene light)
+
+// Field of flowers: each keeps its own growth; new ones sprout while calm
+// holds, and they wither away when calm is lost.
+const flowers=[{fx:0.5, depth:1, growth:0, seed:Math.random()*10, hue:0}];
+let sproutTimer=0;
+const MAX_FLOWERS=14;
+function sproutFlower(){
+  const fx=0.08+Math.random()*0.84;
+  flowers.push({fx, depth:0.35+Math.random()*0.5, growth:0,
+    seed:Math.random()*10, hue:(Math.random()-0.5)*50});
+}
 
 const IMG={};
 [['garden','assets/bg-garden.jpg?v=2'],['mountains','assets/bg-mountains.jpg?v=2'],['flower','assets/flower.png?v=2'],['logs','assets/campfire-logs.png?v=1']]
   .forEach(([k,src])=>{const im=new Image(); im.src=src; IMG[k]=im;});
 function update(dt){
   const rate = calm>60 ? (calm-60)/40*0.03 : calm<35 ? -0.015 : 0;
-  growth = Math.max(0, Math.min(1, growth + rate*dt*10));
+  const wither = calm<35 || spike;
+  for(let i=flowers.length-1;i>=0;i--){ const f=flowers[i];
+    f.growth = Math.max(0, Math.min(1, f.growth + (wither?-0.02:rate)*dt*10));
+    if (i>0 && wither && f.growth<=0) flowers.splice(i,1);   // withered away
+  }
+  growth = flowers[0].growth;
+  if (calm>60 && !spike){
+    sproutTimer += dt*(calm-60)/40;
+    if (sproutTimer>1.6 && flowers.length<MAX_FLOWERS){ sproutTimer=0; sproutFlower(); }
+  } else sproutTimer=0;
   if (mode==='garden'){
     msg.textContent = spike ? '⚡ A gust of stress — the petals tremble. Ease back into calm.'
-      : growth>=1 ? '🌸 Full bloom! Your calm brought the whole garden to life.'
-      : calm>60 ? 'The plant is growing… gentle and steady wins.'
-      : calm<35 ? 'The garden wilts a little without your calm…'
+      : growth>=1 && flowers.length>=MAX_FLOWERS ? '🌸 A whole field in bloom! Your calm brought the garden to life.'
+      : growth>=1 ? '🌸 Full bloom — keep holding and more flowers will sprout!'
+      : calm>60 ? `The garden is growing… ${flowers.length} flower${flowers.length>1?'s':''} and counting.`
+      : calm<35 ? 'The flowers are withering without your calm…'
       : 'Hold a soft, easy calm and watch it grow.';
   } else {
     msg.textContent = spike ? '⚡ Stress! The fire sputters — slow your breath to bring it back.'
@@ -123,20 +144,33 @@ function drawGarden(t){
   soil.addColorStop(0,'rgba(58,38,20,0.9)'); soil.addColorStop(1,'rgba(20,12,6,0.95)');
   cx.fillStyle=soil; cx.fillRect(0,H*0.86,W,H*0.14);
 
-  // Main flower grows from center: revealed from the soil up as growth rises
-  const baseX=W/2, baseY=H*0.88;
+  // The flower field: each flower grows from the soil, sways, and wilts
+  // (drooping + desaturating) when calm is lost. Back-to-front by depth.
+  const wilting = calm<35 || spike;
   if (IMG.flower.complete && IMG.flower.naturalWidth){
-    const fullH = H*0.62, fw = fullH*IMG.flower.naturalWidth/IMG.flower.naturalHeight;
-    const vis = 0.08 + growth*0.92;               // fraction of plant above the soil
-    const srcH = IMG.flower.naturalHeight*vis;
-    const sway = Math.sin(t/900)*8*growth;
-    // Contact shadow at the base of the plant
-    const ps=cx.createRadialGradient(baseX,baseY,2,baseX,baseY,fw*0.5);
-    ps.addColorStop(0,'rgba(0,0,0,0.45)'); ps.addColorStop(1,'rgba(0,0,0,0)');
-    cx.save(); cx.translate(baseX,baseY); cx.scale(1,0.12); cx.translate(-baseX,-baseY);
-    cx.fillStyle=ps; cx.beginPath(); cx.arc(baseX,baseY,fw*0.5,0,7); cx.fill(); cx.restore();
-    cx.drawImage(IMG.flower, 0, IMG.flower.naturalHeight-srcH, IMG.flower.naturalWidth, srcH,
-                 baseX-fw/2+sway, baseY-fullH*vis, fw, fullH*vis);
+    const sorted=[...flowers].sort((a,b)=>a.depth-b.depth);
+    for(const f of sorted){
+      if (f.growth<=0.01) continue;
+      const baseX=W*f.fx, baseY=H*(0.865+f.depth*0.02);
+      const fullH=H*0.62*(0.45+f.depth*0.55), fw=fullH*IMG.flower.naturalWidth/IMG.flower.naturalHeight;
+      const vis=0.08+f.growth*0.92;
+      const srcH=IMG.flower.naturalHeight*vis;
+      const droop=wilting?(1-f.growth)*0.35:0;
+      const sway=Math.sin(t/900+f.seed)*8*f.growth;
+      // contact shadow
+      const ps=cx.createRadialGradient(baseX,baseY,2,baseX,baseY,fw*0.5);
+      ps.addColorStop(0,'rgba(0,0,0,0.45)'); ps.addColorStop(1,'rgba(0,0,0,0)');
+      cx.save(); cx.translate(baseX,baseY); cx.scale(1,0.12); cx.translate(-baseX,-baseY);
+      cx.fillStyle=ps; cx.beginPath(); cx.arc(baseX,baseY,fw*0.5,0,7); cx.fill(); cx.restore();
+      cx.save();
+      cx.translate(baseX,baseY); cx.rotate(droop*(f.seed>5?1:-1)); cx.translate(-baseX,-baseY);
+      const fade=wilting?0.55+0.45*f.growth:1;
+      cx.globalAlpha=Math.min(1, f.growth*4)*fade;
+      cx.filter=`hue-rotate(${f.hue}deg)`+(wilting?` grayscale(${(1-f.growth)*70}%) brightness(${100-(1-f.growth)*25}%)`:'');
+      cx.drawImage(IMG.flower, 0, IMG.flower.naturalHeight-srcH, IMG.flower.naturalWidth, srcH,
+                   baseX-fw/2+sway, baseY-fullH*vis, fw, fullH*vis);
+      cx.restore();
+    }
     // Drifting pollen motes in the light
     cx.fillStyle=`rgba(255,240,180,${0.25+day*0.35})`;
     for(let i=0;i<14;i++){
@@ -144,10 +178,14 @@ function drawGarden(t){
       cx.beginPath(); cx.arc(mx,my,1.4+(i%3)*0.6,0,7); cx.fill();
     }
   } else {
-    const stemH = 40 + growth*(H*0.42);
     cx.strokeStyle='#2f8f4e'; cx.lineWidth=8; cx.lineCap='round';
-    cx.beginPath(); cx.moveTo(baseX,baseY);
-    cx.quadraticCurveTo(baseX+Math.sin(t/900)*14, baseY-stemH*0.6, baseX, baseY-stemH); cx.stroke();
+    for(const f of flowers){
+      if (f.growth<=0.01) continue;
+      const bx=W*f.fx, by=H*(0.865+f.depth*0.02);
+      const stemH=(40+f.growth*(H*0.42))*(0.45+f.depth*0.55);
+      cx.beginPath(); cx.moveTo(bx,by);
+      cx.quadraticCurveTo(bx+Math.sin(t/900+f.seed)*14, by-stemH*0.6, bx, by-stemH); cx.stroke();
+    }
   }
   vignette(W,H);
 }
