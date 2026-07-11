@@ -23,7 +23,7 @@
 <div id="hud"></div>
 <a id="back" href="index.html">← Game Hub</a>
 <div id="hr">💗 YOUR HEART: <span id="bpm">102</span> BPM</div>
-<div id="story">Your thoughts are racing… quiet your own heart, and let him come to you.</div>
+<div id="story">Your thoughts are racing… open your heart, and he can come over to you.</div>
 
 <script src="signal-engine.js?v=3"></script>
 <script>
@@ -77,8 +77,8 @@ function update(dt){
     : spike ? '⚡ The spiral hits — the walls fly back up and he waits. Breathe.'
     : bpm > 104 ? 'Your thoughts are racing — he keeps a gentle distance. Come back to your breath.'
     : walls > 0.5 ? 'Your heart is settling… the walls are starting to come down.'
-    : bpm > 80 ? 'Walls are down. Stay soft and steady — he\'s moving closer.'
-    : 'Beautifully open and calm. Trust it — he\'s almost there.';
+    : bpm > 80 ? 'Your heart is opening. Stay soft and steady — he\'s coming over.'
+    : 'Heart wide open. Trust it — he\'s almost there.';
 }
 
 let beatPhase = 0;
@@ -115,11 +115,11 @@ function draw(t, dt){
   cx.beginPath(); cx.arc(W/2, H*0.5, wr, 0, 7); cx.fill();
 
   const groundY = H*0.85;
-  // You (left, foreground)
-  const herX = W*0.3;
+  // You (right — same spot as in Calm the Heart, but now you're the player)
+  const herX = W*0.62;
   drawPerson(IMG.woman, herX, groundY, '#ff9ecb', true);
-  // Him (right, approaches only when you're open)
-  const himX = W*0.85 - (W*0.85 - (herX + 150)) * approach;
+  // Him (left — he comes over only when your heart is open)
+  const himX = W*0.18 + (herX - 150 - W*0.18) * approach;
   drawPerson(IMG.man, himX, groundY, '#7ec8ff', false);
 
   // Racing-thought wisps swirl around your head; they dissolve as you calm
