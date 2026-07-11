@@ -17,6 +17,12 @@
     background:rgba(12,8,26,.85);border:1px solid rgba(150,110,255,.35);border-radius:12px;
     padding:8px 18px;font-size:14px;font-weight:700;display:flex;gap:18px;}
   .a{color:#6fd3ff}.th{color:#c79bff}
+  #music{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);z-index:10;color:#d8ccf5;
+    background:rgba(12,8,26,.85);border:1px solid rgba(150,110,255,.35);border-radius:12px;
+    padding:8px 14px;font-size:13px;display:flex;gap:10px;align-items:center;}
+  #music select,#music button{background:#161028;color:#d8ccf5;border:1px solid rgba(150,110,255,.4);
+    border-radius:8px;padding:4px 8px;font-size:13px;cursor:pointer;}
+  #music .np{color:#ffd700;font-weight:700;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 </style>
 </head>
 <body>
@@ -25,6 +31,15 @@
 <a id="back" href="index.html">← Game Hub</a>
 <div id="bands"><span class="a">α ALPHA <span id="av">0</span></span><span class="th">θ THETA <span id="tv">0</span></span><span id="xo" style="color:#ffd700"></span></div>
 <div id="story">Close your eyes if you like — the tones will guide you. Relax into alpha, then drift deeper toward theta.</div>
+<div id="music">
+  <span>🎵 THETA DATA</span>
+  <select id="track">
+    <option value="0">Off</option>
+    <option value="all">Full mix (all tracks)</option>
+  </select>
+  <button id="playBtn">▶</button>
+  <span class="np" id="np"></span>
+</div>
 
 <script src="signal-engine.js?v=3"></script>
 <script>
@@ -97,6 +112,44 @@ setInterval(()=>{
   if(!actx || actx.state!=='running') return;
   aGain.gain.setTargetAtTime((alpha/100)*0.035, actx.currentTime, 0.6);
   tGain.gain.setTargetAtTime((theta/100)*0.06, actx.currentTime, 0.8);
+}, 200);
+
+/*
+ * Theta Data — Harvey's sleep-meditation mixes (soothing beats +
+ * affirmations repeated 7x). The music starts soft and swells as you
+ * sink toward theta, so reaching the twilight state is rewarded with
+ * the full affirmations. A spike ducks it briefly.
+ */
+const TRACKS = Array.from({length:10}, (_,i)=>({
+  n:i+1, src:`assets/theta-data/theta-data-tr${i+1}.mp3`, name:`Theta Data — Track ${i+1}`
+}));
+const trackSel=document.getElementById('track'), playBtn=document.getElementById('playBtn'), npEl=document.getElementById('np');
+TRACKS.forEach(t=>{const o=document.createElement('option');o.value=t.n;o.textContent=t.name;trackSel.appendChild(o);});
+const player=new Audio(); player.preload='none'; player.volume=0;
+let queue=[], qi=0, playing=false;
+function loadQueue(){
+  const v=trackSel.value;
+  queue = v==='0' ? [] : v==='all' ? TRACKS.slice() : TRACKS.filter(t=>String(t.n)===v);
+  qi=0;
+}
+function playCurrent(){
+  if(!queue.length){ player.pause(); npEl.textContent=''; playing=false; playBtn.textContent='▶'; return; }
+  const t=queue[qi%queue.length];
+  player.src=t.src; player.play().catch(()=>{});
+  npEl.textContent='♪ '+t.name; playing=true; playBtn.textContent='⏸';
+}
+player.addEventListener('ended',()=>{ qi++; playCurrent(); });
+trackSel.addEventListener('change',()=>{ loadQueue(); if(playing||trackSel.value!=='0') playCurrent(); });
+playBtn.addEventListener('click',()=>{
+  if(playing){ player.pause(); playing=false; playBtn.textContent='▶'; }
+  else { if(!queue.length) loadQueue(); if(!queue.length){ trackSel.value='all'; loadQueue(); } playCurrent(); }
+});
+setInterval(()=>{
+  if(!playing) return;
+  // base bed at 35%, swelling to 100% as theta deepens; spikes duck it
+  const depth=Math.max(alpha/100*0.3, theta/100);
+  const target=spike ? 0.15 : 0.35 + depth*0.65;
+  player.volume += (Math.min(1,target) - player.volume)*0.08;
 }, 200);
 
 // Minimal, dim visuals on purpose — two slow breathing rings.
