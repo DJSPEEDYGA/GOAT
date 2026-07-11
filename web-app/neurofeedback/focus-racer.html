@@ -38,6 +38,7 @@ let focus=50, spike=false;
 engine.on(s=>{focus=s.focus; spike=s.spike;});
 
 let mph=0, roadScroll=0, heat=0; // heat: 0..1 police pressure
+let chase=0;                     // 0 police offscreen .. 1 on your bumper
 const mphEl=document.getElementById('mph'), msg=document.getElementById('msg');
 
 const IMG={};
@@ -57,9 +58,14 @@ function update(dt){
   else if (focus>65) heat = Math.max(0, heat - dt*0.25);
   if (heat>0.2) mph = Math.min(mph, 190 - heat*80); // police pressure slows you
   mph = Math.max(0, mph);
+  // The cop creeps up whenever you slow down; speed back up to pull away
+  if (spike) chase = Math.min(1, chase + dt*0.55);
+  else if (mph < 140) chase = Math.min(1, chase + dt*(0.06 + (140-mph)/140*0.18));
+  else chase = Math.max(0, chase - dt*(0.08 + (mph-140)/320*0.35));
   roadScroll += mph*dt*3.6;
   mphEl.textContent = Math.round(mph);
   msg.textContent = heat>0.5 ? '🚨 Police on your tail! Steady your focus to shake them.'
+    : chase>0.6 ? '🚨 He\'s right behind you — speed up! Lock the focus in.'
     : spike ? '⚡ Stress spike — sirens behind you!'
     : focus>75 ? 'Full send — the exotic is flying. Stay locked in.'
     : focus>45 ? 'Building speed… deepen the focus.'
@@ -153,8 +159,12 @@ function draw(t){
     for(let i=0;i<8;i++){ const y=H*0.62+((i*61)%(H*0.36)); const x=W-((roadScroll*2+i*173)%(W+200));
       cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+60+mph*0.4,y); cx.stroke(); } }
 
-  // Police behind (left), pulls closer with heat
-  if (heat>0.05){ drawSprite(IMG.police, W*0.42 - (0.35-heat*0.28)*W, H*0.78+14, 300, true, t, 'police'); }
+  // Police behind (left) — slides in from offscreen and closes the gap as chase rises
+  const pressure = Math.max(chase, heat);
+  if (pressure>0.02){
+    const px = -220 + (W*0.55 - 380 + 220) * pressure;
+    drawSprite(IMG.police, px, H*0.78+14, 300, true, t, 'police');
+  }
 
   // Player vehicle
   const shake = spike ? Math.sin(t/30)*3 : 0;
