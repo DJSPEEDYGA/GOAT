@@ -51,13 +51,13 @@ document.getElementById('vehicleBtn').onclick=function(){
 };
 
 function update(dt){
-  const targetSpeed = focus*2.4;                    // focus 100 -> 240 mph
-  mph += (targetSpeed - mph) * dt * (mph<targetSpeed?0.5:1.2);
+  const targetSpeed = focus*3.2;                    // focus 100 -> 320 mph
+  mph += (targetSpeed - mph) * dt * (mph<targetSpeed?0.85:1.2);
   if (spike) heat = Math.min(1, heat + dt*1.2);     // spike summons police
   else if (focus>65) heat = Math.max(0, heat - dt*0.25);
-  if (heat>0.2) mph = Math.min(mph, 150 - heat*70); // police pressure slows you
+  if (heat>0.2) mph = Math.min(mph, 190 - heat*80); // police pressure slows you
   mph = Math.max(0, mph);
-  roadScroll += mph*dt*3;
+  roadScroll += mph*dt*3.6;
   mphEl.textContent = Math.round(mph);
   msg.textContent = heat>0.5 ? '🚨 Police on your tail! Steady your focus to shake them.'
     : spike ? '⚡ Stress spike — sirens behind you!'
@@ -74,7 +74,7 @@ const WHEELS={
 };
 
 function drawWheelSpin(x,y,w,wheels){
-  const a=Math.min(0.55, mph/240*0.7);
+  const a=Math.min(0.55, mph/320*0.7);
   if (a<0.03) return;
   for(const wh of wheels){
     const wx=x-w/2+wh.fx*w, r=wh.r*w, wy=y-r;
