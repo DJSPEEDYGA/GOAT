@@ -33,7 +33,10 @@ except ImportError:
 
 # ── Configuration ──────────────────────────────────────────────
 CHAT_SERVER_PORT = 3333
-OLLAMA_HOST = "http://127.0.0.1:11434"
+OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434")
+if not OLLAMA_HOST.startswith("http"):
+    OLLAMA_HOST = "http://" + OLLAMA_HOST
+OLLAMA_HOST = OLLAMA_HOST.rstrip("/")
 
 # Always resolve paths relative to THIS script's location (the USB drive)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
