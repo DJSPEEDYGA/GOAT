@@ -11,8 +11,8 @@ URL="http://127.0.0.1:8090/dr-devin.html"
 osascript -e 'display notification "Starting GOAT Force systems..." with title "🩺 Dr. Devin — AGENT-007"'
 
 if command -v ollama &>/dev/null; then
-  if ! curl -s http://127.0.0.1:11434/api/tags >/dev/null 2>&1; then
-    nohup ollama serve >/tmp/ollama-devin.log 2>&1 &
+  if ! curl -s http://127.0.0.1:11435/api/tags >/dev/null 2>&1; then
+    OLLAMA_HOST=127.0.0.1:11435 nohup ollama serve >/tmp/ollama-devin.log 2>&1 &
     sleep 2
   fi
 fi

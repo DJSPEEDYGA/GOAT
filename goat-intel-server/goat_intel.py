@@ -530,6 +530,38 @@ CHATS_FILE     = os.path.join(CHAT_DIR, "chats.json")
 SETTINGS_FILE  = os.path.join(CHAT_DIR, "settings.json")
 OSCAR_OLLAMA_HOST = os.environ.get("OSCAR_OLLAMA_HOST", "http://127.0.0.1:11435")
 
+# Ollama can run on 11435 (GOAT ecosystem port) or 11434 (default install).
+# Probe candidates and cache whichever answers so every agent works either way.
+_OLLAMA_CANDIDATES = []
+_env_ollama = os.environ.get("OLLAMA_HOST") or os.environ.get("OSCAR_OLLAMA_HOST")
+if _env_ollama:
+    if not _env_ollama.startswith("http"):
+        _env_ollama = "http://" + _env_ollama
+    _OLLAMA_CANDIDATES.append(_env_ollama.rstrip("/"))
+for _c in ("http://127.0.0.1:11435", "http://127.0.0.1:11434"):
+    if _c not in _OLLAMA_CANDIDATES:
+        _OLLAMA_CANDIDATES.append(_c)
+
+_OLLAMA_BASE = {"url": None, "checked": 0.0}
+
+def ollama_base():
+    """Return the base URL of a reachable Ollama server (cached for 60s)."""
+    now = time.time()
+    if _OLLAMA_BASE["url"] and now - _OLLAMA_BASE["checked"] < 60:
+        return _OLLAMA_BASE["url"]
+    for base in _OLLAMA_CANDIDATES:
+        try:
+            r = requests.get(base + "/api/tags", timeout=2)
+            if r.ok:
+                _OLLAMA_BASE["url"] = base
+                _OLLAMA_BASE["checked"] = now
+                return base
+        except Exception:
+            continue
+    _OLLAMA_BASE["url"] = None
+    _OLLAMA_BASE["checked"] = now
+    return _OLLAMA_CANDIDATES[0]
+
 def _ensure_chat_data():
     os.makedirs(CHAT_DIR, exist_ok=True)
     if not os.path.exists(CHATS_FILE):
@@ -3705,7 +3737,7 @@ def call_ollama(messages, system_prompt, model=None):
     chosen = model
     if not chosen:
         try:
-            r = requests.get("http://127.0.0.1:11435/api/tags", timeout=4)
+            r = requests.get(ollama_base() + "/api/tags", timeout=4)
             if r.ok:
                 available = [m["name"] for m in r.json().get("models", [])]
                 for p in preferred:
@@ -3728,7 +3760,7 @@ def call_ollama(messages, system_prompt, model=None):
     msgs.extend(messages)
 
     try:
-        r = requests.post("http://127.0.0.1:11435/api/chat", json={
+        r = requests.post(ollama_base() + "/api/chat", json={
             "model": model_tag,
             "messages": msgs,
             "stream": False,
@@ -3848,11 +3880,11 @@ _DRAW_GOAT_TRIGGERS = [
 
 # All GOAT mascot images — server picks one at random each call
 _GOAT_MASCOT_IMAGES = [
-    ("/assets/images/goat-mascot.png",  "GOAT Force Mascot — Superman GOAT flying over the city"),
-    ("/assets/images/kid-goat.png",     "Kid GOAT — Red suit, gold G, gold cape, flying"),
-    ("/assets/images/kid-goat-2.png",   "Kid GOAT — Flying punch, red suit, gold G, yellow cape"),
-    ("/assets/images/the-goat-icon.png","THE GOAT — Blue suit, gold G chain, red cape"),
-    ("/assets/images/the-goat-2.png",   "THE GOAT — DJ Speedy sign, blue/red/gold suit"),
+    ("/assets/goat/goat-superman-city.webp",  "GOAT Force Mascot — Superman GOAT flying over the city"),
+    ("/assets/goat/waka-goat-flying.webp",     "Kid GOAT — Red suit, gold G, gold cape, flying"),
+    ("/assets/goat/the-goat-1.webp",   "Kid GOAT — Flying punch, red suit, gold G, yellow cape"),
+    ("/assets/images/the-goat-icon.webp","THE GOAT — Blue suit, gold G chain, red cape"),
+    ("/assets/images/the-goat-2.webp",   "THE GOAT — DJ Speedy sign, blue/red/gold suit"),
 ]
 
 _DRAW_WAKA_TRIGGERS = [
@@ -3894,7 +3926,7 @@ def moneypenny_chat():
             "reply": "WAKA FLOCKA FLAME — President of GOAT Force Records. BrickSquad. The man himself flying with THE GOAT over the city. 🔥",
             "persona": "Ms. Money Penny",
             "engine": "GOAT-ASSETS",
-            "image": "/assets/images/waka-and-goat.png",
+            "image": "/assets/images/waka-and-goat.webp",
             "image_alt": "Waka Flocka Flame & THE GOAT — GOAT Force President",
             "type": "president"
         })
@@ -4828,7 +4860,7 @@ def _agent_chat(agent_id, persona_name, system_prompt):
             "reply": "WAKA FLOCKA FLAME — President of GOAT Force Records. BrickSquad. The man himself flying with THE GOAT. 🔥",
             "persona": persona_name,
             "engine": "GOAT-ASSETS",
-            "image": "/assets/images/waka-and-goat.png",
+            "image": "/assets/images/waka-and-goat.webp",
             "image_alt": "Waka Flocka Flame & THE GOAT — GOAT Force President",
             "type": "president"
         })
@@ -4961,7 +4993,7 @@ def system_audit():
     ollama_status = "unknown"
     try:
         import urllib.request as _ur
-        with _ur.urlopen("http://localhost:11435/api/tags", timeout=3) as r:
+        with _ur.urlopen(ollama_base() + "/api/tags", timeout=3) as r:
             tags = __import__('json').loads(r.read())
             model_count = len(tags.get("models", []))
             ollama_status = f"ONLINE — {model_count} models loaded"

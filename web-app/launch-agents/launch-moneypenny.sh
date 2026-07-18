@@ -14,9 +14,9 @@ echo "==================================================="
 
 # Ollama
 if command -v ollama &>/dev/null; then
-  if ! curl -s http://127.0.0.1:11434/api/tags >/dev/null 2>&1; then
+  if ! curl -s http://127.0.0.1:11435/api/tags >/dev/null 2>&1; then
     echo "Starting Ollama..."
-    nohup ollama serve >/tmp/ollama-money-penny.log 2>&1 &
+    OLLAMA_HOST=127.0.0.1:11435 nohup ollama serve >/tmp/ollama-money-penny.log 2>&1 &
     sleep 2
   fi
 fi

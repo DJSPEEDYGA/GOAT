@@ -74,7 +74,7 @@ body.bg-icon::before {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: url('assets/goat-superman.jpg') center center / 500px no-repeat;
+  background: url('assets/goat/goat-superman-city.webp') center center / 500px no-repeat;
   opacity: 0.04;
   filter: grayscale(100%);
 }
@@ -1113,8 +1113,14 @@ async function loadModelList() {
   const sel    = document.getElementById('modelSelect');
   const status = document.getElementById('modelStatus');
   try {
-    const r = await fetch('http://localhost:11435/api/tags', { signal: AbortSignal.timeout(5000) });
-    if (!r.ok) throw new Error('Ollama offline');
+    let r = null;
+    for (const port of [11435, 11434]) {
+      try {
+        r = await fetch(`http://localhost:${port}/api/tags`, { signal: AbortSignal.timeout(5000) });
+        if (r.ok) break;
+      } catch (e) { r = null; }
+    }
+    if (!r || !r.ok) throw new Error('Ollama offline');
     const data   = await r.json();
     const models = (data.models || []).sort((a, b) => a.name.localeCompare(b.name));
 
@@ -1447,6 +1453,22 @@ function addMessage(role, content, engine) {
   container.scrollTop = container.scrollHeight;
 }
 
+function addImageMessage(src, alt) {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  const img = document.createElement('img');
+  img.src = src;
+  img.alt = alt || '';
+  img.style.cssText = 'max-width:320px;width:100%;border-radius:12px;border:2px solid rgba(240,192,64,0.4);display:block;';
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.appendChild(img);
+  div.appendChild(bubble);
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
 function setTyping(visible) {
   isTyping = visible;
   const el  = document.getElementById('typingIndicator');
@@ -1488,6 +1510,7 @@ async function sendMessage() {
       updateTokenCounter();
       if (d.plan) injectPlanPreview(d.plan);
       addMessage('assistant', d.reply, d.engine);
+      if (d.image) addImageMessage(d.image, d.image_alt);
       chatHistory.push({role:'assistant', content: d.reply});
     } else {
       const errMsg = d.error || 'Response failed';
