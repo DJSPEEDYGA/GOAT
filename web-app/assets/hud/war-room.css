@@ -1,0 +1,70 @@
+/* war-room.css — Military / 3D HUD / Mission Control overlay for GOAT command centers */
+
+/* Tactical green radar body watermark + gold grid */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:url('assets/hud/military-green-radar-wireframe-landscape-screen-target-futuristic-hud-interface-stock-vector-illustration-77536084.webp') center/cover no-repeat;
+  opacity:0.06;
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(rgba(212,160,60,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212,160,60,0.03) 1px, transparent 1px);
+  background-size:50px 50px;
+}
+body > * { position:relative; z-index:1; }
+
+/* HUD texture on panels / cards / launch cards / status cards / stat blocks */
+.panel, .card, .launch-card, .status-card, .stat {
+  position:relative;
+  overflow:hidden;
+}
+.panel::before, .card::before, .launch-card::before, .status-card::before, .stat::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:url('assets/hud/head-up-display-hud-ui-style-space-set-head-up-display-hud-ui-style-futuristic-interface-technology-design-big-set-space-elements-126865195.webp') center/cover no-repeat;
+  opacity:0.04;
+}
+.panel > *, .card > *, .launch-card > *, .status-card > *, .stat > * { position:relative; z-index:1; }
+
+/* HUD overlay on empire banner / hero sections */
+.hero, .empire-banner {
+  position:relative;
+}
+.hero::before, .empire-banner::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:url('assets/hud/futuristic-blue-virtual-graphic-touch-screen-user-interface-hud-fui-ui-vector-illustration-2K35DMR.jpg') center/cover no-repeat;
+  opacity:0.06;
+}
+.hero > *, .empire-banner > * { position:relative; z-index:1; }
+
+/* Gold scanline under section headers */
+.section-header, .sec-header, .sidebar-title {
+  position:relative;
+}
+.section-header::after, .sec-header::after, .sidebar-title::after {
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:1px;
+  background:linear-gradient(90deg, transparent, var(--gold,#d4a03c), transparent);
+  opacity:0.7;
+}
