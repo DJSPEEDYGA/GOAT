@@ -90,8 +90,9 @@ def call_ollama(messages, system_prompt, model=None):
         r = requests.post(
             f"{OLLAMA_URL}/api/chat",
             json={"model": model, "messages": msgs, "stream": False,
-                  "think": False, "options": {"temperature": 0.8, "num_predict": 2048, "num_ctx": 4096}},
-            timeout=180,
+                  "keep_alive": 1800, "think": False,
+                  "options": {"temperature": 0.8, "num_predict": 2048, "num_ctx": 4096}},
+            timeout=15,
         )
         if r.ok:
             text = r.json().get("message", {}).get("content", "")

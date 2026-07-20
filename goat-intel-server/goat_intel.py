@@ -3732,9 +3732,10 @@ def call_ollama(messages, system_prompt, model=None):
             "model": model_tag,
             "messages": msgs,
             "stream": False,
+            "keep_alive": 1800,
             "think": False,
             "options": {"temperature": 0.85, "num_predict": 2048, "num_ctx": 4096}
-        }, timeout=180)
+        }, timeout=15)
         if r.ok:
             resp = r.json()
             # Handle qwen3 thinking model — content may be in thinking or content
@@ -7099,4 +7100,34 @@ if __name__ == "__main__":
     print(f"   Gemini: {'✅ ready' if keys.get('gemini_key') else '⚠️  using default key'}")
     print(f"   OpenAI: {'✅ ready' if keys.get('openai_key') else '⚠️  using default key'}")
     print(f"   yt-dlp: {'✅' if YT_DLP_OK else '❌ install: pip install yt-dlp'}\n")
+
+    # Warm local Ollama model in background so first chat isn't a cold-start wait
+    def _warm_ollama():
+        try:
+            host = "http://127.0.0.1:11435"
+            model = None
+            try:
+                r = requests.get(f"{host}/api/tags", timeout=4)
+                if r.ok:
+                    available = [m["name"] for m in r.json().get("models", [])]
+                    for p in ["llama3.1:8b", "qwen2.5:7b", "phi3:mini"]:
+                        if p in available:
+                            model = p; break
+                    if not model and available:
+                        model = available[0]
+            except Exception:
+                pass
+            if not model:
+                model = "llama3.1:8b"
+            requests.post(f"{host}/api/chat", json={
+                "model": model,
+                "messages": [{"role": "user", "content": "warmup"}],
+                "stream": False,
+                "keep_alive": 1800,
+                "options": {"num_predict": 1, "num_ctx": 4096}
+            }, timeout=120)
+        except Exception:
+            pass
+    threading.Thread(target=_warm_ollama, daemon=True).start()
+
     app.run(host="0.0.0.0", port=5500, debug=False)
