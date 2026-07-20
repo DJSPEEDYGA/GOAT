@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GOAT FORCE — Mission Command</title>
+  <meta name="description" content="GOAT Force tactical command interface for mission-critical operations." />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#f0c040" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <link rel="stylesheet" href="/assets/hud-enhancements.css" />
+  <style>
+    :root {
+      --bg: #030205;
+      --bg-elevated: #0a0a0a;
+      --surface: rgba(240,230,210,0.045);
+      --surface-hover: rgba(240,230,210,0.09);
+      --border: rgba(240,192,64,0.22);
+      --gold: #f0c040;
+      --gold-bright: #ffd700;
+      --red: #c1121f;
+      --blue: #58a6ff;
+      --navy: #1d3557;
+      --green: #a3c644;
+      --green-dim: rgba(163,198,68,0.12);
+      --orange: #ff9f1c;
+      --purple: #bf5af2;
+      --text: #f0e6d2;
+      --text-muted: #8a8a78;
+      --radius: 6px;
+      --shadow: 0 0 0 1px rgba(240,192,64,0.07), 0 18px 50px rgba(0,0,0,0.55);
+      --transition: 0.18s ease;
+      --font-heading: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: "SF Mono", "Menlo", "Monaco", "Consolas", "Liberation Mono", monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: var(--font-heading);
+      background:
+        linear-gradient(135deg, rgba(3,2,5,0.96) 0%, rgba(29,53,87,0.9) 100%),
+        url('/assets/goat-superman.jpg') center 20% / cover no-repeat fixed,
+        var(--bg);
+      background-attachment: fixed;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(240,192,64,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240,192,64,0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 2px,
+        rgba(0,0,0,0.18) 2px,
+        rgba(0,0,0,0.18) 4px
+      );
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.35;
+    }
+    .hud-corner {
+      position: fixed; width: 22px; height: 22px;
+      border: 2px solid var(--gold); z-index: 10; pointer-events: none;
+      opacity: 0.8;
+    }
+    .hud-corner.tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+    .hud-corner.tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+    .hud-corner.bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+    .hud-corner.br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+    .login-view {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(135deg, rgba(3,2,5,0.94) 0%, rgba(29,53,87,0.92) 100%),
+        url('/assets/goat-superman.jpg') center 20% / cover no-repeat fixed;
+    }
+    .login-card {
+      width: min(420px, calc(100% - 40px));
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--green);
+      border-radius: var(--radius);
+      padding: 38px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      position: relative;
+    }
+    .login-card::before {
+      content: 'TOP SECRET // GOAT FORCE COMMAND';
+      position: absolute;
+      top: -10px;
+      right: 16px;
+      background: var(--bg-elevated);
+      color: var(--red);
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      padding: 2px 8px;
+      border: 1px solid var(--red);
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+    .login-card h1 { margin: 0 0 8px; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .login-card p { color: var(--text-muted); margin: 0 0 26px; font-size: 0.9rem; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(0,0,0,0.25);
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .form-group input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(163,198,68,0.08); }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 11px 20px; border-radius: 6px; border: none;
+      font-weight: 700; font-size: 0.86rem; cursor: pointer;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+      font-family: inherit;
+    }
+    .btn-primary { background: rgba(163,198,68,0.12); color: var(--green); border: 1px solid var(--green); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 16px rgba(163,198,68,0.22); background: rgba(163,198,68,0.18); }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--surface-hover); color: var(--text); border-color: var(--green); }
+    .btn-danger { background: rgba(255,59,48,0.10); color: var(--red); border: 1px solid rgba(255,59,48,0.35); }
+    .btn-success { background: rgba(163,198,68,0.12); color: var(--green); border: 1px solid var(--green); }
+    .icon-fill { fill: currentColor !important; stroke: none !important; }
+    .btn-sm { padding: 8px 14px; font-size: 0.82rem; }
+    .btn .icon { width: 1.05em; height: 1.05em; }
+    .error-msg { color: #ff6b6b; font-size: 0.8rem; margin-top: 8px; display: none; }
+    .error-msg.show { display: block; }
+    .loading { color: var(--text-muted); font-size: 0.9rem; padding: 20px; }
+    .icon { width: 1.1em; height: 1.1em; vertical-align: middle; color: currentColor; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .icon-lg { width: 1.6em; height: 1.6em; }
+    .icon-sq { padding: 10px; background: var(--surface-hover); border-radius: 12px; color: var(--gold); }
+
+    .app-view { display: none; height: 100vh; grid-template-columns: 260px 1fr; grid-template-rows: 100vh; position: relative; z-index: 2; }
+    .app-view.active { display: grid; }
+    .login-view { position: relative; z-index: 2; }
+    .sidebar {
+      background: var(--bg-elevated);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; height: 100%; min-width: 0; overflow-y: auto; padding: 22px 16px;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.4);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 0.95rem; margin-bottom: 34px; padding-left: 6px; text-transform: uppercase; letter-spacing: 0.1em; }
+    .logo { width: 38px; height: 38px; border-radius: 8px; background: rgba(163,198,68,0.12); display: grid; place-items: center; color: var(--green); border: 1px solid var(--green); box-shadow: 0 0 12px rgba(163,198,68,0.15); font-family: var(--font-mono); font-weight: 800; font-size: 0.75rem; letter-spacing: 0.05em; }
+    .nav { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .nav button, .nav-link {
+      width: 100%; text-align: left; padding: 11px 14px; border-radius: var(--radius); border: none; background: transparent;
+      color: var(--text-muted); font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 12px;
+      transition: all var(--transition); font-family: inherit; text-decoration: none; text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .nav button .icon, .nav-link .icon { color: var(--text-muted); transition: color var(--transition); }
+    .nav button:hover, .nav-link:hover { background: var(--surface); color: var(--text); border-left: 3px solid var(--green); }
+    .nav button:hover .icon, .nav-link:hover .icon { color: var(--green); }
+    .nav button.active { background: var(--surface); color: var(--green); font-weight: 700; border-left: 3px solid var(--green); }
+    .nav button.active .icon { color: var(--green); }
+    .sidebar-footer { padding-top: 16px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.7rem; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; }
+    .main { display: flex; flex-direction: column; height: 100%; min-width: 0; overflow: hidden; z-index: 1; }
+    .topbar {
+      height: 72px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;
+      padding: 0 26px; background: rgba(5,6,7,0.85); backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .topbar h2 { margin: 0; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--green); }
+    .topbar-actions { display: flex; align-items: center; gap: 14px; }
+    .entity-select {
+      background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: var(--radius);
+      color: var(--text); padding: 8px 14px; font-size: 0.85rem; outline: none; font-family: var(--font-mono);
+    }
+    .search { position: relative; display: flex; align-items: center; }
+    .search input {
+      background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 9px 14px 9px 36px; color: var(--text); width: 220px; font-size: 0.88rem; outline: none; font-family: var(--font-mono);
+    }
+    .search-icon { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; }
+    .avatar { width: 36px; height: 36px; border-radius: 6px; background: rgba(163,198,68,0.12); display: grid; place-items: center; color: var(--green); border: 1px solid var(--green); font-family: var(--font-mono); font-weight: 800; font-size: 0.7rem; }
+    .content { flex: 1; min-height: 0; min-width: 0; overflow-y: auto; padding: 26px; }
+    .page { display: none; animation: fadeIn 0.25s ease; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Mission control status board */
+    .command-bar {
+      display: flex; align-items: center; gap: 22px; padding: 10px 26px;
+      background: rgba(0,0,0,0.35); border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .command-bar .status-item { display: inline-flex; align-items: center; gap: 7px; }
+    .status-light { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px currentColor; }
+    .status-light.amber { background: var(--gold); color: var(--gold); }
+    .status-light.red { background: var(--red); color: var(--red); }
+    .mission-clock { margin-left: auto; color: var(--green); font-family: var(--font-mono); letter-spacing: 0.08em; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 26px; }
+    .kpi {
+      background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;
+      display: flex; flex-direction: column; gap: 8px; transition: transform var(--transition), box-shadow var(--transition);
+      border-left: 3px solid var(--green);
+      position: relative;
+    }
+    .kpi::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, var(--green), transparent 60%); opacity: 0.3;
+    }
+    .kpi:hover { transform: translateY(-2px); background: var(--surface-hover); box-shadow: 0 0 18px rgba(163,198,68,0.08); border-color: rgba(163,198,68,0.25); }
+    .kpi-label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .kpi-value { font-size: 1.6rem; font-weight: 800; font-family: var(--font-mono); letter-spacing: -0.01em; color: var(--green); }
+    .kpi-delta { font-size: 0.84rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+    .kpi-delta.up { color: var(--green); }
+    .kpi-delta.down { color: var(--red); }
+    .kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, rgba(240,192,64,0.18), rgba(193,18,31,0.18)); color: var(--gold); margin-bottom: 4px; border: 1px solid rgba(240,192,64,0.25); }
+    .kpi-icon .icon { width: 22px; height: 22px; }
+
+    .card { background: rgba(0,0,0,0.22); border: 1px solid var(--border); border-top: 2px solid var(--green); border-radius: var(--radius); padding: 22px; margin-bottom: 22px; backdrop-filter: blur(8px); box-shadow: var(--shadow); position: relative; }
+    .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, var(--green), transparent 70%); opacity: 0.25; }
+    .card-header h3 { margin: 0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .card-header p { margin: 0; color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 22px; margin-bottom: 22px; }
+    .chart-canvas { width: 100%; height: 260px; }
+
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); background: rgba(0,0,0,0.18); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; font-family: var(--font-mono); }
+    th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid rgba(163,198,68,0.08); }
+    th { background: rgba(163,198,68,0.05); color: var(--green); font-weight: 700; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em; }
+    tr:hover td { background: rgba(163,198,68,0.04); }
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; border: 1px solid currentColor; background: transparent; font-family: var(--font-heading); }
+    .badge-open { color: var(--blue); border-color: rgba(0,200,255,0.35); background: rgba(0,200,255,0.08); }
+    .badge-won { color: var(--green); border-color: rgba(163,198,68,0.35); background: rgba(163,198,68,0.08); }
+    .badge-lost { color: var(--red); border-color: rgba(255,59,48,0.35); background: rgba(255,59,48,0.08); }
+    .badge-paid { color: var(--green); border-color: rgba(163,198,68,0.35); background: rgba(163,198,68,0.08); }
+    .badge-overdue { color: var(--red); border-color: rgba(255,59,48,0.35); background: rgba(255,59,48,0.08); }
+    .badge-low { color: var(--gold); border-color: rgba(255,191,0,0.35); background: rgba(255,191,0,0.08); }
+    .badge-ok { color: var(--green); border-color: rgba(163,198,68,0.35); background: rgba(163,198,68,0.08); }
+    .badge-pending { color: var(--blue); border-color: rgba(0,200,255,0.35); background: rgba(0,200,255,0.08); }
+    .badge-picked { color: var(--gold); border-color: rgba(255,191,0,0.35); background: rgba(255,191,0,0.08); }
+    .badge-shipped { color: var(--gold); border-color: rgba(255,191,0,0.35); background: rgba(255,191,0,0.08); }
+    .badge-delivered { color: var(--green); border-color: rgba(163,198,68,0.35); background: rgba(163,198,68,0.08); }
+
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
+    .toolbar input, .toolbar select { background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 14px; color: var(--text); min-width: 120px; font-size: 0.9rem; outline: none; font-family: var(--font-mono); }
+    .toolbar input[type="file"] { border: none; background: transparent; padding: 0; color: var(--text-muted); min-width: 180px; }
+    .toolbar-right { display: flex; gap: 10px; }
+
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(3,2,5,0.82); z-index: 500;
+      display: grid; place-items: center; opacity: 0; pointer-events: none; transition: opacity var(--transition);
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal { width: min(520px, calc(100% - 32px)); max-height: 90vh; overflow-y: auto; background: var(--bg-elevated); border: 1px solid var(--border); border-top: 2px solid var(--green); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+    .modal h3 { margin: 0; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .close-modal { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+
+    /* AI Assistant */
+    .ai-container { display: flex; flex-direction: column; height: 70vh; gap: 14px; }
+    .ai-chat { flex: 1; background: rgba(0,0,0,0.28); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+    .ai-msg { max-width: 80%; min-width: 0; padding: 12px 16px; border-radius: 6px; font-size: 0.9rem; line-height: 1.45; word-break: break-word; overflow-wrap: break-word; }
+    .ai-msg.user { align-self: flex-end; background: rgba(163,198,68,0.18); color: var(--green); border: 1px solid var(--green); }
+    .ai-msg.bot { align-self: flex-start; background: rgba(0,0,0,0.35); border: 1px solid var(--border); }
+    .ai-msg.bot table { margin-top: 10px; font-size: 0.82rem; width: 100%; table-layout: fixed; }
+    .ai-msg.bot table th, .ai-msg.bot table td { word-break: break-word; overflow-wrap: break-word; }
+    .ai-input { display: flex; gap: 10px; }
+    .ai-input input { flex: 1; padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--border); background: rgba(0,0,0,0.25); color: var(--text); outline: none; font-family: var(--font-mono); }
+    .ai-input input:focus { border-color: var(--green); }
+
+    /* Provider tabs (Open Banking) */
+    .provider-tabs, .royalty-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .provider-tab, .royalty-tab { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 8px 14px; border-radius: var(--radius); cursor: pointer; font-size: 0.78rem; transition: all var(--transition); text-transform: uppercase; letter-spacing: 0.05em; }
+    .provider-tab.active, .royalty-tab.active { background: rgba(163,198,68,0.12); color: var(--green); border-color: var(--green); font-weight: 700; }
+    .provider-tab:hover:not(.active), .royalty-tab:hover:not(.active) { border-color: var(--green); color: var(--green); }
+    .provider-panel, .royalty-panel { display: none; }
+    .provider-panel.active, .royalty-panel.active { display: block; animation: fadeIn 0.25s ease; }
+
+    /* Home / Mission Control */
+    .home-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+    .home-greeting { color: var(--green); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 4px; }
+    .home-header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .home-subtitle { color: var(--text-muted); font-size: 0.9rem; margin: 4px 0 0; }
+    .home-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .section-title { font-size: 0.95rem; margin: 28px 0 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .app-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+    .app-tile {
+      background: rgba(0,0,0,0.22); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px;
+      cursor: pointer; transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+      display: flex; flex-direction: column; gap: 12px; position: relative; overflow: hidden;
+      color: inherit; text-decoration: none;
+    }
+    .app-tile:hover { transform: translateY(-3px); border-color: var(--green); box-shadow: 0 0 18px rgba(163,198,68,0.08); }
+    .app-tile::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--green), transparent 70%); opacity: 0.3; }
+    .app-tile-icon { width: 48px; height: 48px; border-radius: 8px; display: grid; place-items: center; background: rgba(163,198,68,0.08); color: var(--green); border: 1px solid rgba(163,198,68,0.18); }
+    .app-tile-icon .icon { width: 24px; height: 24px; }
+    .app-tile h4 { margin: 0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .app-tile p { margin: 0; color: var(--text-muted); font-size: 0.8rem; }
+    .app-tile .tile-count { font-size: 1.3rem; font-weight: 800; font-family: var(--font-mono); color: var(--green); }
+    .ai-prompt { margin-bottom: 24px; }
+    .ai-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .ai-chip { background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: var(--text-muted); padding: 6px 12px; border-radius: var(--radius); font-size: 0.75rem; cursor: pointer; transition: all var(--transition); text-transform: uppercase; letter-spacing: 0.04em; }
+    .ai-chip:hover { border-color: var(--green); color: var(--green); }
+    .home-bottom { display: flex; gap: 22px; margin-top: 28px; flex-wrap: wrap; }
+
+    .menu-toggle { display: none; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 10px; width: 36px; height: 36px; cursor: pointer; padding: 0; }
+    @media (max-width: 900px) {
+      .app-view { grid-template-columns: 1fr; }
+      .sidebar { position: fixed; inset: 0 auto 0 0; width: 260px; z-index: 300; transform: translateX(-100%); transition: transform var(--transition); }
+      .sidebar.open { transform: translateX(0); }
+      .menu-toggle { display: block; }
+      .search input { width: 150px; }
+      .entity-select { display: none; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+      .chart-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      .topbar { padding: 0 14px; }
+      .content { padding: 16px; }
+      .topbar-actions { gap: 8px; }
+    }
+  </style>
+  <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<style>
+  /* Mission Control theme overrides for all pages */
+  .mc-mode { --panel: rgba(5,16,5,0.82); --grid: rgba(163,198,68,0.10); --grid-strong: rgba(163,198,68,0.18); --amber: #ffb000; --text-dim: #7a9c7a; }
+  .hud-corner { position: fixed; width: 26px; height: 26px; border: 2px solid var(--green); z-index: 100; pointer-events: none; }
+  .hud-corner.tl { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+  .hud-corner.tr { top: 12px; right: 12px; border-left: none; border-bottom: none; }
+  .hud-corner.bl { bottom: 12px; left: 12px; border-right: none; border-top: none; }
+  .hud-corner.br { bottom: 12px; right: 12px; border-left: none; border-top: none; }
+  body.mc-mode::before { background-size: 60px 60px; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); }
+  body.mc-mode::after { opacity: 0.35; background: repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px); }
+  .mc-mode .topbar { background: rgba(3,8,3,0.88); border-bottom: 1px solid var(--green-dim); }
+  .mc-mode .sidebar { background: var(--panel); border-right: 1px solid var(--green-dim); }
+  .mc-mode .content { background: transparent; }
+  .mc-mode .card { background: var(--panel); border: 1px solid var(--green-dim); border-top: 2px solid var(--green); border-radius: 6px; position: relative; padding: 18px; backdrop-filter: blur(6px); box-shadow: none; }
+  .mc-mode .card::before { content: ''; position: absolute; top: -1px; left: 18px; right: 18px; height: 2px; background: linear-gradient(90deg, transparent, var(--green), transparent); opacity: 0.6; }
+  .mc-mode .card-header { margin-bottom: 14px; }
+  .mc-mode .card-header h3 { font-size: 0.72rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 800; }
+  .mc-mode .card-header p { color: var(--text-dim); font-size: 0.65rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  .mc-mode .kpi { background: rgba(0,0,0,0.25); border: 1px solid var(--green-dim); border-left: 3px solid var(--green); border-radius: 4px; padding: 14px; position: relative; gap: 6px; transition: none; }
+  .mc-mode .kpi::before { background: none; }
+  .mc-mode .kpi:hover { transform: none; background: rgba(0,0,0,0.25); box-shadow: none; border-color: var(--green-dim); }
+  .mc-mode .kpi-icon { width: 34px; height: 34px; border-radius: 8px; margin-bottom: 0; }
+  .mc-mode .kpi-label { font-size: 0.62rem; color: var(--text-dim); }
+  .mc-mode .kpi-value { font-size: 1.55rem; color: var(--green); letter-spacing: 0; }
+  .mc-mode .kpi.amber { border-left-color: var(--amber); }
+  .mc-mode .kpi.amber .kpi-value { color: var(--amber); }
+  .mc-mode .kpi.red { border-left-color: var(--red); }
+  .mc-mode .kpi.red .kpi-value { color: var(--red); }
+  .mc-mode .table-wrap { border: 1px solid var(--green-dim); background: rgba(0,0,0,0.18); border-radius: 6px; }
+  .mc-mode .table-wrap th { color: var(--green); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .mc-mode .btn { border-radius: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+  .mc-mode .btn-primary { background: rgba(163,198,68,0.12); color: var(--green); border: 1px solid var(--green); }
+  .mc-mode .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--green-dim); }
+  .mc-mode .btn-ghost:hover { background: rgba(163,198,68,0.08); color: var(--green); border-color: var(--green); }
+  .mc-mode .command-bar { background: rgba(0,0,0,0.35); border-bottom: 1px solid var(--green-dim); }
+  .mc-mode .form-group input, .mc-mode .form-group select, .mc-mode .toolbar input, .mc-mode .toolbar select { border-radius: 4px; border: 1px solid var(--green-dim); background: rgba(0,0,0,0.25); color: var(--text); }
+</style>
+<style>
+  /* Mission Control — rest-of-app theme fixes */
+  .mc-mode .home-header { background: var(--panel); border: 1px solid var(--green-dim); border-left: 3px solid var(--green); border-radius: 6px; padding: 22px; display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 22px; position: relative; }
+  .mc-mode .home-header::before { content: ''; position: absolute; top: -1px; left: 22px; right: 22px; height: 2px; background: linear-gradient(90deg, transparent, var(--green), transparent); opacity: 0.6; }
+  .mc-mode .home-greeting { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.12em; margin: 0 0 6px; }
+  .mc-mode #home-title { font-size: 1.6rem; margin: 0; color: var(--green); }
+  .mc-mode .home-subtitle { color: var(--text-dim); font-size: 0.78rem; margin: 4px 0 0; }
+  .mc-mode .home-actions { display: flex; gap: 10px; }
+  .mc-mode .section-title { color: var(--green); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; margin: 28px 0 14px; font-weight: 800; border-bottom: 1px solid var(--green-dim); padding-bottom: 8px; }
+  .mc-mode .app-tiles { gap: 14px; }
+  .mc-mode .app-tile { background: var(--panel); border: 1px solid var(--green-dim); border-radius: 6px; padding: 18px; position: relative; }
+  .mc-mode .app-tile::before { content: ''; position: absolute; top: -1px; left: 18px; right: 18px; height: 2px; background: linear-gradient(90deg, transparent, var(--green), transparent); opacity: 0.6; }
+  .mc-mode .app-tile:hover { transform: translateY(-2px); border-color: var(--green); box-shadow: 0 0 18px rgba(163,198,68,0.08); }
+  .mc-mode .app-tile h4 { font-size: 0.78rem; color: var(--text); }
+  .mc-mode .app-tile p { color: var(--text-dim); font-size: 0.72rem; }
+  .mc-mode .app-tile-icon { width: 44px; height: 44px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid var(--green-dim); color: var(--green); }
+  .mc-mode .home-bottom { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+  .mc-mode .ai-prompt { background: var(--panel); border: 1px solid var(--green-dim); border-top: 2px solid var(--blue); border-radius: 6px; padding: 18px; position: relative; margin-bottom: 22px; }
+  .mc-mode .ai-prompt::before { content: ''; position: absolute; top: -1px; left: 18px; right: 18px; height: 2px; background: linear-gradient(90deg, transparent, var(--blue), transparent); opacity: 0.6; }
+  .mc-mode .ai-chip { background: rgba(0,0,0,0.25); border: 1px solid var(--green-dim); color: var(--text-dim); border-radius: 4px; padding: 6px 12px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .mc-mode .ai-chip:hover { border-color: var(--green); color: var(--green); background: rgba(163,198,68,0.08); }
+  .mc-mode .ai-input input { border-radius: 4px; border: 1px solid var(--green-dim); background: rgba(0,0,0,0.25); color: var(--text); }
+  .mc-mode .ai-input button { background: rgba(163,198,68,0.12); color: var(--green); border: 1px solid var(--green); border-radius: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+  .mc-mode .ai-msg { background: rgba(0,0,0,0.25); border: 1px solid var(--green-dim); border-radius: 6px; padding: 12px; }
+  .mc-mode .ai-msg.bot { border-left: 3px solid var(--green); }
+  .mc-mode .btn-success { background: rgba(163,198,68,0.12); color: var(--green); border: 1px solid var(--green); }
+  .mc-mode .btn-danger { background: rgba(255,42,42,0.12); color: var(--red); border: 1px solid var(--red); }
+  .mc-mode .btn-sm { font-size: 0.72rem; padding: 7px 12px; }
+  .mc-mode .provider-tabs, .mc-mode .royalty-tabs { display: flex; gap: 10px; margin-bottom: 0; border-bottom: 1px solid var(--green-dim); }
+  .mc-mode .provider-tab, .mc-mode .royalty-tab { background: transparent; border: 1px solid transparent; border-bottom: none; color: var(--text-dim); padding: 10px 16px; border-radius: 4px 4px 0 0; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; }
+  .mc-mode .provider-tab.active, .mc-mode .royalty-tab.active { background: rgba(163,198,68,0.08); border-color: var(--green-dim); color: var(--green); border-top: 2px solid var(--green); }
+  .mc-mode .provider-panel, .mc-mode .royalty-panel { background: var(--panel); border: 1px solid var(--green-dim); border-radius: 0 6px 6px 6px; padding: 18px; margin-bottom: 22px; }
+  .mc-mode .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
+  .mc-mode .chart-canvas { border: 1px solid var(--green-dim); border-radius: 6px; background: rgba(0,0,0,0.18); padding: 10px; }
+  .mc-mode .hero-banner { border: 1px solid var(--green-dim); border-radius: 6px; background: linear-gradient(90deg, rgba(3,8,3,0.95), rgba(3,8,3,0.7)), radial-gradient(circle at 80% 50%, rgba(163,198,68,0.12), transparent 50%), var(--panel) !important; position: relative; overflow: hidden; }
+  .mc-mode .hero-banner::before { content: '◆ MISSION READY'; position: absolute; top: 12px; right: 18px; font-family: var(--font-mono); font-size: 0.65rem; color: var(--green); letter-spacing: 0.12em; opacity: 0.7; }
+  .mc-mode .form-group label { color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .mc-mode .form-group input, .mc-mode .form-group select, .mc-mode .form-group textarea { border-radius: 4px; border: 1px solid var(--green-dim); background: rgba(0,0,0,0.25); color: var(--text); }
+  .mc-mode .modal { background: var(--panel); border: 1px solid var(--green-dim); border-top: 2px solid var(--green); border-radius: 6px; box-shadow: none; }
+  .mc-mode .modal-header h3 { color: var(--green); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .mc-mode .close-modal { color: var(--text-dim); }
+  .mc-mode .close-modal:hover { color: var(--green); }
+  .mc-mode .loading { color: var(--green); font-family: var(--font-mono); }
+  .mc-mode .error-msg { color: var(--red); font-size: 0.78rem; }
+  .mc-mode .login-view { background: radial-gradient(circle at 50% 30%, rgba(163,198,68,0.08), transparent 50%), var(--bg); }
+  .mc-mode .login-card { background: var(--panel); border: 1px solid var(--green-dim); border-top: 2px solid var(--green); border-radius: 6px; box-shadow: none; padding: 32px; }
+  .mc-mode .login-card h1 { color: var(--green); }
+  .mc-mode .login-card p { color: var(--text-dim); }
+  .mc-mode .page { position: relative; }
+  .mc-mode .page::before { content: ''; position: absolute; top: 12px; right: 24px; width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0deg, rgba(163,198,68,0.22) 45deg, transparent 90deg), repeating-radial-gradient(circle at center, transparent 0, transparent 18px, rgba(163,198,68,0.08) 19px, transparent 20px), linear-gradient(90deg, rgba(163,198,68,0.05) 1px, transparent 1px), linear-gradient(0deg, rgba(163,198,68,0.05) 1px, transparent 1px); opacity: 0.15; pointer-events: none; z-index: 0; }
+</style>
+</head>
+<body class="mc-mode">
+<div class="hud-corner tl"></div>
+<div class="hud-corner tr"></div>
+<div class="hud-corner bl"></div>
+<div class="hud-corner br"></div>
+
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="icon-layout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></symbol>
+    <symbol id="icon-briefcase" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></symbol>
+    <symbol id="icon-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></symbol>
+    <symbol id="icon-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="icon-dollar-sign" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+    <symbol id="icon-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></symbol>
+    <symbol id="icon-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
+    <symbol id="icon-book-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></symbol>
+    <symbol id="icon-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="icon-bar-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
+    <symbol id="icon-cpu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+    <symbol id="icon-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
+    <symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+    <symbol id="icon-trending-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></symbol>
+    <symbol id="icon-trending-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></symbol>
+    <symbol id="icon-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
+    <symbol id="icon-pie-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></symbol>
+    <symbol id="icon-award" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <symbol id="icon-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
+    <symbol id="icon-alert-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+    <symbol id="icon-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+    <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></symbol>
+    <symbol id="icon-arrow-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></symbol>
+    <symbol id="icon-arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></symbol>
+    <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+    <symbol id="icon-refresh-cw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></symbol>
+    <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></symbol>
+    <symbol id="icon-square" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="4" y="4" width="16" height="16" rx="2"/></symbol>
+    <symbol id="icon-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+    <symbol id="icon-credit-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></symbol>
+    <symbol id="icon-log-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+    <symbol id="icon-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+    <symbol id="icon-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+    <symbol id="icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+    <symbol id="icon-disc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="icon-shopping-bag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
+    <symbol id="icon-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></symbol>
+    <symbol id="icon-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></symbol>
+    <symbol id="icon-dice" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"/></symbol>
+  </defs>
+</svg>
+
+<div class="login-view" id="login-view">
+  <div class="login-card">
+    <div class="brand" style="margin-bottom:18px"><div class="logo">G</div>GOAT FORCE COMMAND</div>
+    <h1>Secure Access</h1>
+    <p>Tactical command interface for GOAT Force missions.</p>
+    <form id="login-form">
+      <div class="form-group">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" value="harvey@bsmmusic.com" required />
+      </div>
+      <div class="form-group">
+        <label for="login-pass">Password</label>
+        <input type="password" id="login-pass" value="Djspeedy1976@" required />
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%" id="login-btn">Enter command center</button>
+      <div class="error-msg" id="login-error">Invalid email or password.</div>
+    </form>
+  </div>
+</div>
+
+<div class="hud-corner tl"></div>
+<div class="hud-corner tr"></div>
+<div class="hud-corner bl"></div>
+<div class="hud-corner br"></div>
+
+<div class="app-view" id="app-view">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="logo"><svg class="icon icon-lg"><use href="#icon-zap"></use></svg></div>GOAT FORCE COMMAND</div>
+    <ul class="nav" id="nav">
+      <li><a href="/mission-control" class="nav-link" style="color:var(--green);border-left:3px solid var(--green);background:rgba(163,198,68,0.08)"><svg class="icon"><use href="#icon-target"></use></svg> Mission Control</a></li>
+      <li><button data-page="home" class="active"><svg class="icon"><use href="#icon-grid"></use></svg> Home Base</button></li>
+      <li><button data-page="dashboard"><svg class="icon"><use href="#icon-layout"></use></svg> Mission Dashboard</button></li>
+      <li><button data-page="sales"><svg class="icon"><use href="#icon-briefcase"></use></svg> Sales Ops</button></li>
+      <li><button data-page="orders"><svg class="icon"><use href="#icon-truck"></use></svg> Fulfillment</button></li>
+      <li><button data-page="employees"><svg class="icon"><use href="#icon-users"></use></svg> Personnel</button></li>
+      <li><button data-page="finance"><svg class="icon"><use href="#icon-credit-card"></use></svg> Treasury</button></li>
+      <li><button data-page="inventory"><svg class="icon"><use href="#icon-package"></use></svg> Arsenal</button></li>
+      <li><button data-page="entities"><svg class="icon"><use href="#icon-globe"></use></svg> Units</button></li>
+      <li><button data-page="royalties"><svg class="icon"><use href="#icon-disc"></use></svg> Royalties</button></li>
+      <li><button data-page="accounting"><svg class="icon"><use href="#icon-book-open"></use></svg> Accounting</button></li>
+      <li><button data-page="projects"><svg class="icon"><use href="#icon-folder"></use></svg> Operations</button></li>
+      <li><button data-page="analytics"><svg class="icon"><use href="#icon-bar-chart"></use></svg> Intel</button></li>
+      <li><button data-page="banking"><svg class="icon"><use href="#icon-credit-card"></use></svg> Banking</button></li>
+      <li><button data-page="trading"><svg class="icon"><use href="#icon-trending-up"></use></svg> Crypto Ops</button></li>
+      <li><button data-page="vault"><svg class="icon"><use href="#icon-file-text"></use></svg> Vault</button></li>
+      <li><button data-page="audit"><svg class="icon"><use href="#icon-shield"></use></svg> Audit</button></li>
+      <li><button data-page="ai"><svg class="icon"><use href="#icon-cpu"></use></svg> AI Command</button></li>
+      <li><button data-page="casino"><svg class="icon"><use href="#icon-dice"></use></svg> Casino Ops</button></li>
+      <li><button data-page="downloads"><svg class="icon"><use href="#icon-download"></use></svg> Logistics</button></li>
+      <li><button data-page="settings"><svg class="icon"><use href="#icon-shield"></use></svg> MONOPOLY Lock</button></li>
+    </ul>
+    <div class="sidebar-footer">
+      <div id="user-info">Admin</div>
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:10px" id="profile-btn"><svg class="icon"><use href="#icon-user"></use></svg> Profile</button>
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px" id="logout-btn">Log out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="menu-toggle" id="menu-toggle"><svg class="icon"><use href="#icon-menu"></use></svg></button>
+      <h2 id="page-title">Dashboard</h2>
+      <div class="topbar-actions">
+        <select class="entity-select" id="entity-select" title="Switch entity"></select>
+        <div class="search"><svg class="icon search-icon"><use href="#icon-search"></use></svg><input type="text" id="global-search" placeholder="Search records…" /></div>
+        <button class="btn btn-ghost btn-sm" id="notifications"><svg class="icon"><use href="#icon-bell"></use></svg></button>
+        <div class="avatar"><svg class="icon"><use href="#icon-user"></use></svg></div>
+      </div>
+    </header>
+
+    <div class="command-bar" id="command-bar">
+      <span class="status-item"><span class="status-light" id="sys-status-light"></span> System: <span id="sys-status-text">CHECKING</span></span>
+      <span class="status-item"><span class="status-light amber" id="cash-light"></span> Cash: <span id="command-cash">--</span></span>
+      <span class="status-item"><span class="status-light" id="deals-light"></span> Open Deals: <span id="command-deals">--</span></span>
+      <span class="status-item"><span class="status-light red" id="alert-light"></span> Alerts: <span id="command-alerts">--</span></span>
+      <span class="mission-clock" id="mission-clock">00:00:00 UTC</span>
+    </div>
+
+    <div class="content" id="content">
+      <section class="page active" id="page-home">
+        <div class="home-header">
+          <div>
+            <p class="home-greeting">OPERATOR ONLINE</p>
+            <h1 id="home-title">GOAT FORCE COMMAND</h1>
+            <p class="home-subtitle" id="home-subtitle">Commander · GOAT Force Records — USA</p>
+          </div>
+          <div class="home-actions">
+            <button class="btn btn-ghost" id="home-dashboard-btn"><svg class="icon"><use href="#icon-bar-chart"></use></svg> View Dashboard</button>
+            <button class="btn btn-primary" id="home-ai-btn"><svg class="icon"><use href="#icon-cpu"></use></svg> Ask AI</button>
+          </div>
+        </div>
+        <div class="ai-prompt card" style="border-top-color:var(--gold)">
+          <div class="card-header"><h3>MONOPOLY MONEY — AI Agent</h3><p>Issue a natural-language directive or ask the AI to run commands, search, read files, and manage missions</p></div>
+          <form class="ai-input" id="home-ai-form"><input type="text" id="home-ai-input" placeholder="e.g. 'What is our net income?' or 'Run git status'" autocomplete="off" /><button type="submit" class="btn btn-primary">Ask</button></form>
+          <div class="ai-chips">
+            <button class="ai-chip" data-q="cash balance">Cash balance</button>
+            <button class="ai-chip" data-q="open deals">Open deals</button>
+            <button class="ai-chip" data-q="overdue invoices">Overdue invoices</button>
+            <button class="ai-chip" data-q="low stock">Low stock</button>
+            <button class="ai-chip" data-q="market intel">Market intel</button>
+            <button class="ai-chip" data-q="agent roster">Agent roster</button>
+          </div>
+          <div id="home-ai-answer" style="margin-top:14px;display:none"><div class="ai-msg bot"></div></div>
+        </div>
+        <h3 class="section-title">Apps</h3>
+        <div class="app-tiles" id="app-tiles"></div>
+        <div class="card" style="border-top-color:var(--gold);margin-bottom:18px">
+          <div class="card-header"><h3>Global Market Intelligence</h3><p>Live crypto, equity, and headline feeds</p></div>
+          <div id="market-strip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px"><div class="loading">Acquiring market telemetry...</div></div>
+        </div>
+        <div class="home-bottom">
+          <div class="card" style="flex:1"><div class="card-header"><h3>Recent Activity</h3></div><div id="home-activity"></div></div>
+          <div class="card" style="flex:1;min-width:280px"><div class="card-header"><h3>Quick Stats</h3></div><div id="home-quick-stats" class="kpi-grid" style="margin:0"></div></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-dashboard">
+        <div class="kpi-grid" id="kpi-grid"></div>
+        <div class="card" style="border-top-color:var(--gold);margin-bottom:18px">
+          <div class="card-header"><h3>Live Market Intelligence</h3><p>Crypto, equities, and breaking headlines</p></div>
+          <div id="dashboard-market-strip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px"><div class="loading">Acquiring market telemetry...</div></div>
+        </div>
+        <div class="chart-grid">
+          <div class="card"><div class="card-header"><h3>Revenue vs Expenses</h3><p>Last 6 months</p></div><canvas id="rev-chart" class="chart-canvas"></canvas></div>
+          <div class="card"><div class="card-header"><h3>Sales Pipeline</h3><p>By stage</p></div><canvas id="pipe-chart" class="chart-canvas"></canvas></div>
+        </div>
+        <div class="chart-grid">
+          <div class="card"><div class="card-header"><h3>Daily Cash Balance</h3><p>Last 30 days</p></div><canvas id="cash-chart" class="chart-canvas"></canvas></div>
+          <div class="card"><div class="card-header"><h3>Order Fulfillment</h3><p>Status breakdown</p></div><canvas id="fulfill-chart" class="chart-canvas"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Recent Activity</h3><p>Live feed from operations</p></div>
+          <div id="activity-feed"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-sales">
+        <div class="toolbar"><input type="text" id="sales-search" placeholder="Search deals…" /><div class="toolbar-right"><button class="btn btn-primary" data-action="add-deal"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Add Deal</button></div></div>
+        <div class="card" style="padding:0"><div class="table-wrap"><table id="sales-table"><thead><tr><th>Customer</th><th>Deal</th><th>Value</th><th>Stage</th><th>Owner</th><th>Close</th><th></th></tr></thead><tbody></tbody></table></div></div>
+      </section>
+
+      <section class="page" id="page-orders">
+        <div class="toolbar"><input type="text" id="orders-search" placeholder="Search orders…" /><div class="toolbar-right"><button class="btn btn-primary" data-action="add-order"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Add Order</button></div></div>
+        <div class="card" style="padding:0"><div class="table-wrap"><table id="orders-table"><thead><tr><th>Customer</th><th>SKU</th><th>Qty</th><th>Status</th><th>Ship Date</th><th>Tracking</th><th></th></tr></thead><tbody></tbody></table></div></div>
+      </section>
+
+      <section class="page" id="page-employees">
+        <div class="toolbar"><input type="text" id="emp-search" placeholder="Search employees…" /><div class="toolbar-right"><button class="btn btn-primary" data-action="add-emp"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Add Employee</button></div></div>
+        <div class="card" style="padding:0"><div class="table-wrap"><table id="emp-table"><thead><tr><th>Name</th><th>Role</th><th>Department</th><th>Status</th><th>Salary</th><th></th></tr></thead><tbody></tbody></table></div></div>
+      </section>
+
+      <section class="page" id="page-finance">
+        <div class="toolbar"><input type="text" id="fin-search" placeholder="Search invoices…" /><div class="toolbar-right"><button class="btn btn-primary" data-action="add-inv"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Add Invoice</button></div></div>
+        <div class="card" style="padding:0"><div class="table-wrap"><table id="fin-table"><thead><tr><th>#</th><th>Client</th><th>Amount</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody></tbody></table></div></div>
+      </section>
+
+      <section class="page" id="page-inventory">
+        <div class="toolbar"><input type="text" id="inv-search" placeholder="Search products…" /><div class="toolbar-right"><button class="btn btn-primary" data-action="add-prod"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Add Product</button></div></div>
+        <div class="card" style="padding:0"><div class="table-wrap"><table id="inv-table"><thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>Stock</th><th>Price</th><th></th></tr></thead><tbody></tbody></table></div></div>
+      </section>
+
+      <section class="page" id="page-entities">
+        <div class="toolbar"><input type="text" id="ent-search" placeholder="Search entities…" /><div class="toolbar-right"><button class="btn btn-primary" data-action="add-ent"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Add Entity</button></div></div>
+        <div class="card" style="padding:0"><div class="table-wrap"><table id="ent-table"><thead><tr><th>Name</th><th>Country</th><th>Currency</th><th>Active</th><th></th></tr></thead><tbody></tbody></table></div></div>
+      </section>
+
+      <section class="page" id="page-accounting">
+        <div class="kpi-grid" id="acct-kpis"></div>
+        <div class="toolbar"><input type="text" id="acct-search" placeholder="Search accounts…" /><div class="toolbar-right"><button class="btn btn-primary" data-action="add-acct"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Add Account</button> <button class="btn btn-ghost" data-action="add-je"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Journal Entry</button></div></div>
+        <div class="card" style="padding:0"><div class="table-wrap"><table id="acct-table"><thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Balance</th><th></th></tr></thead><tbody></tbody></table></div></div>
+        <div class="card" style="padding:0;margin-top:22px"><div class="card-header" style="padding:20px 22px 0"><h3>Journal Entries</h3></div><div class="table-wrap"><table id="je-table"><thead><tr><th>Date</th><th>Description</th><th>Debit</th><th>Credit</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table></div></div>
+        <div class="kpi-grid" style="margin-top:22px" id="fs-kpis"></div>
+        <div class="card"><div class="card-header"><h3>Balance Sheet</h3></div><div class="kpi-grid" id="bs-kpis"></div></div>
+      </section>
+
+      <section class="page" id="page-projects">
+        <div class="toolbar"><input type="text" id="proj-search" placeholder="Search projects…" /><div class="toolbar-right"><button class="btn btn-primary" data-action="add-proj"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Add Project</button></div></div>
+        <div id="projects-list" style="display:flex;flex-direction:column;gap:18px"></div>
+      </section>
+
+      <section class="page" id="page-analytics">
+        <div class="kpi-grid" id="analytics-kpis"></div>
+        <div class="chart-grid">
+          <div class="card"><div class="card-header"><h3>Revenue by Category</h3><p>Quarterly breakdown</p></div><canvas id="cat-chart" class="chart-canvas"></canvas></div>
+          <div class="card"><div class="card-header"><h3>Team Performance</h3><p>Deals closed per rep</p></div><canvas id="team-chart" class="chart-canvas"></canvas></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-banking">
+        <div class="provider-tabs">
+          <button class="provider-tab active" data-provider="plaid">Plaid (US / Canada)</button>
+          <button class="provider-tab" data-provider="truelayer">TrueLayer (UK / EU Open Banking)</button>
+        </div>
+        <div id="banking-status" class="loading" style="display:none"></div>
+
+        <div class="provider-panel" id="panel-plaid">
+          <div class="toolbar"><div class="toolbar-right"><button class="btn btn-primary" id="plaid-link-btn"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Connect Bank via Plaid</button></div></div>
+          <div class="card" id="plaid-accounts-card" style="display:none"><div class="card-header"><h3>Plaid Connected Accounts</h3></div><div class="table-wrap"><table id="plaid-accounts-table"><thead><tr><th>Institution</th><th>Account</th><th>Type</th><th>Available</th><th>Current</th></tr></thead><tbody></tbody></table></div></div>
+          <div class="card" id="plaid-transactions-card" style="display:none;margin-top:22px"><div class="card-header"><h3>Plaid Recent Transactions</h3></div><div class="table-wrap"><table id="plaid-transactions-table"><thead><tr><th>Date</th><th>Name</th><th>Amount</th><th>Category</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
+
+        <div class="provider-panel" id="panel-truelayer" style="display:none">
+          <div class="toolbar"><div class="toolbar-right"><button class="btn btn-primary" id="truelayer-link-btn"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Connect Bank via TrueLayer</button></div></div>
+          <div class="card" id="truelayer-accounts-card" style="display:none"><div class="card-header"><h3>TrueLayer Connected Accounts</h3></div><div class="table-wrap"><table id="truelayer-accounts-table"><thead><tr><th>Provider</th><th>Account</th><th>Type</th><th>Currency</th></tr></thead><tbody></tbody></table></div></div>
+          <div class="card" id="truelayer-transactions-card" style="display:none;margin-top:22px"><div class="card-header"><h3>TrueLayer Recent Transactions</h3></div><div class="table-wrap"><table id="truelayer-transactions-table"><thead><tr><th>Date</th><th>Name</th><th>Amount</th><th>Category</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-trading">
+        <div class="toolbar">
+          <div class="toolbar-right">
+            <button class="btn btn-ghost" id="freqtrade-refresh"><svg class="icon" aria-hidden="true"><use href="#icon-refresh-cw"></use></svg> Refresh</button>
+            <button class="btn btn-success" id="freqtrade-start" disabled><svg class="icon icon-fill" aria-hidden="true"><use href="#icon-play"></use></svg> Start</button>
+            <button class="btn btn-danger" id="freqtrade-stop" disabled><svg class="icon icon-fill" aria-hidden="true"><use href="#icon-square"></use></svg> Stop</button>
+          </div>
+        </div>
+        <div id="freqtrade-status" class="loading" style="display:none"></div>
+        <div id="freqtrade-kpis" class="kpi-grid" style="display:none;margin-bottom:22px">
+          <div class="kpi"><div class="kpi-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#icon-activity"></use></svg></div><div class="kpi-label">Bot State</div><div class="kpi-value" id="ft-state">—</div></div>
+          <div class="kpi"><div class="kpi-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#icon-dollar-sign"></use></svg></div><div class="kpi-label">Total Profit</div><div class="kpi-value" id="ft-profit">—</div></div>
+          <div class="kpi"><div class="kpi-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#icon-bar-chart"></use></svg></div><div class="kpi-label">Win Rate</div><div class="kpi-value" id="ft-win">—</div></div>
+          <div class="kpi"><div class="kpi-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#icon-credit-card"></use></svg></div><div class="kpi-label">Balance</div><div class="kpi-value" id="ft-balance">—</div></div>
+        </div>
+        <div class="card" id="freqtrade-trades-card" style="display:none"><div class="card-header"><h3>Open / Recent Trades</h3></div><div class="table-wrap"><table id="freqtrade-trades-table"><thead><tr><th>Pair</th><th>Side</th><th>Open Rate</th><th>Current</th><th>Profit %</th></tr></thead><tbody></tbody></table></div></div>
+      </section>
+
+      <section class="page" id="page-royalties">
+        <div class="provider-tabs" id="royalty-tabs">
+          <button class="royalty-tab active" data-royalty="overview">Overview</button>
+          <button class="royalty-tab" data-royalty="catalog">Catalog</button>
+          <button class="royalty-tab" data-royalty="statements">Statements</button>
+          <button class="royalty-tab" data-royalty="vault">IP Vault</button>
+          <button class="royalty-tab" data-royalty="codex">AI Codex</button>
+          <button class="royalty-tab" data-royalty="gift">Moneypenny Gift</button>
+        </div>
+        <div class="royalty-panel active" data-royalty-panel="overview">
+          <div class="kpi-grid" id="royalty-kpis"></div>
+          <div class="chart-grid">
+            <div class="card"><div class="card-header"><h3>Royalty by DSP</h3></div><canvas id="dsp-chart" class="chart-canvas"></canvas></div>
+            <div class="card"><div class="card-header"><h3>Top 10 Songs</h3></div><canvas id="song-chart" class="chart-canvas"></canvas></div>
+          </div>
+        </div>
+        <div class="royalty-panel" data-royalty-panel="catalog">
+          <div class="card"><div class="card-header"><h3>Catalog</h3></div><div class="table-wrap"><table id="songs-table"><thead><tr><th>ISRC</th><th>Title</th><th>Artist</th><th>Album</th><th>Status</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
+        <div class="royalty-panel" data-royalty-panel="statements">
+          <div class="card"><div class="card-header"><h3>Recent Royalty Statements</h3></div><div class="table-wrap"><table id="statements-table"><thead><tr><th>Period</th><th>Song</th><th>DSP</th><th>Streams</th><th>Revenue</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
+        <div class="royalty-panel" data-royalty-panel="vault">
+          <div class="card" style="margin-bottom:22px">
+            <div class="card-header"><h3>Chain-of-Custody Hash</h3><p>Generate a SHA-256 hash for any evidence, contract, or file. Hashes are logged locally with a timestamp.</p></div>
+            <div style="padding:0 20px 20px">
+              <textarea id="vault-hash-input" rows="4" placeholder="Paste text or drag a file to hash…" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:inherit;resize:vertical"></textarea>
+              <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+                <button class="btn btn-primary" id="vault-hash-btn"><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg> Hash Evidence</button>
+                <button class="btn btn-ghost" id="vault-export-btn"><svg class="icon" aria-hidden="true"><use href="#icon-download"></use></svg> Survivor Export</button>
+              </div>
+              <div id="vault-hash-output" style="margin-top:14px;font-family:var(--font-mono);font-size:0.82rem;word-break:break-all;color:var(--green)"></div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:22px">
+            <div class="card-header"><h3>Upload to Vault</h3><p>Upload contracts, split sheets, and legal docs. Files are stored server-side and appear in the Vault module.</p></div>
+            <div style="padding:0 20px 20px">
+              <form id="royalty-vault-upload" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <select id="royalty-vault-category" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text)">
+                  <option>Contract</option><option>Master</option><option>Split Sheet</option><option>Legal</option><option>Evidence</option><option>General</option>
+                </select>
+                <input type="file" id="royalty-vault-file" style="width:auto" />
+                <button type="submit" class="btn btn-primary"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Upload</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="royalty-panel" data-royalty-panel="codex">
+          <div class="card" style="display:flex;flex-direction:column;height:520px;margin-bottom:22px">
+            <div class="card-header"><h3>Sir Codex — GOAT AI Codex</h3><p>Ask the technical architect. Powered by the GOAT Intel server (Ollama → Grok → Gemini → OpenAI fallback).</p></div>
+            <div id="codex-chat" style="flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px;background:rgba(0,0,0,0.2)"></div>
+            <div class="ai-input" style="padding:18px;border-top:1px solid var(--border)">
+              <input type="text" id="codex-input" placeholder="Ask Codex about code, systems, IP protection, audits…" style="flex:1" />
+              <button class="btn btn-primary" id="codex-send">Ask</button>
+            </div>
+          </div>
+        </div>
+        <div class="royalty-panel" data-royalty-panel="gift">
+          <div class="card" style="margin-bottom:22px">
+            <div class="card-header"><h3>Moneypenny Gift Calculator</h3><p>Calculate royalty splits the GOAT way: 10% default platform fee, 70% creator empowerment.</p></div>
+            <div style="padding:0 20px 20px;display:flex;gap:14px;align-items:end;flex-wrap:wrap">
+              <div class="form-group" style="flex:1;min-width:160px"><label>Sale / Revenue ($)</label><input type="number" id="gift-sale" value="1000" min="0" step="0.01" /></div>
+              <div class="form-group" style="flex:1;min-width:120px"><label>Royalty Rate</label><input type="number" id="gift-rate" value="0.10" min="0" max="1" step="0.01" /></div>
+              <button class="btn btn-primary" id="gift-calc">Calculate Split</button>
+            </div>
+            <div id="gift-output" style="padding:0 20px 20px"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-vault">
+        <div class="toolbar">
+          <input type="text" id="vault-search" placeholder="Search documents…" />
+          <div class="toolbar-right">
+            <form id="vault-upload-form" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center">
+              <select id="vault-category"><option>General</option><option>Contract</option><option>Master</option><option>Split Sheet</option><option>Legal</option></select>
+              <input type="file" id="vault-file" style="width:auto" />
+              <button type="submit" class="btn btn-primary"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Upload</button>
+            </form>
+          </div>
+        </div>
+        <div class="card" style="padding:0"><div class="table-wrap"><table id="vault-table"><thead><tr><th>File</th><th>Category</th><th>Size</th><th>Uploaded</th><th></th></tr></thead><tbody></tbody></table></div></div>
+      </section>
+
+      <section class="page" id="page-audit">
+        <div class="card" style="padding:0"><div class="table-wrap"><table id="audit-table"><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Table</th><th>Record</th></tr></thead><tbody></tbody></table></div></div>
+      </section>
+
+      <section class="page" id="page-casino">
+        <div class="card" style="padding:24px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:20px">
+            <div>
+              <h3>Casino Ops</h3>
+              <p>The GOAT Royalty Casino lives on the dedicated gaming server.</p>
+            </div>
+            <a href="http://casino.2.25.68.216.nip.io/" target="_blank" rel="noopener" class="btn btn-primary">Launch Gaming Server Casino</a>
+          </div>
+          <div id="casino-stats" class="dashboard-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:20px"></div>
+          <div class="card" style="background:var(--bg-elevated);padding:16px">
+            <h4 style="margin:0 0 10px;color:var(--green)">Live Floor Status</h4>
+            <div id="casino-floor" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-downloads">
+        <div class="toolbar">
+          <input type="text" id="dl-package" placeholder="Package name (e.g. Waka stems)" />
+          <select id="dl-category"><option>General</option><option>Stems</option><option>Samples</option><option>Videos</option><option>Documents</option></select>
+          <div class="toolbar-right">
+            <a id="dl-bundle" href="/api/downloads/crawljob_bundle" class="btn btn-ghost"><svg class="icon" aria-hidden="true"><use href="#icon-download"></use></svg> Export Bundle</a>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:22px">
+          <div class="card-header"><h3>Add Download URLs</h3><p>Paste one or more links (one per line). JDownloader crawljob files are auto-generated.</p></div>
+          <form id="dl-form">
+            <div class="form-group"><textarea id="dl-urls" rows="5" placeholder="https://..." style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:inherit;resize:vertical"></textarea></div>
+            <button type="submit" class="btn btn-primary"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Add to Queue</button>
+          </form>
+        </div>
+        <div class="card" style="padding:0"><div class="table-wrap"><table id="downloads-table"><thead><tr><th>URL</th><th>Package</th><th>Category</th><th>Status</th><th></th></tr></thead><tbody></tbody></table></div></div>
+      </section>
+
+      <section class="page" id="page-ai">
+        <div class="card" style="height:calc(100vh - 120px);display:flex;flex-direction:column">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+            <div><h3>AI ERP Assistant</h3><p>Ask business questions, chat with any Ollama model, or launch the built-in MONOPOLY agent</p></div>
+            <div style="display:flex;gap:10px;align-items:center">
+              <select id="ai-model" style="padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--text)"><option value="">ERP brain (local)</option></select>
+              <select id="ai-mode" style="padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--text)">
+                <option value="business">Business ERP</option>
+                <option value="monopoly">MONOPOLY Agent</option>
+                <option value="chat">Ollama chat</option>
+              </select>
+              <button id="ai-refresh-models" class="btn btn-ghost btn-sm"><svg class="icon" aria-hidden="true"><use href="#icon-refresh-cw"></use></svg></button>
+            </div>
+          </div>
+          <div class="ai-container" style="flex:1">
+            <div class="ai-chat" id="ai-chat">
+              <div class="ai-msg bot">Hello Harvey. Ask me about revenue, open deals, low stock, overdue invoices, cash balance, headcount, or orders. Switch mode to launch the built-in local agent <strong>MONOPOLY</strong>.</div>
+            </div>
+            <form class="ai-input" id="ai-form"><input type="text" id="ai-input" placeholder="e.g. 'What is our cash balance?'" autocomplete="off" /><button type="submit" class="btn btn-primary">Ask</button></form>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="card">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+            <div><h3>MONOPOLY MONEY — Agent Capabilities</h3><p>Password-protected controls. Only turn on what you want this client to access.</p></div>
+            <span class="status-pill"><span class="status-light" id="monopoly-lock-light"></span><span id="monopoly-lock-status">Unknown</span></span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:14px">
+            <div>
+              <div class="form-group"><label>Lock Password</label><input type="password" id="monopoly-password" placeholder="Enter password to enable / save changes" style="width:100%" /></div>
+              <button class="btn btn-primary" id="monopoly-set-password-btn" style="margin-bottom:12px">Set / Change Lock Password</button>
+              <div id="monopoly-password-msg" style="font-size:0.8rem;color:var(--text-dim);min-height:20px"></div>
+            </div>
+            <div>
+              <h4 style="margin:0 0 10px;color:var(--gold)">Capability Toggles</h4>
+              <div id="monopoly-toggles" style="display:grid;gap:10px">
+                <label class="toggle-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer"><span>Autopilot (self-acting agent)</span><input type="checkbox" data-cap="autopilot" /></label>
+                <label class="toggle-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer"><span>Self-coding (read/write files)</span><input type="checkbox" data-cap="self_coding" /></label>
+                <label class="toggle-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer"><span>Self-healing (restart services)</span><input type="checkbox" data-cap="self_healing" /></label>
+                <label class="toggle-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer"><span>Self-maintenance (diagnostics)</span><input type="checkbox" data-cap="self_maintenance" /></label>
+                <label class="toggle-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer"><span>Computer control (shell / apps)</span><input type="checkbox" data-cap="computer_control" /></label>
+                <label class="toggle-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer"><span>Web search & fetch</span><input type="checkbox" data-cap="web_search" /></label>
+                <label class="toggle-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer"><span>Voice / speak</span><input type="checkbox" data-cap="voice" /></label>
+                <label class="toggle-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer"><span>Subagents</span><input type="checkbox" data-cap="subagents" /></label>
+                <label class="toggle-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer"><span>MCP tools</span><input type="checkbox" data-cap="mcp" /></label>
+              </div>
+              <button class="btn btn-primary" id="monopoly-save-toggles" style="margin-top:14px">Save Capabilities</button>
+              <div id="monopoly-toggles-msg" style="font-size:0.8rem;color:var(--text-dim);margin-top:8px;min-height:20px"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header"><h3 id="modal-title">Add</h3><button class="close-modal" id="close-modal"><svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg></button></div>
+    <form id="modal-form"></form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="profile-modal-overlay">
+  <div class="modal" style="width: min(440px, calc(100% - 32px))">
+    <div class="modal-header"><h3>Profile & Security</h3><button class="close-modal" id="close-profile-modal"><svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg></button></div>
+    <form id="profile-form">
+      <div class="form-group"><label>Email</label><input type="email" name="email" id="profile-email" required /></div>
+      <div class="form-group"><label>Current Password (to confirm email change)</label><input type="password" id="profile-password" placeholder="Required to change email" /></div>
+      <hr style="border:0;border-top:1px solid var(--border);margin:18px 0" />
+      <div class="form-group"><label>Current Password</label><input type="password" id="current-password" placeholder="Leave blank to keep current" /></div>
+      <div class="form-group"><label>New Password</label><input type="password" id="new-password" placeholder="Min 8 chars, upper/lower/digit/special" /></div>
+      <div class="form-group"><label>Confirm New Password</label><input type="password" id="confirm-password" /></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/service-worker.js').catch(()=>{});
+const API = '';
+let currentPage = 'home';
+let editingId = null, editingType = null;
+let entitiesCache = [];
+let accountsCache = [];
+let projectsCache = [];
+
+async function api(path, opts = {}) {
+  opts.credentials = 'include';
+  if (opts.body && typeof opts.body === 'object' && !(opts.body instanceof FormData)) {
+    opts.headers = { ...opts.headers, 'Content-Type': 'application/json' };
+    opts.body = JSON.stringify(opts.body);
+  }
+  const res = await fetch(API + path, opts);
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); } catch { data = { ok: false, error: text }; }
+  return { status: res.status, data };
+}
+
+function format$(n) { return '$' + Math.round(n).toLocaleString(); }
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString() : '—'; }
+function icon(name, cls = '') { return `<svg class="icon ${cls}" aria-hidden="true"><use href="#icon-${name}"></use></svg>`; }
+
+function badge(text) {
+  const t = text.toLowerCase().replace(/\s/g,'-');
+  return `<span class="badge badge-${t}">${text}</span>`;
+}
+
+function cssColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+function drawLineChart(canvas, labels, series) {
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const w = rect.width, h = rect.height, pad = 34;
+  ctx.clearRect(0, 0, w, h);
+  const allVals = series.flatMap(s => s.data);
+  const max = Math.max(...allVals, 1) * 1.1;
+  const stepX = (w - pad * 2) / (labels.length - 1);
+  series.forEach(s => {
+    ctx.beginPath(); ctx.strokeStyle = s.color; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    s.data.forEach((v, i) => { const x = pad + i * stepX; const y = h - pad - (v / max) * (h - pad * 2); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
+    ctx.stroke();
+  });
+  ctx.fillStyle = cssColor('--text-muted'); ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+  labels.forEach((l, i) => { if (i % Math.ceil(labels.length/6) === 0) ctx.fillText(l, pad + i * stepX, h - 10); });
+  let lx = w - 120;
+  series.forEach(s => { ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(lx, 16, 5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = cssColor('--text'); ctx.fillText(s.label, lx + 12, 20); lx += 70; });
+}
+
+function drawBarChart(canvas, labels, data, colors) {
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const w = rect.width, h = rect.height, pad = 34;
+  ctx.clearRect(0, 0, w, h);
+  const max = Math.max(...data, 1) * 1.1;
+  const stepX = (w - pad * 2) / labels.length;
+  const barW = stepX * 0.55;
+  data.forEach((v, i) => {
+    const x = pad + i * stepX + (stepX - barW) / 2;
+    const barH = (v / max) * (h - pad * 2);
+    const y = h - pad - barH;
+    ctx.fillStyle = colors[i % colors.length] || cssColor('--blue');
+    ctx.fillRect(x, y, barW, barH);
+  });
+  ctx.fillStyle = cssColor('--text-muted'); ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+  labels.forEach((l, i) => { ctx.fillText(l, pad + i * stepX + stepX / 2, h - 10); });
+}
+
+async function loadEntities() {
+  const [{ data: ent }, { data: acc }, { data: proj }] = await Promise.all([api('/api/entities'), api('/api/accounts'), api('/api/projects')]);
+  entitiesCache = ent || [];
+  accountsCache = acc || [];
+  projectsCache = proj || [];
+  const sel = document.getElementById('entity-select');
+  sel.innerHTML = entitiesCache.map(e => `<option value="${e.id}" ${e.id === 1 ? 'selected' : ''}>${e.name}</option>`).join('');
+  sel.insertAdjacentHTML('afterbegin', '<option value="0">All Entities</option>');
+}
+
+async function setEntity(id) {
+  await api('/api/set-entity', { method: 'POST', body: { entity_id: id } });
+  switchPage(currentPage);
+}
+
+const appTiles = [
+  { page: 'dashboard', icon: 'layout', title: 'Dashboard', desc: 'KPIs, charts & activity', count: null },
+  { page: 'sales', icon: 'briefcase', title: 'Sales / CRM', desc: 'Deals & pipeline', count: 'open_deals' },
+  { page: 'orders', icon: 'truck', title: 'Orders', desc: 'Fulfillment & tracking', count: 'pending_orders' },
+  { page: 'employees', icon: 'users', title: 'Employees', desc: 'Team directory', count: 'active_employees' },
+  { page: 'finance', icon: 'credit-card', title: 'Finance', desc: 'Invoices & receivables', count: 'open_invoices' },
+  { page: 'inventory', icon: 'package', title: 'Inventory', desc: 'Stock & products', count: 'low_stock' },
+  { page: 'entities', icon: 'globe', title: 'Entities', desc: 'Subsidiaries & global ops', count: null },
+  { page: 'accounting', icon: 'book-open', title: 'Accounting', desc: 'GL, P&L & balance sheet', count: null },
+  { page: 'projects', icon: 'folder', title: 'Projects', desc: 'Projects & tasks', count: 'active_projects' },
+  { page: 'analytics', icon: 'bar-chart', title: 'Analytics', desc: 'Reports & team metrics', count: null },
+  { page: 'ai', icon: 'cpu', title: 'AI Assistant', desc: 'Ask natural-language questions', count: null },
+  { page: 'casino', icon: 'dice', title: 'Casino', desc: 'Live casino floor & stats', count: null }
+];
+
+async function updateCommandBar() {
+  try {
+    const { data } = await api('/api/dashboard');
+    if (!data.ok) return;
+    const k = data.kpis;
+    document.getElementById('command-cash').textContent = format$(k.cash_balance);
+    document.getElementById('command-deals').textContent = k.open_deals;
+    const alerts = (k.overdue_count || 0) + (k.low_stock || 0);
+    document.getElementById('command-alerts').textContent = alerts;
+    document.getElementById('sys-status-text').textContent = 'OPERATIONAL';
+    document.getElementById('sys-status-light').className = 'status-light';
+    document.getElementById('cash-light').className = 'status-light' + (k.cash_balance > 500000 ? '' : ' amber');
+    document.getElementById('deals-light').className = 'status-light' + (k.open_deals > 5 ? ' amber' : '');
+    document.getElementById('alert-light').className = 'status-light' + (alerts > 0 ? ' red' : '');
+  } catch (e) {
+    document.getElementById('sys-status-text').textContent = 'DEGRADED';
+    document.getElementById('sys-status-light').className = 'status-light red';
+  }
+}
+
+function updateMissionClock() {
+  const el = document.getElementById('mission-clock');
+  if (el) el.textContent = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+}
+setInterval(updateMissionClock, 1000);
+
+function pctColor(n) { return n >= 0 ? 'var(--green)' : 'var(--red)'; }
+function pctArrow(n) { return n >= 0 ? '▲' : '▼'; }
+
+async function loadMarketStrip(containerId='market-strip') {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  try {
+    const [{ data: crypto }, { data: stocks }, { data: news }] = await Promise.all([
+      api('/api/market/crypto'), api('/api/market/stocks'), api('/api/market/news')
+    ]);
+    let html = '';
+    if (crypto && crypto.crypto) {
+      html += `<div class="card" style="background:rgba(0,0,0,0.2);padding:12px"><div style="font-size:0.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Crypto</div>` + crypto.crypto.slice(0,5).map(c => {
+        const ch = c.price_change_percentage_24h || 0;
+        return `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span><img src="${c.image}" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;margin-right:6px">${c.symbol.toUpperCase()}</span><span style="color:${pctColor(ch)}">${format$(c.current_price)} ${pctArrow(ch)}${Math.abs(ch).toFixed(1)}%</span></div>`;
+      }).join('') + `</div>`;
+    }
+    if (stocks && stocks.ok && stocks.stocks) {
+      html += `<div class="card" style="background:rgba(0,0,0,0.2);padding:12px"><div style="font-size:0.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Equities</div>` + ['^GSPC','BTC-USD','ETH-USD','AAPL','TSLA','NVDA'].map(s => {
+        const d = stocks.stocks[s] || {}; if (d.error) return '';
+        const ch = d.pct || 0; const label = s.replace('^','');
+        return `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>${label}</span><span style="color:${pctColor(ch)}">${format$(d.price)} ${pctArrow(ch)}${Math.abs(ch).toFixed(1)}%</span></div>`;
+      }).filter(Boolean).join('') + `</div>`;
+    }
+    if (news && news.news) {
+      html += `<div class="card" style="background:rgba(0,0,0,0.2);padding:12px"><div style="font-size:0.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Headlines</div><div class="log" style="max-height:130px;overflow-y:auto">` + news.news.slice(0,5).map(n => `<div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:0.82rem"><span style="color:var(--gold);text-transform:uppercase;font-size:0.6rem">${n.source}</span> ${n.title}</div>`).join('') + `</div></div>`;
+    }
+    el.innerHTML = html || 'Market telemetry unavailable';
+  } catch (e) { el.innerHTML = '<div class="loading">Market feed offline</div>'; }
+}
+
+async function loadHome() {
+  const [{ data: dash }, { data: emp }, { data: orders }, { data: projects }] = await Promise.all([
+    api('/api/dashboard'), api('/api/employees'), api('/api/orders'), api('/api/projects')
+  ]);
+  if (!dash.ok) return;
+  const user = await api('/api/me');
+  const entityName = entitiesCache.find(e => e.id == (user.data.entity || 1))?.name || 'All Entities';
+  document.getElementById('home-title').textContent = 'GOAT FORCE COMMAND';
+  document.getElementById('home-subtitle').textContent = `Commander: ${user.data.user.name} · ${user.data.user.role === 'admin' ? 'Administrator' : 'User'} · ${entityName}`;
+
+  const quick = {
+    open_deals: dash.kpis.open_deals,
+    pending_orders: orders.filter(o => o.status === 'Pending' || o.status === 'Picked').length,
+    active_employees: emp.filter(e => e.status === 'Active').length,
+    open_invoices: emp.length ? 0 : 0, // placeholder, will set below
+    low_stock: dash.kpis.low_stock,
+    active_projects: projects.filter(p => p.status === 'In Progress').length
+  };
+  const openInvoices = await api('/api/invoices?status=Open');
+  quick.open_invoices = openInvoices.data.filter(i => i.status === 'Open' || i.status === 'Overdue').length;
+
+  document.getElementById('app-tiles').innerHTML = appTiles.map(t => {
+    const c = quick[t.count] !== undefined ? quick[t.count] : '';
+    const countHtml = c !== '' ? `<div class="tile-count">${typeof c === 'number' && c > 999 ? (c/1000).toFixed(1)+'k' : c}</div>` : '';
+    const isExternal = t.external;
+    const tag = isExternal ? 'a' : 'div';
+    const href = isExternal ? ` href="${t.external}" target="_blank" rel="noopener"` : '';
+    const pageAttr = isExternal ? '' : ` data-page="${t.page}"`;
+    return `
+    <${tag} class="app-tile"${pageAttr}${href}>
+      <div class="app-tile-icon">${icon(t.icon, 'icon-lg')}</div>
+      <div><h4>${t.title}</h4><p>${t.desc}</p></div>
+      ${countHtml}
+    </${tag}>`;
+  }).join('');
+
+  document.getElementById('home-activity').innerHTML = dash.activity.map(a =>
+    `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:0.9rem"><span>${a.text}</span><span style="color:var(--text-muted);font-size:0.8rem">${a.time}</span></div>`
+  ).join('');
+
+  document.getElementById('home-quick-stats').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Revenue</div><div class="kpi-value">${format$(dash.kpis.revenue)}</div></div>
+    <div class="kpi"><div class="kpi-label">Cash</div><div class="kpi-value">${format$(dash.kpis.cash_balance)}</div></div>
+    <div class="kpi"><div class="kpi-label">Outstanding</div><div class="kpi-value">${format$(dash.kpis.outstanding_invoices)}</div></div>`;
+  loadMarketStrip('market-strip');
+  await updateCommandBar();
+}
+
+async function loadDashboard() {
+  const { data } = await api('/api/dashboard');
+  if (!data.ok) return;
+  const k = data.kpis;
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi"><div class="kpi-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#icon-dollar-sign"></use></svg></div><div class="kpi-label">6-Month Revenue</div><div class="kpi-value">${format$(k.revenue)}</div><div class="kpi-delta up">${icon('arrow-up')} +18% vs prior</div></div>
+    <div class="kpi"><div class="kpi-icon">${icon('briefcase','icon-lg')}</div><div class="kpi-label">Open Deals</div><div class="kpi-value">${k.open_deals}</div><div class="kpi-delta up">${format$(k.total_deal_value)} total value</div></div>
+    <div class="kpi"><div class="kpi-icon">${icon('file-text','icon-lg')}</div><div class="kpi-label">Outstanding Invoices</div><div class="kpi-value">${format$(k.outstanding_invoices)}</div><div class="kpi-delta down">${icon('arrow-down')} ${k.overdue_count} overdue</div></div>
+    <div class="kpi"><div class="kpi-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#icon-credit-card"></use></svg></div><div class="kpi-label">Cash Balance</div><div class="kpi-value">${format$(k.cash_balance)}</div><div class="kpi-delta up">${icon('arrow-up')} Daily visibility</div></div>
+    <div class="kpi"><div class="kpi-icon">${icon('package','icon-lg')}</div><div class="kpi-label">Low Stock Items</div><div class="kpi-value">${k.low_stock}</div><div class="kpi-delta down">${icon('arrow-down')} Re-order soon</div></div>`;
+  requestAnimationFrame(() => {
+    drawLineChart(document.getElementById('rev-chart'), data.monthly.map(m => m.month), [
+      { label: 'Revenue', data: data.monthly.map(m => m.revenue), color: cssColor('--gold') },
+      { label: 'Expenses', data: data.monthly.map(m => m.expenses), color: cssColor('--red') }
+    ]);
+    drawBarChart(document.getElementById('pipe-chart'), data.pipeline.map(p => p.label), data.pipeline.map(p => p.value), [cssColor('--blue')]);
+    drawLineChart(document.getElementById('cash-chart'), data.cash.map(c => c.date.slice(5)), [
+      { label: 'Cash', data: data.cash.map(c => c.balance), color: cssColor('--green') }
+    ]);
+  });
+  // Fulfillment chart
+  const fulfill = { 'Pending': 0, 'Picked': 0, 'Shipped': 0, 'Delivered': 0 };
+  const { data: orders } = await api('/api/orders');
+  orders.forEach(o => { if (fulfill[o.status] !== undefined) fulfill[o.status]++; });
+  drawBarChart(document.getElementById('fulfill-chart'), Object.keys(fulfill), Object.values(fulfill), [cssColor('--blue'), cssColor('--orange'), cssColor('--gold'), cssColor('--green')]);
+  document.getElementById('activity-feed').innerHTML = data.activity.map(a =>
+    `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:0.9rem"><span>${a.text}</span><span style="color:var(--text-muted);font-size:0.8rem">${a.time}</span></div>`
+  ).join('');
+  loadMarketStrip('dashboard-market-strip');
+  await updateCommandBar();
+}
+
+function renderTable(tableId, rows, fn) {
+  const tbody = document.querySelector(`#${tableId} tbody`);
+  if (!rows || !rows.length) { tbody.innerHTML = '<tr><td colspan="10" class="loading">No records found.</td></tr>'; return; }
+  tbody.innerHTML = rows.map(fn).join('');
+}
+
+async function loadSales(q = '') {
+  const { data } = await api('/api/deals' + (q ? `?q=${encodeURIComponent(q)}` : ''));
+  renderTable('sales-table', data, d => `
+    <tr data-id="${d.id}" data-type="deal">
+      <td>${d.customer}</td><td>${d.name}</td><td>${format$(d.value)}</td><td>${badge(d.stage)}</td><td>${d.owner}</td><td>${fmtDate(d.close)}</td>
+      <td><button class="btn btn-ghost btn-sm" data-action="edit" data-id="${d.id}" data-type="deal">Edit</button> <button class="btn btn-danger btn-sm" data-action="delete" data-id="${d.id}" data-type="deal">${icon('trash')}</button></td>
+    </tr>`);
+}
+async function loadOrders(q = '') {
+  const { data } = await api('/api/orders' + (q ? `?q=${encodeURIComponent(q)}` : ''));
+  renderTable('orders-table', data, o => `
+    <tr data-id="${o.id}" data-type="order">
+      <td>${o.customer}</td><td>${o.product_sku}</td><td>${o.qty}</td><td>${badge(o.status)}</td><td>${fmtDate(o.ship_date)}</td><td>${o.tracking || '—'}</td>
+      <td><button class="btn btn-ghost btn-sm" data-action="edit" data-id="${o.id}" data-type="order">Edit</button> <button class="btn btn-danger btn-sm" data-action="delete" data-id="${o.id}" data-type="order">${icon('trash')}</button></td>
+    </tr>`);
+}
+async function loadEmployees(q = '') {
+  const { data } = await api('/api/employees' + (q ? `?q=${encodeURIComponent(q)}` : ''));
+  renderTable('emp-table', data, e => `
+    <tr data-id="${e.id}" data-type="employee">
+      <td>${e.name}</td><td>${e.role}</td><td>${e.department}</td><td>${badge(e.status)}</td><td>${format$(e.salary)}</td>
+      <td><button class="btn btn-ghost btn-sm" data-action="edit" data-id="${e.id}" data-type="employee">Edit</button> <button class="btn btn-danger btn-sm" data-action="delete" data-id="${e.id}" data-type="employee">${icon('trash')}</button></td>
+    </tr>`);
+}
+async function loadFinance(q = '') {
+  const { data } = await api('/api/invoices' + (q ? `?q=${encodeURIComponent(q)}` : ''));
+  renderTable('fin-table', data, i => `
+    <tr data-id="${i.id}" data-type="invoice">
+      <td>${i.id}</td><td>${i.client}</td><td>${format$(i.amount)}</td><td>${fmtDate(i.due)}</td><td>${badge(i.status)}</td>
+      <td><button class="btn btn-ghost btn-sm" data-action="edit" data-id="${i.id}" data-type="invoice">Edit</button> <button class="btn btn-danger btn-sm" data-action="delete" data-id="${i.id}" data-type="invoice">${icon('trash')}</button></td>
+    </tr>`);
+}
+async function loadInventory(q = '') {
+  const { data } = await api('/api/inventory' + (q ? `?q=${encodeURIComponent(q)}` : ''));
+  renderTable('inv-table', data, p => `
+    <tr data-id="${p.id}" data-type="product">
+      <td>${p.name}</td><td>${p.sku}</td><td>${p.category}</td><td>${p.stock < 20 ? badge('Low') + ' ' : badge('OK') + ' '}${p.stock}</td><td>${format$(p.price)}</td>
+      <td><button class="btn btn-ghost btn-sm" data-action="edit" data-id="${p.id}" data-type="product">Edit</button> <button class="btn btn-danger btn-sm" data-action="delete" data-id="${p.id}" data-type="product">${icon('trash')}</button></td>
+    </tr>`);
+}
+async function loadEntitiesPage(q = '') {
+  const { data } = await api('/api/entities');
+  const rows = q ? data.filter(e => Object.values(e).some(v => String(v).toLowerCase().includes(q.toLowerCase()))) : data;
+  renderTable('ent-table', rows, e => `
+    <tr data-id="${e.id}" data-type="entity">
+      <td>${e.name}</td><td>${e.country}</td><td>${e.currency}</td><td>${e.active ? 'Yes' : 'No'}</td>
+      <td><button class="btn btn-ghost btn-sm" data-action="edit" data-id="${e.id}" data-type="entity">Edit</button> <button class="btn btn-danger btn-sm" data-action="delete" data-id="${e.id}" data-type="entity">${icon('trash')}</button></td>
+    </tr>`);
+}
+let currentBankProvider = 'plaid';
+
+function showBankProvider(p) {
+  currentBankProvider = p;
+  document.querySelectorAll('.provider-tab').forEach(b => b.classList.toggle('active', b.dataset.provider === p));
+  document.querySelectorAll('.provider-panel').forEach(div => div.classList.toggle('active', div.id === 'panel-' + p));
+}
+
+function showRoyaltyPanel(p) {
+  document.querySelectorAll('.royalty-tab').forEach(b => b.classList.toggle('active', b.dataset.royalty === p));
+  document.querySelectorAll('.royalty-panel').forEach(div => div.classList.toggle('active', div.dataset.royaltyPanel === p));
+}
+
+async function loadBanking() {
+  const statusEl = document.getElementById('banking-status');
+  const plaidBtn = document.getElementById('plaid-link-btn');
+  const tlBtn = document.getElementById('truelayer-link-btn');
+
+  const [plaidStatus, tlStatus] = await Promise.all([
+    api('/api/plaid/status'), api('/api/truelayer/status')
+  ]);
+
+  if (!plaidStatus.data.configured && !tlStatus.data.configured) {
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Open Banking not configured. Add PLAID_CLIENT_ID / PLAID_SECRET (US/Canada) or TRUELAYER_CLIENT_ID / TRUELAYER_CLIENT_SECRET / TRUELAYER_REDIRECT_URI (UK/EU).';
+    plaidBtn.disabled = true;
+    tlBtn.disabled = true;
+  } else {
+    statusEl.style.display = 'none';
+    plaidBtn.disabled = !plaidStatus.data.configured;
+    tlBtn.disabled = !tlStatus.data.configured;
+  }
+
+  // Plaid
+  if (plaidStatus.data.configured) {
+    const [{ data: accountsData }, { data: txData }] = await Promise.all([
+      api('/api/plaid/accounts'), api('/api/plaid/transactions?limit=50')
+    ]);
+    if (accountsData.ok && accountsData.accounts.length) {
+      document.getElementById('plaid-accounts-card').style.display = 'block';
+      renderTable('plaid-accounts-table', accountsData.accounts, a => `
+        <tr><td>${a.institution_name || '—'}</td><td>${a.name}</td><td>${a.subtype || a.type}</td><td>${format$(a.balance_available)}</td><td>${format$(a.balance_current)}</td></tr>`);
+    }
+    if (txData.ok && txData.transactions.length) {
+      document.getElementById('plaid-transactions-card').style.display = 'block';
+      renderTable('plaid-transactions-table', txData.transactions, t => `
+        <tr><td>${fmtDate(t.date)}</td><td>${t.name}</td><td>${format$(t.amount)}</td><td>${t.category || '—'}</td></tr>`);
+    }
+  }
+
+  // TrueLayer
+  if (tlStatus.data.configured) {
+    const [{ data: tlAccounts }, { data: tlTx }] = await Promise.all([
+      api('/api/truelayer/accounts'), api('/api/truelayer/transactions?limit=50')
+    ]);
+    if (tlAccounts.ok && tlAccounts.accounts.length) {
+      document.getElementById('truelayer-accounts-card').style.display = 'block';
+      renderTable('truelayer-accounts-table', tlAccounts.accounts, a => `
+        <tr><td>${a.provider_name || '—'}</td><td>${a.display_name || '—'}</td><td>${a.account_type || '—'}</td><td>${a.currency || '—'}</td></tr>`);
+    }
+    if (tlTx.ok && tlTx.transactions.length) {
+      document.getElementById('truelayer-transactions-card').style.display = 'block';
+      renderTable('truelayer-transactions-table', tlTx.transactions, t => `
+        <tr><td>${fmtDate(t.timestamp)}</td><td>${t.description || t.merchant_name || '—'}</td><td>${format$(t.amount_cents)}</td><td>${t.transaction_category || '—'}</td></tr>`);
+    }
+  }
+
+  showBankProvider(currentBankProvider);
+}
+
+async function loadTrading() {
+  const statusEl = document.getElementById('freqtrade-status');
+  const kpis = document.getElementById('freqtrade-kpis');
+  const { data } = await api('/api/freqtrade/status');
+  const reachable = data && data.ok && data.reachable;
+
+  if (!reachable) {
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Freqtrade not reachable. Run /opt/goat-erp/setup-freqtrade.sh on the server or set FREQTRADE_URL.';
+    kpis.style.display = 'none';
+    document.getElementById('freqtrade-trades-card').style.display = 'none';
+    document.getElementById('freqtrade-start').disabled = true;
+    document.getElementById('freqtrade-stop').disabled = true;
+    return;
+  }
+
+  statusEl.style.display = 'none';
+  kpis.style.display = 'grid';
+
+  const [profit, balance, trades, config] = await Promise.all([
+    api('/api/freqtrade/profit'),
+    api('/api/freqtrade/balance'),
+    api('/api/freqtrade/open_trades'),
+    api('/api/freqtrade/show_config')
+  ]);
+
+  if (config.ok) {
+    document.getElementById('ft-state').textContent = config.data && config.data.state ? config.data.state : 'running';
+  }
+
+  if (profit.ok) {
+    const p = profit.data;
+    document.getElementById('ft-profit').textContent = format$(Math.round((p.profit_all_coin || 0) * 100));
+    document.getElementById('ft-win').textContent = (p.winning_trades || 0) + '/' + (p.trade_count || 0);
+  }
+
+  if (balance.ok && balance.data.currencies) {
+    const total = balance.data.currencies.reduce((s, c) => s + (c.balance || 0), 0);
+    document.getElementById('ft-balance').textContent = '$' + total.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  document.getElementById('freqtrade-start').disabled = !(config.ok && config.data.state !== 'running');
+  document.getElementById('freqtrade-stop').disabled = !(config.ok && config.data.state === 'running');
+
+  if (trades.ok && Array.isArray(trades.data)) {
+    document.getElementById('freqtrade-trades-card').style.display = 'block';
+    renderTable('freqtrade-trades-table', trades.data, t => `
+      <tr><td>${t.pair}</td><td>${t.is_short ? 'Short' : 'Long'}</td><td>${t.open_rate ? t.open_rate.toFixed(4) : '—'}</td><td>${t.current_rate ? t.current_rate.toFixed(4) : '—'}</td><td>${t.profit_pct !== undefined ? t.profit_pct.toFixed(2)+'%' : '—'}</td></tr>`);
+  }
+}
+
+async function loadRoyalties() {
+  const [{ data: summary }, { data: songs }, { data: statements }] = await Promise.all([
+    api('/api/royalty_summary'),
+    api('/api/songs'),
+    api('/api/royalty_statements?limit=50')
+  ]);
+  if (!summary.ok) return;
+  document.getElementById('royalty-kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#icon-dollar-sign"></use></svg></div><div class="kpi-label">Total Royalties</div><div class="kpi-value">${format$(Math.round(summary.total_usd))}</div></div>
+    <div class="kpi"><div class="kpi-icon">${icon('disc','icon-lg')}</div><div class="kpi-label">Catalog Tracks</div><div class="kpi-value">${songs.songs.length}</div></div>
+    <div class="kpi"><div class="kpi-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#icon-bar-chart"></use></svg></div><div class="kpi-label">Top Song</div><div class="kpi-value">${summary.top_track ? summary.top_track.label : '—'}</div></div>
+    <div class="kpi"><div class="kpi-icon">${icon('globe','icon-lg')}</div><div class="kpi-label">DSPs</div><div class="kpi-value">10</div></div>`;
+  requestAnimationFrame(() => {
+    drawBarChart(document.getElementById('dsp-chart'), summary.by_dsp.map(x => x.label), summary.by_dsp.map(x => x.value), [cssColor('--gold'), cssColor('--purple'), cssColor('--blue'), cssColor('--green'), cssColor('--red')]);
+    drawBarChart(document.getElementById('song-chart'), summary.by_song.map(x => x.label), summary.by_song.map(x => x.value), [cssColor('--gold')]);
+  });
+  renderTable('songs-table', songs.songs, s => `
+    <tr><td>${s.isrc}</td><td>${s.title}</td><td>${s.artist}</td><td>${s.album || '—'}</td><td>${badge(s.status)}</td></tr>`);
+  renderTable('statements-table', statements.statements, st => `
+    <tr><td>${st.period}</td><td>${st.song_title}</td><td>${st.dsp_name}</td><td>${st.streams.toLocaleString()}</td><td>${format$(Math.round(st.usd_revenue))}</td></tr>`);
+}
+
+async function loadVault() {
+  const { data } = await api('/api/documents');
+  if (!data.ok) return;
+  renderTable('vault-table', data.documents, d => `
+    <tr><td><a href="/api/documents/${d.id}/download" target="_blank">${d.filename}</a></td><td>${d.category}</td><td>${(d.size/1024).toFixed(1)} KB</td><td>${fmtDate(d.uploaded_at)}</td><td>${d.uploaded_by || '—'}</td></tr>`);
+}
+
+async function loadAudit() {
+  const { data } = await api('/api/audit_log?limit=100');
+  if (!data.ok) return;
+  renderTable('audit-table', data.logs, l => `
+    <tr><td>${l.created_at}</td><td>${l.user_email || '—'}</td><td>${l.action}</td><td>${l.table_name || '—'}</td><td>${l.record_id || '—'}</td></tr>`);
+}
+
+async function loadCasino() {
+  const { data: stats } = await api('/api/casino/stats');
+  const { data: games } = await api('/api/casino/games?q=');
+  if (stats && stats.ok) {
+    const fmt = n => n == null ? '—' : Number(n).toLocaleString();
+    document.getElementById('casino-stats').innerHTML = `
+      <div class="stat"><span class="value">\$${fmt(stats.total_daily_revenue)}</span><span class="label">Daily Revenue</span></div>
+      <div class="stat"><span class="value">${fmt(stats.total_players)}</span><span class="label">Active Players</span></div>
+      <div class="stat"><span class="value">${fmt((stats.categories || []).length)}</span><span class="label">Categories</span></div>
+      <div class="stat"><span class="value">${fmt((games.games || []).length)}</span><span class="label">Games</span></div>
+    `;
+  }
+  const floor = document.getElementById('casino-floor');
+  if (floor && games && games.ok) {
+    floor.innerHTML = games.games.slice(0, 12).map(g => `
+      <div class="card" style="padding:14px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-weight:700">${g.name}</div>
+          <div style="font-size:0.8rem;color:var(--text-dim)">${g.category} · ${g.edge || '—'} edge</div>
+        </div>
+        <div style="text-align:right">
+          <div style="color:var(--green);font-weight:700">\$${Number(g.daily_revenue).toLocaleString()}</div>
+          <div style="font-size:0.75rem;color:var(--text-dim)">${Number(g.players).toLocaleString()} players</div>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+window.lightbox = function(src) {
+  const overlay = document.createElement('div');
+  overlay.style = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = `<img src="${src}" style="max-width:90vw;max-height:90vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5)" onclick="event.stopPropagation()">`;
+  overlay.addEventListener('click', () => overlay.remove());
+  document.body.appendChild(overlay);
+};
+
+async function loadDownloads() {
+  const { data } = await api('/api/downloads');
+  if (!data.ok) return;
+  renderTable('downloads-table', data.downloads, d => `
+    <tr><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis" title="${d.url}">${d.url}</td><td>${d.package_name || '—'}</td><td>${d.category}</td><td>${badge(d.status)}</td><td><button class="btn btn-sm btn-ghost" onclick="retryDownload(${d.id})"><svg class="icon" aria-hidden="true"><use href="#icon-refresh-cw"></use></svg></button></td></tr>`);
+}
+
+window.retryDownload = async function(id) {
+  const { data } = await api(`/api/downloads/${id}/retry`, { method: 'POST' });
+  if (data.ok) loadDownloads();
+  else alert(data.error || 'Retry failed');
+};
+
+async function loadAnalytics() {
+  const { data } = await api('/api/analytics');
+  if (!data.ok) return;
+  document.getElementById('analytics-kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-icon">${icon('trending-up','icon-lg')}</div><div class="kpi-label">Gross Margin</div><div class="kpi-value">${data.margin}%</div><div class="kpi-delta up">${icon('check-circle')} Healthy</div></div>
+    <div class="kpi"><div class="kpi-icon">${icon('disc','icon-lg')}</div><div class="kpi-label">Music Revenue Share</div><div class="kpi-value">${data.music_share}%</div><div class="kpi-delta up">${icon('check-circle')} Top category</div></div>
+    <div class="kpi"><div class="kpi-icon">${icon('award','icon-lg')}</div><div class="kpi-label">Deals Closed</div><div class="kpi-value">${data.deals_closed}</div><div class="kpi-delta up">${icon('arrow-up')} This quarter</div></div>
+    <div class="kpi"><div class="kpi-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#icon-credit-card"></use></svg></div><div class="kpi-label">Cash Balance</div><div class="kpi-value">${format$(data.cash_balance)}</div><div class="kpi-delta up">${icon('arrow-up')} Daily visibility</div></div>
+    <div class="kpi"><div class="kpi-icon">${icon('clock','icon-lg')}</div><div class="kpi-label">Avg Sales Cycle</div><div class="kpi-value">${data.avg_cycle}d</div><div class="kpi-delta down">${icon('arrow-down')} From 31d</div></div>`;
+  requestAnimationFrame(() => {
+    drawBarChart(document.getElementById('cat-chart'), data.categories.map(c => c.label), data.categories.map(c => c.value), [cssColor('--gold'), cssColor('--purple'), cssColor('--blue'), cssColor('--green')]);
+    drawBarChart(document.getElementById('team-chart'), data.team.map(t => t.label), data.team.map(t => t.value), [cssColor('--gold')]);
+  });
+}
+
+async function loadAccounting(q = '') {
+  const [{ data: tb }, { data: je }, { data: pl }, { data: bs }] = await Promise.all([
+    api('/api/trial_balance'), api('/api/journal_entries'), api('/api/pl'), api('/api/balance_sheet')
+  ]);
+  if (!tb.ok) return;
+  const rows = tb.accounts.filter(a => !q || Object.values(a).some(v => String(v).toLowerCase().includes(q.toLowerCase())));
+  document.getElementById('acct-kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-icon">${icon('book-open','icon-lg')}</div><div class="kpi-label">Total Accounts</div><div class="kpi-value">${tb.accounts.length}</div></div>
+    <div class="kpi"><div class="kpi-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#icon-bar-chart"></use></svg></div><div class="kpi-label">Total Debits</div><div class="kpi-value">${format$(tb.accounts.reduce((s,a)=>s+a.debits,0))}</div></div>
+    <div class="kpi"><div class="kpi-icon">${icon('trending-down','icon-lg')}</div><div class="kpi-label">Total Credits</div><div class="kpi-value">${format$(tb.accounts.reduce((s,a)=>s+a.credits,0))}</div></div>`;
+  renderTable('acct-table', rows, a => `
+    <tr data-id="${a.id}" data-type="account">
+      <td>${a.code}</td><td>${a.name}</td><td>${a.type}</td><td>${format$(a.balance)}</td>
+      <td><button class="btn btn-ghost btn-sm" data-action="edit" data-id="${a.id}" data-type="account">Edit</button> <button class="btn btn-danger btn-sm" data-action="delete" data-id="${a.id}" data-type="account">${icon('trash')}</button></td>
+    </tr>`);
+  renderTable('je-table', je, j => `
+    <tr data-id="${j.id}" data-type="journal_entry">
+      <td>${fmtDate(j.date)}</td><td>${j.description}</td><td>${j.debit_name}</td><td>${j.credit_name}</td><td>${format$(j.amount)}</td>
+      <td><button class="btn btn-ghost btn-sm" data-action="edit" data-id="${j.id}" data-type="journal_entry">Edit</button> <button class="btn btn-danger btn-sm" data-action="delete" data-id="${j.id}" data-type="journal_entry">${icon('trash')}</button></td>
+    </tr>`);
+  document.getElementById('fs-kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#icon-dollar-sign"></use></svg></div><div class="kpi-label">Revenue</div><div class="kpi-value">${format$(pl.revenue)}</div></div>
+    <div class="kpi"><div class="kpi-icon">${icon('trending-down','icon-lg')}</div><div class="kpi-label">Expenses</div><div class="kpi-value">${format$(pl.expenses)}</div></div>
+    <div class="kpi"><div class="kpi-icon">${icon('award','icon-lg')}</div><div class="kpi-label">Net Income</div><div class="kpi-value">${format$(pl.net_income)}</div></div>`;
+  document.getElementById('bs-kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-icon"><svg class="icon icon-lg" aria-hidden="true"><use href="#icon-bar-chart"></use></svg></div><div class="kpi-label">Assets</div><div class="kpi-value">${format$(bs.totals.assets)}</div></div>
+    <div class="kpi"><div class="kpi-icon">${icon('file-text','icon-lg')}</div><div class="kpi-label">Liabilities</div><div class="kpi-value">${format$(bs.totals.liabilities)}</div></div>
+    <div class="kpi"><div class="kpi-icon">${icon('users','icon-lg')}</div><div class="kpi-label">Equity</div><div class="kpi-value">${format$(bs.totals.equity)}</div></div>`;
+}
+
+async function loadProjects(q = '') {
+  const { data: projects } = await api('/api/projects');
+  const { data: tasks } = await api('/api/tasks');
+  const container = document.getElementById('projects-list');
+  const filtered = projects.filter(p => !q || Object.values(p).some(v => String(v).toLowerCase().includes(q.toLowerCase())));
+  if (!filtered.length) { container.innerHTML = '<div class="loading">No projects found.</div>'; return; }
+  container.innerHTML = await Promise.all(filtered.map(async p => {
+    const pt = tasks.filter(t => t.project_id == p.id);
+    const done = pt.filter(t => t.status === 'Done').length;
+    const pct = pt.length ? Math.round(done / pt.length * 100) : 0;
+    return `
+    <div class="card">
+      <div class="card-header">
+        <div><h3>${p.name}</h3><p style="color:var(--text-muted);margin:0;font-size:0.85rem">Manager: ${p.manager || '—'} | Budget: ${format$(p.budget)} | Status: ${badge(p.status)}</p></div>
+        <div><button class="btn btn-ghost btn-sm" data-action="add-task" data-id="${p.id}"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Task</button> <button class="btn btn-ghost btn-sm" data-action="edit" data-id="${p.id}" data-type="project">Edit</button> <button class="btn btn-danger btn-sm" data-action="delete" data-id="${p.id}" data-type="project">${icon('trash')}</button></div>
+      </div>
+      <div style="margin-bottom:14px"><div style="background:var(--surface);height:8px;border-radius:999px;overflow:hidden"><div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-bright))"></div></div><div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px">${done}/${pt.length} tasks complete (${pct}%)</div></div>
+      <div class="table-wrap"><table><thead><tr><th>Task</th><th>Assigned</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>${pt.map(t => `
+        <tr data-id="${t.id}" data-type="task">
+          <td>${t.name}</td><td>${t.assigned_to || '—'}</td><td>${fmtDate(t.due_date)}</td><td>${badge(t.status)}</td>
+          <td><button class="btn btn-ghost btn-sm" data-action="edit" data-id="${t.id}" data-type="task">Edit</button> <button class="btn btn-danger btn-sm" data-action="delete" data-id="${t.id}" data-type="task">${icon('trash')}</button></td>
+        </tr>`).join('')}</tbody></table></div>
+    </div>`;
+  })).then(arr => arr.join(''));
+}
+
+async function switchPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+  const titleMap = { home: 'Home Base', ai: 'AI Command', accounting: 'Accounting', banking: 'Banking', trading: 'Crypto Ops', royalties: 'Royalties', vault: 'Document Vault', audit: 'Audit Log', casino: 'Casino Ops', downloads: 'Logistics', settings: 'MONOPOLY Lock' };
+  document.getElementById('page-title').textContent = titleMap[page] || page.charAt(0).toUpperCase() + page.slice(1);
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('global-search').value = '';
+  if (page === 'home') await loadHome();
+  if (page === 'dashboard') await loadDashboard();
+  if (page === 'sales') await loadSales();
+  if (page === 'orders') await loadOrders();
+  if (page === 'employees') await loadEmployees();
+  if (page === 'finance') await loadFinance();
+  if (page === 'inventory') await loadInventory();
+  if (page === 'entities') await loadEntitiesPage();
+  if (page === 'royalties') await loadRoyalties();
+  if (page === 'accounting') await loadAccounting();
+  if (page === 'projects') await loadProjects();
+  if (page === 'analytics') await loadAnalytics();
+  if (page === 'banking') await loadBanking();
+  if (page === 'trading') await loadTrading();
+  if (page === 'vault') await loadVault();
+  if (page === 'audit') await loadAudit();
+  if (page === 'casino') await loadCasino();
+  if (page === 'downloads') await loadDownloads();
+  if (page === 'ai') await loadAI();
+  if (page === 'settings') await loadMonopolySettings();
+}
+
+let ollamaConfig = { ollama_url: 'http://127.0.0.1:11434', browser_url: 'http://127.0.0.1:11435' };
+let ollamaModels = [];
+
+async function loadAI() {
+  const { data } = await api('/api/ollama/config');
+  if (data.ok) ollamaConfig = data;
+  await refreshOllamaModels();
+}
+
+async function refreshOllamaModels() {
+  const sel = document.getElementById('ai-model');
+  sel.innerHTML = '<option value="">ERP brain (local)</option>';
+  const { data } = await api('/api/ollama/models');
+  if (data && data.models) {
+    ollamaModels = data.models;
+    data.models.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.model || m.name;
+      opt.textContent = m.model || m.name;
+      sel.appendChild(opt);
+    });
+    // Default to the GOAT Force power model if available
+    const preferred = ['llama3.1:70b', 'llama3.1:8b', 'qwen2.5:7b', 'llama3.2:3b'];
+    const sel = document.getElementById('ai-model');
+    for (const p of preferred) {
+      if (Array.from(sel.options).some(o => o.value === p)) { sel.value = p; break; }
+    }
+  }
+  // Also try browser-direct fallback
+  try {
+    const res = await fetch(ollamaConfig.browser_url + '/api/tags', { credentials: 'omit', mode: 'cors' });
+    if (res.ok) {
+      const d2 = await res.json();
+      (d2.models || []).forEach(m => {
+        const name = m.model || m.name;
+        if (!Array.from(sel.options).some(o => o.value === name)) {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name + ' (local Ollama)';
+          sel.appendChild(opt);
+        }
+      });
+    }
+  } catch (e) { /* ignore CORS/network errors */ }
+}
+
+async function loadMonopolySettings() {
+  const { data } = await api('/api/monopoly/settings');
+  const statusEl = document.getElementById('monopoly-lock-status');
+  const lightEl = document.getElementById('monopoly-lock-light');
+  if (!data || !data.ok) {
+    statusEl.textContent = 'Error';
+    lightEl.className = 'status-light red';
+    return;
+  }
+  statusEl.textContent = data.lockConfigured ? 'Locked' : 'Unconfigured';
+  lightEl.className = 'status-light ' + (data.lockConfigured ? 'green' : 'amber');
+  document.querySelectorAll('#monopoly-toggles input[data-cap]').forEach(cb => {
+    cb.checked = !!data.settings[cb.dataset.cap];
+  });
+}
+
+async function saveMonopolySettings() {
+  const password = document.getElementById('monopoly-password').value;
+  const settings = {};
+  document.querySelectorAll('#monopoly-toggles input[data-cap]').forEach(cb => {
+    settings[cb.dataset.cap] = cb.checked;
+  });
+  const msgEl = document.getElementById('monopoly-toggles-msg');
+  msgEl.textContent = 'Saving...';
+  const { data } = await api('/api/monopoly/settings', { method: 'POST', body: { password, settings } });
+  if (data && data.ok) {
+    msgEl.textContent = 'Capabilities saved.';
+    msgEl.style.color = 'var(--green)';
+    await loadMonopolySettings();
+  } else {
+    msgEl.textContent = data.error || 'Save failed';
+    msgEl.style.color = 'var(--red)';
+  }
+}
+
+async function setMonopolyPassword() {
+  const input = document.getElementById('monopoly-password');
+  const newPassword = input.value;
+  const msgEl = document.getElementById('monopoly-password-msg');
+  if (!newPassword || newPassword.length < 4) {
+    msgEl.textContent = 'Password must be at least 4 characters'; msgEl.style.color = 'var(--red)'; return;
+  }
+  msgEl.textContent = 'Setting lock...';
+  const { data } = await api('/api/monopoly/settings/password', { method: 'POST', body: { new_password: newPassword } });
+  if (data && data.ok) {
+    msgEl.textContent = 'Lock password set.'; msgEl.style.color = 'var(--green)'; input.value = '';
+    await loadMonopolySettings();
+  } else {
+    msgEl.textContent = data.error || 'Set failed'; msgEl.style.color = 'var(--red)';
+  }
+}
+
+const formSchemas = {
+  deal: [
+    { name: 'customer', label: 'Customer', type: 'text', required: true },
+    { name: 'name', label: 'Deal Name', type: 'text', required: true },
+    { name: 'value', label: 'Value', type: 'number', required: true },
+    { name: 'stage', label: 'Stage', type: 'select', options: ['Open','Won','Lost'] },
+    { name: 'owner', label: 'Owner', type: 'text', required: true },
+    { name: 'close', label: 'Close Date', type: 'date', required: true },
+    { name: 'entity_id', label: 'Entity', type: 'select', optionsFrom: 'entities' }
+  ],
+  employee: [
+    { name: 'name', label: 'Name', type: 'text', required: true },
+    { name: 'role', label: 'Role', type: 'text', required: true },
+    { name: 'department', label: 'Department', type: 'text', required: true },
+    { name: 'status', label: 'Status', type: 'select', options: ['Active','On Leave','Terminated'] },
+    { name: 'salary', label: 'Salary', type: 'number', required: true },
+    { name: 'entity_id', label: 'Entity', type: 'select', optionsFrom: 'entities' }
+  ],
+  invoice: [
+    { name: 'id', label: 'Invoice #', type: 'text', required: true },
+    { name: 'client', label: 'Client', type: 'text', required: true },
+    { name: 'amount', label: 'Amount', type: 'number', required: true },
+    { name: 'due', label: 'Due Date', type: 'date', required: true },
+    { name: 'status', label: 'Status', type: 'select', options: ['Open','Paid','Overdue'] },
+    { name: 'entity_id', label: 'Entity', type: 'select', optionsFrom: 'entities' }
+  ],
+  product: [
+    { name: 'name', label: 'Product Name', type: 'text', required: true },
+    { name: 'sku', label: 'SKU', type: 'text', required: true },
+    { name: 'category', label: 'Category', type: 'text', required: true },
+    { name: 'stock', label: 'Stock', type: 'number', required: true },
+    { name: 'price', label: 'Price', type: 'number', required: true },
+    { name: 'entity_id', label: 'Entity', type: 'select', optionsFrom: 'entities' }
+  ],
+  order: [
+    { name: 'customer', label: 'Customer', type: 'text', required: true },
+    { name: 'product_sku', label: 'Product SKU', type: 'text', required: true },
+    { name: 'qty', label: 'Qty', type: 'number', required: true },
+    { name: 'status', label: 'Status', type: 'select', options: ['Pending','Picked','Shipped','Delivered'] },
+    { name: 'ship_date', label: 'Ship Date', type: 'date', required: false },
+    { name: 'tracking', label: 'Tracking #', type: 'text', required: false },
+    { name: 'entity_id', label: 'Entity', type: 'select', optionsFrom: 'entities' }
+  ],
+  entity: [
+    { name: 'name', label: 'Entity Name', type: 'text', required: true },
+    { name: 'country', label: 'Country', type: 'text', required: true },
+    { name: 'currency', label: 'Currency', type: 'text', required: true },
+    { name: 'active', label: 'Active', type: 'select', options: ['1','0'] }
+  ],
+  account: [
+    { name: 'code', label: 'Code', type: 'text', required: true },
+    { name: 'name', label: 'Name', type: 'text', required: true },
+    { name: 'type', label: 'Type', type: 'select', options: ['Asset','Liability','Equity','Revenue','Expense'] }
+  ],
+  journal_entry: [
+    { name: 'date', label: 'Date', type: 'date', required: true },
+    { name: 'description', label: 'Description', type: 'text', required: true },
+    { name: 'debit_account', label: 'Debit Account', type: 'select', optionsFrom: 'accounts' },
+    { name: 'credit_account', label: 'Credit Account', type: 'select', optionsFrom: 'accounts' },
+    { name: 'amount', label: 'Amount', type: 'number', required: true }
+  ],
+  project: [
+    { name: 'name', label: 'Project Name', type: 'text', required: true },
+    { name: 'budget', label: 'Budget', type: 'number', required: true },
+    { name: 'status', label: 'Status', type: 'select', options: ['Planning','In Progress','On Hold','Done'] },
+    { name: 'start_date', label: 'Start Date', type: 'date', required: false },
+    { name: 'end_date', label: 'End Date', type: 'date', required: false },
+    { name: 'manager', label: 'Manager', type: 'text', required: false }
+  ],
+  task: [
+    { name: 'project_id', label: 'Project', type: 'select', optionsFrom: 'projects' },
+    { name: 'name', label: 'Task Name', type: 'text', required: true },
+    { name: 'status', label: 'Status', type: 'select', options: ['Todo','In Progress','Done'] },
+    { name: 'assigned_to', label: 'Assigned To', type: 'text', required: false },
+    { name: 'due_date', label: 'Due Date', type: 'date', required: false }
+  ]
+};
+const typeEndpoints = { deal: 'deals', employee: 'employees', invoice: 'invoices', product: 'inventory', order: 'orders', entity: 'entities', account: 'accounts', journal_entry: 'journal_entries', project: 'projects', task: 'tasks' };
+
+async function openModal(type, id = null) {
+  editingType = type; editingId = id;
+  const schema = formSchemas[type];
+  const title = (id ? 'Edit ' : 'Add ') + type.charAt(0).toUpperCase() + type.slice(1);
+  document.getElementById('modal-title').textContent = title;
+  const form = document.getElementById('modal-form');
+  form.innerHTML = '';
+  let item = {};
+  if (id) {
+    const { data } = await api(`/api/${typeEndpoints[type]}/${id}`);
+    item = data || {};
+  }
+  for (const field of schema) {
+    const value = item[field.name] !== undefined ? item[field.name] : '';
+    let input;
+    if (field.type === 'select') {
+      let opts = '';
+      if (field.optionsFrom === 'entities') opts = entitiesCache.map(e => `<option value="${e.id}" ${value == e.id ? 'selected' : ''}>${e.name}</option>`).join('');
+      else if (field.optionsFrom === 'accounts') opts = accountsCache.map(a => `<option value="${a.id}" ${value == a.id ? 'selected' : ''}>${a.code} - ${a.name}</option>`).join('');
+      else if (field.optionsFrom === 'projects') opts = projectsCache.map(p => `<option value="${p.id}" ${value == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
+      else opts = field.options.map(o => `<option value="${o}" ${value == o ? 'selected' : ''}>${o}</option>`).join('');
+      input = `<select name="${field.name}" ${field.required ? 'required' : ''}>${opts}</select>`;
+    } else {
+      input = `<input type="${field.type}" name="${field.name}" value="${value}" ${field.required ? 'required' : ''} />`;
+    }
+    form.insertAdjacentHTML('beforeend', `<div class="form-group"><label>${field.label}</label>${input}</div>`);
+  }
+  form.insertAdjacentHTML('beforeend', `<button type="submit" class="btn btn-primary" style="width:100%">Save ${type}</button>`);
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); editingId = null; editingType = null; }
+
+document.getElementById('modal-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd.entries());
+  const numeric = ['value','salary','amount','stock','price','qty','entity_id','active','debit_account','credit_account','budget','project_id'];
+  numeric.forEach(f => { if (data[f] !== undefined && data[f] !== '') data[f] = Number(data[f]); });
+  const ep = typeEndpoints[editingType];
+  if (!ep) { alert('Unknown record type: ' + editingType); return; }
+  const method = editingId ? 'PUT' : 'POST';
+  const path = editingId ? `/api/${ep}/${editingId}` : `/api/${ep}`;
+  const result = await api(path, { method, body: data });
+  if (!result.data || !result.data.ok) { alert('Save failed: ' + (result.data && result.data.error ? result.data.error : 'unknown error')); return; }
+  closeModal();
+  if (['entity','account','project'].includes(editingType)) await loadEntities();
+  switchPage(currentPage);
+});
+
+async function deleteItem(type, id) {
+  if (!confirm('Delete this ' + type + '?')) return;
+  const { data } = await api(`/api/${typeEndpoints[type]}/${id}`, { method: 'DELETE' });
+  if (!data || !data.ok) { alert('Delete failed: ' + (data && data.error ? data.error : 'unknown error')); return; }
+  if (['entity','account','project'].includes(type)) await loadEntities();
+  switchPage(currentPage);
+}
+
+// Event wiring
+document.querySelectorAll('#nav button').forEach(btn => btn.addEventListener('click', () => switchPage(btn.dataset.page)));
+
+document.getElementById('login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  document.getElementById('login-error').classList.remove('show');
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  const { data } = await api('/api/login', {
+    method: 'POST',
+    body: { email: document.getElementById('login-email').value.trim().toLowerCase(), password: document.getElementById('login-pass').value }
+  });
+  btn.disabled = false; btn.textContent = 'Enter command center';
+  if (data.ok) {
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('app-view').classList.add('active');
+    document.getElementById('user-info').textContent = data.user.name;
+    await loadEntities();
+    switchPage('home');
+  } else {
+    document.getElementById('login-error').classList.add('show');
+  }
+});
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await api('/api/logout', { method: 'POST' });
+  location.reload();
+});
+
+document.getElementById('menu-toggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+document.getElementById('close-modal').addEventListener('click', closeModal);
+document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target.id === 'modal-overlay') closeModal(); });
+
+document.getElementById('entity-select').addEventListener('change', e => setEntity(e.target.value));
+
+document.getElementById('profile-btn').addEventListener('click', async () => {
+  const me = await api('/api/me');
+  document.getElementById('profile-email').value = me.data.user.email;
+  document.getElementById('profile-modal-overlay').classList.add('open');
+});
+document.getElementById('close-profile-modal').addEventListener('click', () => document.getElementById('profile-modal-overlay').classList.remove('open'));
+document.getElementById('profile-modal-overlay').addEventListener('click', e => { if (e.target.id === 'profile-modal-overlay') document.getElementById('profile-modal-overlay').classList.remove('open'); });
+
+document.getElementById('profile-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const email = document.getElementById('profile-email').value.trim();
+  const emailPass = document.getElementById('profile-password').value;
+  const current = document.getElementById('current-password').value;
+  const newPass = document.getElementById('new-password').value;
+  const confirm = document.getElementById('confirm-password').value;
+
+  const me = await api('/api/me');
+  const currentEmail = me.data.user.email;
+
+  if (email !== currentEmail) {
+    const { data } = await api('/api/change_email', { method: 'POST', body: { email, password: emailPass } });
+    if (!data.ok) { alert(data.error); return; }
+  }
+
+  if (newPass) {
+    const { data } = await api('/api/change_password', { method: 'POST', body: { current, new: newPass, confirm } });
+    if (!data.ok) { alert(data.error); return; }
+  }
+
+  alert('Profile updated. Please log in again if you changed your email.');
+  document.getElementById('profile-modal-overlay').classList.remove('open');
+  if (email !== currentEmail || newPass) await api('/api/logout', { method: 'POST' }), location.reload();
+});
+
+// Table edit/delete delegation
+const tableMap = {
+  sales: 'sales-table', orders: 'orders-table', employees: 'emp-table', finance: 'fin-table',
+  inventory: 'inv-table', entities: 'ent-table', accounting: 'acct-table'
+};
+Object.entries(tableMap).forEach(([page, id]) => {
+  const table = document.getElementById(id);
+  if (!table) return;
+  table.addEventListener('click', e => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    const id = btn.dataset.id; const type = btn.dataset.type;
+    if (btn.dataset.action === 'edit') openModal(type, id);
+    if (btn.dataset.action === 'delete') deleteItem(type, id);
+  });
+});
+
+// Journal entries table delegation
+document.getElementById('je-table').addEventListener('click', e => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  if (btn.dataset.action === 'edit') openModal('journal_entry', btn.dataset.id);
+  if (btn.dataset.action === 'delete') deleteItem('journal_entry', btn.dataset.id);
+});
+
+// Projects list delegation (cards + add-task + task edit/delete)
+document.getElementById('projects-list').addEventListener('click', e => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  if (btn.dataset.action === 'add-task') { editingType = null; openModal('task'); /* project_id select will be set by user */ return; }
+  if (btn.dataset.action === 'edit') openModal(btn.dataset.type, btn.dataset.id);
+  if (btn.dataset.action === 'delete') deleteItem(btn.dataset.type, btn.dataset.id);
+});
+
+// Search & add buttons
+document.getElementById('sales-search').addEventListener('input', e => loadSales(e.target.value));
+document.getElementById('orders-search').addEventListener('input', e => loadOrders(e.target.value));
+document.getElementById('emp-search').addEventListener('input', e => loadEmployees(e.target.value));
+document.getElementById('fin-search').addEventListener('input', e => loadFinance(e.target.value));
+document.getElementById('inv-search').addEventListener('input', e => loadInventory(e.target.value));
+document.getElementById('ent-search').addEventListener('input', e => loadEntitiesPage(e.target.value));
+document.getElementById('acct-search').addEventListener('input', e => loadAccounting(e.target.value));
+document.getElementById('proj-search').addEventListener('input', e => loadProjects(e.target.value));
+
+document.querySelector('[data-action="add-deal"]').addEventListener('click', () => openModal('deal'));
+document.querySelector('[data-action="add-order"]').addEventListener('click', () => openModal('order'));
+document.querySelector('[data-action="add-emp"]').addEventListener('click', () => openModal('employee'));
+document.querySelector('[data-action="add-inv"]').addEventListener('click', () => openModal('invoice'));
+document.querySelector('[data-action="add-prod"]').addEventListener('click', () => openModal('product'));
+document.querySelector('[data-action="add-ent"]').addEventListener('click', () => openModal('entity'));
+document.querySelector('[data-action="add-acct"]').addEventListener('click', () => openModal('account'));
+document.querySelector('[data-action="add-je"]').addEventListener('click', () => openModal('journal_entry'));
+document.querySelector('[data-action="add-proj"]').addEventListener('click', () => openModal('project'));
+
+document.getElementById('global-search').addEventListener('input', e => {
+  const v = e.target.value;
+  if (currentPage === 'sales') { document.getElementById('sales-search').value = v; loadSales(v); }
+  if (currentPage === 'orders') { document.getElementById('orders-search').value = v; loadOrders(v); }
+  if (currentPage === 'employees') { document.getElementById('emp-search').value = v; loadEmployees(v); }
+  if (currentPage === 'finance') { document.getElementById('fin-search').value = v; loadFinance(v); }
+  if (currentPage === 'inventory') { document.getElementById('inv-search').value = v; loadInventory(v); }
+  if (currentPage === 'entities') { document.getElementById('ent-search').value = v; loadEntitiesPage(v); }
+  if (currentPage === 'accounting') { document.getElementById('acct-search').value = v; loadAccounting(v); }
+  if (currentPage === 'projects') { document.getElementById('proj-search').value = v; loadProjects(v); }
+});
+
+// Home interactions
+document.getElementById('app-tiles').addEventListener('click', e => {
+  const tile = e.target.closest('.app-tile'); if (!tile || !tile.dataset.page) return;
+  e.preventDefault();
+  switchPage(tile.dataset.page);
+});
+document.getElementById('home-dashboard-btn').addEventListener('click', () => switchPage('dashboard'));
+document.getElementById('home-ai-btn').addEventListener('click', () => switchPage('ai'));
+
+async function askHome(q) {
+  const input = document.getElementById('home-ai-input');
+  const answerBox = document.getElementById('home-ai-answer');
+  if (!q) q = input.value.trim();
+  if (!q) return;
+  input.value = q;
+  const { data } = await api('/api/ask', { method: 'POST', body: { q } });
+  let html = `<div class="ai-msg bot">${data.answer}`;
+  if (data.data && data.data.length) {
+    html += `<table><thead><tr>${Object.keys(data.data[0]).map(k => `<th>${k}</th>`).join('')}</tr></thead><tbody>${data.data.map(r => `<tr>${Object.values(r).map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  }
+  html += '</div>';
+  answerBox.innerHTML = html;
+  answerBox.style.display = 'block';
+}
+
+document.getElementById('home-ai-form').addEventListener('submit', async e => { e.preventDefault(); await askHome(); });
+document.querySelectorAll('.ai-chip').forEach(chip => chip.addEventListener('click', () => askHome(chip.dataset.q)));
+
+document.getElementById('notifications').addEventListener('click', () => alert('You have 4 unread notifications.\n\n• Invoice INV-2026-003 is overdue\n• BrickSquad Tee stock is low\n• New order from Life Imitates Art Inc is pending\n• Cash balance hit $1M'));
+
+// Freqtrade controls
+document.getElementById('freqtrade-refresh').addEventListener('click', loadTrading);
+document.getElementById('freqtrade-start').addEventListener('click', async () => {
+  const { data } = await api('/api/freqtrade/start', { method: 'POST' });
+  if (data && data.ok) loadTrading(); else alert(data.error || 'Could not start Freqtrade');
+});
+document.getElementById('freqtrade-stop').addEventListener('click', async () => {
+  const { data } = await api('/api/freqtrade/stop', { method: 'POST' });
+  if (data && data.ok) loadTrading(); else alert(data.error || 'Could not stop Freqtrade');
+});
+
+// Downloads
+document.getElementById('dl-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const urls = document.getElementById('dl-urls').value.split('\n').map(u => u.trim()).filter(Boolean);
+  if (!urls.length) return alert('Paste at least one URL');
+  const { data } = await api('/api/downloads', { method: 'POST', body: { urls, package_name: document.getElementById('dl-package').value || 'GOAT ERP', category: document.getElementById('dl-category').value } });
+  if (data.ok) { document.getElementById('dl-urls').value = ''; loadDownloads(); }
+  else alert(data.error || 'Failed to queue downloads');
+});
+
+// Document vault
+document.getElementById('vault-upload-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const file = document.getElementById('vault-file').files[0];
+  if (!file) return alert('Choose a file first');
+  const form = new FormData();
+  form.append('file', file);
+  form.append('category', document.getElementById('vault-category').value);
+  const { data } = await api('/api/documents', { method: 'POST', body: form, headers: {} });
+  if (data.ok) { document.getElementById('vault-file').value = ''; loadVault(); }
+  else alert(data.error || 'Upload failed');
+});
+
+// AI Assistant
+document.getElementById('ai-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const input = document.getElementById('ai-input');
+  const q = input.value.trim();
+  if (!q) return;
+  const chat = document.getElementById('ai-chat');
+  const model = document.getElementById('ai-model').value;
+  const mode = document.getElementById('ai-mode').value;
+  chat.insertAdjacentHTML('beforeend', `<div class="ai-msg user">${q}</div>`);
+  input.value = '';
+  if (mode === 'business' && !model) {
+    const { data } = await api('/api/ask', { method: 'POST', body: { q } });
+    let html = `<div class="ai-msg bot">${data.answer}`;
+    if (data.data && data.data.length) {
+      html += `<table><thead><tr>${Object.keys(data.data[0]).map(k => `<th>${k}</th>`).join('')}</tr></thead><tbody>${data.data.map(r => `<tr>${Object.values(r).map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    }
+    html += '</div>';
+    chat.insertAdjacentHTML('beforeend', html);
+  } else if (mode === 'monopoly') {
+    const modelName = model || 'llama3.1:70b';
+    chat.insertAdjacentHTML('beforeend', `<div class="ai-msg bot">MONOPOLY is thinking, Boss...</div>`);
+    const thinking = chat.lastElementChild;
+    const { data } = await api('/api/monopoly', { method: 'POST', body: { message: q, model: modelName } });
+    thinking.remove();
+    if (!data.ok) {
+      chat.insertAdjacentHTML('beforeend', `<div class="ai-msg bot">Could not reach MONOPOLY. ${data.error || ''}</div>`);
+    } else {
+      const source = ` (${data.agent} · ${data.model})`;
+      chat.insertAdjacentHTML('beforeend', `<div class="ai-msg bot">${data.reply}<small style="display:block;color:var(--text-muted);margin-top:6px">${source}</small></div>`);
+    }
+  } else {
+    const modelName = model || 'llama3.1:70b';
+    const messages = [{ role: 'user', content: q }];
+    // Try browser-direct CORS to local Ollama first, then fall back to server proxy
+    let reply = '';
+    let source = '';
+    try {
+      const direct = await fetch(ollamaConfig.browser_url + '/api/chat', {
+        method: 'POST', mode: 'cors', credentials: 'omit',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: modelName, messages, stream: false })
+      });
+      if (direct.ok) {
+        const d = await direct.json();
+        reply = d.message?.content || '';
+        source = ' (local Ollama ' + ollamaConfig.browser_url + ')';
+      }
+    } catch (e) {}
+    if (!reply) {
+      const { data } = await api('/api/ollama/chat', { method: 'POST', body: { model: modelName, messages } });
+      if (!data.ok) {
+        chat.insertAdjacentHTML('beforeend', `<div class="ai-msg bot">Could not reach Ollama. ${data.error || ''}<br><small>Modes: (1) set OLLAMA_ORIGINS on your Mac Ollama to include http://147.93.72.6:8000, (2) point ERP server OLLAMA_URL to your Mac's IP, (3) run ERP locally on this Mac, or (4) install Ollama on the server.</small></div>`);
+        chat.scrollTop = chat.scrollHeight;
+        return;
+      }
+      reply = data.response;
+      source = ' (server Ollama)';
+    }
+    chat.insertAdjacentHTML('beforeend', `<div class="ai-msg bot">${reply}<small style="display:block;color:var(--text-muted);margin-top:6px">${source}</small></div>`);
+  }
+  chat.scrollTop = chat.scrollHeight;
+});
+
+document.getElementById('ai-refresh-models').addEventListener('click', async () => { await refreshOllamaModels(); });
+
+document.getElementById('monopoly-save-toggles').addEventListener('click', saveMonopolySettings);
+document.getElementById('monopoly-set-password-btn').addEventListener('click', setMonopolyPassword);
+
+// Banking provider tabs
+document.querySelectorAll('.provider-tab').forEach(btn => btn.addEventListener('click', () => showBankProvider(btn.dataset.provider)));
+
+// Plaid Link bank connect
+document.getElementById('plaid-link-btn').addEventListener('click', async () => {
+  const { data } = await api('/api/plaid/link_token', { method: 'POST' });
+  if (!data.ok) { alert(data.error || 'Could not start Plaid Link'); return; }
+  const handler = Plaid.create({
+    token: data.link_token,
+    onSuccess: async (public_token, metadata) => {
+      const { data: ex } = await api('/api/plaid/exchange', { method: 'POST', body: { public_token } });
+      if (ex.ok) loadBanking();
+      else alert(ex.error || 'Bank connect failed');
+    },
+    onExit: (err) => { if (err) console.error(err); }
+  });
+  handler.open();
+});
+
+// TrueLayer open banking connect
+document.getElementById('truelayer-link-btn').addEventListener('click', async () => {
+  const { data } = await api('/api/truelayer/connect', { method: 'POST' });
+  if (!data.ok) { alert(data.error || 'Could not start TrueLayer'); return; }
+  const w = window.open(data.url, 'truelayer', 'width=600,height=700');
+  const onMsg = e => {
+    if (e.data && e.data.type === 'truelayer') {
+      window.removeEventListener('message', onMsg);
+      if (w && !w.closed) w.close();
+      if (e.data.status === 'connected') {
+        loadBanking();
+      } else if (e.data.error) {
+        alert('TrueLayer error: ' + e.data.error);
+      }
+    }
+  };
+  window.addEventListener('message', onMsg);
+});
+
+// Royalty Command tabs & tools
+async function digestSha256(buf) {
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+async function hashTextOrFile() {
+  const input = document.getElementById('vault-hash-input');
+  const files = input.files;
+  let buf, label;
+  if (files && files.length) {
+    buf = await files[0].arrayBuffer();
+    label = files[0].name;
+  } else {
+    buf = new TextEncoder().encode(input.value || '');
+    label = 'evidence-text';
+  }
+  const hash = await digestSha256(buf);
+  const out = `SHA-256: ${hash}\nSource: ${label}\nTimestamp: ${new Date().toISOString()}`;
+  document.getElementById('vault-hash-output').textContent = out;
+  document.getElementById('vault-hash-output').dataset.hash = hash;
+}
+async function exportSurvivor() {
+  const hash = document.getElementById('vault-hash-output').dataset.hash || '';
+  const input = document.getElementById('vault-hash-input').value || '';
+  const payload = {
+    evidence: input.slice(0, 500),
+    hash: hash,
+    noticeTimestamp: new Date().toISOString(),
+    survivorNote: 'I am a builder. I am a survivor.',
+    empire: 'GOAT Force Records',
+    owner: 'DJ Speedy (Harvey L. Miller Jr.)'
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `goat-survivor-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+async function sendCodex() {
+  const input = document.getElementById('codex-input');
+  const chat = document.getElementById('codex-chat');
+  const q = input.value.trim();
+  if (!q) return;
+  chat.innerHTML += `<div class="ai-msg user" style="align-self:flex-end;background:rgba(163,198,68,0.12);border:1px solid var(--green);padding:10px 14px;border-radius:12px;max-width:80%">${escapeHtml(q)}</div>`;
+  input.value = '';
+  chat.scrollTop = chat.scrollHeight;
+  const { data } = await api('/api/ai/codex', { method: 'POST', body: { prompt: q } });
+  const reply = data.ok ? (data.answer || 'Codex is thinking…') : ('Codex error: ' + (data.error || 'AI unavailable'));
+  chat.innerHTML += `<div class="ai-msg bot" style="align-self:flex-start;background:rgba(0,0,0,0.35);border:1px solid var(--border);padding:10px 14px;border-radius:12px;max-width:80%">${escapeHtml(reply)}</div>`;
+  chat.scrollTop = chat.scrollHeight;
+}
+async function calcGift() {
+  const sale = parseFloat(document.getElementById('gift-sale').value) || 0;
+  const rate = parseFloat(document.getElementById('gift-rate').value) || 0;
+  const { data } = await api('/api/royalty_calc', { method: 'POST', body: { sale, rate } });
+  const royalty = data.royalty || (sale * rate);
+  const platform = royalty * 0.10;
+  const creator = royalty * 0.70;
+  const investors = royalty * 0.20;
+  document.getElementById('gift-output').innerHTML = `
+    <div class="kpi-grid" style="margin:0">
+      <div class="kpi"><div class="kpi-label">Gross Sale</div><div class="kpi-value">${format$(sale)}</div></div>
+      <div class="kpi"><div class="kpi-label">Total Royalty</div><div class="kpi-value">${format$(royalty)}</div></div>
+      <div class="kpi"><div class="kpi-label">Creator Empowerment (70%)</div><div class="kpi-value" style="color:var(--green)">${format$(creator)}</div></div>
+      <div class="kpi"><div class="kpi-label">Investors (20%)</div><div class="kpi-value">${format$(investors)}</div></div>
+      <div class="kpi"><div class="kpi-label">Platform (10%)</div><div class="kpi-value">${format$(platform)}</div></div>
+    </div>`;
+}
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+document.querySelectorAll('.royalty-tab').forEach(btn => btn.addEventListener('click', () => showRoyaltyPanel(btn.dataset.royalty)));
+document.getElementById('vault-hash-btn').addEventListener('click', hashTextOrFile);
+document.getElementById('vault-export-btn').addEventListener('click', exportSurvivor);
+document.getElementById('royalty-vault-upload').addEventListener('submit', async e => {
+  e.preventDefault();
+  const file = document.getElementById('royalty-vault-file').files[0];
+  if (!file) return alert('Choose a file');
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('category', document.getElementById('royalty-vault-category').value);
+  const { data } = await api('/api/documents', { method: 'POST', body: fd });
+  if (data.ok) { alert('Uploaded to vault'); document.getElementById('royalty-vault-upload').reset(); loadVault(); }
+  else alert(data.error || 'Upload failed');
+});
+document.getElementById('codex-send').addEventListener('click', sendCodex);
+document.getElementById('codex-input').addEventListener('keydown', e => { if (e.key === 'Enter') sendCodex(); });
+document.getElementById('gift-calc').addEventListener('click', calcGift);
+
+window.addEventListener('resize', () => { if (['dashboard','analytics'].includes(currentPage)) switchPage(currentPage); });
+
+// Init
+(async () => {
+  const { status, data } = await api('/api/me');
+  if (status === 200 && data.ok) {
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('app-view').classList.add('active');
+    document.getElementById('user-info').textContent = data.user.name;
+    document.getElementById('entity-select').value = data.entity || 1;
+    await loadEntities();
+    await updateCommandBar();
+    setInterval(updateCommandBar, 30000);
+    const startPage = (location.hash && location.hash.slice(1).startsWith('page-')) ? location.hash.slice(1).replace('page-', '') : 'home';
+    switchPage(startPage);
+  }
+})();
+window.addEventListener('hashchange', () => {
+  if (location.hash && location.hash.slice(1).startsWith('page-')) {
+    switchPage(location.hash.slice(1).replace('page-', ''));
+  }
+});
+</script>
+<script src="/assets/hud-enhancements.js"></script>
+</body>
+</html>

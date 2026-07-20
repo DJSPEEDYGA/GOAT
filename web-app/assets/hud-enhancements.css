@@ -1,0 +1,164 @@
+/* GOAT Force HUD enhancements — sci-fi / mission-control vibe */
+:root {
+  --hud-cyan: #00eaff;
+  --hud-orange: #ff9f1c;
+  --hud-violet: #bf5af2;
+  --hud-glow: 0 0 14px rgba(0, 234, 255, 0.35);
+}
+
+/* Global scanline overlay */
+.hud-scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 1px,
+    rgba(0, 0, 0, 0.12) 1px,
+    rgba(0, 0, 0, 0.12) 2px
+  );
+  opacity: 0.35;
+  mix-blend-mode: overlay;
+  animation: scanFlicker 6s infinite;
+}
+
+@keyframes scanFlicker {
+  0%, 100% { opacity: 0.32; }
+  50% { opacity: 0.40; }
+  52% { opacity: 0.28; }
+  54% { opacity: 0.38; }
+}
+
+/* Boot overlay */
+.hud-boot-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg, #0f212e);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  font-family: var(--font-mono, monospace);
+  color: var(--green, #a3c644);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: opacity 0.8s ease, visibility 0.8s;
+}
+.hud-boot-overlay.hidden { opacity: 0; visibility: hidden; }
+.hud-boot-title { font-size: 1.6rem; font-weight: 900; margin-bottom: 12px; text-shadow: 0 0 18px var(--green, #a3c644); }
+.hud-boot-line { font-size: 0.72rem; color: var(--text-dim, #8a8a78); margin-top: 8px; }
+.hud-boot-cursor { display: inline-block; width: 8px; height: 14px; background: var(--green, #a3c644); margin-left: 4px; animation: blink 0.8s steps(1) infinite; vertical-align: middle; }
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+/* Ambient vignette */
+.hud-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0%, rgba(0,0,0,0.35) 80%, rgba(0,0,0,0.65) 100%);
+}
+
+/* Rotating HUD ring */
+.hud-ring-wrap {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 1;
+}
+.hud-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 234, 255, 0.18);
+  box-shadow: 0 0 24px rgba(0, 234, 255, 0.08), inset 0 0 24px rgba(0, 234, 255, 0.04);
+  animation: spin 12s linear infinite;
+}
+.hud-ring:nth-child(2) { animation-duration: 18s; animation-direction: reverse; border-color: rgba(240, 192, 64, 0.16); box-shadow: 0 0 24px rgba(240, 192, 64, 0.06); }
+.hud-ring:nth-child(3) { animation-duration: 26s; border-color: rgba(163, 198, 68, 0.14); }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Data stream ticker */
+.hud-data-stream {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.62rem;
+  color: var(--hud-cyan);
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  padding: 8px 0;
+}
+.hud-data-stream span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: stream 14s linear infinite;
+}
+@keyframes stream { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+
+/* Holographic shimmer panels */
+.hud-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.hud-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  transform: skewX(-20deg);
+  animation: shimmer 5s infinite;
+  pointer-events: none;
+}
+@keyframes shimmer { 0% { left: -120%; } 40%, 100% { left: 180%; } }
+
+/* Neon text effects */
+.hud-neon {
+  text-shadow: 0 0 8px var(--hud-cyan), 0 0 16px rgba(0, 234, 255, 0.35);
+}
+.hud-neon-gold {
+  text-shadow: 0 0 8px var(--gold, #f0c040), 0 0 16px rgba(240, 192, 64, 0.35);
+}
+
+/* Terminal AI box */
+.hud-terminal {
+  border: 1px solid rgba(0, 234, 255, 0.3) !important;
+  background: rgba(0, 18, 24, 0.55) !important;
+  box-shadow: inset 0 0 20px rgba(0, 234, 255, 0.06) !important;
+}
+
+/* Corner brackets for panels */
+.hud-corner-bracket {
+  position: absolute;
+  width: 14px; height: 14px;
+  border: 2px solid var(--hud-cyan);
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0.6;
+}
+.hud-corner-bracket.tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.hud-corner-bracket.tr { top: -1px; right: -1px; border-left: none; border-bottom: none; }
+.hud-corner-bracket.bl { bottom: -1px; left: -1px; border-right: none; border-top: none; }
+.hud-corner-bracket.br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+/* KPI pulse on load */
+.hud-pulse {
+  animation: hudPulse 1.2s ease-out;
+}
+@keyframes hudPulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 234, 255, 0.35); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 234, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 234, 255, 0); }
+}
+
+/* Button hover glow */
+.mod-btn, .hex-btn, .hud-glow-btn {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.mod-btn:hover, .hex-btn:hover, .hud-glow-btn:hover {
+  box-shadow: 0 0 14px rgba(0, 234, 255, 0.25), inset 0 0 10px rgba(0, 234, 255, 0.08) !important;
+}
