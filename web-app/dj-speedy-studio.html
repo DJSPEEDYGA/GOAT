@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Force — DJ Speedy Studio</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#030205;--bg2:#0a0a0d;--bg3:#111116;--gold:#d4a03c;--gold2:#f0c040;--red:#c1121f;--blue:#58a6ff;--green:#22c55e;--text:#e8e4dd;--text2:#a09a90;--border:rgba(255,255,255,0.08);
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;min-height:100vh;overflow-x:hidden}
+header{position:sticky;top:0;z-index:100;background:rgba(3,2,5,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--red));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px}
+.brand h1{font-size:1.35rem;letter-spacing:-0.3px}
+.brand span{color:var(--gold);font-weight:700}
+.daw-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.daw-tab{padding:8px 16px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:6px;cursor:pointer;font-weight:600;transition:.15s}
+.daw-tab.active{border-color:var(--gold);color:var(--gold2);background:rgba(212,160,60,0.12)}
+.daw-tab:hover{border-color:var(--gold2)}
+main{max-width:1400px;margin:0 auto;padding:24px}
+.transport{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:24px;padding:18px;background:var(--bg2);border:1px solid var(--border);border-radius:12px}
+.transport .group{display:flex;gap:8px;align-items:center}
+.transport button{padding:10px 16px;border:none;border-radius:8px;background:var(--bg3);color:var(--text);font-weight:700;cursor:pointer;border:1px solid var(--border);transition:.15s}
+.transport button:hover{background:var(--gold);color:#000;border-color:var(--gold)}
+.transport .red:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.transport .blue:hover{background:var(--blue);color:#000;border-color:var(--blue)}
+.transport .green:hover{background:var(--green);color:#000;border-color:var(--green)}
+.status{margin-left:auto;font-size:0.85rem;color:var(--text2)}
+.status b{color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;transition:.15s}
+.card:hover{border-color:rgba(212,160,60,0.35);transform:translateY(-2px)}
+.card h3{font-size:1.05rem;color:var(--gold2);display:flex;align-items:center;gap:8px}
+.card p{font-size:0.78rem;color:var(--text2);line-height:1.5}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font-size:0.72rem;padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;transition:.15s;font-weight:600}
+.btn:hover{background:var(--gold);color:#000;border-color:var(--gold)}
+.log{position:fixed;bottom:18px;right:18px;width:min(420px,90vw);max-height:180px;overflow:auto;background:rgba(3,2,5,0.95);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:0.75rem;color:var(--text2);z-index:200}
+.log-line{padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.log-line.ok{color:var(--green)}
+.log-line.err{color:var(--red)}
+@media(max-width:700px){.brand h1{font-size:1rem}.transport{width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">🐐</div>
+    <div><h1>GOAT Force <span>· DJ Speedy Studio</span></h1><div style="font-size:0.75rem;color:var(--text2)">Logic / FL Studio / Pro Tools / MPC / LUNA Control Hub</div></div>
+  </div>
+  <div class="daw-tabs" id="dawTabs">
+    <button class="daw-tab active" data-daw="logic">Logic Pro</button>
+    <button class="daw-tab" data-daw="fl">FL Studio</button>
+    <button class="daw-tab" data-daw="pt">Pro Tools</button>
+    <button class="daw-tab" data-daw="mpc">MPC</button>
+    <button class="daw-tab" data-daw="luna">LUNA</button>
+  </div>
+</header>
+<main>
+  <div class="transport">
+    <div class="group">
+      <button onclick="send('launch')">Launch</button>
+      <button class="green" onclick="send('play')">▶ Play</button>
+      <button class="red" onclick="send('stop')">■ Stop</button>
+      <button class="red" onclick="send('record')">● Rec</button>
+      <button onclick="send('rewind')">⏮ Rewind</button>
+    </div>
+    <div class="group">
+      <button class="blue" onclick="send('save')">Save</button>
+      <button onclick="send('save_as')">Save As</button>
+      <button onclick="send('new')">New</button>
+      <button onclick="send('open')">Open</button>
+    </div>
+    <div class="status">Active DAW: <b id="activeDaw">Logic Pro</b> · Bridge: <span id="bridgeStatus">checking...</span></div>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+<div class="log" id="log"><div class="log-line">Ready...</div></div>
+
+<script>
+let activeDaw='logic';
+const bridge='http://localhost:7007';
+const dawNames={logic:'Logic Pro',fl:'FL Studio',pt:'Pro Tools',mpc:'MPC',luna:'LUNA'};
+
+// Command mapping per DAW. Most use the bridge's /api/{daw}/control endpoint.
+// For Logic/FL we also use the new generic key/window/menu commands where useful.
+const MAP={
+  logic:{
+    projects:[{cmd:'new',label:'New Project'},{cmd:'open',label:'Open'},{cmd:'save',label:'Save'},{cmd:'save_as',label:'Save As'},{cmd:'close',label:'Close'}],
+    tracks:[{cmd:'key',args:['n','command down, option down'],label:'Add Track'},{cmd:'key_code',args:['51','command down'],label:'Delete Track'},{cmd:'key',args:['m',''],label:'Mute'},{cmd:'key',args:['s',''],label:'Solo'},{cmd:'key',args:['r','control down'],label:'Record Arm'}],
+    record:[{cmd:'record',label:'Record'},{cmd:'play',label:'Play'},{cmd:'stop',label:'Stop'},{cmd:'rewind',label:'Rewind'},{cmd:'metronome',label:'Metronome'},{cmd:'count_in',label:'Count-in'}],
+    loops:[{cmd:'library',label:'Library'},{cmd:'window',args:['Loop Browser'],label:'Loop Browser'},{cmd:'browser',label:'Browser'}],
+    arrange:[{cmd:'show_main_window',label:'Main Window'},{cmd:'window',args:['Arrange'],label:'Arrange'},{cmd:'select_all',label:'Select All'},{cmd:'duplicate',label:'Duplicate'},{cmd:'split',label:'Split'}],
+    audio:[{cmd:'window',args:['Audio Track Editor'],label:'Audio Track Editor'},{cmd:'flex',label:'Flex Time'},{cmd:'normalize',label:'Normalize'},{cmd:'window',args:['Flex Pitch'],label:'Flex Pitch'}],
+    piano:[{cmd:'piano_roll',label:'Piano Roll'},{cmd:'window',args:['Score'],label:'Score'},{cmd:'window',args:['Step Sequencer'],label:'Step Sequencer'}],
+    session:[{cmd:'window',args:['Session Players'],label:'Session Players'},{cmd:'window',args:['Drummer'],label:'Drummer'},{cmd:'window',args:['Loop Browser'],label:'Apple Loops'}],
+    mix:[{cmd:'mixer',label:'Mixer'},{cmd:'smart_controls',label:'Smart Controls'},{cmd:'window',args:['Plugin Manager'],label:'Plugins'},{cmd:'window',args:['Audio Effects'],label:'Audio Effects'}],
+    automate:[{cmd:'key',args:['a',''],label:'Toggle Automation'},{cmd:'window',args:['Automation'],label:'Automation View'},{cmd:'window',args:['Smart Controls'],label:'Smart Controls'}],
+    live:[{cmd:'window',args:['Live Loops'],label:'Live Loops'},{cmd:'window',args:['Step Sequencer'],label:'Step Sequencer'}],
+    score:[{cmd:'window',args:['Score'],label:'Score Editor'},{cmd:'window',args:['Linear Score'],label:'Linear Score'}],
+    spatial:[{cmd:'window',args:['Surround'],label:'Surround'},{cmd:'window',args:['3D Object Panner'],label:'3D Panner'}],
+    video:[{cmd:'window',args:['Project Video'],label:'Project Video'},{cmd:'window',args:['Movie'],label:'Movie'}],
+    instruments:[{cmd:'library',label:'Library'},{cmd:'window',args:['Sound Library'],label:'Sound Library'},{cmd:'window',args:['Software Instruments'],label:'Instruments'}],
+    effects:[{cmd:'window',args:['Audio Effects'],label:'Audio Effects'},{cmd:'window',args:['MIDI Effects'],label:'MIDI Effects'},{cmd:'mixer',label:'Mixer Inserts'}],
+    settings:[{cmd:'key',args:[',','command down'],label:'Preferences'},{cmd:'menu',args:['Logic Pro Creator Studio','Key Commands'],label:'Key Commands'},{cmd:'menu',args:['File','Project Settings'],label:'Project Settings'}],
+    advanced:[{cmd:'window',args:['Environment'],label:'Environment'},{cmd:'window',args:['Event List'],label:'Event List'},{cmd:'window',args:['Marker List'],label:'Marker List'}]
+  },
+  fl:{
+    projects:[{cmd:'new',label:'New Project'},{cmd:'open',label:'Open'},{cmd:'save',label:'Save'},{cmd:'save_as',label:'Save As'},{cmd:'close',label:'Close'},{cmd:'export_wav',label:'Export WAV'},{cmd:'export_mp3',label:'Export MP3'},{cmd:'export_stems',label:'Export Stems'}],
+    tracks:[{cmd:'add_track',label:'Add Track'},{cmd:'mute',label:'Mute'},{cmd:'solo',label:'Solo'},{cmd:'record_arm',label:'Record Arm'}],
+    record:[{cmd:'record',label:'Record'},{cmd:'play',label:'Play'},{cmd:'stop',label:'Stop'},{cmd:'rewind',label:'Rewind'}],
+    loops:[{cmd:'browser',label:'Browser'},{cmd:'window',args:['Loop Browser'],label:'Loop Browser'}],
+    arrange:[{cmd:'playlist',label:'Playlist'},{cmd:'arrange',label:'Arrange'},{cmd:'pattern',label:'Pattern'},{cmd:'channel_rack',label:'Channel Rack'}],
+    audio:[{cmd:'window',args:['Audio Editor'],label:'Audio Editor'},{cmd:'window',args:['Edison'],label:'Edison'},{cmd:'automation',label:'Automation'}],
+    piano:[{cmd:'piano_roll',label:'Piano Roll'},{cmd:'step_sequencer',label:'Step Sequencer'},{cmd:'window',args:['Piano roll'],label:'Piano roll (menu)'}],
+    session:[{cmd:'channel_rack',label:'Channel Rack'},{cmd:'window',args:['Channel Rack'],label:'Channel Rack (menu)'},{cmd:'window',args:['Playlist'],label:'Playlist (menu)'}],
+    mix:[{cmd:'mixer',label:'Mixer'},{cmd:'plugin_picker',label:'Plugin Picker'},{cmd:'window',args:['Plugin Database'],label:'Plugin Database'}],
+    automate:[{cmd:'automation',label:'Automation View'},{cmd:'window',args:['Playlist'],label:'Playlist (automation clips)'}],
+    live:[{cmd:'live_loops',label:'Performance / Live Loops'},{cmd:'window',args:['Performance Mode'],label:'Performance Mode'}],
+    score:[{cmd:'window',args:['Score'],label:'Score'},{cmd:'piano_roll',label:'Piano Roll (score view)'}],
+    spatial:[{cmd:'window',args:['Mixer'],label:'Mixer (panning)'},{cmd:'window',args:['Patcher'],label:'Patcher'}],
+    video:[{cmd:'window',args:['Video Visualizer'],label:'Video Visualizer'},{cmd:'window',args:['ZGameEditor Visualizer'],label:'ZGameEditor'}],
+    instruments:[{cmd:'plugin_picker',label:'Plugin Picker'},{cmd:'window',args:['Plugin Database'],label:'Plugin Database'},{cmd:'browser',label:'Browser Packs'}],
+    effects:[{cmd:'mixer',label:'Mixer'},{cmd:'plugin_picker',label:'Insert Effects'},{cmd:'window',args:['Plugin Database'],label:'Plugin Database'}],
+    settings:[{cmd:'preferences',label:'Preferences'},{cmd:'window',args:['Project General Settings'],label:'Project Settings'},{cmd:'window',args:['Audio Settings'],label:'Audio Settings'}],
+    advanced:[{cmd:'window',args:['Browser'],label:'Browser'},{cmd:'window',args:['Project Info'],label:'Project Info'},{cmd:'window',args:['Macros'],label:'Macros'}]
+  },
+  pt:{
+    projects:[{cmd:'new',label:'New Session'},{cmd:'open',label:'Open'},{cmd:'save',label:'Save'},{cmd:'save_as',label:'Save As'},{cmd:'bounce',label:'Bounce'}],
+    tracks:[{cmd:'new_track',label:'New Track'},{cmd:'mute',label:'Mute'},{cmd:'solo',label:'Solo'},{cmd:'record_arm',label:'Record Arm'}],
+    record:[{cmd:'record',label:'Record'},{cmd:'play',label:'Play'},{cmd:'stop',label:'Stop'},{cmd:'rewind',label:'Rewind'}],
+    loops:[{cmd:'show_clip_list',label:'Clip List'},{cmd:'import_audio',label:'Import Audio'}],
+    arrange:[{cmd:'edit_window',label:'Edit Window'},{cmd:'mix_window',label:'Mix Window'},{cmd:'separate_region',label:'Separate Region'}],
+    audio:[{cmd:'elastic_audio',label:'Elastic Audio'},{cmd:'clip_effects',label:'Clip Effects'}],
+    piano:[{cmd:'midi_editor',label:'MIDI Editor'},{cmd:'score_editor',label:'Score Editor'}],
+    session:[{cmd:'midi_editor',label:'MIDI Editor'},{cmd:'midi_realtime_properties',label:'MIDI Real-Time Properties'}],
+    mix:[{cmd:'mix_window',label:'Mix Window'},{cmd:'io_setup',label:'I/O Setup'}],
+    automate:[{cmd:'automation_follows_edit',label:'Automation'},{cmd:'write_automation',label:'Write Automation'}],
+    live:[{cmd:'play',label:'Play'},{cmd:'record',label:'Record'}],
+    score:[{cmd:'score_editor',label:'Score Editor'}],
+    spatial:[{cmd:'io_setup',label:'I/O Setup'},{cmd:'dolby_atmos',label:'Dolby Atmos'}],
+    video:[{cmd:'video_engine',label:'Video Engine'},{cmd:'video_window',label:'Video Window'}],
+    instruments:[{cmd:'instrument_tracks',label:'Instrument Tracks'},{cmd:'xpand',label:'Xpand!2'}],
+    effects:[{cmd:'ins_rack',label:'Insert Rack'},{cmd:'sends',label:'Sends'}],
+    settings:[{cmd:'preferences',label:'Preferences'},{cmd:'setup',label:'Setup'}],
+    advanced:[{cmd:'memory_locations',label:'Memory Locations'},{cmd:'event_operations',label:'Event Operations'}]
+  },
+  mpc:{
+    projects:[{cmd:'new',label:'New Project'},{cmd:'open',label:'Open'},{cmd:'save',label:'Save'},{cmd:'export',label:'Export'},{cmd:'export_stems',label:'Export Stems'}],
+    tracks:[{cmd:'track_1',label:'Track 1'},{cmd:'track_2',label:'Track 2'},{cmd:'pad_1',label:'Pad 1'}],
+    record:[{cmd:'record',label:'Record'},{cmd:'play',label:'Play'},{cmd:'stop',label:'Stop'},{cmd:'undo',label:'Undo'}],
+    loops:[{cmd:'browser',label:'Browser'},{cmd:'sample_edit',label:'Sample Edit'}],
+    arrange:[{cmd:'timeline',label:'Timeline'},{cmd:'sequence',label:'Sequence'}],
+    audio:[{cmd:'sample_edit',label:'Sample Edit'},{cmd:'looper',label:'Looper'}],
+    piano:[{cmd:'piano_roll',label:'Piano Roll'},{cmd:'step_sequencer',label:'Step Sequencer'}],
+    session:[{cmd:'pad_1',label:'Pad 1'},{cmd:'pad_2',label:'Pad 2'},{cmd:'pad_3',label:'Pad 3'},{cmd:'pad_4',label:'Pad 4'}],
+    mix:[{cmd:'mixer',label:'Mixer'},{cmd:'channel',label:'Channel'}],
+    automate:[{cmd:'automation',label:'Automation'}],
+    live:[{cmd:'pad_1',label:'Pad 1'},{cmd:'pad_2',label:'Pad 2'}],
+    score:[{cmd:'piano_roll',label:'Piano Roll'}],
+    spatial:[{cmd:'mixer',label:'Mixer Pan'}],
+    video:[{cmd:'sample_edit',label:'Sample Edit'}],
+    instruments:[{cmd:'plugin_browser',label:'Plugin Browser'}],
+    effects:[{cmd:'mixer',label:'Mixer Inserts'}],
+    settings:[{cmd:'preferences',label:'Preferences'}],
+    advanced:[{cmd:'sample_edit',label:'Sample Edit'},{cmd:'pad_5',label:'Pad 5'},{cmd:'pad_6',label:'Pad 6'}]
+  },
+  luna:{
+    projects:[{cmd:'new',label:'New'},{cmd:'open',label:'Open'},{cmd:'save',label:'Save'},{cmd:'save_as',label:'Save As'},{cmd:'bounce',label:'Bounce'}],
+    tracks:[{cmd:'new_track',label:'New Track'},{cmd:'mute',label:'Mute'},{cmd:'solo',label:'Solo'},{cmd:'record_arm',label:'Record Arm'}],
+    record:[{cmd:'record',label:'Record'},{cmd:'play',label:'Play'},{cmd:'stop',label:'Stop'},{cmd:'rewind',label:'Rewind'}],
+    loops:[{cmd:'browser',label:'Browser'}],
+    arrange:[{cmd:'timeline',label:'Timeline'},{cmd:'arrange',label:'Arrange'},{cmd:'edit_window',label:'Edit Window'}],
+    audio:[{cmd:'audio_editor',label:'Audio Editor'}],
+    piano:[{cmd:'midi_editor',label:'MIDI Editor'},{cmd:'piano_roll',label:'Piano Roll'}],
+    session:[{cmd:'midi_editor',label:'MIDI Editor'}],
+    mix:[{cmd:'mixer',label:'Mixer'},{cmd:'console',label:'Console'}],
+    automate:[{cmd:'automation',label:'Automation'}],
+    live:[{cmd:'play',label:'Play'}],
+    score:[{cmd:'score_editor',label:'Score Editor'}],
+    spatial:[{cmd:'surround',label:'Surround'}],
+    video:[{cmd:'video_window',label:'Video Window'}],
+    instruments:[{cmd:'instruments',label:'Instruments'}],
+    effects:[{cmd:'effects',label:'Effects'}],
+    settings:[{cmd:'preferences',label:'Preferences'},{cmd:'setup',label:'Setup'}],
+    advanced:[{cmd:'environment',label:'Environment'}]
+  }
+};
+
+const SECTIONS=[
+  {id:'projects',icon:'📁',title:'Work with projects',desc:'Create, open, save, bounce, close sessions.'},
+  {id:'tracks',icon:'🎚️',title:'Work with tracks',desc:'Add, delete, mute, solo, record-arm tracks.'},
+  {id:'record',icon:'🎙️',title:'Record your voice or instrument',desc:'Transport controls and recording toggles.'},
+  {id:'loops',icon:'🔄',title:'Use loops and media files',desc:'Open Browser, Loop Browser, Library, packs.'},
+  {id:'arrange',icon:'✂️',title:'Arrange a project',desc:'Playlist, arrange, split, duplicate, select.'},
+  {id:'audio',icon:'🎧',title:'Edit audio regions',desc:'Audio editor, Flex, Edison, normalization.'},
+  {id:'piano',icon:'🎹',title:'Edit MIDI in Piano Roll',desc:'Piano Roll, Score view, Step Sequencer.'},
+  {id:'session',icon:'🥁',title:'Work with Session Players',desc:'Session Players, Drummer, Channel Rack, pads.'},
+  {id:'mix',icon:'🎛️',title:'Mix a project',desc:'Mixer, console, inserts, plugin manager.'},
+  {id:'automate',icon:'〰️',title:'Automate mix and effects',desc:'Automation view, write/read automation.'},
+  {id:'live',icon:'🔴',title:'Use Live Loops / Performance',desc:'Live Loops, Performance Mode.'},
+  {id:'score',icon:'🎼',title:'Create a musical score',desc:'Score editor, linear score, notation.'},
+  {id:'spatial',icon:'🌐',title:'Surround and Spatial Audio',desc:'Surround, 3D panner, spatial mixing.'},
+  {id:'video',icon:'🎬',title:'Video and synchronization',desc:'Project video, movie window, visualizer.'},
+  {id:'instruments',icon:'🎸',title:'Logic Pro Instruments',desc:'Library, Sound Library, instruments browser.'},
+  {id:'effects',icon:'🎚️',title:'Logic Pro Effects',desc:'Audio/MIDI effects, mixer inserts.'},
+  {id:'settings',icon:'⚙️',title:'Settings and key commands',desc:'Preferences, key commands, project settings.'},
+  {id:'advanced',icon:'🧬',title:'Advanced edit features',desc:'Environment, Event List, markers, advanced tools.'}
+];
+
+function render(){
+  const grid=document.getElementById('grid');
+  grid.innerHTML=SECTIONS.map(s=>{
+    const actions=MAP[activeDaw][s.id]||[];
+    return `<div class="card">
+      <h3><span>${s.icon}</span>${s.title}</h3>
+      <p>${s.desc}</p>
+      <div class="btns">${actions.map(a=>`<button class="btn" onclick="send('${a.cmd}',${a.args?JSON.stringify(a.args):'[]'})">${a.label}</button>`).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+async function send(cmd,args=[]){
+  log(`${dawNames[activeDaw]}: ${cmd} ${args.join(' ')}`);
+  try{
+    const url=`${bridge}/api/${activeDaw}/control`;
+    const body={command:cmd,args:args};
+    if(activeDaw==='fl') body.version='2025';
+    if(activeDaw==='mpc') body.app='mpc3';
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    log(d.ok?`OK: ${d.output||cmd}`:`ERR: ${d.error||'unknown'}`,d.ok);
+  }catch(e){log(`ERR: ${e.message}`,false);}
+}
+
+function log(msg,ok){
+  const el=document.getElementById('log');
+  const line=document.createElement('div');
+  line.className='log-line'+(ok===true?'.ok':ok===false?'.err':'');
+  line.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.prepend(line);
+  while(el.children.length>40) el.lastChild.remove();
+}
+
+// DAW tabs
+document.getElementById('dawTabs').addEventListener('click',e=>{
+  if(!e.target.matches('.daw-tab')) return;
+  document.querySelectorAll('.daw-tab').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  activeDaw=e.target.dataset.daw;
+  document.getElementById('activeDaw').textContent=dawNames[activeDaw];
+  render();
+});
+
+// bridge status
+checkBridge();
+setInterval(checkBridge,5000);
+async function checkBridge(){
+  try{
+    const r=await fetch(`${bridge}/api/status`,{method:'GET'});
+    const d=await r.json();
+    document.getElementById('bridgeStatus').innerHTML=d.ok?'<span style="color:var(--green)">online</span>':'<span style="color:var(--red)">offline</span>';
+  }catch(e){document.getElementById('bridgeStatus').innerHTML='<span style="color:var(--red)">offline</span>';}
+}
+
+render();
+</script>
+</body>
+</html>
