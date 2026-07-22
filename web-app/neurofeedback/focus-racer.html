@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Focus Racer — TAHS Neurofeedback</title>
+<style>
+  html,body{margin:0;height:100%;background:#050508;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;}
+  #game{display:block;width:100vw;height:100vh;}
+  #hud{position:fixed;top:14px;left:14px;z-index:10;}
+  #back{position:fixed;top:14px;right:14px;z-index:10;color:#ffd700;text-decoration:none;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:700;}
+  #speedo{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10;color:#ffd700;
+    background:rgba(10,10,14,.88);border:1px solid rgba(255,215,0,.4);border-radius:12px;
+    padding:8px 20px;font-size:18px;font-weight:900;letter-spacing:1px;}
+  #msg{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:10;color:#fff;
+    background:rgba(10,10,14,.88);border:1px solid rgba(255,215,0,.4);border-radius:12px;
+    padding:10px 22px;font-size:15px;max-width:700px;text-align:center;}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"></div>
+<a id="back" href="index.html">← Game Hub</a>
+<div id="vehicleBtn" style="position:fixed;top:60px;right:14px;z-index:10;color:#ffd700;cursor:pointer;background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:700;">🏍️ Switch to R6 Bike</div>
+<div id="speedo">🏎️ <span id="mph">0</span> MPH</div>
+<div id="msg">Sustained focus builds speed. Spike into stress and the police get on your tail!</div>
+
+<script src="signal-engine.js?v=3"></script>
+<script>
+Neurofeedback.injectStyles();
+const engine = Neurofeedback.mountSignalPanel(document.getElementById('hud'), {metric:'focus', game:'Focus Racer'});
+
+const cv=document.getElementById('game'), cx=cv.getContext('2d');
+function fit(){cv.width=innerWidth;cv.height=innerHeight;} fit(); addEventListener('resize',fit);
+
+let focus=50, spike=false;
+engine.on(s=>{focus=s.focus; spike=s.spike;});
+
+let mph=0, roadScroll=0, heat=0; // heat: 0..1 police pressure
+let chase=0;                     // 0 police offscreen .. 1 on your bumper
+const mphEl=document.getElementById('mph'), msg=document.getElementById('msg');
+
+const IMG={};
+[['bg','assets/bg-city-night.jpg?v=2'],['road','assets/road-highway.jpg?v=1'],['car','assets/supercar.png?v=2'],['police','assets/police.png?v=2'],['bike','assets/motorcycle.png?v=2']]
+  .forEach(([k,src])=>{const im=new Image(); im.src=src; IMG[k]=im;});
+
+let vehicle='car';
+document.getElementById('vehicleBtn').onclick=function(){
+  vehicle = vehicle==='car' ? 'bike' : 'car';
+  this.textContent = vehicle==='car' ? '🏍️ Switch to R6 Bike' : '🏎️ Switch to Supercar';
+};
+
+function update(dt){
+  const targetSpeed = focus*3.2;                    // focus 100 -> 320 mph
+  mph += (targetSpeed - mph) * dt * (mph<targetSpeed?0.85:1.2);
+  if (spike) heat = Math.min(1, heat + dt*1.2);     // spike summons police
+  else if (focus>65) heat = Math.max(0, heat - dt*0.25);
+  if (heat>0.2) mph = Math.min(mph, 190 - heat*80); // police pressure slows you
+  mph = Math.max(0, mph);
+  // The cop creeps up whenever you slow down; speed back up to pull away
+  if (spike) chase = Math.min(1, chase + dt*0.55);
+  else if (mph < 140) chase = Math.min(1, chase + dt*(0.06 + (140-mph)/140*0.18));
+  else chase = Math.max(0, chase - dt*(0.08 + (mph-140)/320*0.35));
+  roadScroll += mph*dt*3.6;
+  mphEl.textContent = Math.round(mph);
+  msg.textContent = heat>0.5 ? '🚨 Police on your tail! Steady your focus to shake them.'
+    : chase>0.6 ? '🚨 He\'s right behind you — speed up! Lock the focus in.'
+    : spike ? '⚡ Stress spike — sirens behind you!'
+    : focus>75 ? 'Full send — the exotic is flying. Stay locked in.'
+    : focus>45 ? 'Building speed… deepen the focus.'
+    : 'Drifting off… the engine bogs down. Refocus.';
+}
+
+// Wheel geometry per sprite: fx = wheel center as fraction of width from left, r = radius as fraction of width
+const WHEELS={
+  car:[{fx:0.168,r:0.082},{fx:0.800,r:0.082}],
+  police:[{fx:0.190,r:0.082},{fx:0.790,r:0.082}],
+  bike:[{fx:0.140,r:0.125},{fx:0.815,r:0.125}]
+};
+
+function drawWheelSpin(x,y,w,wheels){
+  const a=Math.min(0.55, mph/320*0.7);
+  if (a<0.03) return;
+  for(const wh of wheels){
+    const wx=x-w/2+wh.fx*w, r=wh.r*w, wy=y-r;
+    const ang=roadScroll/r;
+    cx.save();
+    cx.beginPath(); cx.arc(wx,wy,r*0.86,0,7); cx.clip();
+    cx.translate(wx,wy); cx.rotate(ang);
+    // Rotating spoke blur
+    cx.strokeStyle=`rgba(185,190,200,${a})`; cx.lineWidth=Math.max(1.5,r*0.09);
+    for(let i=0;i<5;i++){ const sa=i*(Math.PI*2/5);
+      cx.beginPath(); cx.moveTo(Math.cos(sa)*r*0.18,Math.sin(sa)*r*0.18);
+      cx.lineTo(Math.cos(sa)*r*0.72,Math.sin(sa)*r*0.72); cx.stroke(); }
+    cx.rotate(-ang);
+    // Circular motion-blur streaks at high speed
+    if (mph>110){ const ba=Math.min(0.35,(mph-110)/130*0.4);
+      cx.strokeStyle=`rgba(215,218,228,${ba})`; cx.lineWidth=r*0.16;
+      for(let i=0;i<3;i++){ const off=ang*0.4+i*2.1;
+        cx.beginPath(); cx.arc(0,0,r*(0.42+i*0.16),off,off+2.2); cx.stroke(); } }
+    cx.restore();
+  }
+}
+
+function drawSprite(img,x,y,w,flash,t,wheelKey){
+  if (!img.complete || !img.naturalWidth) return;
+  const h=w*img.naturalHeight/img.naturalWidth;
+  // Soft contact shadow grounding the vehicle on the asphalt
+  const sg=cx.createRadialGradient(x,y-2,2,x,y-2,w*0.46);
+  sg.addColorStop(0,'rgba(0,0,0,0.55)'); sg.addColorStop(1,'rgba(0,0,0,0)');
+  cx.save(); cx.translate(x,y-2); cx.scale(1,0.18); cx.translate(-x,-(y-2));
+  cx.fillStyle=sg; cx.beginPath(); cx.arc(x,y-2,w*0.46,0,7); cx.fill(); cx.restore();
+  // Headlight beam throw onto the road ahead
+  const hb=cx.createLinearGradient(x+w*0.4,0,x+w*1.1,0);
+  hb.addColorStop(0,'rgba(255,240,190,0.22)'); hb.addColorStop(1,'rgba(255,240,190,0)');
+  cx.fillStyle=hb; cx.beginPath();
+  cx.moveTo(x+w*0.38,y-h*0.42); cx.lineTo(x+w*1.15,y-h*0.15); cx.lineTo(x+w*1.15,y+6); cx.lineTo(x+w*0.38,y-h*0.18); cx.closePath(); cx.fill();
+  cx.drawImage(img, x-w/2, y-h, w, h);
+  if (wheelKey && WHEELS[wheelKey]) drawWheelSpin(x,y,w,WHEELS[wheelKey]);
+  if (flash){ const on=Math.sin(t/80)>0;
+    const col=on?'255,40,60':'40,90,255';
+    const lg=cx.createRadialGradient(x,y-h*0.98,2,x,y-h*0.98,46);
+    lg.addColorStop(0,`rgba(${col},0.9)`); lg.addColorStop(1,`rgba(${col},0)`);
+    cx.fillStyle=lg; cx.beginPath(); cx.arc(x,y-h*0.98,46,0,7); cx.fill();
+    cx.fillStyle=`rgba(${col},0.9)`;
+    cx.beginPath(); cx.arc(x, y-h*0.98, 8, 0, 7); cx.fill(); }
+}
+
+function draw(t){
+  const W=cv.width,H=cv.height;
+  // Night city backdrop (cover fit, upper 60%)
+  if (IMG.bg.complete && IMG.bg.naturalWidth){
+    const bw=IMG.bg.naturalWidth, bh=IMG.bg.naturalHeight;
+    const sc=Math.max(W/bw, H*0.62/bh);
+    cx.drawImage(IMG.bg, (W-bw*sc)/2, H*0.62-bh*sc, bw*sc, bh*sc);
+  } else { cx.fillStyle='#0a0a18'; cx.fillRect(0,0,W,H*0.62); }
+
+  // Divided-highway road surface, scrolling with speed
+  if (IMG.road.complete && IMG.road.naturalWidth){
+    const rh=H*0.4, rw=rh*IMG.road.naturalWidth/IMG.road.naturalHeight;
+    let x=-(roadScroll % rw);
+    for(; x<W; x+=rw) cx.drawImage(IMG.road, x, H*0.6, rw, rh);
+    cx.fillStyle='rgba(5,5,15,0.25)'; cx.fillRect(0,H*0.6,W,H*0.4);
+  } else {
+    cx.fillStyle='#1c1c22'; cx.fillRect(0,H*0.6,W,H*0.4);
+    cx.strokeStyle='#ffd700'; cx.lineWidth=5; cx.setLineDash([50,45]);
+    cx.lineDashOffset = -roadScroll % 95;
+    cx.beginPath(); cx.moveTo(0,H*0.8); cx.lineTo(W,H*0.8); cx.stroke(); cx.setLineDash([]);
+  }
+
+  // Atmospheric haze where the skyline meets the road (depth cue)
+  const hz=cx.createLinearGradient(0,H*0.52,0,H*0.66);
+  hz.addColorStop(0,'rgba(20,26,48,0)'); hz.addColorStop(0.55,'rgba(24,30,54,0.35)'); hz.addColorStop(1,'rgba(8,10,20,0)');
+  cx.fillStyle=hz; cx.fillRect(0,H*0.52,W,H*0.14);
+
+  // Speed lines
+  if (mph>120){ cx.strokeStyle='rgba(255,255,255,0.25)'; cx.lineWidth=2;
+    for(let i=0;i<8;i++){ const y=H*0.62+((i*61)%(H*0.36)); const x=W-((roadScroll*2+i*173)%(W+200));
+      cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+60+mph*0.4,y); cx.stroke(); } }
+
+  // Police behind (left) — slides in from offscreen and closes the gap as chase rises
+  const pressure = Math.max(chase, heat);
+  if (pressure>0.02){
+    const px = -220 + (W*0.55 - 380 + 220) * pressure;
+    drawSprite(IMG.police, px, H*0.78+14, 300, true, t, 'police');
+  }
+
+  // Player vehicle
+  const shake = spike ? Math.sin(t/30)*3 : 0;
+  drawSprite(IMG[vehicle], W*0.55, H*0.78+14+shake, vehicle==='car'?340:230, false, t, vehicle);
+  // Exhaust flame at high focus
+  if (mph>180){ cx.fillStyle=`rgba(80,160,255,${0.5+Math.sin(t/40)*0.3})`;
+    cx.beginPath(); cx.moveTo(W*0.55-165,H*0.78-18); cx.lineTo(W*0.55-210-Math.random()*30,H*0.78-14); cx.lineTo(W*0.55-165,H*0.78-8); cx.closePath(); cx.fill(); }
+
+  // Red/blue wash when heat is high
+  if (heat>0.4){ const flash=Math.sin(t/90)>0;
+    cx.fillStyle=flash?'rgba(255,0,60,0.07)':'rgba(0,80,255,0.07)'; cx.fillRect(0,0,W,H); }
+
+  // Cinematic vignette
+  const vg=cx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.45,W/2,H/2,Math.max(W,H)*0.72);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.42)');
+  cx.fillStyle=vg; cx.fillRect(0,0,W,H);
+}
+
+let last=performance.now();
+(function loop(t){ const dt=Math.min(0.05,(t-last)/1000); last=t; update(dt); draw(t); requestAnimationFrame(loop); })(last);
+</script>
+</body>
+</html>

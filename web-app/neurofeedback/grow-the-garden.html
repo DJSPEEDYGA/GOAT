@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grow the Garden — TAHS Neurofeedback</title>
+<style>
+  html,body{margin:0;height:100%;background:#04120a;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;}
+  #game{display:block;width:100vw;height:100vh;}
+  #hud{position:fixed;top:14px;left:14px;z-index:10;}
+  #back{position:fixed;top:14px;right:14px;z-index:10;color:#ffd700;text-decoration:none;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:700;}
+  #toggle{position:fixed;top:64px;right:14px;z-index:10;color:#c8f7d0;cursor:pointer;
+    background:rgba(6,24,14,.85);border:1px solid rgba(120,255,160,.4);border-radius:10px;padding:8px 14px;font-weight:700;}
+  #msg{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:10;color:#eafff0;
+    background:rgba(6,24,14,.85);border:1px solid rgba(120,255,160,.4);border-radius:12px;
+    padding:10px 22px;font-size:15px;max-width:700px;text-align:center;}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"></div>
+<a id="back" href="index.html">← Game Hub</a>
+<div id="toggle">🔥 Switch to Campfire</div>
+<div id="micBtn" style="display:none;position:fixed;top:114px;right:14px;z-index:10;color:#ffd9a0;cursor:pointer;background:rgba(24,12,4,.85);border:1px solid rgba(255,170,80,.4);border-radius:10px;padding:8px 14px;font-weight:700;">🎤 Mic Fire: Off</div>
+<div id="msg">Breathe slow and stay calm — your calm is the sunlight this garden grows on.</div>
+
+<script src="signal-engine.js?v=3"></script>
+<script>
+Neurofeedback.injectStyles();
+const engine = Neurofeedback.mountSignalPanel(document.getElementById('hud'), {metric:'calm', game:'Garden / Campfire'});
+
+const cv=document.getElementById('game'), cx=cv.getContext('2d');
+function fit(){cv.width=innerWidth;cv.height=innerHeight;} fit(); addEventListener('resize',fit);
+
+let calm=50, spike=false;
+engine.on(s=>{calm=s.calm; spike=s.spike;});
+
+let mode='garden';
+const toggle=document.getElementById('toggle'), msg=document.getElementById('msg');
+toggle.onclick=()=>{ mode = mode==='garden'?'campfire':'garden';
+  toggle.textContent = mode==='garden' ? '🔥 Switch to Campfire' : '🌱 Switch to Garden';
+  micBtn.style.display = mode==='campfire' ? 'block' : 'none'; };
+
+// Microphone volume drives the fire (optional input)
+const micBtn=document.getElementById('micBtn');
+let micOn=false, micLevel=0, micAnalyser=null, micData=null, micStream=null;
+micBtn.onclick=async ()=>{
+  if (micOn){ micOn=false; micLevel=0; micBtn.textContent='🎤 Mic Fire: Off';
+    if (micStream){ micStream.getTracks().forEach(tr=>tr.stop()); micStream=null; } return; }
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const ac=new (window.AudioContext||window.webkitAudioContext)();
+    const src=ac.createMediaStreamSource(micStream);
+    micAnalyser=ac.createAnalyser(); micAnalyser.fftSize=512;
+    micData=new Uint8Array(micAnalyser.fftSize);
+    src.connect(micAnalyser);
+    micOn=true; micBtn.textContent='🎤 Mic Fire: On';
+  }catch(e){ micBtn.textContent='🎤 Mic blocked'; }
+};
+function readMic(){
+  if (!micOn || !micAnalyser) return;
+  micAnalyser.getByteTimeDomainData(micData);
+  let sum=0; for(let i=0;i<micData.length;i++){ const v=(micData[i]-128)/128; sum+=v*v; }
+  const rms=Math.sqrt(sum/micData.length);
+  const target=Math.min(1, rms*6);
+  micLevel += (target-micLevel)*0.18;   // smooth
+}
+
+let growth=0;  // 0..1 bloom progress of the lead flower (drives scene light)
+
+// Field of flowers: each keeps its own growth; new ones sprout while calm
+// holds, and they wither away when calm is lost.
+const flowers=[{fx:0.5, depth:1, growth:0, seed:Math.random()*10, hue:0}];
+let sproutTimer=0;
+const MAX_FLOWERS=14;
+function sproutFlower(){
+  const fx=0.08+Math.random()*0.84;
+  flowers.push({fx, depth:0.35+Math.random()*0.5, growth:0,
+    seed:Math.random()*10, hue:(Math.random()-0.5)*50});
+}
+
+const IMG={};
+[['garden','assets/bg-garden.jpg?v=2'],['mountains','assets/bg-mountains.jpg?v=2'],['flower','assets/flower.png?v=2'],['logs','assets/campfire-logs.png?v=1']]
+  .forEach(([k,src])=>{const im=new Image(); im.src=src; IMG[k]=im;});
+function update(dt){
+  const rate = calm>60 ? (calm-60)/40*0.03 : calm<35 ? -0.015 : 0;
+  const wither = calm<35 || spike;
+  for(let i=flowers.length-1;i>=0;i--){ const f=flowers[i];
+    f.growth = Math.max(0, Math.min(1, f.growth + (wither?-0.02:rate)*dt*10));
+    if (i>0 && wither && f.growth<=0) flowers.splice(i,1);   // withered away
+  }
+  growth = flowers[0].growth;
+  if (calm>60 && !spike){
+    sproutTimer += dt*(calm-60)/40;
+    if (sproutTimer>1.6 && flowers.length<MAX_FLOWERS){ sproutTimer=0; sproutFlower(); }
+  } else sproutTimer=0;
+  if (mode==='garden'){
+    msg.textContent = spike ? '⚡ A gust of stress — the petals tremble. Ease back into calm.'
+      : growth>=1 && flowers.length>=MAX_FLOWERS ? '🌸 A whole field in bloom! Your calm brought the garden to life.'
+      : growth>=1 ? '🌸 Full bloom — keep holding and more flowers will sprout!'
+      : calm>60 ? `The garden is growing… ${flowers.length} flower${flowers.length>1?'s':''} and counting.`
+      : calm<35 ? 'The flowers are withering without your calm…'
+      : 'Hold a soft, easy calm and watch it grow.';
+  } else {
+    msg.textContent = spike ? '⚡ Stress! The fire sputters — slow your breath to bring it back.'
+      : calm>70 ? '🔥 A warm, golden fire. Perfectly tended.'
+      : calm>40 ? 'The embers glow… keep the calm coming.'
+      : 'The fire fades to embers without calm…';
+  }
+}
+
+function drawGarden(t){
+  const W=cv.width,H=cv.height;
+  const day=calm/100;
+  if (IMG.garden.complete && IMG.garden.naturalWidth){
+    const bw=IMG.garden.naturalWidth, bh=IMG.garden.naturalHeight;
+    const sc=Math.max(W/bw, H/bh);
+    cx.drawImage(IMG.garden, (W-bw*sc)/2, (H-bh*sc)/2, bw*sc, bh*sc);
+    // Garden dims when calm is low, glows warm at full bloom
+    cx.fillStyle=`rgba(8,14,30,${0.55*(1-day)})`; cx.fillRect(0,0,W,H);
+    if (growth>0.85) { cx.fillStyle=`rgba(255,230,150,${(growth-0.85)*0.5})`; cx.fillRect(0,0,W,H); }
+  } else {
+    const g=cx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,`rgb(${20+day*100},${40+day*130},${70+day*110})`);
+    g.addColorStop(1,`rgb(${10+day*60},${50+day*90},${30+day*40})`);
+    cx.fillStyle=g; cx.fillRect(0,0,W,H);
+  }
+  // Sun shafts breaking through as calm rises
+  if (day>0.5){
+    cx.save(); cx.globalAlpha=(day-0.5)*0.5;
+    for(let i=0;i<3;i++){
+      const rx=W*(0.25+i*0.22)+Math.sin(t/4000+i)*30;
+      const ray=cx.createLinearGradient(rx,0,rx+140,H);
+      ray.addColorStop(0,'rgba(255,244,200,0.16)'); ray.addColorStop(1,'rgba(255,244,200,0)');
+      cx.fillStyle=ray;
+      cx.beginPath(); cx.moveTo(rx,0); cx.lineTo(rx+90,0); cx.lineTo(rx+240,H); cx.lineTo(rx+110,H); cx.closePath(); cx.fill();
+    }
+    cx.restore();
+  }
+
+  // Soil with depth gradient
+  const soil=cx.createLinearGradient(0,H*0.86,0,H);
+  soil.addColorStop(0,'rgba(58,38,20,0.9)'); soil.addColorStop(1,'rgba(20,12,6,0.95)');
+  cx.fillStyle=soil; cx.fillRect(0,H*0.86,W,H*0.14);
+
+  // The flower field: each flower grows from the soil, sways, and wilts
+  // (drooping + desaturating) when calm is lost. Back-to-front by depth.
+  const wilting = calm<35 || spike;
+  if (IMG.flower.complete && IMG.flower.naturalWidth){
+    const sorted=[...flowers].sort((a,b)=>a.depth-b.depth);
+    for(const f of sorted){
+      if (f.growth<=0.01) continue;
+      const baseX=W*f.fx, baseY=H*(0.865+f.depth*0.02);
+      const fullH=H*0.62*(0.45+f.depth*0.55), fw=fullH*IMG.flower.naturalWidth/IMG.flower.naturalHeight;
+      const vis=0.08+f.growth*0.92;
+      const srcH=IMG.flower.naturalHeight*vis;
+      const droop=wilting?(1-f.growth)*0.35:0;
+      const sway=Math.sin(t/900+f.seed)*8*f.growth;
+      // contact shadow
+      const ps=cx.createRadialGradient(baseX,baseY,2,baseX,baseY,fw*0.5);
+      ps.addColorStop(0,'rgba(0,0,0,0.45)'); ps.addColorStop(1,'rgba(0,0,0,0)');
+      cx.save(); cx.translate(baseX,baseY); cx.scale(1,0.12); cx.translate(-baseX,-baseY);
+      cx.fillStyle=ps; cx.beginPath(); cx.arc(baseX,baseY,fw*0.5,0,7); cx.fill(); cx.restore();
+      cx.save();
+      cx.translate(baseX,baseY); cx.rotate(droop*(f.seed>5?1:-1)); cx.translate(-baseX,-baseY);
+      const fade=wilting?0.55+0.45*f.growth:1;
+      cx.globalAlpha=Math.min(1, f.growth*4)*fade;
+      cx.filter=`hue-rotate(${f.hue}deg)`+(wilting?` grayscale(${(1-f.growth)*70}%) brightness(${100-(1-f.growth)*25}%)`:'');
+      cx.drawImage(IMG.flower, 0, IMG.flower.naturalHeight-srcH, IMG.flower.naturalWidth, srcH,
+                   baseX-fw/2+sway, baseY-fullH*vis, fw, fullH*vis);
+      cx.restore();
+    }
+    // Drifting pollen motes in the light
+    cx.fillStyle=`rgba(255,240,180,${0.25+day*0.35})`;
+    for(let i=0;i<14;i++){
+      const mx=(i*173+t*0.014*(10+i%5))%W, my=H*0.25+((i*97)%Math.round(H*0.55))+Math.sin(t/1200+i)*12;
+      cx.beginPath(); cx.arc(mx,my,1.4+(i%3)*0.6,0,7); cx.fill();
+    }
+  } else {
+    cx.strokeStyle='#2f8f4e'; cx.lineWidth=8; cx.lineCap='round';
+    for(const f of flowers){
+      if (f.growth<=0.01) continue;
+      const bx=W*f.fx, by=H*(0.865+f.depth*0.02);
+      const stemH=(40+f.growth*(H*0.42))*(0.45+f.depth*0.55);
+      cx.beginPath(); cx.moveTo(bx,by);
+      cx.quadraticCurveTo(bx+Math.sin(t/900+f.seed)*14, by-stemH*0.6, bx, by-stemH); cx.stroke();
+    }
+  }
+  vignette(W,H);
+}
+
+function vignette(W,H){
+  const vg=cx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.45,W/2,H/2,Math.max(W,H)*0.72);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,6,4,0.45)');
+  cx.fillStyle=vg; cx.fillRect(0,0,W,H);
+}
+
+const sparks=[], flames=[], fsmoke=[];
+function drawCampfire(t,dt){
+  const W=cv.width,H=cv.height;
+  if (IMG.mountains.complete && IMG.mountains.naturalWidth){
+    const bw=IMG.mountains.naturalWidth, bh=IMG.mountains.naturalHeight;
+    const sc=Math.max(W/bw, H/bh);
+    cx.drawImage(IMG.mountains, (W-bw*sc)/2, (H-bh*sc)/2, bw*sc, bh*sc);
+    cx.fillStyle='rgba(4,4,14,0.72)'; cx.fillRect(0,0,W,H);   // mountain night
+  } else { cx.fillStyle='#080604'; cx.fillRect(0,0,W,H); }
+  // Stars
+  cx.fillStyle='rgba(255,255,255,0.7)';
+  for(let i=0;i<60;i++){ cx.fillRect((i*97)%W, (i*61)%(H*0.5), 2,2); }
+  const glow=calm/100;
+  // Fire glow halo (soft radial falloff)
+  const hr=160+glow*140;
+  const hg=cx.createRadialGradient(W/2,H*0.7,10,W/2,H*0.7,hr);
+  hg.addColorStop(0,`rgba(255,140,40,${0.08+glow*0.26})`); hg.addColorStop(1,'rgba(255,140,40,0)');
+  cx.fillStyle=hg;
+  cx.beginPath(); cx.arc(W/2,H*0.7,hr,0,7); cx.fill();
+  // Wood logs (photoreal teepee stack) with pulsing ember glow at the core
+  const logW=Math.min(W*0.24,260), baseY=H*0.815;
+  if (IMG.logs.complete && IMG.logs.naturalWidth){
+    const logH=logW*IMG.logs.naturalHeight/IMG.logs.naturalWidth;
+    // contact shadow under the stack
+    const lsh=cx.createRadialGradient(W/2,baseY,4,W/2,baseY,logW*0.55);
+    lsh.addColorStop(0,'rgba(0,0,0,0.5)'); lsh.addColorStop(1,'rgba(0,0,0,0)');
+    cx.save(); cx.translate(W/2,baseY); cx.scale(1,0.18); cx.translate(-W/2,-baseY);
+    cx.fillStyle=lsh; cx.beginPath(); cx.arc(W/2,baseY,logW*0.55,0,7); cx.fill(); cx.restore();
+    cx.drawImage(IMG.logs, W/2-logW/2, baseY-logH*0.92, logW, logH);
+    // flickering ember glow inside the teepee opening
+    const flick=0.75+0.25*Math.sin(t/90)+0.12*Math.sin(t/37);
+    const eg=cx.createRadialGradient(W/2,baseY-logH*0.32,2,W/2,baseY-logH*0.32,logW*0.34);
+    eg.addColorStop(0,`rgba(255,120,30,${(0.10+glow*0.22)*flick})`); eg.addColorStop(1,'rgba(255,80,20,0)');
+    cx.save(); cx.globalCompositeOperation='lighter';
+    cx.fillStyle=eg; cx.beginPath(); cx.arc(W/2,baseY-logH*0.32,logW*0.34,0,7); cx.fill(); cx.restore();
+  } else {
+    cx.fillStyle='#4a2c14';
+    cx.save(); cx.translate(W/2,H*0.78);
+    cx.rotate(0.3); cx.fillRect(-70,-9,140,18); cx.rotate(-0.6); cx.fillRect(-70,-9,140,18); cx.restore();
+  }
+  // Volumetric flame body: additive-blended puffs rising through red→orange→yellow→white
+  readMic();
+  const fireLevel=Math.min(1, glow*(micOn?0.6:1) + micLevel*0.7);
+  const rate=2+Math.round(fireLevel*9);
+  for(let i=0;i<rate;i++){
+    flames.push({x:W/2+(Math.random()-0.5)*46, y:H*0.77,
+      vx:(Math.random()-0.5)*22, vy:-(70+Math.random()*90)*(0.5+fireLevel),
+      r:9+Math.random()*13, life:1, decay:1.1+Math.random()*0.7});
+  }
+  cx.save(); cx.globalCompositeOperation='lighter';
+  for(let i=flames.length-1;i>=0;i--){ const p=flames[i];
+    p.x+=p.vx*dt+Math.sin(t/110+i)*0.7; p.y+=p.vy*dt; p.r*=(1-0.8*dt); p.life-=p.decay*dt;
+    if (p.life<=0 || p.r<1.5){ flames.splice(i,1); continue; }
+    const L=p.life;
+    const g=cx.createRadialGradient(p.x,p.y,0.5,p.x,p.y,p.r);
+    g.addColorStop(0,`rgba(255,${Math.round(140+115*L)},${Math.round(200*L*L)},${0.34*L})`);
+    g.addColorStop(0.6,`rgba(255,${Math.round(60+90*L)},10,${0.22*L})`);
+    g.addColorStop(1,'rgba(180,20,0,0)');
+    cx.fillStyle=g; cx.beginPath(); cx.arc(p.x,p.y,p.r,0,7); cx.fill();
+  }
+  cx.restore();
+  // Smoke column above the flames
+  if (Math.random()<0.3+fireLevel*0.4)
+    fsmoke.push({x:W/2+(Math.random()-0.5)*30, y:H*0.78-(60+fireLevel*150),
+      vx:(Math.random()-0.5)*10+6, vy:-(20+Math.random()*24), r:8+Math.random()*8, life:1});
+  for(let i=fsmoke.length-1;i>=0;i--){ const p=fsmoke[i];
+    p.x+=p.vx*dt+Math.sin(t/800+i)*0.5; p.y+=p.vy*dt; p.r+=16*dt; p.life-=dt*0.4;
+    if (p.life<=0){ fsmoke.splice(i,1); continue; }
+    const g=cx.createRadialGradient(p.x,p.y,1,p.x,p.y,p.r);
+    g.addColorStop(0,`rgba(120,115,110,${0.14*p.life})`); g.addColorStop(1,'rgba(120,115,110,0)');
+    cx.fillStyle=g; cx.beginPath(); cx.arc(p.x,p.y,p.r,0,7); cx.fill();
+  }
+  // Sparks
+  if (Math.random()<(glow+micLevel)*0.5) sparks.push({x:W/2+(Math.random()-0.5)*30,y:H*0.75,vy:-40-Math.random()*60,life:1});
+  cx.fillStyle='#ffcf70';
+  for(let i=sparks.length-1;i>=0;i--){ const s=sparks[i]; s.y+=s.vy*dt; s.x+=Math.sin(t/100+i)*0.6; s.life-=dt*0.7;
+    if(s.life<=0){sparks.splice(i,1);continue;}
+    cx.globalAlpha=s.life; cx.fillRect(s.x,s.y,3,3); cx.globalAlpha=1; }
+  // Firelight cast onto the ground
+  const fl=cx.createRadialGradient(W/2,H*0.8,10,W/2,H*0.8,W*0.3);
+  fl.addColorStop(0,`rgba(255,150,60,${0.08+glow*0.14})`); fl.addColorStop(1,'rgba(255,150,60,0)');
+  cx.save(); cx.translate(W/2,H*0.8); cx.scale(1,0.35); cx.translate(-W/2,-H*0.8);
+  cx.fillStyle=fl; cx.beginPath(); cx.arc(W/2,H*0.8,W*0.3,0,7); cx.fill(); cx.restore();
+  vignette(W,H);
+}
+
+let last=performance.now();
+(function loop(t){ const dt=Math.min(0.05,(t-last)/1000); last=t; update(dt);
+  if (mode==='garden') drawGarden(t); else drawCampfire(t,dt);
+  requestAnimationFrame(loop); })(last);
+</script>
+</body>
+</html>

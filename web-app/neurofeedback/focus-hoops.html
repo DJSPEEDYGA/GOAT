@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Focus Hoops — TAHS Neurofeedback</title>
+<style>
+  html,body{margin:0;height:100%;background:#05070f;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;}
+  #game{display:block;width:100vw;height:100vh;}
+  #hud{position:fixed;top:14px;left:14px;z-index:10;}
+  #back{position:fixed;top:14px;right:14px;z-index:10;color:#ffd700;text-decoration:none;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:700;}
+  #score{position:fixed;top:64px;right:14px;z-index:10;color:#fff;text-align:right;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:800;font-size:15px;}
+  #score small{color:#9ca3af;font-weight:600;}
+  #msg{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:10;color:#fff;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:12px;
+    padding:10px 22px;font-size:15px;max-width:700px;text-align:center;}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"></div>
+<a id="back" href="index.html">← Game Hub</a>
+<div id="score">🏀 0 / 0 <br><small>streak 0</small></div>
+<div id="msg">Hold your focus to charge the shot — a steady mind shoots true.</div>
+
+<script src="signal-engine.js?v=3"></script>
+<script>
+Neurofeedback.injectStyles();
+const engine = Neurofeedback.mountSignalPanel(document.getElementById('hud'), {metric:'focus', game:'Focus Hoops'});
+
+const cv=document.getElementById('game'), cx=cv.getContext('2d');
+function fit(){cv.width=innerWidth;cv.height=innerHeight;} fit(); addEventListener('resize',fit);
+
+let focus=50, spike=false;
+engine.on(s=>{focus=s.focus; spike=s.spike;});
+
+const IMG={};
+[['bg','assets/bg-basketball.jpg?v=1'],['ball','assets/basketball-gold.png?v=1']]
+  .forEach(([k,src])=>{const im=new Image(); im.src=src; IMG[k]=im;});
+
+// Cover-scale transform so we can locate the hoop inside the backdrop photo
+function bgRect(W,H){
+  const bw=1536,bh=1024, sc=Math.max(W/bw,H/bh);
+  return {x:(W-bw*sc)/2, y:(H-bh*sc)/2, sc};
+}
+function hoopPos(W,H){ const r=bgRect(W,H); return {x:r.x+768*r.sc, y:r.y+330*r.sc, rim:56*r.sc}; }
+
+// Shot cycle: charge while focused → release → flight → result → reset
+let charge=0, focusSum=0, focusN=0, spiked=false;
+let phase='charge';                       // charge | flight | result
+let flight=null, resultTimer=0, makes=0, shots=0, streak=0;
+let heat=0;                                // 0..1: ball heats up on sustained focus
+const flames=[];
+const scoreEl=document.getElementById('score'), msg=document.getElementById('msg');
+
+function startFlight(W,H){
+  const acc=focusSum/Math.max(1,focusN);              // average focus while charging
+  const hp=hoopPos(W,H);
+  // aim error shrinks with accuracy; a spike during the charge wrecks it
+  const err=(spiked?1:0)*90 + (100-acc)*1.1*(Math.random()<0.5?-1:1);
+  const make=Math.abs(err)<26;
+  flight={t:0, x0:W/2, y0:H*0.86, x1:hp.x+err*(hp.rim/56), y1:hp.y, make, dur:1.15};
+  phase='flight'; shots++;
+}
+
+function update(dt){
+  // Heat: builds while focus holds above 70, cools when it drops, killed by spikes
+  if (spike) heat=Math.max(0,heat-dt*2.2);
+  else if (focus>=70) heat=Math.min(1,heat+dt*0.09);
+  else heat=Math.max(0,heat-dt*0.16);
+  if (phase==='charge'){
+    if (spike) spiked=true;
+    const rate = focus>55 ? (focus-55)/45 : -0.35;
+    charge=Math.max(0,Math.min(1,charge+rate*dt*0.42));
+    focusSum+=focus; focusN++;
+    msg.textContent = spike ? '⚡ Stress spike — your form breaks!'
+      : heat>0.95 ? '🔥 YOU’RE ON FIRE! Keep that focus burning.'
+      : heat>0.5 ? 'Heating up… the ball is starting to smolder.'
+      : charge>0.75 ? 'Almost there… stay locked in.'
+      : focus>55 ? 'Charging the shot — hold that focus.'
+      : 'Focus dropped — the charge is fading.';
+    if (charge>=1){ startFlight(cv.width,cv.height); }
+  } else if (phase==='flight'){
+    flight.t+=dt/flight.dur;
+    if (flight.t>=1){
+      phase='result'; resultTimer=1.4;
+      if (flight.make){ makes++; streak++; msg.textContent='🏀 SWISH! Nothing but net.'; }
+      else { streak=0; msg.textContent= spiked ? '⚡ Bricked it — the spike threw off your shot.' : 'Rim out! Steadier focus shoots straighter.'; }
+      scoreEl.innerHTML=`🏀 ${makes} / ${shots} <br><small>streak ${streak}</small>`;
+    }
+  } else {
+    resultTimer-=dt;
+    if (resultTimer<=0){ phase='charge'; charge=0; focusSum=0; focusN=0; spiked=false; }
+  }
+}
+
+function draw(t,dt){
+  const W=cv.width,H=cv.height;
+  if (IMG.bg.complete && IMG.bg.naturalWidth){
+    const r=bgRect(W,H);
+    cx.drawImage(IMG.bg, r.x, r.y, 1536*r.sc, 1024*r.sc);
+  } else { cx.fillStyle='#0a0d18'; cx.fillRect(0,0,W,H); }
+
+  const hp=hoopPos(W,H);
+  // Ball position
+  let bx=W/2, by=H*0.86, br=Math.min(W,H)*0.085;
+  if (phase==='flight'){
+    const p=flight.t;
+    bx=flight.x0+(flight.x1-flight.x0)*p;
+    const arcH=H*0.42;
+    by=flight.y0+(flight.y1-flight.y0)*p - Math.sin(p*Math.PI)*arcH;
+    br*= (1-p*0.55);
+    if (!flight.make && p>0.85){ bx+=Math.sin(p*40)*10; }   // rim rattle out
+  } else if (phase==='result'){
+    bx=-999;   // ball out of frame while resetting
+  }
+
+  // Aim ring around the hoop: shrinks + turns green as you charge steadily
+  if (phase==='charge'){
+    const steadiness=Math.max(0,Math.min(1,(focus-40)/60));
+    const ringR=hp.rim*(2.6-1.5*steadiness)+Math.sin(t/140)*(1-steadiness)*10;
+    cx.save();
+    cx.strokeStyle= spike ? 'rgba(255,70,70,0.9)' : steadiness>0.6 ? 'rgba(60,255,140,0.85)' : 'rgba(255,200,60,0.8)';
+    cx.lineWidth=3; cx.setLineDash([10,8]);
+    cx.beginPath(); cx.arc(hp.x,hp.y,ringR,0,7); cx.stroke();
+    cx.restore();
+    // charge meter under the ball
+    const mw=br*2.4;
+    cx.fillStyle='rgba(0,0,0,0.55)'; cx.fillRect(bx-mw/2, by+br+14, mw, 10);
+    cx.fillStyle= spiked ? '#ff5a5a' : '#ffd700';
+    cx.fillRect(bx-mw/2, by+br+14, mw*charge, 10);
+  }
+
+  // Heat aura + flame particles on the ball
+  if (bx>-500 && heat>0.08){
+    const inFlight=phase==='flight';
+    const hg=cx.createRadialGradient(bx,by,br*0.3,bx,by,br*(1.6+heat*1.1));
+    hg.addColorStop(0,`rgba(255,${Math.round(110+heat*70)},20,${0.22+heat*0.4})`);
+    hg.addColorStop(0.55,`rgba(255,70,0,${0.1+heat*0.22})`);
+    hg.addColorStop(1,'rgba(255,60,0,0)');
+    cx.save(); cx.globalCompositeOperation='lighter';
+    cx.fillStyle=hg; cx.beginPath(); cx.arc(bx,by,br*(1.6+heat*1.1),0,7); cx.fill(); cx.restore();
+    const n=Math.round(1+heat*(inFlight?14:9));
+    for(let i=0;i<n;i++){
+      const a=Math.random()*Math.PI*2;
+      flames.push({x:bx+Math.cos(a)*br*0.85, y:by+Math.sin(a)*br*0.85,
+        vx:(Math.random()-0.5)*30-(inFlight?(flight.x1-flight.x0)*0.35:0),
+        vy:-(50+Math.random()*70)*(0.4+heat),
+        r:(7+Math.random()*11)*(br/60), life:1, decay:1.0+Math.random()*0.7});
+    }
+  }
+  cx.save(); cx.globalCompositeOperation='lighter';
+  for(let i=flames.length-1;i>=0;i--){ const p=flames[i];
+    p.x+=p.vx*dt+Math.sin(t/120+i)*0.6; p.y+=p.vy*dt; p.r*=(1-0.9*dt); p.life-=p.decay*dt;
+    if (p.life<=0 || p.r<1){ flames.splice(i,1); continue; }
+    const L=p.life;
+    const g=cx.createRadialGradient(p.x,p.y,0.5,p.x,p.y,p.r);
+    g.addColorStop(0,`rgba(255,${Math.round(150+100*L)},${Math.round(190*L*L)},${0.5*L})`);
+    g.addColorStop(0.6,`rgba(255,${Math.round(70+80*L)},10,${0.32*L})`);
+    g.addColorStop(1,'rgba(180,20,0,0)');
+    cx.fillStyle=g; cx.beginPath(); cx.arc(p.x,p.y,p.r,0,7); cx.fill();
+  }
+  cx.restore();
+
+  // Ball with contact shadow
+  if (bx>-500){
+    const sh=cx.createRadialGradient(W/2,H*0.965,4,W/2,H*0.965,br*1.3);
+    sh.addColorStop(0,'rgba(0,0,0,0.5)'); sh.addColorStop(1,'rgba(0,0,0,0)');
+    cx.save(); cx.translate(W/2,H*0.965); cx.scale(1,0.22); cx.translate(-W/2,-H*0.965);
+    cx.fillStyle=sh; cx.beginPath(); cx.arc(W/2,H*0.965,br*1.3,0,7); cx.fill(); cx.restore();
+    if (IMG.ball.complete && IMG.ball.naturalWidth){
+      cx.save(); cx.translate(bx,by);
+      cx.rotate(phase==='flight'?flight.t*7:Math.sin(t/700)*0.05);
+      cx.drawImage(IMG.ball,-br,-br,br*2,br*2); cx.restore();
+    } else {
+      cx.fillStyle='#e2701d'; cx.beginPath(); cx.arc(bx,by,br,0,7); cx.fill();
+    }
+  }
+
+  // Swish flash
+  if (phase==='result' && flight.make && resultTimer>1.0){
+    cx.fillStyle=`rgba(255,240,160,${(resultTimer-1.0)*0.5})`; cx.fillRect(0,0,W,H);
+  }
+  // vignette
+  const vg=cx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.45,W/2,H/2,Math.max(W,H)*0.72);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,2,8,0.5)');
+  cx.fillStyle=vg; cx.fillRect(0,0,W,H);
+}
+
+let last=performance.now();
+(function loop(t){ const dt=Math.min(0.05,(t-last)/1000); last=t;
+  update(dt); draw(t,dt); requestAnimationFrame(loop); })(last);
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breath + Brain — TAHS Neurofeedback</title>
+<style>
+  html,body{margin:0;height:100%;background:#070b1a;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;}
+  #game{display:block;width:100vw;height:100vh;}
+  #hud{position:fixed;top:14px;left:14px;z-index:10;}
+  #back{position:fixed;top:14px;right:14px;z-index:10;color:#ffd700;text-decoration:none;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:700;}
+  #score{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10;color:#a5b4fc;
+    background:rgba(10,14,30,.88);border:1px solid rgba(140,150,255,.4);border-radius:12px;
+    padding:8px 18px;font-size:15px;font-weight:800;}
+  #phase{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);z-index:10;color:#e0e7ff;
+    font-size:30px;font-weight:900;letter-spacing:3px;text-shadow:0 0 20px rgba(140,150,255,.8);}
+  #msg{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:10;color:#e0e7ff;
+    background:rgba(10,14,30,.88);border:1px solid rgba(140,150,255,.4);border-radius:12px;
+    padding:10px 22px;font-size:15px;max-width:700px;text-align:center;}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"></div>
+<a id="back" href="index.html">← Game Hub</a>
+<div id="score">🧘 COHERENCE <span id="coh">0</span>%</div>
+<div id="phase">BREATHE IN</div>
+<div id="msg">Follow the orb: in 4s — hold 2s — out 6s. Breath + calm together build coherence.</div>
+
+<script src="signal-engine.js?v=3"></script>
+<script>
+Neurofeedback.injectStyles();
+const engine = Neurofeedback.mountSignalPanel(document.getElementById('hud'), {metric:'calm', game:'Breath + Brain'});
+
+const cv=document.getElementById('game'), cx=cv.getContext('2d');
+function fit(){cv.width=innerWidth;cv.height=innerHeight;} fit(); addEventListener('resize',fit);
+
+let calm=50, spike=false;
+engine.on(s=>{calm=s.calm; spike=s.spike;});
+
+// 4-2-6 breathing cycle (12s)
+const CYCLE=[['BREATHE IN',4],['HOLD',2],['BREATHE OUT',6]];
+let cycleT=0, coherence=0;
+const phaseEl=document.getElementById('phase'), cohEl=document.getElementById('coh'), msg=document.getElementById('msg');
+const nebula=new Image(); nebula.src='assets/bg-nebula.jpg?v=2';
+
+function phaseAt(t){
+  let acc=0;
+  for(const [name,dur] of CYCLE){ if(t<acc+dur) return {name,dur,pt:(t-acc)/dur}; acc+=dur; }
+  return {name:'BREATHE IN',dur:4,pt:0};
+}
+
+// Orb radius follows the breath: expands on IN, steady on HOLD, contracts on OUT
+function orbSize(ph){
+  if (ph.name==='BREATHE IN') return 0.35+0.55*ph.pt;
+  if (ph.name==='HOLD') return 0.9;
+  return 0.9-0.55*ph.pt;
+}
+
+function update(dt){
+  cycleT=(cycleT+dt)%12;
+  // Coherence grows when calm is high during the paced cycle; spikes drain it
+  const gain = (calm-50)/50*4*dt;
+  coherence = Math.max(0, Math.min(100, coherence + (spike? -12*dt : gain)));
+  cohEl.textContent = Math.round(coherence);
+  const ph=phaseAt(cycleT);
+  phaseEl.textContent = ph.name;
+  msg.textContent = spike ? '⚡ Spike — come back to the breath. In… and out…'
+    : coherence>80 ? '✨ Deep coherence — breath and brain are in sync.'
+    : coherence>40 ? 'Good rhythm. Let the exhale be longer and softer.'
+    : 'Match the orb: expand on the inhale, release on the exhale.';
+}
+
+const stars=[]; for(let i=0;i<80;i++) stars.push({x:Math.random(),y:Math.random(),tw:Math.random()*6});
+function draw(t){
+  const W=cv.width,H=cv.height;
+  const coh=coherence/100;
+  if (nebula.complete && nebula.naturalWidth){
+    const bw=nebula.naturalWidth, bh=nebula.naturalHeight;
+    const sc=Math.max(W/bw,H/bh);
+    cx.drawImage(nebula,(W-bw*sc)/2,(H-bh*sc)/2,bw*sc,bh*sc);
+    cx.fillStyle=`rgba(4,6,20,${0.35-0.18*coh})`; cx.fillRect(0,0,W,H);
+  } else {
+    const g=cx.createRadialGradient(W/2,H/2,50,W/2,H/2,Math.max(W,H)*0.7);
+    g.addColorStop(0,`rgb(${25+coh*30},${25+coh*20},${60+coh*80})`);
+    g.addColorStop(1,'#05060f');
+    cx.fillStyle=g; cx.fillRect(0,0,W,H);
+  }
+
+  // Stars twinkle more with coherence
+  stars.forEach(s=>{ cx.fillStyle=`rgba(255,255,255,${0.3+0.5*Math.abs(Math.sin(t/1000+s.tw))*(0.4+coh)})`;
+    cx.fillRect(s.x*W, s.y*H, 2,2); });
+
+  const ph=phaseAt(cycleT);
+  const R=Math.min(W,H)*0.22*orbSize(ph)+20;
+
+  // Outer coherence rings
+  for(let i=3;i>=1;i--){
+    cx.strokeStyle=`rgba(140,150,255,${0.08*i*(0.3+coh)})`;
+    cx.lineWidth=2;
+    cx.beginPath(); cx.arc(W/2,H/2,R+i*26+Math.sin(t/700+i)*4,0,7); cx.stroke();
+  }
+  // Breathing orb
+  const og=cx.createRadialGradient(W/2,H/2,R*0.2,W/2,H/2,R);
+  og.addColorStop(0,`rgba(${180+coh*60},${190+coh*40},255,0.95)`);
+  og.addColorStop(1,`rgba(90,100,220,${0.25+coh*0.3})`);
+  cx.fillStyle=og;
+  cx.beginPath(); cx.arc(W/2,H/2,R,0,7); cx.fill();
+
+  // Orb bloom lighting the nebula around it
+  const bl=cx.createRadialGradient(W/2,H/2,R,W/2,H/2,R*2.6);
+  bl.addColorStop(0,`rgba(150,160,255,${0.10+coh*0.16})`); bl.addColorStop(1,'rgba(150,160,255,0)');
+  cx.fillStyle=bl; cx.beginPath(); cx.arc(W/2,H/2,R*2.6,0,7); cx.fill();
+
+  // Drifting energy particles orbiting the orb, denser with coherence
+  const n=8+Math.round(coh*14);
+  for(let i=0;i<n;i++){
+    const a=t/3000+i*(Math.PI*2/n), rr=R+40+Math.sin(t/900+i*1.7)*18;
+    cx.fillStyle=`rgba(190,200,255,${0.25+coh*0.45})`;
+    cx.beginPath(); cx.arc(W/2+Math.cos(a)*rr, H/2+Math.sin(a)*rr*0.8, 1.6+(i%3)*0.7, 0, 7); cx.fill();
+  }
+
+  // Calm halo — brain side of the loop
+  cx.strokeStyle=spike?'rgba(255,80,100,0.8)':`rgba(120,255,190,${0.2+calm/100*0.6})`;
+  cx.lineWidth=6;
+  cx.beginPath(); cx.arc(W/2,H/2,R+12,-Math.PI/2,-Math.PI/2+Math.PI*2*(calm/100)); cx.stroke();
+
+  // Cinematic vignette
+  const vg=cx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.45,W/2,H/2,Math.max(W,H)*0.72);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(2,4,14,0.5)');
+  cx.fillStyle=vg; cx.fillRect(0,0,W,H);
+}
+
+let last=performance.now();
+(function loop(t){ const dt=Math.min(0.05,(t-last)/1000); last=t; update(dt); draw(t); requestAnimationFrame(loop); })(last);
+</script>
+</body>
+</html>

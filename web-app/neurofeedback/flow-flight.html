@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flow Flight — TAHS Neurofeedback</title>
+<style>
+  html,body{margin:0;height:100%;background:#061224;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;}
+  #game{display:block;width:100vw;height:100vh;}
+  #hud{position:fixed;top:14px;left:14px;z-index:10;}
+  #back{position:fixed;top:14px;right:14px;z-index:10;color:#ffd700;text-decoration:none;
+    background:rgba(10,14,25,.85);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:8px 14px;font-weight:700;}
+  #stats{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10;color:#9fd8ff;
+    background:rgba(6,18,36,.85);border:1px solid rgba(120,200,255,.4);border-radius:12px;
+    padding:8px 18px;font-size:15px;font-weight:800;}
+  #msg{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:10;color:#e0f2ff;
+    background:rgba(6,18,36,.85);border:1px solid rgba(120,200,255,.4);border-radius:12px;
+    padding:10px 22px;font-size:15px;max-width:700px;text-align:center;}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"></div>
+<a id="back" href="index.html">← Game Hub</a>
+<div id="stats">✈️ ALT <span id="alt">500</span> ft &nbsp;|&nbsp; DIST <span id="dist">0</span> mi</div>
+<div id="msg">Hold your focus to climb and cruise. Lose focus and you lose lift!</div>
+
+<script src="signal-engine.js?v=3"></script>
+<script>
+Neurofeedback.injectStyles();
+const engine = Neurofeedback.mountSignalPanel(document.getElementById('hud'), {metric:'focus', game:'Flow Flight'});
+
+const cv=document.getElementById('game'), cx=cv.getContext('2d');
+function fit(){cv.width=innerWidth;cv.height=innerHeight;} fit(); addEventListener('resize',fit);
+
+let focus=50, spike=false;
+engine.on(s=>{focus=s.focus; spike=s.spike;});
+
+let alt=500, dist=0, scroll=0, crashed=false, crashT=0;
+const altEl=document.getElementById('alt'), distEl=document.getElementById('dist'), msg=document.getElementById('msg');
+
+const smoke=[]; // engine exhaust smoke particles
+const clouds=[]; for(let i=0;i<7;i++) clouds.push({x:Math.random()*2200,y:Math.random()*0.55,s:260+Math.random()*260,spd:0.35+Math.random()*0.35,sprite:1+(i%2)});
+
+const IMG={};
+[['bg','assets/bg-sky.jpg?v=2'],['jet','assets/jet.png?v=3'],['cloud1','assets/cloud1.png?v=1'],['cloud2','assets/cloud2.png?v=1']]
+  .forEach(([k,src])=>{const im=new Image(); im.src=src; IMG[k]=im;});
+
+function stepSmoke(dt){
+  for(let i=smoke.length-1;i>=0;i--){ const p=smoke[i];
+    p.x+=p.vx*dt; p.y+=p.vy*dt; p.r+=p.grow*dt; p.life-=dt*0.55;
+    if (p.life<=0 || p.x<-100) smoke.splice(i,1); }
+  if (smoke.length>260) smoke.splice(0, smoke.length-260);
+}
+
+function update(dt){
+  if (crashed){ crashT-=dt; stepSmoke(dt); if(crashT<=0){crashed=false; alt=300;} return; }
+  // Lift proportional to focus; gravity constant. Spikes dump lift hard.
+  const lift=(focus-45)*9;
+  alt += (lift - (spike?260:0)) * dt;
+  alt = Math.min(3000, alt);
+  const speed = 60 + focus*2.2;
+  dist += speed*dt/3600*60;
+  scroll += speed*dt;
+
+  if (alt<=0){ crashed=true; crashT=2.2; alt=0; }
+
+  // Spawn engine smoke puffs (denser when stressed/crashing)
+  const px=cv.width*0.3, py=cv.height*0.75 - (alt/3000)*(cv.height*0.6);
+  const rate = crashed?6 : spike?4 : 2;
+  for(let i=0;i<rate;i++){
+    smoke.push({x:px-118+Math.random()*10, y:py+Math.sin(performance.now()/700)*4+(Math.random()*14-7),
+      vx:-(140+speed*0.8)*(0.9+Math.random()*0.3), vy:(Math.random()-0.5)*14 - (crashed?-30:6),
+      r:4+Math.random()*5, life:1, grow:14+Math.random()*16, dark:crashed||spike});
+  }
+  stepSmoke(dt);
+
+  altEl.textContent=Math.round(alt); distEl.textContent=dist.toFixed(1);
+  msg.textContent = crashed ? '💥 Down! Regroup — refocus to take off again.'
+    : spike ? '⚡ Stress spike — you\'re dropping! Recover your focus!'
+    : focus>70 ? 'Locked in — smooth climb. Beautiful flying.'
+    : focus>45 ? 'Cruising. Deepen your focus to gain altitude.'
+    : 'Losing lift… bring your attention back to center.';
+}
+
+function draw(t){
+  const W=cv.width,H=cv.height;
+  const hi=Math.min(1,alt/3000);
+  if (IMG.bg.complete && IMG.bg.naturalWidth){
+    const bw=IMG.bg.naturalWidth, bh=IMG.bg.naturalHeight;
+    const sc=Math.max(W/bw, H/bh);
+    const drift=(scroll*0.15)%(bw*sc-W+1);
+    cx.drawImage(IMG.bg, -(isNaN(drift)?0:Math.max(0,drift)), H-bh*sc, bw*sc, bh*sc);
+    // Higher altitude = deeper blue tint
+    cx.fillStyle=`rgba(6,24,60,${hi*0.35})`; cx.fillRect(0,0,W,H);
+  } else {
+    const g=cx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,`rgb(${10+40*(1-hi)},${40+80*(1-hi)},${90+90*(1-hi)})`);
+    g.addColorStop(1,'#0b2a4a');
+    cx.fillStyle=g; cx.fillRect(0,0,W,H);
+  }
+
+  // Ground line when low
+  const groundY = H - 40 - (alt/3000)*(H*1.4);
+  if (groundY < H+50){ cx.fillStyle='#123d22'; cx.fillRect(0,Math.max(groundY,H-60),W,H); }
+
+  // Clouds parallax (real photographic cutouts)
+  clouds.forEach(c=>{
+    const img=IMG['cloud'+c.sprite];
+    const span=W+c.s+400;
+    const x=((c.x - scroll*c.spd) % span + span)% span -c.s-200;
+    const y=H*0.1 + c.y*H*0.5 + (alt/3000)*H*0.2;
+    if (img && img.complete && img.naturalWidth){
+      const cw=c.s, ch=cw*img.naturalHeight/img.naturalWidth;
+      cx.globalAlpha=0.9; cx.drawImage(img, x, y, cw, ch); cx.globalAlpha=1;
+    } else {
+      cx.fillStyle='rgba(255,255,255,0.75)';
+      cx.beginPath(); cx.arc(x,y,c.s*0.12,0,7); cx.arc(x+c.s*0.12,y-10,c.s*0.1,0,7); cx.fill();
+    }
+  });
+
+  // Sun glare bloom (matches the sun baked into the sky photo)
+  const sgx=W*0.62, sgy=H*0.72 - (alt/3000)*H*0.1;
+  const sun=cx.createRadialGradient(sgx,sgy,10,sgx,sgy,W*0.22);
+  sun.addColorStop(0,'rgba(255,250,230,0.20)'); sun.addColorStop(1,'rgba(255,250,230,0)');
+  cx.fillStyle=sun; cx.fillRect(sgx-W*0.22,sgy-W*0.22,W*0.44,W*0.44);
+
+  // Realistic engine smoke: soft billowing puffs that expand, drift back and fade
+  for(const p of smoke){
+    const a=Math.max(0,p.life)*(p.dark?0.34:0.22);
+    const g=cx.createRadialGradient(p.x,p.y,1,p.x,p.y,p.r);
+    if (p.dark){ g.addColorStop(0,`rgba(70,70,75,${a})`); g.addColorStop(1,'rgba(70,70,75,0)'); }
+    else { g.addColorStop(0,`rgba(245,248,252,${a})`); g.addColorStop(1,'rgba(245,248,252,0)'); }
+    cx.fillStyle=g; cx.beginPath(); cx.arc(p.x,p.y,p.r,0,7); cx.fill();
+  }
+
+  // Jet
+  const px=W*0.3, py=H*0.75 - (alt/3000)*(H*0.6);
+  const tilt = crashed ? 0.8 : spike ? 0.35 : focus>60 ? -0.12 : 0.1;
+  const bob = crashed?0:Math.sin(t/700)*4;
+  cx.save(); cx.translate(px,py+bob); cx.rotate(tilt);
+  // Engine heat shimmer just behind the engines
+  if (!crashed){
+    const ex=cx.createLinearGradient(-118,0,-190,0);
+    ex.addColorStop(0,'rgba(255,255,255,0.30)'); ex.addColorStop(1,'rgba(255,255,255,0)');
+    cx.fillStyle=ex; cx.beginPath();
+    cx.moveTo(-118,-2); cx.lineTo(-190,-8-Math.random()*3); cx.lineTo(-190,14+Math.random()*3); cx.lineTo(-118,12); cx.closePath(); cx.fill();
+  }
+  if (IMG.jet.complete && IMG.jet.naturalWidth){
+    const jw=260, jh=jw*IMG.jet.naturalHeight/IMG.jet.naturalWidth;
+    if (crashed) cx.filter='grayscale(1)';
+    cx.drawImage(IMG.jet, -jw/2, -jh/2, jw, jh);
+    cx.filter='none';
+  } else {
+    cx.fillStyle= crashed ? '#666' : '#e8eef7';
+    cx.beginPath();
+    cx.moveTo(-46,0); cx.lineTo(34,-6); cx.lineTo(46,0); cx.lineTo(34,6); cx.closePath(); cx.fill();
+  }
+  if (!crashed && focus>70){ cx.strokeStyle='rgba(255,255,255,0.5)'; cx.lineWidth=2;
+    cx.beginPath(); cx.moveTo(-135,4); cx.lineTo(-215,4); cx.moveTo(-135,14); cx.lineTo(-195,14); cx.stroke(); }
+  cx.restore();
+
+  // Altitude atmosphere: cooler, thinner light up high
+  cx.fillStyle=`rgba(180,205,255,${(alt/3000)*0.08})`; cx.fillRect(0,0,W,H);
+  // Cinematic vignette
+  const vg=cx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.5,W/2,H/2,Math.max(W,H)*0.75);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(10,20,40,0.35)');
+  cx.fillStyle=vg; cx.fillRect(0,0,W,H);
+
+  if (crashed){ cx.fillStyle='#ff7043'; cx.font='bold 22px Segoe UI';
+    cx.fillText('💥', px-10, py-20); }
+}
+
+let last=performance.now();
+(function loop(t){ const dt=Math.min(0.05,(t-last)/1000); last=t; update(dt); draw(t); requestAnimationFrame(loop); })(last);
+</script>
+</body>
+</html>
