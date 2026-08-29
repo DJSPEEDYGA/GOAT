@@ -21,6 +21,7 @@ LIVE_VIDEO_DIR = PRODUCTION_ROOT / "live-video"
 FCP_EXPORT_DIR = PRODUCTION_ROOT / "fcp-export"
 UNREAL_HANDOFF_DIR = PRODUCTION_ROOT / "unreal-handoff"
 TWINMOTION_HANDOFF_DIR = PRODUCTION_ROOT / "twinmotion-handoff"
+CARD_REVEAL_HANDOFF_DIR = PRODUCTION_ROOT / "card-reveal-handoff"
 OSCILLATOR_GRAPHICS_URL = os.environ.get("OSCAR_GRAPHICS_URL", "http://127.0.0.1:3344")
 
 EPIC_UE_INSTALLER_DMG = Path(
@@ -52,7 +53,7 @@ STUDIO_LINKS = {
 
 
 def _ensure_dirs() -> None:
-    for d in (LIVE_VIDEO_DIR, FCP_EXPORT_DIR, UNREAL_HANDOFF_DIR, TWINMOTION_HANDOFF_DIR, TWINMOTION_PROJECTS_DIR):
+    for d in (LIVE_VIDEO_DIR, FCP_EXPORT_DIR, UNREAL_HANDOFF_DIR, TWINMOTION_HANDOFF_DIR, TWINMOTION_PROJECTS_DIR, CARD_REVEAL_HANDOFF_DIR):
         d.mkdir(parents=True, exist_ok=True)
 
 
@@ -132,6 +133,148 @@ def detect_epic_stack() -> Dict[str, Any]:
             "GOAT Movie Studio or Final Cut Pro (edit + audio)",
             "GOAT Vocal / Music / Mastering studios",
         ],
+    }
+
+
+def detect_creative_stack() -> Dict[str, Any]:
+    """Read-only discovery for the GOAT studio rack; never starts an app or model."""
+    applications = {
+        "final_cut_pro": [Path("/Applications/Final Cut Pro.app")],
+        "davinci_resolve": [Path("/Applications/DaVinci Resolve/DaVinci Resolve.app"), Path("/Applications/DaVinci Resolve.app")],
+        "after_effects": list(Path("/Applications").glob("Adobe After Effects*/Adobe After Effects*.app")),
+        "blender": [Path("/Applications/Blender.app")],
+        "obs": [Path("/Applications/OBS.app")],
+        "comfyui": [Path.home() / "ComfyUI", Path("/Volumes/LLMs/ComfyUI")],
+    }
+    app_status = {}
+    for key, candidates in applications.items():
+        found = next((candidate for candidate in candidates if candidate.exists()), None)
+        app_status[key] = {"installed": bool(found), "path": str(found) if found else None}
+
+    model_roots = [
+        Path("/Volumes/LLMs"),
+        Path.home() / ".cache" / "huggingface" / "hub",
+        Path.home() / ".ollama" / "models",
+    ]
+    roots = [{"path": str(root), "available": root.exists()} for root in model_roots]
+    ollama_models: List[str] = []
+    ollama = _which("ollama")
+    if ollama:
+        try:
+            proc = subprocess.run([ollama, "list"], capture_output=True, text=True, timeout=8)
+            if proc.returncode == 0:
+                ollama_models = [line.split()[0] for line in proc.stdout.splitlines()[1:] if line.strip()]
+        except (OSError, subprocess.SubprocessError):
+            pass
+
+    huggingface_root = Path.home() / ".cache" / "huggingface" / "hub"
+    huggingface_models = [path.name for path in huggingface_root.glob("models--*") if path.is_dir()][:500]
+    comfy_checkpoints: List[str] = []
+    for comfy_root in (Path.home() / "ComfyUI", Path("/Volumes/LLMs/ComfyUI")):
+        checkpoint_root = comfy_root / "models" / "checkpoints"
+        if checkpoint_root.is_dir():
+            comfy_checkpoints.extend(path.name for path in checkpoint_root.iterdir() if path.is_file())
+    model_count = len(set(ollama_models + huggingface_models + comfy_checkpoints))
+
+    return {
+        "applications": app_status,
+        "commands": {
+            "ffmpeg": _which("ffmpeg"),
+            "ollama": ollama,
+            "blender": _which("blender"),
+        },
+        "model_roots": roots,
+        "ollama_models": ollama_models,
+        "huggingface_models": huggingface_models,
+        "comfyui_checkpoints": comfy_checkpoints[:500],
+        "detected_model_count": model_count,
+        "model_counts": {
+            "ollama": len(ollama_models),
+            "huggingface": len(huggingface_models),
+            "comfyui_checkpoints": len(comfy_checkpoints),
+        },
+        "external_connectors": {
+            "higgsfield": "connection_required",
+            "seedance": "connection_required",
+            "nano_banana": "connection_required",
+            "hugging_face": "local_cache_or_token_required",
+        },
+    }
+
+
+def build_card_reveal_handoff(
+    job_id: str,
+    card_name: str,
+    source_paths: List[str],
+    creative_prompt: str,
+    world: str = "goatverse",
+    duration_sec: float = 15.0,
+    aspect_ratio: str = "16:9",
+    preferred_pipeline: str = "local-first",
+    rights_confirmed: bool = False,
+) -> Dict[str, Any]:
+    """Create an editor/model-neutral manifest for evidence-safe card animation."""
+    _ensure_dirs()
+    if not rights_confirmed:
+        return {"ok": False, "error": "Media rights and subject consent must be confirmed before a reveal job is created."}
+    duration_sec = max(3.0, min(float(duration_sec), 60.0))
+    aspect_ratio = aspect_ratio if aspect_ratio in {"16:9", "9:16", "1:1"} else "16:9"
+    safe_sources = []
+    for raw_path in source_paths[:8]:
+        source = Path(raw_path).expanduser().resolve()
+        safe_sources.append({"path": str(source), "exists": source.is_file()})
+
+    stamp = int(time.time())
+    slug = _slug(f"{job_id}-{card_name}", "brickgrade-reveal")
+    project_dir = CARD_REVEAL_HANDOFF_DIR / f"{stamp}-{slug}"
+    project_dir.mkdir(parents=True, exist_ok=True)
+    manifest = {
+        "schema": "goat.brickgrade.card-reveal.v1",
+        "created": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "job_id": str(job_id)[:48],
+        "card_name": str(card_name)[:180],
+        "source_media": safe_sources,
+        "creative_prompt": str(creative_prompt)[:3000],
+        "world": _slug(world, "goatverse"),
+        "duration_sec": duration_sec,
+        "aspect_ratio": aspect_ratio,
+        "preferred_pipeline": _slug(preferred_pipeline, "local-first"),
+        "rights_confirmed": True,
+        "evidence_policy": {
+            "source_grade_media_immutable": True,
+            "generated_frames_excluded_from_grading": True,
+            "synthetic_label_required": True,
+            "human_qc_before_publish": True,
+        },
+        "pipeline": [
+            "copy verified card media into immutable evidence lane",
+            "build front/back/edge digital twin and foil material pass",
+            "route animation local-first through approved model adapter",
+            "assemble Unreal/Twinmotion scene and GOATVERSE effects",
+            "export editorial package for Resolve, Final Cut, or After Effects",
+            "owner review, synthetic-content slate, then RTMP/publish approval",
+        ],
+        "creative_stack": detect_creative_stack(),
+        "handoffs": {
+            "unreal": "build_unreal_handoff",
+            "twinmotion": "build_twinmotion_handoff",
+            "final_cut": "build_fcp_xml",
+            "resolve": "EDL/XML/media folder",
+            "after_effects": "image sequence + alpha + JSON camera data",
+            "obs": "approved master or NDI/RTMP scene input",
+        },
+    }
+    manifest_path = project_dir / "GOAT_CARD_REVEAL_MANIFEST.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    (project_dir / "EVIDENCE_DO_NOT_EDIT").mkdir(exist_ok=True)
+    (project_dir / "GENERATED_SYNTHETIC").mkdir(exist_ok=True)
+    (project_dir / "EDITORIAL_EXPORTS").mkdir(exist_ok=True)
+    return {
+        "ok": True,
+        "summary": "BrickGrade GOATVERSE card-reveal handoff created.",
+        "project_dir": str(project_dir),
+        "manifest_path": str(manifest_path),
+        "manifest": manifest,
     }
 
 
@@ -475,6 +618,7 @@ end tell
 def production_status() -> Dict[str, Any]:
     _ensure_dirs()
     ffmpeg = bool(_which("ffmpeg"))
+    creative = detect_creative_stack()
     return {
         "time": time.strftime("%Y-%m-%d %H:%M:%S"),
         "studios": STUDIO_LINKS,
@@ -485,12 +629,19 @@ def production_status() -> Dict[str, Any]:
             "unreal_handoff": str(UNREAL_HANDOFF_DIR),
             "twinmotion_handoff": str(TWINMOTION_HANDOFF_DIR),
             "twinmotion_projects": str(TWINMOTION_PROJECTS_DIR),
+            "card_reveal_handoff": str(CARD_REVEAL_HANDOFF_DIR),
         },
         "tools": {
             "ffmpeg": ffmpeg,
             "oscar_graphics": OSCILLATOR_GRAPHICS_URL,
         },
         "epic_stack": detect_epic_stack(),
+        "creative_stack": {
+            "applications": {key: bool(value.get("installed")) for key, value in creative["applications"].items()},
+            "detected_model_count": creative["detected_model_count"],
+            "model_roots_available": sum(1 for root in creative["model_roots"] if root.get("available")),
+            "external_connectors": creative["external_connectors"],
+        },
         "pipelines": [
             "photo_to_live_video",
             "unreal_metahuman_handoff",
@@ -498,5 +649,6 @@ def production_status() -> Dict[str, Any]:
             "launch_twinmotion",
             "fcp_xml_export",
             "oscar_goat_bridge",
+            "brickgrade_card_reveal_handoff",
         ],
     }

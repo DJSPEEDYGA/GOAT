@@ -58,6 +58,8 @@ try:
         build_twinmotion_handoff,
         launch_twinmotion,
         detect_epic_stack,
+        detect_creative_stack,
+        build_card_reveal_handoff,
     )
     PRODUCTION_AVAILABLE = True
 except Exception as _e:
@@ -2375,6 +2377,35 @@ def production_epic_stack():
     if not PRODUCTION_AVAILABLE:
         return jsonify({"ok": False, "error": "production_bridge not loaded"}), 500
     return jsonify({"ok": True, "stack": detect_epic_stack()})
+
+
+@app.route("/production/creative-stack")
+def production_creative_stack():
+    if not PRODUCTION_AVAILABLE:
+        return jsonify({"ok": False, "error": "production_bridge not loaded"}), 500
+    if not local_launch_allowed():
+        return jsonify({"ok": False, "error": "Creative stack inventory is local-only."}), 403
+    return jsonify({"ok": True, "stack": detect_creative_stack()})
+
+
+@app.route("/production/card-reveal", methods=["POST"])
+def production_card_reveal():
+    if not PRODUCTION_AVAILABLE:
+        return jsonify({"ok": False, "error": "production_bridge not loaded"}), 500
+    if not local_launch_allowed():
+        return jsonify({"ok": False, "error": "Card-reveal production is local-only."}), 403
+    data = request.json or {}
+    return jsonify(build_card_reveal_handoff(
+        job_id=data.get("job_id", ""),
+        card_name=data.get("card_name", "Untitled card"),
+        source_paths=data.get("source_paths") or [],
+        creative_prompt=data.get("creative_prompt", ""),
+        world=data.get("world", "goatverse"),
+        duration_sec=float(data.get("duration_sec", 15)),
+        aspect_ratio=data.get("aspect_ratio", "16:9"),
+        preferred_pipeline=data.get("preferred_pipeline", "local-first"),
+        rights_confirmed=bool(data.get("rights_confirmed", False)),
+    ))
 
 
 @app.route("/production/twinmotion-handoff", methods=["POST"])

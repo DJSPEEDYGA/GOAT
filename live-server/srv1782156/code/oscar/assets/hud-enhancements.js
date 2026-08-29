@@ -166,7 +166,7 @@
 (function loadBrickGradeCommand() {
   'use strict';
 
-  const build = '20260829-1';
+  const build = '20260829-3';
   const retryDelays = [750, 1500, 3000, 6000];
   let state = 'idle';
   let observer;
