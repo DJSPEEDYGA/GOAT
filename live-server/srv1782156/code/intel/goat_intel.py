@@ -21,7 +21,7 @@ Author: DJ Speedy / GOAT Force Records
 Usage:  python goat_intel.py  →  http://localhost:5500
 """
 
-import os, json, re, time, threading, subprocess, html
+import os, json, re, time, threading, subprocess, html, secrets, math
 from pathlib import Path
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
@@ -58,6 +58,8 @@ try:
         build_twinmotion_handoff,
         launch_twinmotion,
         detect_epic_stack,
+        detect_creative_stack,
+        build_card_reveal_handoff,
     )
     PRODUCTION_AVAILABLE = True
 except Exception as _e:
@@ -757,6 +759,13 @@ def pgrep(pattern):
 
 def local_launch_allowed():
     return request.remote_addr in ("127.0.0.1", "::1", "localhost")
+
+
+def production_request_authorized():
+    """Require loopback plus a server-held token for production-job creation."""
+    expected = os.environ.get("GOAT_PRODUCTION_TOKEN", "").strip()
+    supplied = request.headers.get("X-GOAT-Production-Token", "").strip()
+    return bool(expected and supplied and local_launch_allowed() and secrets.compare_digest(expected, supplied))
 
 
 WEB_APP_ROOT = APP_ROOT / "web-app"
@@ -2319,6 +2328,8 @@ def campaigns_list():
 def production_status_endpoint():
     if not PRODUCTION_AVAILABLE:
         return jsonify({"ok": False, "error": "production_bridge not loaded"}), 500
+    if not production_request_authorized():
+        return jsonify({"ok": False, "error": "Production status requires the authenticated local gateway."}), 403
     return jsonify({"ok": True, "status": production_status()})
 
 
@@ -2374,7 +2385,63 @@ def production_unreal_handoff():
 def production_epic_stack():
     if not PRODUCTION_AVAILABLE:
         return jsonify({"ok": False, "error": "production_bridge not loaded"}), 500
+    if not production_request_authorized():
+        return jsonify({"ok": False, "error": "Production inventory requires the authenticated local gateway."}), 403
     return jsonify({"ok": True, "stack": detect_epic_stack()})
+
+
+@app.route("/production/creative-stack")
+def production_creative_stack():
+    if not PRODUCTION_AVAILABLE:
+        return jsonify({"ok": False, "error": "production_bridge not loaded"}), 500
+    if not production_request_authorized():
+        return jsonify({"ok": False, "error": "Creative stack inventory requires the authenticated local gateway."}), 403
+    return jsonify({"ok": True, "stack": detect_creative_stack()})
+
+
+@app.route("/production/card-reveal", methods=["POST"])
+def production_card_reveal():
+    if not PRODUCTION_AVAILABLE:
+        return jsonify({"ok": False, "error": "production_bridge not loaded"}), 500
+    if not production_request_authorized():
+        return jsonify({"ok": False, "error": "Card-reveal production requires the authenticated local gateway."}), 403
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"ok": False, "error": "A JSON object is required."}), 400
+    source_paths = data.get("source_paths")
+    if not isinstance(source_paths, list) or not all(isinstance(path, str) for path in source_paths):
+        return jsonify({"ok": False, "error": "source_paths must be a list of uploaded production-media paths."}), 400
+    rights_confirmed = data.get("rights_confirmed") is True
+    text_fields = {
+        "job_id": ("", 48),
+        "card_name": ("Untitled card", 180),
+        "creative_prompt": ("", 3000),
+        "world": ("goatverse", 80),
+        "aspect_ratio": ("16:9", 8),
+        "preferred_pipeline": ("fusion-core", 80),
+        "crew_mode": ("brick-squad", 80),
+    }
+    normalized = {}
+    for field, (default, limit) in text_fields.items():
+        value = data.get(field, default)
+        if not isinstance(value, str):
+            return jsonify({"ok": False, "error": f"{field} must be text."}), 400
+        normalized[field] = value[:limit]
+    duration_value = data.get("duration_sec", 15)
+    if isinstance(duration_value, bool) or not isinstance(duration_value, (int, float)) or not math.isfinite(float(duration_value)):
+        return jsonify({"ok": False, "error": "duration_sec must be a finite number."}), 400
+    return jsonify(build_card_reveal_handoff(
+        job_id=normalized["job_id"],
+        card_name=normalized["card_name"],
+        source_paths=source_paths,
+        creative_prompt=normalized["creative_prompt"],
+        world=normalized["world"],
+        duration_sec=float(duration_value),
+        aspect_ratio=normalized["aspect_ratio"],
+        preferred_pipeline=normalized["preferred_pipeline"],
+        crew_mode=normalized["crew_mode"],
+        rights_confirmed=rights_confirmed,
+    ))
 
 
 @app.route("/production/twinmotion-handoff", methods=["POST"])

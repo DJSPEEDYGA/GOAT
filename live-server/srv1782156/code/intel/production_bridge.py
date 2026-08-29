@@ -1,15 +1,17 @@
 """
 GOAT Production Bridge
-Epic / Unreal / MetaHuman / Final Cut Pro handoff for GOAT video & audio studios.
+GOATVERSE FORGE local-model routing and standards-based production handoffs.
 Photo → motion video (Ken Burns + optional live capture) without cloning third-party UIs.
 """
 
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 import shutil
+import stat
 import subprocess
 import time
 from pathlib import Path
@@ -21,6 +23,7 @@ LIVE_VIDEO_DIR = PRODUCTION_ROOT / "live-video"
 FCP_EXPORT_DIR = PRODUCTION_ROOT / "fcp-export"
 UNREAL_HANDOFF_DIR = PRODUCTION_ROOT / "unreal-handoff"
 TWINMOTION_HANDOFF_DIR = PRODUCTION_ROOT / "twinmotion-handoff"
+CARD_REVEAL_HANDOFF_DIR = PRODUCTION_ROOT / "card-reveal-handoff"
 OSCILLATOR_GRAPHICS_URL = os.environ.get("OSCAR_GRAPHICS_URL", "http://127.0.0.1:3344")
 
 EPIC_UE_INSTALLER_DMG = Path(
@@ -52,7 +55,7 @@ STUDIO_LINKS = {
 
 
 def _ensure_dirs() -> None:
-    for d in (LIVE_VIDEO_DIR, FCP_EXPORT_DIR, UNREAL_HANDOFF_DIR, TWINMOTION_HANDOFF_DIR, TWINMOTION_PROJECTS_DIR):
+    for d in (LIVE_VIDEO_DIR, FCP_EXPORT_DIR, UNREAL_HANDOFF_DIR, TWINMOTION_HANDOFF_DIR, TWINMOTION_PROJECTS_DIR, CARD_REVEAL_HANDOFF_DIR):
         d.mkdir(parents=True, exist_ok=True)
 
 
@@ -63,6 +66,25 @@ def _which(cmd: str) -> Optional[str]:
 def _slug(text: str, fallback: str = "goat-shot") -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")
     return (slug or fallback)[:72]
+
+
+def _production_source_roots() -> List[Path]:
+    """Return explicit roots from which authenticated production jobs may copy media."""
+    configured = [Path(value).expanduser() for value in os.environ.get("GOAT_PRODUCTION_MEDIA_ROOTS", "").split(os.pathsep) if value.strip()]
+    roots = [PRODUCTION_ROOT / "uploads", *configured]
+    return [root.resolve() for root in roots]
+
+
+def _source_is_allowed(source: Path, roots: List[Path]) -> bool:
+    return any(source == root or root in source.parents for root in roots)
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 def detect_unreal_install() -> Dict[str, Any]:
@@ -132,6 +154,227 @@ def detect_epic_stack() -> Dict[str, Any]:
             "GOAT Movie Studio or Final Cut Pro (edit + audio)",
             "GOAT Vocal / Music / Mastering studios",
         ],
+    }
+
+
+def detect_creative_stack() -> Dict[str, Any]:
+    """Read-only discovery for the GOAT studio rack; never starts an app or model."""
+    applications = {
+        "final_cut_pro": [Path("/Applications/Final Cut Pro.app")],
+        "davinci_resolve": [Path("/Applications/DaVinci Resolve/DaVinci Resolve.app"), Path("/Applications/DaVinci Resolve.app")],
+        "after_effects": list(Path("/Applications").glob("Adobe After Effects*/Adobe After Effects*.app")),
+        "blender": [Path("/Applications/Blender.app")],
+        "obs": [Path("/Applications/OBS.app")],
+        "comfyui": [Path.home() / "ComfyUI", Path("/Volumes/LLMs/ComfyUI")],
+    }
+    app_status = {}
+    for key, candidates in applications.items():
+        found = next((candidate for candidate in candidates if candidate.exists()), None)
+        app_status[key] = {"installed": bool(found), "path": str(found) if found else None}
+
+    model_roots = [
+        Path("/Volumes/LLMs"),
+        Path.home() / ".cache" / "huggingface" / "hub",
+        Path.home() / ".ollama" / "models",
+    ]
+    roots = [{"path": str(root), "available": root.exists()} for root in model_roots]
+    ollama_models: List[str] = []
+    ollama = _which("ollama")
+    if ollama:
+        try:
+            proc = subprocess.run([ollama, "list"], capture_output=True, text=True, timeout=8)
+            if proc.returncode == 0:
+                ollama_models = [line.split()[0] for line in proc.stdout.splitlines()[1:] if line.strip()]
+        except (OSError, subprocess.SubprocessError):
+            pass
+
+    huggingface_root = Path.home() / ".cache" / "huggingface" / "hub"
+    huggingface_inventory = [path.name for path in huggingface_root.glob("models--*") if path.is_dir()]
+    huggingface_models = huggingface_inventory[:500]
+    comfy_checkpoints: List[str] = []
+    for comfy_root in (Path.home() / "ComfyUI", Path("/Volumes/LLMs/ComfyUI")):
+        checkpoint_root = comfy_root / "models" / "checkpoints"
+        if checkpoint_root.is_dir():
+            comfy_checkpoints.extend(path.name for path in checkpoint_root.iterdir() if path.is_file())
+    model_count = len(
+        {f"ollama:{name}" for name in ollama_models}
+        | {f"huggingface:{name}" for name in huggingface_inventory}
+        | {f"comfyui:{name}" for name in comfy_checkpoints}
+    )
+
+    return {
+        "applications": app_status,
+        "commands": {
+            "ffmpeg": _which("ffmpeg"),
+            "ollama": ollama,
+            "blender": _which("blender"),
+        },
+        "model_roots": roots,
+        "ollama_models": ollama_models,
+        "huggingface_models": huggingface_models,
+        "comfyui_checkpoints": comfy_checkpoints[:500],
+        "detected_model_count": model_count,
+        "model_counts": {
+            "ollama": len(ollama_models),
+            "huggingface": len(huggingface_inventory),
+            "comfyui_checkpoints": len(comfy_checkpoints),
+        },
+        "forge_engine": {
+            "name": "GOATVERSE FORGE",
+            "model_router": "GOAT Fusion Core",
+            "modules": [
+                "fusion-core", "bricklife", "card-soul", "world-forge",
+                "crew-director", "master-room", "crewcast", "vault-render",
+            ],
+        },
+        "optional_adapters": {
+            "cloud_picture_to_video": "connection_optional",
+            "cloud_image_generation": "connection_optional",
+            "model_registry": "local_cache_or_token_optional",
+            "editorial_suite": "local_application_optional",
+        },
+    }
+
+
+def build_card_reveal_handoff(
+    job_id: str,
+    card_name: str,
+    source_paths: List[str],
+    creative_prompt: str,
+    world: str = "goatverse",
+    duration_sec: float = 15.0,
+    aspect_ratio: str = "16:9",
+    preferred_pipeline: str = "fusion-core",
+    crew_mode: str = "brick-squad",
+    rights_confirmed: bool = False,
+) -> Dict[str, Any]:
+    """Create a GOATVERSE FORGE manifest for evidence-safe card animation."""
+    _ensure_dirs()
+    if not rights_confirmed:
+        return {"ok": False, "error": "Media rights and subject consent must be confirmed before a reveal job is created."}
+    duration_sec = max(3.0, min(float(duration_sec), 60.0))
+    aspect_ratio = aspect_ratio if aspect_ratio in {"16:9", "9:16", "1:1"} else "16:9"
+    if not source_paths:
+        return {"ok": False, "error": "At least one uploaded card source is required for a card-life handoff."}
+    if len(source_paths) > 8:
+        return {"ok": False, "error": "A card-life handoff accepts at most eight evidence sources."}
+    allowed_roots = _production_source_roots()
+    validated_sources = []
+    try:
+        for raw_path in source_paths:
+            requested = Path(str(raw_path)).expanduser()
+            source = requested.resolve()
+            if requested.is_symlink() or not _source_is_allowed(source, allowed_roots):
+                raise OSError("Source path is outside an approved production-media root.")
+            flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+            source_fd = os.open(source, flags)
+            try:
+                source_stat = os.fstat(source_fd)
+                descriptor_link = Path(f"/proc/self/fd/{source_fd}")
+                opened_source = Path(os.readlink(descriptor_link)).resolve() if descriptor_link.exists() else source.resolve()
+                if not stat.S_ISREG(source_stat.st_mode) or source_stat.st_size > 500 * 1024 * 1024 or not _source_is_allowed(opened_source, allowed_roots):
+                    raise OSError("Opened source is not an approved regular file.")
+                validated_sources.append({"path": opened_source, "fd": source_fd, "bytes": source_stat.st_size})
+            except Exception:
+                os.close(source_fd)
+                raise
+    except (OSError, ValueError):
+        for item in validated_sources:
+            os.close(item["fd"])
+        return {"ok": False, "error": "A requested source could not be preserved from an approved production-media root."}
+
+    slug = _slug(f"{job_id}-{card_name}", "brickgrade-reveal")
+    project_dir = CARD_REVEAL_HANDOFF_DIR / f"{time.time_ns()}-{slug}"
+    try:
+        project_dir.mkdir(parents=True, exist_ok=False)
+    except OSError:
+        for item in validated_sources:
+            os.close(item["fd"])
+        return {"ok": False, "error": "A unique card-life project could not be created."}
+    evidence_dir = project_dir / "EVIDENCE_DO_NOT_EDIT"
+    generated_dir = project_dir / "GENERATED_SYNTHETIC"
+    editorial_dir = project_dir / "EDITORIAL_EXPORTS"
+    evidence_dir.mkdir()
+    generated_dir.mkdir()
+    editorial_dir.mkdir()
+    safe_sources = []
+    try:
+        for index, item in enumerate(validated_sources, start=1):
+            source = item["path"]
+            copied = evidence_dir / f"{index:02d}-{_slug(source.stem, 'source')}{source.suffix.lower()}"
+            source_fd = item["fd"]
+            item["fd"] = -1
+            with os.fdopen(source_fd, "rb") as source_stream:
+                with copied.open("xb") as copied_stream:
+                    shutil.copyfileobj(source_stream, copied_stream, length=1024 * 1024)
+            safe_sources.append({
+                "evidence_file": copied.name,
+                "sha256": _sha256_file(copied),
+                "bytes": copied.stat().st_size,
+            })
+            copied.chmod(0o440)
+        evidence_dir.chmod(0o550)
+    except OSError:
+        for item in validated_sources:
+            if item["fd"] >= 0:
+                os.close(item["fd"])
+        shutil.rmtree(project_dir, ignore_errors=True)
+        return {"ok": False, "error": "The requested source could not be copied into the immutable evidence lane."}
+    manifest = {
+        "schema": "goat.goatverse.forge.v1",
+        "engine": {
+            "name": "GOATVERSE FORGE",
+            "owner": "GOAT FORCE",
+            "model_router": "GOAT Fusion Core",
+            "modules": [
+                "proof-lock", "card-soul", "fusion-core", "bricklife",
+                "world-forge", "crew-director", "master-room", "crewcast",
+            ],
+        },
+        "created": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "job_id": str(job_id)[:48],
+        "card_name": str(card_name)[:180],
+        "source_media": safe_sources,
+        "creative_prompt": str(creative_prompt)[:3000],
+        "world": _slug(world, "goatverse"),
+        "duration_sec": duration_sec,
+        "aspect_ratio": aspect_ratio,
+        "preferred_pipeline": _slug(preferred_pipeline, "fusion-core"),
+        "crew_mode": _slug(crew_mode, "brick-squad"),
+        "rights_confirmed": True,
+        "evidence_policy": {
+            "source_grade_media_immutable": True,
+            "generated_frames_excluded_from_grading": True,
+            "synthetic_label_required": True,
+            "human_qc_before_publish": True,
+        },
+        "pipeline": [
+            "PROOF LOCK copies verified card media into the immutable evidence lane",
+            "CARD SOUL builds the front/back/edge digital twin and foil response",
+            "FUSION CORE selects approved local models for each production pass",
+            "BRICKLIFE animates the card while WORLD FORGE builds camera and environment",
+            "CREW DIRECTOR sequences agent work and MASTER ROOM finishes the approved master",
+            "CREWCAST adds the synthetic slate and waits for Speedy/Waka publish approval",
+        ],
+        "creative_stack": detect_creative_stack(),
+        "native_modules": {
+            "card_soul": "digital twin, foil and geometry package",
+            "fusion_core": "local model plan and provenance manifest",
+            "bricklife": "motion passes and synthetic frame sequence",
+            "world_forge": "USD/FBX/glTF scene, camera and lighting package",
+            "master_room": "OpenEXR/PNG, AAF/EDL/FCPXML and WAV stems",
+            "crewcast": "approved master or private NDI/RTMP scene input",
+        },
+        "compatible_exports": ["OpenEXR", "PNG", "USD", "FBX", "glTF", "AAF", "EDL", "FCPXML", "WAV", "RTMP"],
+    }
+    manifest_path = project_dir / "GOAT_CARD_REVEAL_MANIFEST.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    return {
+        "ok": True,
+        "summary": "GOATVERSE FORGE card-life handoff created.",
+        "project_dir": str(project_dir),
+        "manifest_path": str(manifest_path),
+        "manifest": manifest,
     }
 
 
@@ -472,31 +715,45 @@ end tell
     }
 
 
-def production_status() -> Dict[str, Any]:
+def production_status(include_host_details: bool = False) -> Dict[str, Any]:
     _ensure_dirs()
     ffmpeg = bool(_which("ffmpeg"))
-    return {
+    creative = detect_creative_stack()
+    status = {
         "time": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "studios": STUDIO_LINKS,
-        "metahuman_roster": METAHUMAN_ROSTER,
-        "paths": {
-            "live_video": str(LIVE_VIDEO_DIR),
-            "fcp_export": str(FCP_EXPORT_DIR),
-            "unreal_handoff": str(UNREAL_HANDOFF_DIR),
-            "twinmotion_handoff": str(TWINMOTION_HANDOFF_DIR),
-            "twinmotion_projects": str(TWINMOTION_PROJECTS_DIR),
-        },
         "tools": {
             "ffmpeg": ffmpeg,
-            "oscar_graphics": OSCILLATOR_GRAPHICS_URL,
         },
-        "epic_stack": detect_epic_stack(),
+        "creative_stack": {
+            "applications": {key: bool(value.get("installed")) for key, value in creative["applications"].items()},
+            "detected_model_count": creative["detected_model_count"],
+            "model_roots_available": sum(1 for root in creative["model_roots"] if root.get("available")),
+            "forge_engine": creative["forge_engine"],
+            "optional_adapters": creative["optional_adapters"],
+        },
         "pipelines": [
-            "photo_to_live_video",
-            "unreal_metahuman_handoff",
-            "twinmotion_handoff",
-            "launch_twinmotion",
-            "fcp_xml_export",
-            "oscar_goat_bridge",
+            "fusion_core_model_route",
+            "card_soul_digital_twin",
+            "bricklife_motion",
+            "world_forge_scene",
+            "crew_director_agent_queue",
+            "master_room_finish",
+            "crewcast_owner_gate",
+            "vault_render_offline",
         ],
     }
+    if include_host_details:
+        status.update({
+            "studios": STUDIO_LINKS,
+            "metahuman_roster": METAHUMAN_ROSTER,
+            "paths": {
+                "live_video": str(LIVE_VIDEO_DIR),
+                "fcp_export": str(FCP_EXPORT_DIR),
+                "unreal_handoff": str(UNREAL_HANDOFF_DIR),
+                "twinmotion_handoff": str(TWINMOTION_HANDOFF_DIR),
+                "twinmotion_projects": str(TWINMOTION_PROJECTS_DIR),
+                "card_reveal_handoff": str(CARD_REVEAL_HANDOFF_DIR),
+            },
+            "epic_stack": detect_epic_stack(),
+        })
+    return status
