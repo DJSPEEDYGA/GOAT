@@ -65,7 +65,11 @@ The public ERP currently does not expose the local Intel production gateway.
 The `SCAN STUDIO ROUTER` control reports that truth and leaves generation on the
 task/handoff path. Remote picture-to-video and RTMP broadcast require an
 authenticated `/api/intel/production/*` proxy plus per-provider connectors;
-never expose port 5500 or a stream key directly to the browser.
+never expose port 5500, `GOAT_PRODUCTION_TOKEN`, provider credentials, or a
+stream key directly to the browser. The card-reveal job endpoint requires both
+a loopback request and a constant-time match on the server-held
+`X-GOAT-Production-Token` header; the future ERP proxy must add that header
+server-to-server.
 
 ## Safe deployment rule
 

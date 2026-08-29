@@ -21,7 +21,7 @@ Author: DJ Speedy / GOAT Force Records
 Usage:  python goat_intel.py  →  http://localhost:5500
 """
 
-import os, json, re, time, threading, subprocess, html
+import os, json, re, time, threading, subprocess, html, secrets
 from pathlib import Path
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
@@ -759,6 +759,13 @@ def pgrep(pattern):
 
 def local_launch_allowed():
     return request.remote_addr in ("127.0.0.1", "::1", "localhost")
+
+
+def production_request_authorized():
+    """Require loopback plus a server-held token for production-job creation."""
+    expected = os.environ.get("GOAT_PRODUCTION_TOKEN", "").strip()
+    supplied = request.headers.get("X-GOAT-Production-Token", "").strip()
+    return bool(expected and supplied and local_launch_allowed() and secrets.compare_digest(expected, supplied))
 
 
 WEB_APP_ROOT = APP_ROOT / "web-app"
@@ -2392,8 +2399,8 @@ def production_creative_stack():
 def production_card_reveal():
     if not PRODUCTION_AVAILABLE:
         return jsonify({"ok": False, "error": "production_bridge not loaded"}), 500
-    if not local_launch_allowed():
-        return jsonify({"ok": False, "error": "Card-reveal production is local-only."}), 403
+    if not production_request_authorized():
+        return jsonify({"ok": False, "error": "Card-reveal production requires the authenticated local gateway."}), 403
     data = request.json or {}
     return jsonify(build_card_reveal_handoff(
         job_id=data.get("job_id", ""),
