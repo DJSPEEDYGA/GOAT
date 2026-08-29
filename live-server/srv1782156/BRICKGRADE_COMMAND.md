@@ -8,7 +8,8 @@ the authenticated GOAT FORCE ERP at `/app` on `srv1782156` (`2.25.68.216`).
 - `code/oscar/assets/hud-enhancements.js` — current live HUD enhancement file,
   preserved with a small authenticated BrickGrade asset loader appended. The
   loader waits for the ERP shell, revalidates the session with `/api/me`, then
-  loads the versioned BrickGrade CSS and JavaScript.
+  loads the versioned BrickGrade CSS and JavaScript. Verification and asset
+  failures use a bounded four-attempt backoff and stop on logout or success.
 - `code/oscar/assets/brickgrade-erp.js` — injects the authenticated navigation
   entry, home tile, grading engine, spatial touch field, evidence passport, and
   indicative valuation lab.

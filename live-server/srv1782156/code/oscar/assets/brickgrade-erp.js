@@ -953,7 +953,7 @@
       announce("Fullscreen is not available in this browser.");
       return;
     }
-    const operation = document.fullscreenElement ? document.exitFullscreen() : target.requestFullscreen();
+    const operation = document.fullscreenElement === target ? document.exitFullscreen() : target.requestFullscreen();
     Promise.resolve(operation).then(() => {
       announce(document.fullscreenElement ? "BrickGrade fullscreen enabled." : "BrickGrade fullscreen closed.");
     }).catch(() => announce("Fullscreen could not be changed."));

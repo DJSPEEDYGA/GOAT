@@ -167,8 +167,12 @@
   'use strict';
 
   const build = '20260829-1';
+  const retryDelays = [750, 1500, 3000, 6000];
   let state = 'idle';
   let observer;
+  let retryCount = 0;
+  let retryTimer = 0;
+  let attemptToken = 0;
 
   function shellIsAuthenticated() {
     const login = document.getElementById('login-view');
@@ -187,9 +191,54 @@
     return Array.from(new Uint8Array(digest).slice(0, 12), (byte) => byte.toString(16).padStart(2, '0')).join('');
   }
 
+  function clearRetry() {
+    window.clearTimeout(retryTimer);
+    retryTimer = 0;
+  }
+
+  function removeAttempt(stylesheet, module) {
+    stylesheet?.remove();
+    module?.remove();
+  }
+
+  function removePendingAssets() {
+    document.querySelectorAll('[data-brickgrade-command="styles"], [data-brickgrade-command="module"]').forEach((asset) => asset.remove());
+  }
+
+  function scheduleRetry(stylesheet, module) {
+    attemptToken += 1;
+    removeAttempt(stylesheet, module);
+    clearRetry();
+
+    if (!shellIsAuthenticated()) {
+      retryCount = 0;
+      state = 'idle';
+      return;
+    }
+    if (retryCount >= retryDelays.length) {
+      state = 'exhausted';
+      return;
+    }
+
+    const delay = retryDelays[retryCount];
+    retryCount += 1;
+    state = 'waiting';
+    retryTimer = window.setTimeout(() => {
+      retryTimer = 0;
+      if (!shellIsAuthenticated()) {
+        retryCount = 0;
+        state = 'idle';
+        return;
+      }
+      state = 'idle';
+      loadBrickGrade();
+    }, delay);
+  }
+
   async function loadBrickGrade() {
     if (state !== 'idle' || !shellIsAuthenticated()) return;
     state = 'checking';
+    const token = ++attemptToken;
 
     try {
       const response = await fetch('/api/me', {
@@ -197,22 +246,34 @@
         cache: 'no-store',
         headers: { Accept: 'application/json' }
       });
+      if (token !== attemptToken) return;
       const data = await response.json().catch(() => null);
+      if (token !== attemptToken) return;
 
       if (!response.ok || !data?.ok || !shellIsAuthenticated()) {
-        state = 'idle';
+        scheduleRetry();
         return;
       }
 
-      window.__brickGradeSessionScope = await deriveStorageScope(data.user).catch(() => '');
+      const storageScope = await deriveStorageScope(data.user).catch(() => '');
+      if (token !== attemptToken) return;
+      if (!shellIsAuthenticated()) {
+        scheduleRetry();
+        return;
+      }
+      window.__brickGradeSessionScope = storageScope;
       state = 'loading';
       const stylesheet = document.createElement('link');
       stylesheet.rel = 'stylesheet';
       stylesheet.href = `/assets/brickgrade-erp.css?v=${build}`;
       stylesheet.dataset.brickgradeCommand = 'styles';
       stylesheet.onload = () => {
+        if (token !== attemptToken) {
+          stylesheet.remove();
+          return;
+        }
         if (!shellIsAuthenticated()) {
-          state = 'idle';
+          scheduleRetry(stylesheet);
           return;
         }
 
@@ -221,27 +282,53 @@
         module.async = false;
         module.dataset.brickgradeCommand = 'module';
         module.onload = () => {
+          if (token !== attemptToken) {
+            removeAttempt(stylesheet, module);
+            return;
+          }
+          clearRetry();
+          retryCount = 0;
           state = 'loaded';
           observer?.disconnect();
         };
-        module.onerror = () => { state = 'idle'; };
+        module.onerror = () => {
+          if (token === attemptToken) scheduleRetry(stylesheet, module);
+          else removeAttempt(stylesheet, module);
+        };
         document.head.appendChild(module);
       };
-      stylesheet.onerror = () => { state = 'idle'; };
+      stylesheet.onerror = () => {
+        if (token === attemptToken) scheduleRetry(stylesheet);
+        else stylesheet.remove();
+      };
       document.head.appendChild(stylesheet);
     } catch {
-      state = 'idle';
+      if (token === attemptToken) scheduleRetry();
     }
   }
 
+  function reconcile() {
+    if (!shellIsAuthenticated()) {
+      attemptToken += 1;
+      clearRetry();
+      retryCount = 0;
+      if (state !== 'loaded') {
+        removePendingAssets();
+        state = 'idle';
+      }
+      return;
+    }
+    loadBrickGrade();
+  }
+
   function start() {
-    observer = new MutationObserver(loadBrickGrade);
+    observer = new MutationObserver(reconcile);
     observer.observe(document.body, {
       attributes: true,
       subtree: true,
       attributeFilter: ['class', 'style']
     });
-    loadBrickGrade();
+    reconcile();
   }
 
   if (document.readyState === 'loading') {
