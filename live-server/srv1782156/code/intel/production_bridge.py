@@ -7,6 +7,7 @@ Photo → motion video (Ken Burns + optional live capture) without cloning third
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 import shutil
@@ -64,6 +65,25 @@ def _which(cmd: str) -> Optional[str]:
 def _slug(text: str, fallback: str = "goat-shot") -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")
     return (slug or fallback)[:72]
+
+
+def _production_source_roots() -> List[Path]:
+    """Return explicit roots from which authenticated production jobs may copy media."""
+    configured = [Path(value).expanduser() for value in os.environ.get("GOAT_PRODUCTION_MEDIA_ROOTS", "").split(os.pathsep) if value.strip()]
+    roots = [PRODUCTION_ROOT / "uploads", *configured]
+    return [root.resolve() for root in roots]
+
+
+def _source_is_allowed(source: Path, roots: List[Path]) -> bool:
+    return any(source == root or root in source.parents for root in roots)
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 def detect_unreal_install() -> Dict[str, Any]:
@@ -228,15 +248,45 @@ def build_card_reveal_handoff(
         return {"ok": False, "error": "Media rights and subject consent must be confirmed before a reveal job is created."}
     duration_sec = max(3.0, min(float(duration_sec), 60.0))
     aspect_ratio = aspect_ratio if aspect_ratio in {"16:9", "9:16", "1:1"} else "16:9"
-    safe_sources = []
+    if not source_paths:
+        return {"ok": False, "error": "At least one uploaded card source is required for a card-life handoff."}
+    if len(source_paths) > 8:
+        return {"ok": False, "error": "A card-life handoff accepts at most eight evidence sources."}
+    allowed_roots = _production_source_roots()
+    validated_sources: List[Path] = []
     for raw_path in source_paths[:8]:
-        source = Path(raw_path).expanduser().resolve()
-        safe_sources.append({"path": str(source), "exists": source.is_file()})
+        requested = Path(str(raw_path)).expanduser()
+        source = requested.resolve()
+        if requested.is_symlink() or not source.is_file() or not _source_is_allowed(source, allowed_roots):
+            return {"ok": False, "error": "A requested source could not be preserved from an approved production-media root."}
+        if source.stat().st_size > 500 * 1024 * 1024:
+            return {"ok": False, "error": "A requested source exceeds the 500 MB evidence-copy limit."}
+        validated_sources.append(source)
 
-    stamp = int(time.time())
     slug = _slug(f"{job_id}-{card_name}", "brickgrade-reveal")
-    project_dir = CARD_REVEAL_HANDOFF_DIR / f"{stamp}-{slug}"
-    project_dir.mkdir(parents=True, exist_ok=True)
+    project_dir = CARD_REVEAL_HANDOFF_DIR / f"{time.time_ns()}-{slug}"
+    project_dir.mkdir(parents=True, exist_ok=False)
+    evidence_dir = project_dir / "EVIDENCE_DO_NOT_EDIT"
+    generated_dir = project_dir / "GENERATED_SYNTHETIC"
+    editorial_dir = project_dir / "EDITORIAL_EXPORTS"
+    evidence_dir.mkdir()
+    generated_dir.mkdir()
+    editorial_dir.mkdir()
+    safe_sources = []
+    try:
+        for index, source in enumerate(validated_sources, start=1):
+            copied = evidence_dir / f"{index:02d}-{_slug(source.stem, 'source')}{source.suffix.lower()}"
+            shutil.copyfile(source, copied)
+            safe_sources.append({
+                "evidence_file": copied.name,
+                "sha256": _sha256_file(copied),
+                "bytes": copied.stat().st_size,
+            })
+            copied.chmod(0o440)
+        evidence_dir.chmod(0o550)
+    except OSError:
+        shutil.rmtree(project_dir, ignore_errors=True)
+        return {"ok": False, "error": "The requested source could not be copied into the immutable evidence lane."}
     manifest = {
         "schema": "goat.goatverse.forge.v1",
         "engine": {
@@ -286,9 +336,6 @@ def build_card_reveal_handoff(
     }
     manifest_path = project_dir / "GOAT_CARD_REVEAL_MANIFEST.json"
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    (project_dir / "EVIDENCE_DO_NOT_EDIT").mkdir(exist_ok=True)
-    (project_dir / "GENERATED_SYNTHETIC").mkdir(exist_ok=True)
-    (project_dir / "EDITORIAL_EXPORTS").mkdir(exist_ok=True)
     return {
         "ok": True,
         "summary": "GOATVERSE FORGE card-life handoff created.",

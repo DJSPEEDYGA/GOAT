@@ -2402,17 +2402,21 @@ def production_card_reveal():
     if not production_request_authorized():
         return jsonify({"ok": False, "error": "Card-reveal production requires the authenticated local gateway."}), 403
     data = request.json or {}
+    source_paths = data.get("source_paths")
+    if not isinstance(source_paths, list) or not all(isinstance(path, str) for path in source_paths):
+        return jsonify({"ok": False, "error": "source_paths must be a list of uploaded production-media paths."}), 400
+    rights_confirmed = data.get("rights_confirmed") is True
     return jsonify(build_card_reveal_handoff(
         job_id=data.get("job_id", ""),
         card_name=data.get("card_name", "Untitled card"),
-        source_paths=data.get("source_paths") or [],
+        source_paths=source_paths,
         creative_prompt=data.get("creative_prompt", ""),
         world=data.get("world", "goatverse"),
         duration_sec=float(data.get("duration_sec", 15)),
         aspect_ratio=data.get("aspect_ratio", "16:9"),
         preferred_pipeline=data.get("preferred_pipeline", "fusion-core"),
         crew_mode=data.get("crew_mode", "brick-squad"),
-        rights_confirmed=bool(data.get("rights_confirmed", False)),
+        rights_confirmed=rights_confirmed,
     ))
 
 

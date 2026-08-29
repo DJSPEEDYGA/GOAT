@@ -266,6 +266,8 @@
       taskId: 0,
       approvalId: 0,
       qcDecision: "Pending",
+      qcSnapshot: "",
+      approvalSnapshot: "",
       owner: "DJ Speedy / Waka Flocka Flame",
       audit: []
     },
@@ -386,6 +388,36 @@
     state.workflow.audit = state.workflow.audit.slice(0, 40);
   }
 
+  function approvalRelevantSnapshot() {
+    return JSON.stringify({
+      category: state.category,
+      scores: state.scores,
+      item: state.item,
+      evidence: state.evidence,
+      valuation: state.valuation,
+      tcg: state.tcg,
+      workflow: {
+        jobId: state.workflow.jobId,
+        assignedAgent: state.workflow.assignedAgent,
+        priority: state.workflow.priority,
+        dueDate: state.workflow.dueDate,
+        owner: state.workflow.owner
+      }
+    });
+  }
+
+  function invalidateQC(reason) {
+    const wasReviewed = state.workflow.qcDecision === "Pass" || Boolean(state.workflow.approvalId) || state.workflow.stage === "sealed";
+    if (!wasReviewed) return;
+    const supersededApproval = state.workflow.approvalId;
+    state.workflow.qcDecision = "Pending";
+    state.workflow.qcSnapshot = "";
+    state.workflow.approvalSnapshot = "";
+    state.workflow.approvalId = 0;
+    state.workflow.stage = "primary";
+    addAudit("QC INVALIDATED", `${reason || "Approval-relevant data changed"}${supersededApproval ? ` · superseded ERP approval #${supersededApproval}` : ""}`);
+  }
+
   function snapshotCore() {
     const scores = {};
     CATEGORIES.forEach((category) => {
@@ -437,6 +469,8 @@
         taskId: Math.max(0, Math.round(finiteNumber(state.workflow.taskId, 0))),
         approvalId: Math.max(0, Math.round(finiteNumber(state.workflow.approvalId, 0))),
         qcDecision: ["Pending", "Pass", "Revision"].includes(state.workflow.qcDecision) ? state.workflow.qcDecision : "Pending",
+        qcSnapshot: String(state.workflow.qcSnapshot || "").slice(0, 12000),
+        approvalSnapshot: String(state.workflow.approvalSnapshot || "").slice(0, 12000),
         owner: String(state.workflow.owner || "DJ Speedy / Waka Flocka Flame").slice(0, 120),
         audit: Array.isArray(state.workflow.audit) ? state.workflow.audit.slice(0, 40) : []
       },
@@ -519,6 +553,8 @@
       state.workflow.taskId = Math.max(0, Math.round(finiteNumber(raw.workflow.taskId, 0)));
       state.workflow.approvalId = Math.max(0, Math.round(finiteNumber(raw.workflow.approvalId, 0)));
       if (["Pending", "Pass", "Revision"].includes(raw.workflow.qcDecision)) state.workflow.qcDecision = raw.workflow.qcDecision;
+      state.workflow.qcSnapshot = String(raw.workflow.qcSnapshot || "").slice(0, 12000);
+      state.workflow.approvalSnapshot = String(raw.workflow.approvalSnapshot || "").slice(0, 12000);
       state.workflow.owner = String(raw.workflow.owner || "DJ Speedy / Waka Flocka Flame").slice(0, 120);
       state.workflow.audit = Array.isArray(raw.workflow.audit) ? raw.workflow.audit.slice(0, 40) : [];
     }
@@ -534,6 +570,9 @@
       state.studio.rightsConfirmed = Boolean(raw.studio.rightsConfirmed);
       state.studio.sourceName = String(raw.studio.sourceName || "").slice(0, 180);
       state.studio.status = String(raw.studio.status || "DESIGN").slice(0, 32);
+    }
+    if ((state.workflow.qcDecision === "Pass" || state.workflow.stage === "sealed") && state.workflow.qcSnapshot !== approvalRelevantSnapshot()) {
+      invalidateQC("Restored draft does not match its QC-reviewed snapshot");
     }
   }
 
@@ -1076,6 +1115,7 @@
       slider.addEventListener("input", () => {
         const value = clamp(Math.round(finiteNumber(slider.value, 0)), 0, 100);
         state.scores[state.category][slider.dataset.bxAxis] = value;
+        invalidateQC("Grading score changed");
         slider.setAttribute("aria-valuetext", `${value} out of 100`);
         const output = slider.closest(".bx-axis").querySelector(".bx-axis-value");
         if (output) output.value = value;
@@ -1087,6 +1127,7 @@
   function selectCategory(categoryId, shouldAnnounce) {
     if (!CATEGORIES.some((category) => category.id === categoryId)) return;
     state.category = categoryId;
+    invalidateQC("Collectible category changed");
     renderAxes();
     syncFormValues();
     updateUI();
@@ -1211,6 +1252,7 @@
   function selectTCG(gameId, shouldAnnounce) {
     if (!TCG_GAMES.some((game) => game.id === gameId)) return;
     state.tcg.game = gameId;
+    invalidateQC("TCG profile changed");
     syncFormValues();
     updateUI();
     if (shouldAnnounce) announce(`${tcgById(gameId).name} card profile selected.`);
@@ -1221,6 +1263,7 @@
     state.workflow.assignedAgent = agentId;
     const defaultStage = WORKFLOW_STAGES.find((stage) => stage.agent === agentId);
     if (defaultStage) state.workflow.stage = defaultStage.id;
+    invalidateQC("Assigned grading specialist changed");
     syncFormValues();
     updateUI();
     if (shouldAnnounce) announce(`${agentById(agentId).name} selected for ${agentById(agentId).role}.`);
@@ -1521,6 +1564,9 @@
     }
     state.workflow.qcDecision = decision;
     state.workflow.stage = decision === "Pass" ? "owner" : "primary";
+    state.workflow.approvalId = 0;
+    state.workflow.approvalSnapshot = "";
+    state.workflow.qcSnapshot = decision === "Pass" ? (workflowJobId(), approvalRelevantSnapshot()) : "";
     addAudit(decision === "Pass" ? "QC PASS" : "REVISION REQUIRED", decision === "Pass" ? "Evidence complete; routed to owner gate." : "Returned to the primary grading stage.");
     syncFormValues();
     updateUI();
@@ -1530,6 +1576,12 @@
   async function requestOwnerApproval() {
     if (state.workflow.qcDecision !== "Pass") {
       announce("A separate QC pass is required before owner approval.");
+      return;
+    }
+    if (!state.workflow.qcSnapshot || state.workflow.qcSnapshot !== approvalRelevantSnapshot()) {
+      invalidateQC("Draft changed after QC review");
+      updateUI();
+      announce("The reviewed draft changed. Run QC again before owner approval.");
       return;
     }
     if (state.workflow.approvalId) {
@@ -1556,6 +1608,7 @@
         }
       });
       state.workflow.approvalId = Number(payload.id || payload.approval_id || payload.approval && payload.approval.id || 0);
+      state.workflow.approvalSnapshot = state.workflow.qcSnapshot;
       addAudit("OWNER GATE REQUESTED", `Speedy / Waka approval queued${state.workflow.approvalId ? ` · ERP #${state.workflow.approvalId}` : ""}`);
       updateUI();
       announce("Owner approval request created in GOAT Approvals.");
@@ -1575,17 +1628,20 @@
         erpApi("/api/approvals"),
         erpApi("/api/audit_log?limit=100").catch(() => ({ logs: [] }))
       ]);
-      const tasks = (Array.isArray(tasksPayload) ? tasksPayload : (tasksPayload.tasks || [])).filter((task) => String(task.name || "").startsWith("[BrickGrade]"));
+      const tasks = (Array.isArray(tasksPayload) ? tasksPayload : (tasksPayload.tasks || [])).filter((task) => ["[BrickGrade]", "[GOATVERSE]", "[GOATVERSE FORGE]"].some((prefix) => String(task.name || "").startsWith(prefix)));
       const approvals = (Array.isArray(approvalsPayload) ? approvalsPayload : (approvalsPayload.approvals || [])).filter((approval) => String(approval.title || "").startsWith("[BrickGrade]"));
-      const currentApproval = approvals.find((approval) => Number(approval.id) === Number(state.workflow.approvalId)) || approvals.find((approval) => String(approval.title || "").includes(state.workflow.jobId));
+      const currentApproval = state.workflow.approvalId && state.workflow.jobId ? approvals.find((approval) => Number(approval.id) === Number(state.workflow.approvalId) && String(approval.title || "").includes(state.workflow.jobId)) : undefined;
+      const approvalStillMatches = Boolean(currentApproval && state.workflow.qcDecision === "Pass" && state.workflow.approvalSnapshot && state.workflow.approvalSnapshot === approvalRelevantSnapshot());
       const recordIds = new Set(tasks.concat(approvals).map((entry) => String(entry.id || "")).filter(Boolean));
       const auditLogs = (Array.isArray(auditPayload) ? auditPayload : (auditPayload.logs || [])).filter((entry) => recordIds.has(String(entry.record_id || "")));
-      if (currentApproval && currentApproval.status === "Approved") {
+      if (approvalStillMatches && currentApproval.status === "Approved") {
         if (state.workflow.stage !== "sealed") addAudit("GRADE SEALED", `Approved by ${currentApproval.approver || state.workflow.owner} · ERP #${currentApproval.id}`);
         state.workflow.stage = "sealed";
-      } else if (currentApproval && currentApproval.status === "Rejected") {
+      } else if (approvalStillMatches && currentApproval.status === "Rejected") {
         state.workflow.stage = "primary";
         state.workflow.qcDecision = "Revision";
+        state.workflow.qcSnapshot = "";
+        state.workflow.approvalSnapshot = "";
       }
       if (list) {
         list.innerHTML = tasks.length ? tasks.slice(0, 12).map((task) => `
@@ -1951,6 +2007,7 @@
     section.querySelectorAll("[data-bx-evidence]").forEach((input) => {
       input.addEventListener("change", () => {
         state.evidence[input.dataset.bxEvidence] = input.checked;
+        invalidateQC("Evidence checklist changed");
         updateUI();
       });
     });
@@ -1962,14 +2019,17 @@
     document.getElementById("bx-agent-select").addEventListener("change", (event) => selectAgent(event.target.value, true));
     document.getElementById("bx-workflow-stage").addEventListener("change", (event) => {
       state.workflow.stage = event.target.value;
+      invalidateQC("Workflow stage changed");
       updateUI();
     });
     document.getElementById("bx-priority").addEventListener("change", (event) => {
       state.workflow.priority = event.target.value;
+      invalidateQC("Job priority changed");
       updateUI();
     });
     document.getElementById("bx-due-date").addEventListener("change", (event) => {
       state.workflow.dueDate = event.target.value;
+      invalidateQC("Due date changed");
       updateUI();
     });
     document.getElementById("bx-depth-out").addEventListener("click", () => {
@@ -2026,6 +2086,7 @@
     ].forEach(([id, key]) => {
       document.getElementById(id).addEventListener("input", (event) => {
         state.item[key] = event.target.value;
+        invalidateQC("Item details changed");
         updateUI();
       });
     });
@@ -2038,6 +2099,7 @@
     ].forEach(([id, key]) => {
       document.getElementById(id).addEventListener("input", (event) => {
         state.tcg[key] = event.target.value;
+        invalidateQC("TCG identification changed");
         updateUI();
       });
     });
@@ -2049,6 +2111,7 @@
     ].forEach(([id, key, min, max]) => {
       document.getElementById(id).addEventListener("input", (event) => {
         state.valuation[key] = clamp(finiteNumber(event.target.value, 0), min, max);
+        invalidateQC("Valuation inputs changed");
         updateUI();
       });
     });

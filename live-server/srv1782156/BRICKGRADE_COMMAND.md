@@ -75,6 +75,16 @@ a loopback request and a constant-time match on the server-held
 `X-GOAT-Production-Token` header; the future ERP proxy must add that header
 server-to-server.
 
+Provision that token outside the repository before enabling card-life jobs. On
+the studio host, create `/etc/goat/goat-intel.env` as a root-owned, mode `0600`
+file containing `GOAT_PRODUCTION_TOKEN=<a cryptographically random value>` and,
+when needed, a colon-separated `GOAT_PRODUCTION_MEDIA_ROOTS` allowlist. The
+checked-in systemd unit reads this optional environment file and remains
+fail-closed when it is absent. Store the same token in the future ERP proxy's
+server-side secret store, run `systemctl daemon-reload`, and restart
+`goat-intel`. Never place the value in Git, browser JavaScript, task notes, logs,
+or a client-visible response.
+
 ## Safe deployment rule
 
 The repository snapshot is a reference copy of the live server. Before copying
