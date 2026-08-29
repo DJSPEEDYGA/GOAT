@@ -205,6 +205,23 @@
     document.querySelectorAll('[data-brickgrade-command="styles"], [data-brickgrade-command="module"]').forEach((asset) => asset.remove());
   }
 
+  function ensureModuleStylesheet() {
+    const existing = document.querySelector('link[data-brickgrade-command="styles"]');
+    if (existing) return Promise.resolve(existing);
+    return new Promise((resolve, reject) => {
+      const stylesheet = document.createElement('link');
+      stylesheet.rel = 'stylesheet';
+      stylesheet.href = `/assets/brickgrade-erp.css?v=${build}`;
+      stylesheet.dataset.brickgradeCommand = 'styles';
+      stylesheet.onload = () => resolve(stylesheet);
+      stylesheet.onerror = () => {
+        stylesheet.remove();
+        reject(new Error('BrickGrade stylesheet failed to load.'));
+      };
+      document.head.appendChild(stylesheet);
+    });
+  }
+
   function scheduleRetry(stylesheet, module) {
     attemptToken += 1;
     removeAttempt(stylesheet, module);
@@ -264,6 +281,13 @@
       window.__brickGradeSessionScope = storageScope;
       if (window.BrickGradeERP?.setSessionScope) {
         window.BrickGradeERP.setSessionScope(storageScope);
+        try {
+          await ensureModuleStylesheet();
+        } catch {
+          if (token === attemptToken) scheduleRetry();
+          return;
+        }
+        if (token !== attemptToken || !shellIsAuthenticated()) return;
         clearRetry();
         retryCount = 0;
         state = 'loaded';
@@ -290,7 +314,8 @@
         module.dataset.brickgradeCommand = 'module';
         module.onload = () => {
           if (token !== attemptToken) {
-            removeAttempt(stylesheet, module);
+            module.remove();
+            if (!window.BrickGradeERP) stylesheet.remove();
             return;
           }
           clearRetry();
