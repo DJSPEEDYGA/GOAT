@@ -11,6 +11,7 @@ import hashlib
 import os
 import re
 import shutil
+import stat
 import subprocess
 import time
 from pathlib import Path
@@ -188,13 +189,18 @@ def detect_creative_stack() -> Dict[str, Any]:
             pass
 
     huggingface_root = Path.home() / ".cache" / "huggingface" / "hub"
-    huggingface_models = [path.name for path in huggingface_root.glob("models--*") if path.is_dir()][:500]
+    huggingface_inventory = [path.name for path in huggingface_root.glob("models--*") if path.is_dir()]
+    huggingface_models = huggingface_inventory[:500]
     comfy_checkpoints: List[str] = []
     for comfy_root in (Path.home() / "ComfyUI", Path("/Volumes/LLMs/ComfyUI")):
         checkpoint_root = comfy_root / "models" / "checkpoints"
         if checkpoint_root.is_dir():
             comfy_checkpoints.extend(path.name for path in checkpoint_root.iterdir() if path.is_file())
-    model_count = len(set(ollama_models + huggingface_models + comfy_checkpoints))
+    model_count = len(
+        {f"ollama:{name}" for name in ollama_models}
+        | {f"huggingface:{name}" for name in huggingface_inventory}
+        | {f"comfyui:{name}" for name in comfy_checkpoints}
+    )
 
     return {
         "applications": app_status,
@@ -210,7 +216,7 @@ def detect_creative_stack() -> Dict[str, Any]:
         "detected_model_count": model_count,
         "model_counts": {
             "ollama": len(ollama_models),
-            "huggingface": len(huggingface_models),
+            "huggingface": len(huggingface_inventory),
             "comfyui_checkpoints": len(comfy_checkpoints),
         },
         "forge_engine": {
@@ -253,19 +259,38 @@ def build_card_reveal_handoff(
     if len(source_paths) > 8:
         return {"ok": False, "error": "A card-life handoff accepts at most eight evidence sources."}
     allowed_roots = _production_source_roots()
-    validated_sources: List[Path] = []
-    for raw_path in source_paths[:8]:
-        requested = Path(str(raw_path)).expanduser()
-        source = requested.resolve()
-        if requested.is_symlink() or not source.is_file() or not _source_is_allowed(source, allowed_roots):
-            return {"ok": False, "error": "A requested source could not be preserved from an approved production-media root."}
-        if source.stat().st_size > 500 * 1024 * 1024:
-            return {"ok": False, "error": "A requested source exceeds the 500 MB evidence-copy limit."}
-        validated_sources.append(source)
+    validated_sources = []
+    try:
+        for raw_path in source_paths:
+            requested = Path(str(raw_path)).expanduser()
+            source = requested.resolve()
+            if requested.is_symlink() or not _source_is_allowed(source, allowed_roots):
+                raise OSError("Source path is outside an approved production-media root.")
+            flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+            source_fd = os.open(source, flags)
+            try:
+                source_stat = os.fstat(source_fd)
+                descriptor_link = Path(f"/proc/self/fd/{source_fd}")
+                opened_source = Path(os.readlink(descriptor_link)).resolve() if descriptor_link.exists() else source.resolve()
+                if not stat.S_ISREG(source_stat.st_mode) or source_stat.st_size > 500 * 1024 * 1024 or not _source_is_allowed(opened_source, allowed_roots):
+                    raise OSError("Opened source is not an approved regular file.")
+                validated_sources.append({"path": opened_source, "fd": source_fd, "bytes": source_stat.st_size})
+            except Exception:
+                os.close(source_fd)
+                raise
+    except (OSError, ValueError):
+        for item in validated_sources:
+            os.close(item["fd"])
+        return {"ok": False, "error": "A requested source could not be preserved from an approved production-media root."}
 
     slug = _slug(f"{job_id}-{card_name}", "brickgrade-reveal")
     project_dir = CARD_REVEAL_HANDOFF_DIR / f"{time.time_ns()}-{slug}"
-    project_dir.mkdir(parents=True, exist_ok=False)
+    try:
+        project_dir.mkdir(parents=True, exist_ok=False)
+    except OSError:
+        for item in validated_sources:
+            os.close(item["fd"])
+        return {"ok": False, "error": "A unique card-life project could not be created."}
     evidence_dir = project_dir / "EVIDENCE_DO_NOT_EDIT"
     generated_dir = project_dir / "GENERATED_SYNTHETIC"
     editorial_dir = project_dir / "EDITORIAL_EXPORTS"
@@ -274,9 +299,14 @@ def build_card_reveal_handoff(
     editorial_dir.mkdir()
     safe_sources = []
     try:
-        for index, source in enumerate(validated_sources, start=1):
+        for index, item in enumerate(validated_sources, start=1):
+            source = item["path"]
             copied = evidence_dir / f"{index:02d}-{_slug(source.stem, 'source')}{source.suffix.lower()}"
-            shutil.copyfile(source, copied)
+            source_fd = item["fd"]
+            item["fd"] = -1
+            with os.fdopen(source_fd, "rb") as source_stream:
+                with copied.open("xb") as copied_stream:
+                    shutil.copyfileobj(source_stream, copied_stream, length=1024 * 1024)
             safe_sources.append({
                 "evidence_file": copied.name,
                 "sha256": _sha256_file(copied),
@@ -285,6 +315,9 @@ def build_card_reveal_handoff(
             copied.chmod(0o440)
         evidence_dir.chmod(0o550)
     except OSError:
+        for item in validated_sources:
+            if item["fd"] >= 0:
+                os.close(item["fd"])
         shutil.rmtree(project_dir, ignore_errors=True)
         return {"ok": False, "error": "The requested source could not be copied into the immutable evidence lane."}
     manifest = {
@@ -682,27 +715,15 @@ end tell
     }
 
 
-def production_status() -> Dict[str, Any]:
+def production_status(include_host_details: bool = False) -> Dict[str, Any]:
     _ensure_dirs()
     ffmpeg = bool(_which("ffmpeg"))
     creative = detect_creative_stack()
-    return {
+    status = {
         "time": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "studios": STUDIO_LINKS,
-        "metahuman_roster": METAHUMAN_ROSTER,
-        "paths": {
-            "live_video": str(LIVE_VIDEO_DIR),
-            "fcp_export": str(FCP_EXPORT_DIR),
-            "unreal_handoff": str(UNREAL_HANDOFF_DIR),
-            "twinmotion_handoff": str(TWINMOTION_HANDOFF_DIR),
-            "twinmotion_projects": str(TWINMOTION_PROJECTS_DIR),
-            "card_reveal_handoff": str(CARD_REVEAL_HANDOFF_DIR),
-        },
         "tools": {
             "ffmpeg": ffmpeg,
-            "oscar_graphics": OSCILLATOR_GRAPHICS_URL,
         },
-        "epic_stack": detect_epic_stack(),
         "creative_stack": {
             "applications": {key: bool(value.get("installed")) for key, value in creative["applications"].items()},
             "detected_model_count": creative["detected_model_count"],
@@ -721,3 +742,18 @@ def production_status() -> Dict[str, Any]:
             "vault_render_offline",
         ],
     }
+    if include_host_details:
+        status.update({
+            "studios": STUDIO_LINKS,
+            "metahuman_roster": METAHUMAN_ROSTER,
+            "paths": {
+                "live_video": str(LIVE_VIDEO_DIR),
+                "fcp_export": str(FCP_EXPORT_DIR),
+                "unreal_handoff": str(UNREAL_HANDOFF_DIR),
+                "twinmotion_handoff": str(TWINMOTION_HANDOFF_DIR),
+                "twinmotion_projects": str(TWINMOTION_PROJECTS_DIR),
+                "card_reveal_handoff": str(CARD_REVEAL_HANDOFF_DIR),
+            },
+            "epic_stack": detect_epic_stack(),
+        })
+    return status

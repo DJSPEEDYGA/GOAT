@@ -1338,8 +1338,9 @@
   }
 
   function stopStudioCamera() {
-    if (studioCameraStream) studioCameraStream.getTracks().forEach((track) => track.stop());
+    const stream = studioCameraStream;
     studioCameraStream = null;
+    if (stream) stream.getTracks().forEach((track) => track.stop());
     const video = document.getElementById("bx-studio-camera");
     if (video) {
       video.pause();
@@ -1347,8 +1348,10 @@
       video.hidden = true;
     }
     updateText("bx-studio-live-label", "SYNTHETIC PREVIEW");
+    state.studio.status = state.studio.sourceName ? "SOURCE READY" : "DESIGN";
     const button = document.getElementById("bx-camera-preview");
     if (button) button.textContent = "START PRIVATE CAMERA";
+    updateUI();
   }
 
   async function toggleStudioCamera() {
@@ -1376,6 +1379,9 @@
         return;
       }
       studioCameraStream = stream;
+      stream.getTracks().forEach((track) => track.addEventListener("ended", () => {
+        if (studioCameraStream === stream) stopStudioCamera();
+      }, { once: true }));
       video.srcObject = stream;
       video.hidden = false;
       await video.play();
@@ -1635,8 +1641,15 @@
       const approvals = (Array.isArray(approvalsPayload) ? approvalsPayload : (approvalsPayload.approvals || [])).filter((approval) => String(approval.title || "").startsWith("[BrickGrade]"));
       const currentApproval = state.workflow.approvalId && state.workflow.jobId ? approvals.find((approval) => Number(approval.id) === Number(state.workflow.approvalId) && String(approval.title || "").includes(state.workflow.jobId)) : undefined;
       const approvalStillMatches = Boolean(currentApproval && state.workflow.qcDecision === "Pass" && state.workflow.approvalSnapshot && state.workflow.approvalSnapshot === approvalRelevantSnapshot());
-      const recordIds = new Set(tasks.concat(approvals).map((entry) => String(entry.id || "")).filter(Boolean));
-      const auditLogs = (Array.isArray(auditPayload) ? auditPayload : (auditPayload.logs || [])).filter((entry) => recordIds.has(String(entry.record_id || "")));
+      const taskIds = new Set(tasks.map((entry) => String(entry.id || "")).filter(Boolean));
+      const approvalIds = new Set(approvals.map((entry) => String(entry.id || "")).filter(Boolean));
+      const auditLogs = (Array.isArray(auditPayload) ? auditPayload : (auditPayload.logs || [])).filter((entry) => {
+        const table = String(entry.table_name || entry.record_type || "").toLowerCase();
+        const recordId = String(entry.record_id || "");
+        if (table.includes("task")) return taskIds.has(recordId);
+        if (table.includes("approval")) return approvalIds.has(recordId);
+        return false;
+      });
       if (approvalStillMatches && currentApproval.status === "Approved") {
         if (state.workflow.stage !== "sealed") addAudit("GRADE SEALED", `Approved by ${currentApproval.approver || state.workflow.owner} · ERP #${currentApproval.id}`);
         state.workflow.stage = "sealed";
