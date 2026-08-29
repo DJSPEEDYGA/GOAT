@@ -191,15 +191,29 @@
   ];
 
   const STUDIO_ROUTES = [
-    { id: "local-first", name: "Local 97-Model Rack", status: "DISCOVERY", kind: "LOCAL" },
-    { id: "unreal", name: "Unreal Engine + MetaHuman", status: "HANDOFF", kind: "3D" },
-    { id: "comfyui", name: "ComfyUI + Hugging Face", status: "ADAPTER", kind: "LOCAL" },
-    { id: "higgsfield", name: "Higgsfield", status: "CONNECT", kind: "CLOUD" },
-    { id: "seedance", name: "Seedance", status: "CONNECT", kind: "CLOUD" },
-    { id: "nano-banana", name: "Nano Banana", status: "CONNECT", kind: "CLOUD" },
-    { id: "editorial", name: "Resolve + Final Cut + After Effects", status: "EXPORT", kind: "EDIT" },
-    { id: "obs", name: "OBS / RTMP Broadcast", status: "GATED", kind: "LIVE" }
+    { id: "fusion-core", name: "GOAT Fusion Core", status: "97-MODEL", kind: "BRAIN" },
+    { id: "bricklife", name: "BrickLife Motion", status: "IMAGINE", kind: "MOTION" },
+    { id: "card-soul", name: "Card Soul Digital Twin", status: "CAPTURE", kind: "TWIN" },
+    { id: "world-forge", name: "World Forge 3D", status: "BUILD", kind: "WORLD" },
+    { id: "crew-director", name: "Crew Director", status: "ORCHESTRATE", kind: "AGENTS" },
+    { id: "master-room", name: "Master Room", status: "FINISH", kind: "MASTER" },
+    { id: "crewcast", name: "CrewCast Live", status: "OWNER GATE", kind: "LIVE" },
+    { id: "vault-render", name: "Vault Render", status: "OFFLINE", kind: "PRIVATE" }
   ];
+
+  const CREW_MODES = [
+    { id: "speedy-director", name: "Speedy Director Cut", cue: "Music-first timing, kinetic camera and precision transitions" },
+    { id: "waka-impact", name: "Waka Impact Mode", cue: "Arena energy, power moments and crowd-scale reveals" },
+    { id: "brick-squad", name: "Brick Squad Ensemble", cue: "Crew chemistry, team entrances and shared hero moments" },
+    { id: "grading-master", name: "Proof First", cue: "Evidence education, macro detail and transparent grading" },
+    { id: "collector-premiere", name: "Collector Premiere", cue: "Luxury lighting, foil detail and a premium card hero" }
+  ];
+
+  const LEGACY_STUDIO_ROUTES = {
+    "local-first": "fusion-core", unreal: "world-forge", comfyui: "fusion-core",
+    higgsfield: "bricklife", seedance: "bricklife", "nano-banana": "bricklife",
+    editorial: "master-room", obs: "crewcast"
+  };
 
   const categoryById = (id) => CATEGORIES.find((category) => category.id === id) || CATEGORIES[0];
   const commandById = (id) => COMMANDS.find((command) => command.id === id) || COMMANDS[1];
@@ -257,10 +271,11 @@
     },
     studio: {
       world: "goatverse",
-      prompt: "The graded card crosses the calibration vault, becomes a living champion, and drafts DJ Speedy and Waka into a reverse-strategy arena.",
+      crewMode: "brick-squad",
+      prompt: "The verified card enters GOATVERSE FORGE, awakens as an original living champion, and drafts DJ Speedy, Waka and the crew into a reverse-strategy arena.",
       duration: 15,
       aspect: "16:9",
-      pipeline: "local-first",
+      pipeline: "fusion-core",
       platform: "Private rehearsal",
       rightsConfirmed: false,
       sourceName: "",
@@ -427,10 +442,11 @@
       },
       studio: {
         world: ["goatverse", "creature-arena", "pirate-league", "hoopverse", "multiverse"].includes(state.studio.world) ? state.studio.world : "goatverse",
+        crewMode: CREW_MODES.some((mode) => mode.id === state.studio.crewMode) ? state.studio.crewMode : "brick-squad",
         prompt: String(state.studio.prompt || "").slice(0, 2000),
         duration: clamp(Math.round(finiteNumber(state.studio.duration, 15)), 3, 60),
         aspect: ["16:9", "9:16", "1:1"].includes(state.studio.aspect) ? state.studio.aspect : "16:9",
-        pipeline: STUDIO_ROUTES.some((route) => route.id === state.studio.pipeline) ? state.studio.pipeline : "local-first",
+        pipeline: STUDIO_ROUTES.some((route) => route.id === state.studio.pipeline) ? state.studio.pipeline : "fusion-core",
         platform: String(state.studio.platform || "Private rehearsal").slice(0, 80),
         rightsConfirmed: Boolean(state.studio.rightsConfirmed),
         sourceName: String(state.studio.sourceName || "").slice(0, 180),
@@ -508,10 +524,12 @@
     }
     if (raw.studio && typeof raw.studio === "object") {
       if (["goatverse", "creature-arena", "pirate-league", "hoopverse", "multiverse"].includes(raw.studio.world)) state.studio.world = raw.studio.world;
+      if (CREW_MODES.some((mode) => mode.id === raw.studio.crewMode)) state.studio.crewMode = raw.studio.crewMode;
       state.studio.prompt = String(raw.studio.prompt || state.studio.prompt).slice(0, 2000);
       state.studio.duration = clamp(Math.round(finiteNumber(raw.studio.duration, 15)), 3, 60);
       if (["16:9", "9:16", "1:1"].includes(raw.studio.aspect)) state.studio.aspect = raw.studio.aspect;
-      if (STUDIO_ROUTES.some((route) => route.id === raw.studio.pipeline)) state.studio.pipeline = raw.studio.pipeline;
+      const restoredPipeline = LEGACY_STUDIO_ROUTES[raw.studio.pipeline] || raw.studio.pipeline;
+      if (STUDIO_ROUTES.some((route) => route.id === restoredPipeline)) state.studio.pipeline = restoredPipeline;
       state.studio.platform = String(raw.studio.platform || "Private rehearsal").slice(0, 80);
       state.studio.rightsConfirmed = Boolean(raw.studio.rightsConfirmed);
       state.studio.sourceName = String(raw.studio.sourceName || "").slice(0, 180);
@@ -863,8 +881,11 @@
 
         <section class="bx-section bx-studio" aria-labelledby="bx-studio-title">
           <div class="bx-section-head">
-            <div><p class="bx-kicker">06 // GOATVERSE STUDIO</p><h3 id="bx-studio-title">Live grade → digital twin → card comes alive</h3></div>
-            <p>Evidence-safe production routing for local models, Unreal, picture-to-video services, editorial finishing and owner-gated live broadcast.</p>
+            <div><p class="bx-kicker">06 // GOATVERSE FORGE</p><h3 id="bx-studio-title">Your crew's original imagination engine</h3></div>
+            <p>One local-first system turns verified cards into digital twins, living motion, original worlds, finished masters and owner-gated live shows.</p>
+          </div>
+          <div class="bx-forge-core" aria-label="GOATVERSE Forge engine">
+            <span>GOATVERSE</span><strong>FORGE</strong><i>ONE ENGINE // EIGHT FORGES // CREW OWNED</i><b>FUSION CORE ONLINE</b>
           </div>
           <div class="bx-studio-policy">
             <div><span>01</span><strong>LIVE GRADE</strong><small>Unaltered source and macro evidence</small></div>
@@ -872,7 +893,7 @@
             <div><span>03</span><strong>GOATVERSE REVEAL</strong><small>Clearly labeled synthetic animation</small></div>
             <div><span>04</span><strong>OWNER LIVE GATE</strong><small>Speedy / Waka approve broadcast</small></div>
           </div>
-          <div class="bx-studio-router" aria-label="Production routes">${studioRoutes}</div>
+          <div class="bx-studio-router" aria-label="GOATVERSE Forge modules">${studioRoutes}</div>
           <div class="bx-studio-layout">
             <div class="bx-studio-preview" id="bx-studio-preview">
               <div class="bx-studio-frame" id="bx-studio-frame">
@@ -883,11 +904,12 @@
                 <div class="bx-studio-avatar bx-avatar-waka"><b>WF</b><small>WAKA</small></div>
                 <div class="bx-studio-floor"></div>
               </div>
-              <div class="bx-studio-telemetry"><span id="bx-studio-status">DESIGN</span><strong id="bx-studio-route-name">LOCAL 97-MODEL RACK</strong><i id="bx-studio-source">NO SOURCE SELECTED</i></div>
+              <div class="bx-studio-telemetry"><span id="bx-studio-status">DESIGN</span><strong id="bx-studio-route-name">GOAT FUSION CORE</strong><i id="bx-studio-source">NO SOURCE SELECTED</i></div>
             </div>
             <div class="bx-studio-controls">
               <div class="bx-form-grid">
                 <label class="bx-field"><span>ORIGINAL WORLD</span><select class="bx-select" id="bx-studio-world"><option value="goatverse">GOATVERSE Command</option><option value="creature-arena">Creature Champions</option><option value="pirate-league">Pirate League</option><option value="hoopverse">Hoopverse</option><option value="multiverse">Multiverse Collision</option></select></label>
+                <label class="bx-field"><span>CREW MODE</span><select class="bx-select" id="bx-studio-crew-mode">${CREW_MODES.map((mode) => `<option value="${mode.id}">${escapeHTML(mode.name)}</option>`).join("")}</select></label>
                 <label class="bx-field"><span>PICTURE SOURCE</span><input class="bx-input" id="bx-studio-source-file" type="file" accept="image/png,image/jpeg,image/webp"></label>
                 <label class="bx-field"><span>DURATION</span><select class="bx-select" id="bx-studio-duration"><option value="6">6 sec teaser</option><option value="15" selected>15 sec reveal</option><option value="30">30 sec spot</option><option value="60">60 sec commercial</option></select></label>
                 <label class="bx-field"><span>FORMAT</span><select class="bx-select" id="bx-studio-aspect"><option>16:9</option><option>9:16</option><option>1:1</option></select></label>
@@ -901,7 +923,7 @@
                 <button class="bx-btn bx-ghost" id="bx-copy-studio" type="button">COPY PIPELINE MANIFEST</button>
                 <button class="bx-btn bx-ghost" id="bx-scan-studio" type="button">SCAN STUDIO ROUTER</button>
               </div>
-              <p class="bx-team-note" id="bx-studio-note">Source images remain local in this browser until an approved studio adapter is invoked. Live publishing is never automatic.</p>
+              <p class="bx-team-note" id="bx-studio-note">Source images stay local until your authenticated Forge gateway is invoked. Outside tools are optional backstage adapters, never the product identity. Live publishing is never automatic.</p>
             </div>
           </div>
         </section>
@@ -1148,12 +1170,14 @@
     if (priority) priority.value = state.workflow.priority;
     if (dueDate) dueDate.value = state.workflow.dueDate;
     const studioWorld = document.getElementById("bx-studio-world");
+    const studioCrewMode = document.getElementById("bx-studio-crew-mode");
     const studioDuration = document.getElementById("bx-studio-duration");
     const studioAspect = document.getElementById("bx-studio-aspect");
     const studioPlatform = document.getElementById("bx-studio-platform");
     const studioPrompt = document.getElementById("bx-studio-prompt");
     const studioRights = document.getElementById("bx-studio-rights");
     if (studioWorld) studioWorld.value = state.studio.world;
+    if (studioCrewMode) studioCrewMode.value = state.studio.crewMode;
     if (studioDuration) studioDuration.value = String(state.studio.duration);
     if (studioAspect) studioAspect.value = state.studio.aspect;
     if (studioPlatform) studioPlatform.value = state.studio.platform;
@@ -1212,13 +1236,21 @@
   function studioManifest() {
     const grade = getGrade();
     return {
-      schema: "goat.brickgrade.card-reveal.v1",
+      schema: "goat.goatverse.forge.v1",
+      engine: {
+        name: "GOATVERSE FORGE",
+        owner: "GOAT FORCE",
+        modules: STUDIO_ROUTES.map((route) => ({ id: route.id, name: route.name })),
+        model_policy: "local-first routed fusion core"
+      },
       job_id: workflowJobId(),
       source_name: state.studio.sourceName || null,
       card_name: state.item.title.trim() || "Untitled card",
       card_reference: state.item.reference.trim() || null,
       grade: { score: grade.score, scale_10: grade.ten, band: grade.band, sealed: state.workflow.stage === "sealed" },
       world: state.studio.world,
+      crew_mode: state.studio.crewMode,
+      crew_direction: (CREW_MODES.find((mode) => mode.id === state.studio.crewMode) || CREW_MODES[2]).cue,
       creative_prompt: state.studio.prompt,
       duration_sec: state.studio.duration,
       aspect_ratio: state.studio.aspect,
@@ -1231,7 +1263,8 @@
         synthetic_label_required: true,
         human_qc_before_publish: true
       },
-      editorial_handoffs: ["Unreal Engine", "ComfyUI / local models", "DaVinci Resolve", "Final Cut Pro", "Adobe After Effects", "OBS / approved RTMP"]
+      native_pipeline: ["proof-lock", "card-soul", "fusion-core", "bricklife", "world-forge", "master-room", "crewcast"],
+      compatible_exports: ["OpenEXR / PNG sequence", "USD / FBX / glTF", "AAF / EDL / FCPXML", "WAV stems", "approved RTMP master"]
     };
   }
 
@@ -1330,9 +1363,9 @@
         method: "POST",
         body: {
           project_id: projectId,
-          name: `[GOATVERSE] ${workflowJobId()} · ${route.name} · ${state.studio.duration}s ${state.studio.aspect} · ${state.item.title.trim() || state.studio.sourceName}`.slice(0, 220),
+          name: `[GOATVERSE FORGE] ${workflowJobId()} · ${route.name} · ${(CREW_MODES.find((mode) => mode.id === state.studio.crewMode) || CREW_MODES[2]).name} · ${state.studio.duration}s ${state.studio.aspect} · ${state.item.title.trim() || state.studio.sourceName}`.slice(0, 220),
           status: "Todo",
-          assigned_to: "The Producer — GOATVERSE Studio Director",
+          assigned_to: "The Producer — Crew Director",
           due_date: state.workflow.dueDate || ""
         }
       });
@@ -1340,7 +1373,7 @@
       addAudit("STUDIO JOB QUEUED", `${route.name} · ERP task #${payload.id || payload.task_id || "created"}`);
       updateUI();
       await refreshQueue(false);
-      announce("GOATVERSE studio task queued for The Producer.");
+      announce("GOATVERSE Forge task queued for Crew Director.");
     } catch (error) {
       announce(`Studio queue failed: ${error.message}`);
     } finally {
@@ -1353,7 +1386,7 @@
     try {
       if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(text);
       else fallbackCopy(text);
-      announce("GOATVERSE pipeline manifest copied.");
+      announce("GOATVERSE Forge manifest copied.");
     } catch (_) {
       announce("Clipboard access was blocked.");
     }
@@ -1368,8 +1401,8 @@
       const creative = status.creative_stack || {};
       const count = finiteNumber(creative.detected_model_count, 0);
       state.studio.status = "ROUTER ONLINE";
-      if (note) note.textContent = `Studio gateway online · ${count} local Ollama models reported · Unreal, editorial and external connector states loaded from the studio host.`;
-      announce("GOAT studio capability router synchronized.");
+      if (note) note.textContent = `Forge gateway online · ${count} local models discovered · Fusion Core capability routing and optional backstage adapters loaded from the studio host.`;
+      announce("GOATVERSE Fusion Core synchronized.");
     } catch (_) {
       state.studio.status = "GATEWAY NEEDED";
       if (note) note.textContent = "The public ERP does not currently expose the local studio gateway. The handoff and task queue are ready; deploy the authenticated /api/intel production proxy before remote generation or live broadcast.";
@@ -1967,6 +2000,7 @@
     document.getElementById("bx-camera-preview").addEventListener("click", toggleStudioCamera);
     document.getElementById("bx-studio-source-file").addEventListener("change", onStudioSource);
     document.getElementById("bx-studio-world").addEventListener("change", (event) => { state.studio.world = event.target.value; updateUI(); });
+    document.getElementById("bx-studio-crew-mode").addEventListener("change", (event) => { state.studio.crewMode = event.target.value; updateUI(); });
     document.getElementById("bx-studio-duration").addEventListener("change", (event) => { state.studio.duration = clamp(finiteNumber(event.target.value, 15), 3, 60); updateUI(); });
     document.getElementById("bx-studio-aspect").addEventListener("change", (event) => { state.studio.aspect = event.target.value; updateUI(); });
     document.getElementById("bx-studio-platform").addEventListener("change", (event) => { state.studio.platform = event.target.value; updateUI(); });

@@ -53,21 +53,26 @@ assets can be substituted later under a partnership agreement.
   likeness and voice approval. Never train or publish a double from unapproved
   source media.
 
-## Production routing
+## GOATVERSE FORGE routing
 
-1. Capture the real card front, back, edges, foil response, and grade evidence.
-2. Lock the immutable evidence folder before any generative processing.
-3. Build the card digital twin in Blender/Unreal with a physically based foil
-   material and calibrated texture maps.
-4. Generate original creature, pirate, and Hoopverse motion passes through the
-   approved local model rack or an explicitly connected provider.
-5. Assemble characters, cameras, lighting, and card interaction in Unreal;
-   use Twinmotion only where it improves environment look development.
-6. Export EXR/PNG sequences, camera data, mattes, and guide audio.
-7. Finish in DaVinci Resolve, Final Cut Pro, or After Effects; keep a clean
-   synthetic-content disclosure in every publish master.
-8. Rehearse in OBS/private RTMP. Speedy or Waka gives the final broadcast and
-   publish approval.
+1. PROOF LOCK captures the real card front, back, edges, foil response, and
+   grade evidence, then locks the immutable evidence lane.
+2. CARD SOUL builds a calibrated digital twin with geometry, textures, and a
+   physically based foil response.
+3. FUSION CORE selects approved local models for original creature, pirate,
+   Hoopverse, music, voice, and motion passes while recording provenance.
+4. BRICKLIFE creates motion and card-life performances; WORLD FORGE assembles
+   original characters, cameras, lighting, physics, and environments.
+5. CREW DIRECTOR sequences the specialist-agent shot queue in the chosen
+   Speedy, Waka, Brick Squad, Proof First, or Collector Premiere mode.
+6. MASTER ROOM produces OpenEXR/PNG sequences, USD/FBX/glTF scene packages,
+   AAF/EDL/FCPXML timelines, mattes, stems, captions, and the disclosure slate.
+7. CREWCAST rehearses privately and waits for Speedy or Waka to approve the
+   final broadcast or publish action.
+
+Installed 3D, editing, VFX, broadcast, and cloud applications can receive these
+standards-based exports backstage. They are interchangeable production tools;
+GOATVERSE FORGE remains the system, interface, manifest, and crew identity.
 
 ## Required deliverables
 
@@ -76,7 +81,7 @@ assets can be substituted later under a partnership agreement.
 - 9:16 and 1:1 social masters with title-safe reframing
 - Separate dialogue, music, effects, crowd, and sonic-logo stems
 - Captions, audio-description script, disclosure slate, and rights manifest
-- Unreal project handoff, model/source manifest, editorial XML, and archive hash
+- World Forge scene handoff, model/source manifest, editorial timeline, and archive hash
 
 ## Trust rule
 

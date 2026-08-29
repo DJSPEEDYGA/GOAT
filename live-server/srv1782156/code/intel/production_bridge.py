@@ -1,6 +1,6 @@
 """
 GOAT Production Bridge
-Epic / Unreal / MetaHuman / Final Cut Pro handoff for GOAT video & audio studios.
+GOATVERSE FORGE local-model routing and standards-based production handoffs.
 Photo → motion video (Ken Burns + optional live capture) without cloning third-party UIs.
 """
 
@@ -193,11 +193,19 @@ def detect_creative_stack() -> Dict[str, Any]:
             "huggingface": len(huggingface_models),
             "comfyui_checkpoints": len(comfy_checkpoints),
         },
-        "external_connectors": {
-            "higgsfield": "connection_required",
-            "seedance": "connection_required",
-            "nano_banana": "connection_required",
-            "hugging_face": "local_cache_or_token_required",
+        "forge_engine": {
+            "name": "GOATVERSE FORGE",
+            "model_router": "GOAT Fusion Core",
+            "modules": [
+                "fusion-core", "bricklife", "card-soul", "world-forge",
+                "crew-director", "master-room", "crewcast", "vault-render",
+            ],
+        },
+        "optional_adapters": {
+            "cloud_picture_to_video": "connection_optional",
+            "cloud_image_generation": "connection_optional",
+            "model_registry": "local_cache_or_token_optional",
+            "editorial_suite": "local_application_optional",
         },
     }
 
@@ -210,10 +218,11 @@ def build_card_reveal_handoff(
     world: str = "goatverse",
     duration_sec: float = 15.0,
     aspect_ratio: str = "16:9",
-    preferred_pipeline: str = "local-first",
+    preferred_pipeline: str = "fusion-core",
+    crew_mode: str = "brick-squad",
     rights_confirmed: bool = False,
 ) -> Dict[str, Any]:
-    """Create an editor/model-neutral manifest for evidence-safe card animation."""
+    """Create a GOATVERSE FORGE manifest for evidence-safe card animation."""
     _ensure_dirs()
     if not rights_confirmed:
         return {"ok": False, "error": "Media rights and subject consent must be confirmed before a reveal job is created."}
@@ -229,7 +238,16 @@ def build_card_reveal_handoff(
     project_dir = CARD_REVEAL_HANDOFF_DIR / f"{stamp}-{slug}"
     project_dir.mkdir(parents=True, exist_ok=True)
     manifest = {
-        "schema": "goat.brickgrade.card-reveal.v1",
+        "schema": "goat.goatverse.forge.v1",
+        "engine": {
+            "name": "GOATVERSE FORGE",
+            "owner": "GOAT FORCE",
+            "model_router": "GOAT Fusion Core",
+            "modules": [
+                "proof-lock", "card-soul", "fusion-core", "bricklife",
+                "world-forge", "crew-director", "master-room", "crewcast",
+            ],
+        },
         "created": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "job_id": str(job_id)[:48],
         "card_name": str(card_name)[:180],
@@ -238,7 +256,8 @@ def build_card_reveal_handoff(
         "world": _slug(world, "goatverse"),
         "duration_sec": duration_sec,
         "aspect_ratio": aspect_ratio,
-        "preferred_pipeline": _slug(preferred_pipeline, "local-first"),
+        "preferred_pipeline": _slug(preferred_pipeline, "fusion-core"),
+        "crew_mode": _slug(crew_mode, "brick-squad"),
         "rights_confirmed": True,
         "evidence_policy": {
             "source_grade_media_immutable": True,
@@ -247,22 +266,23 @@ def build_card_reveal_handoff(
             "human_qc_before_publish": True,
         },
         "pipeline": [
-            "copy verified card media into immutable evidence lane",
-            "build front/back/edge digital twin and foil material pass",
-            "route animation local-first through approved model adapter",
-            "assemble Unreal/Twinmotion scene and GOATVERSE effects",
-            "export editorial package for Resolve, Final Cut, or After Effects",
-            "owner review, synthetic-content slate, then RTMP/publish approval",
+            "PROOF LOCK copies verified card media into the immutable evidence lane",
+            "CARD SOUL builds the front/back/edge digital twin and foil response",
+            "FUSION CORE selects approved local models for each production pass",
+            "BRICKLIFE animates the card while WORLD FORGE builds camera and environment",
+            "CREW DIRECTOR sequences agent work and MASTER ROOM finishes the approved master",
+            "CREWCAST adds the synthetic slate and waits for Speedy/Waka publish approval",
         ],
         "creative_stack": detect_creative_stack(),
-        "handoffs": {
-            "unreal": "build_unreal_handoff",
-            "twinmotion": "build_twinmotion_handoff",
-            "final_cut": "build_fcp_xml",
-            "resolve": "EDL/XML/media folder",
-            "after_effects": "image sequence + alpha + JSON camera data",
-            "obs": "approved master or NDI/RTMP scene input",
+        "native_modules": {
+            "card_soul": "digital twin, foil and geometry package",
+            "fusion_core": "local model plan and provenance manifest",
+            "bricklife": "motion passes and synthetic frame sequence",
+            "world_forge": "USD/FBX/glTF scene, camera and lighting package",
+            "master_room": "OpenEXR/PNG, AAF/EDL/FCPXML and WAV stems",
+            "crewcast": "approved master or private NDI/RTMP scene input",
         },
+        "compatible_exports": ["OpenEXR", "PNG", "USD", "FBX", "glTF", "AAF", "EDL", "FCPXML", "WAV", "RTMP"],
     }
     manifest_path = project_dir / "GOAT_CARD_REVEAL_MANIFEST.json"
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -271,7 +291,7 @@ def build_card_reveal_handoff(
     (project_dir / "EDITORIAL_EXPORTS").mkdir(exist_ok=True)
     return {
         "ok": True,
-        "summary": "BrickGrade GOATVERSE card-reveal handoff created.",
+        "summary": "GOATVERSE FORGE card-life handoff created.",
         "project_dir": str(project_dir),
         "manifest_path": str(manifest_path),
         "manifest": manifest,
@@ -640,15 +660,17 @@ def production_status() -> Dict[str, Any]:
             "applications": {key: bool(value.get("installed")) for key, value in creative["applications"].items()},
             "detected_model_count": creative["detected_model_count"],
             "model_roots_available": sum(1 for root in creative["model_roots"] if root.get("available")),
-            "external_connectors": creative["external_connectors"],
+            "forge_engine": creative["forge_engine"],
+            "optional_adapters": creative["optional_adapters"],
         },
         "pipelines": [
-            "photo_to_live_video",
-            "unreal_metahuman_handoff",
-            "twinmotion_handoff",
-            "launch_twinmotion",
-            "fcp_xml_export",
-            "oscar_goat_bridge",
-            "brickgrade_card_reveal_handoff",
+            "fusion_core_model_route",
+            "card_soul_digital_twin",
+            "bricklife_motion",
+            "world_forge_scene",
+            "crew_director_agent_queue",
+            "master_room_finish",
+            "crewcast_owner_gate",
+            "vault_render_offline",
         ],
     }

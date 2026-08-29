@@ -44,29 +44,33 @@ Schwarz, Star Wars Unlimited, Union Arena, sports cards, and an open profile.
 Game names identify grading profiles; all rendered HUD/card artwork is original
 and does not embed official logos or character art.
 
-## GOATVERSE Studio
+## GOATVERSE FORGE
 
-Version 2 also adds a rights-gated production cockpit: Live Grade → Digital
-Twin → GOATVERSE Reveal → Owner Live Gate. It previews a local picture without
-uploading it, builds a portable synthetic-media manifest, and can create a real
-ERP production task for The Producer. It never treats generated frames as
-grading evidence and never auto-publishes a stream.
+Version 2 also adds the crew's rights-gated original production cockpit: Live
+Grade → Card Soul → GOATVERSE Reveal → Owner Live Gate. The customer-facing
+system is GOATVERSE FORGE, not a launcher for third-party brands. Its eight
+native modules are GOAT Fusion Core, BrickLife Motion, Card Soul Digital Twin,
+World Forge 3D, Crew Director, Master Room, CrewCast Live, and Vault Render.
+Five crew modes provide Speedy, Waka, Brick Squad, proof-first, and collector
+premiere direction. It previews a local picture without uploading it, builds a
+portable synthetic-media manifest, and can create a real ERP production task
+for Crew Director. It never treats generated frames as grading evidence and
+never auto-publishes a stream.
 
-The existing local `goat-intel` production bridge now exposes read-only creative
-stack discovery plus a local-only `/production/card-reveal` handoff builder. It
-detects Unreal/Twinmotion, FFmpeg, Ollama, ComfyUI, Blender, OBS, Final Cut,
-DaVinci Resolve, After Effects, and local model roots, then creates separate
-immutable-evidence, generated-media, and editorial-export folders. Higgsfield,
-Seedance, Nano Banana, and Hugging Face are capability adapters; they remain
-`connection_required` until their official/local endpoints and credentials are
-configured on the studio host.
+The existing local `goat-intel` production bridge exposes read-only creative
+stack discovery plus a local-only `/production/card-reveal` handoff builder.
+Fusion Core inventories the local model rack, routes approved models per pass,
+and creates separate immutable-evidence, generated-media, and editorial-export
+folders. Installed DCC, editing, broadcast, or cloud services are optional
+backstage adapters. They are reported generically in the browser and do not
+replace GOATVERSE FORGE branding or its portable, standards-based manifests.
 
 The public ERP currently does not expose the local Intel production gateway.
 The `SCAN STUDIO ROUTER` control reports that truth and leaves generation on the
-task/handoff path. Remote picture-to-video and RTMP broadcast require an
-authenticated `/api/intel/production/*` proxy plus per-provider connectors;
-never expose port 5500, `GOAT_PRODUCTION_TOKEN`, provider credentials, or a
-stream key directly to the browser. The card-reveal job endpoint requires both
+task/handoff path. Remote rendering and RTMP broadcast require an authenticated
+`/api/intel/production/*` proxy plus the selected backstage adapters; never
+expose port 5500, `GOAT_PRODUCTION_TOKEN`, adapter credentials, or a stream key
+directly to the browser. The card-reveal job endpoint requires both
 a loopback request and a constant-time match on the server-held
 `X-GOAT-Production-Token` header; the future ERP proxy must add that header
 server-to-server.

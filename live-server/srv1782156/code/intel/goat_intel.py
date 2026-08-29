@@ -2410,7 +2410,8 @@ def production_card_reveal():
         world=data.get("world", "goatverse"),
         duration_sec=float(data.get("duration_sec", 15)),
         aspect_ratio=data.get("aspect_ratio", "16:9"),
-        preferred_pipeline=data.get("preferred_pipeline", "local-first"),
+        preferred_pipeline=data.get("preferred_pipeline", "fusion-core"),
+        crew_mode=data.get("crew_mode", "brick-squad"),
         rights_confirmed=bool(data.get("rights_confirmed", False)),
     ))
 
