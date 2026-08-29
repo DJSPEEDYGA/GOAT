@@ -262,6 +262,13 @@
         return;
       }
       window.__brickGradeSessionScope = storageScope;
+      if (window.BrickGradeERP?.setSessionScope) {
+        window.BrickGradeERP.setSessionScope(storageScope);
+        clearRetry();
+        retryCount = 0;
+        state = 'loaded';
+        return;
+      }
       state = 'loading';
       const stylesheet = document.createElement('link');
       stylesheet.rel = 'stylesheet';
@@ -289,7 +296,6 @@
           clearRetry();
           retryCount = 0;
           state = 'loaded';
-          observer?.disconnect();
         };
         module.onerror = () => {
           if (token === attemptToken) scheduleRetry(stylesheet, module);
@@ -312,10 +318,10 @@
       attemptToken += 1;
       clearRetry();
       retryCount = 0;
-      if (state !== 'loaded') {
-        removePendingAssets();
-        state = 'idle';
-      }
+      window.__brickGradeSessionScope = '';
+      window.BrickGradeERP?.setSessionScope('');
+      if (!window.BrickGradeERP) removePendingAssets();
+      state = 'idle';
       return;
     }
     loadBrickGrade();

@@ -4,9 +4,9 @@
   if (window.__brickGradeERPInstalled) return;
   window.__brickGradeERPInstalled = true;
 
-  const STORAGE_SCOPE = String(window.__brickGradeSessionScope || "").replace(/[^a-f0-9]/gi, "").slice(0, 48);
-  const STORAGE_KEY = STORAGE_SCOPE ? `goat-force.brickgrade.command.v2.${STORAGE_SCOPE}` : "";
-  const LEGACY_STORAGE_KEY = STORAGE_SCOPE ? `goat-force.brickgrade.local-draft.v1.${STORAGE_SCOPE}` : "";
+  let STORAGE_SCOPE = String(window.__brickGradeSessionScope || "").replace(/[^a-f0-9]/gi, "").slice(0, 48);
+  let STORAGE_KEY = STORAGE_SCOPE ? `goat-force.brickgrade.command.v2.${STORAGE_SCOPE}` : "";
+  let LEGACY_STORAGE_KEY = STORAGE_SCOPE ? `goat-force.brickgrade.local-draft.v1.${STORAGE_SCOPE}` : "";
   const MODULE_VERSION = 2;
   const MIN_DEPTH = 0.72;
   const MAX_DEPTH = 1.55;
@@ -233,15 +233,15 @@
     '"': "&quot;"
   })[character]);
 
-  const defaultScores = {};
-  CATEGORIES.forEach((category) => {
-    defaultScores[category.id] = {};
-    category.axes.forEach((axis) => {
-      defaultScores[category.id][axis.id] = 85;
+  function buildInitialState() {
+    const defaultScores = {};
+    CATEGORIES.forEach((category) => {
+      defaultScores[category.id] = {};
+      category.axes.forEach((axis) => {
+        defaultScores[category.id][axis.id] = 85;
+      });
     });
-  });
-
-  const state = {
+    return {
     command: "grade",
     category: "cards",
     scores: defaultScores,
@@ -284,7 +284,10 @@
       status: "DESIGN"
     },
     lockedAt: ""
-  };
+    };
+  }
+
+  let state = buildInitialState();
 
   let lastLockedSnapshot = "";
   let observer;
@@ -1640,6 +1643,7 @@
       } else if (approvalStillMatches && currentApproval.status === "Rejected") {
         state.workflow.stage = "primary";
         state.workflow.qcDecision = "Revision";
+        state.workflow.approvalId = 0;
         state.workflow.qcSnapshot = "";
         state.workflow.approvalSnapshot = "";
       }
@@ -2127,6 +2131,18 @@
     ensureSection();
   }
 
+  function setSessionScope(rawScope) {
+    const nextScope = String(rawScope || "").replace(/[^a-f0-9]/gi, "").slice(0, 48);
+    if (nextScope === STORAGE_SCOPE) return;
+    removeInjectedUI();
+    state = buildInitialState();
+    lastLockedSnapshot = "";
+    STORAGE_SCOPE = nextScope;
+    STORAGE_KEY = STORAGE_SCOPE ? `goat-force.brickgrade.command.v2.${STORAGE_SCOPE}` : "";
+    LEGACY_STORAGE_KEY = STORAGE_SCOPE ? `goat-force.brickgrade.local-draft.v1.${STORAGE_SCOPE}` : "";
+    if (nextScope && hasAuthenticatedShell()) queueMount();
+  }
+
   function queueMount() {
     if (mountQueued) return;
     mountQueued = true;
@@ -2150,6 +2166,7 @@
   window.BrickGradeERP = Object.freeze({
     open: openBrickGrade,
     refresh: mount,
+    setSessionScope,
     version: MODULE_VERSION
   });
 
