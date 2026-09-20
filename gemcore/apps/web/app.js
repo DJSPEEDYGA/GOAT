@@ -499,7 +499,25 @@ async function verify() {
             <span style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:80px;height:6px;background:var(--line);border-radius:3px"><i style="display:block;height:100%;width:${r.lanes[l] / 10}%;background:var(--teal);border-radius:3px"></i></span><b>${(r.lanes[l] / 100).toFixed(1)}</b></span></div>` : '').join('')}
           <div class="scanrow" style="margin-top:10px"><span class="tick">✓</span><span>Human QC approved • authenticity &amp; condition graded separately</span></div>
         </div>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <div class="ahead"><img src="assets/moneypenny.svg" style="width:36px;height:36px;border-radius:8px"><div><b>ASK MONEY PENNY</b><br><span class="muted" style="font-size:10px">she graded this — ask her why</span></div></div>
+        <div class="bubble" id="mpExplain">Scan me with a question — "why a ${r.publicGrade}?" or "what defects were found?"</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <input id="mpEQ" placeholder="Ask about this cert…" style="margin:0;font-size:12px">
+          <button class="primary" id="mpEGo" style="padding:6px 14px">▸</button>
+        </div>
       </div>`;
+    const askExplain = async () => {
+      const question = q('#mpEQ').value.trim() || 'Explain this grade to me';
+      q('#mpEQ').value = ''; q('#mpExplain').textContent = 'Money Penny is thinking…';
+      const res = await fetch('/api/mp/explain/' + encodeURIComponent(r.certId), {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question }),
+      }).then(x => x.json());
+      q('#mpExplain').textContent = res.reply || '…';
+    };
+    q('#mpEGo').onclick = askExplain;
+    q('#mpEQ').onkeydown = e => { if (e.key === 'Enter') askExplain(); };
     // draw defect pins over the image
     const map = q('#dmap');
     r.defects.forEach(d => {

@@ -590,6 +590,31 @@ app.post('/api/staff/decide', (q, r) => {
   r.json({ ok: true, review: out.review, clientPassword: password });
 });
 
+// public cert explainer — Money Penny explains a certified grade to anyone.
+// Fixed prompt, only public fields, rate-limited — the thing TAG can't do.
+const explainLast = new Map();
+app.post('/api/mp/explain/:certId', async (q, r) => {
+  const ip = q.ip || 'x';
+  const now = Date.now();
+  if (now - (explainLast.get(ip) || 0) < 8000) return r.status(429).json({ reply: 'Easy — she\'s thinking. One at a time.' });
+  explainLast.set(ip, now);
+  const s = read().find(v => v.id === q.params.certId || (v.certificate || {}).certId === q.params.certId);
+  if (!s || s.status !== STATUSES.CERTIFIED) return r.status(404).json({ reply: 'I have no record of that certificate.' });
+  const pub = {
+    item: s.item, grade: s.certificate.publicGrade, index: s.evaluation?.internalConditionIndex,
+    lanes: s.evaluation?.lanes, defectCount: (s.observations || []).filter(o => o.reviewerDisposition !== 'rejected').length,
+    rubric: s.certificate.algorithmVersion || RUBRIC_VERSION,
+  };
+  const q2 = String(q.body?.question || 'Explain this grade to me').slice(0, 300);
+  try {
+    const reply = await mpCall([
+      { role: 'system', content: 'You are Money Penny, the AI in control of GemCore Grading. You speak with calm precision — a trusted chief of staff, sharp and confident. Keep answers short.' + MP_KNOWLEDGE + '\n\nPUBLIC CERT REPORT — explain this certified grade honestly and warmly in 2-3 sentences. Never reveal internal chain details. Data: ' + JSON.stringify(pub) },
+      { role: 'user', content: q2 },
+    ], 160);
+    r.json({ reply });
+  } catch { r.status(503).json({ reply: 'Money Penny is offline right now — try again shortly.' }); }
+});
+
 // QR for slab labels / passports — encodes the public verify URL.
 app.get('/api/qr', async (q, r) => {
   const text = q.query.text;
