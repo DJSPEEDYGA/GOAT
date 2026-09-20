@@ -22,6 +22,7 @@ const api = async (p, opts) => {
 };
 
 const isStaff = () => !!localStorage.getItem('gemcore.staff') || localStorage.getItem('gemcore.staffless') === '1';
+const whoAmI = () => localStorage.getItem('gemcore.me') || 'staff';
 const INTERNAL = ['grade','intake','submissions','passport','population','production','vault','market','live','studio','photolab','tools','settings','qc','requests','command'];
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -407,14 +408,25 @@ async function detail(id) {
           <button id="qcok">QC Approve</button><button id="qcno">QC Reject</button>
           <button class="seal" id="seal2">Seal</button>
           <button id="auditBtn">Audit Trail</button>
-        </div><pre id="dout"></pre>
+        </div>
+        <label style="margin-top:12px">HANDLER<select id="assignPick"><option value="">— unassigned —</option></select></label>
+        <pre id="dout"></pre>
       </div>
     </div>`;
   const q = sel => document.querySelector(sel);
   const dout = x => q('#dout').textContent = typeof x === 'string' ? x : JSON.stringify(x, null, 2);
+  api('/team').then(team => {
+    if (!Array.isArray(team)) return;
+    q('#assignPick').innerHTML = '<option value="">— unassigned —</option>' +
+      team.map(m => `<option value="${m.id}" ${s.assignedTo === m.id ? 'selected' : ''}>${esc(m.name)} — ${esc(m.role)}</option>`).join('');
+    q('#assignPick').onchange = async e => {
+      await api(`/submissions/${id}/assign`, { b: { memberId: e.target.value || null } });
+      dout('Handler assigned → ' + (e.target.selectedOptions[0].text));
+    };
+  });
   q('#eval').onclick = async () => dout(await api(`/submissions/${id}/grade`));
-  q('#qcok').onclick = async () => dout(await api(`/submissions/${id}/qc`, { b: { approved: true, reviewer: 'Human QC' } }));
-  q('#qcno').onclick = async () => dout(await api(`/submissions/${id}/qc`, { b: { approved: false, reviewer: 'Human QC' } }));
+  q('#qcok').onclick = async () => dout(await api(`/submissions/${id}/qc`, { b: { approved: true, reviewer: whoAmI() } }));
+  q('#qcno').onclick = async () => dout(await api(`/submissions/${id}/qc`, { b: { approved: false, reviewer: whoAmI() } }));
   q('#seal2').onclick = async () => dout(await api(`/submissions/${id}/seal`));
   q('#auditBtn').onclick = async () => dout(await api(`/submissions/${id}/audit`));
   document.querySelectorAll('.obsrow').forEach(o => o.onclick = () => {
@@ -424,12 +436,12 @@ async function detail(id) {
   });
   document.querySelectorAll('[data-okobs]').forEach(b => b.onclick = async e => {
     e.stopPropagation();
-    dout(await api(`/submissions/${id}/observations/${b.dataset.okobs}/review`, { b: { decision: 'confirmed', reviewer: 'Human QC' } }));
+    dout(await api(`/submissions/${id}/observations/${b.dataset.okobs}/review`, { b: { decision: 'confirmed', reviewer: whoAmI() } }));
     detail(id);
   });
   document.querySelectorAll('[data-noobs]').forEach(b => b.onclick = async e => {
     e.stopPropagation();
-    dout(await api(`/submissions/${id}/observations/${b.dataset.noobs}/review`, { b: { decision: 'rejected', reviewer: 'Human QC' } }));
+    dout(await api(`/submissions/${id}/observations/${b.dataset.noobs}/review`, { b: { decision: 'rejected', reviewer: whoAmI() } }));
     detail(id);
   });
 }
@@ -728,6 +740,21 @@ async function settings() {
         <div class="scanrow"><span class="tick">●</span><span>Storage <small>JSON ledger (SQLite migration pending)</small></span></div>
       </div>
     </div>
+    <div class="panel" style="margin-top:14px"><h3>TEAM — HANDLERS &amp; SIGNATURES</h3>
+      <div id="teamList"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <input id="tmName" placeholder="Handler name" style="width:150px;margin:0">
+        <input id="tmRole" placeholder="role (grader, intake…)" style="width:170px;margin:0">
+      </div>
+      <p class="muted" style="font-size:10px;margin-top:8px">Sign with finger/stylus — stamps QC decisions, seals, and the audit trail:</p>
+      <canvas id="sigPad" width="340" height="90" style="width:100%;border:1px solid var(--line);border-radius:8px;background:#030b12;touch-action:none"></canvas>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button class="primary" id="tmAdd" style="font-size:11px">Add Handler</button>
+        <button id="sigClear" style="font-size:11px">Clear Signature</button>
+      </div>
+      <label style="margin-top:12px">WORKING AS<select id="mePick"><option value="staff">staff (unassigned)</option></select></label>
+      <p class="muted" style="font-size:10px">Every QC call, seal, and review stamps this name — pick yourself before touching cards.</p>
+    </div>
     <div class="panel" style="margin-top:14px"><h3>CONNECTED CAMERAS</h3>
       <button class="primary" id="scanDevs">Detect Cameras</button>
       <div id="devList" style="margin-top:10px"></div>
@@ -750,6 +777,38 @@ async function settings() {
   q('#sClearSub').onclick = () => { currentSub = null; localStorage.removeItem('gemcore.sub'); show('settings'); };
   q('#sClearCams').onclick = () => { localStorage.removeItem('gemcore.capture.roles'); show('settings'); };
   q('#sWipe').onclick = () => { if (confirm('Clear all local GemCore state (selections, keys, camera roles)?')) { ['gemcore.sub','gemcore.mpkey','gemcore.accent','gemcore.home','gemcore.capture.roles'].forEach(k => localStorage.removeItem(k)); location.reload(); } };
+  // ── team roster + signature pad ──
+  const sigCtx = q('#sigPad').getContext('2d');
+  sigCtx.strokeStyle = '#d9b96a'; sigCtx.lineWidth = 2; sigCtx.lineCap = 'round';
+  let signing = false;
+  const sigPos = e => { const r = q('#sigPad').getBoundingClientRect(); return [ (e.clientX - r.left) * (340 / r.width), (e.clientY - r.top) * (90 / r.height) ]; };
+  q('#sigPad').onpointerdown = e => { signing = true; sigCtx.beginPath(); sigCtx.moveTo(...sigPos(e)); };
+  q('#sigPad').onpointermove = e => { if (signing) { sigCtx.lineTo(...sigPos(e)); sigCtx.stroke(); } };
+  ['pointerup', 'pointerleave'].forEach(ev => q('#sigPad')['on' + ev] = () => signing = false);
+  q('#sigClear').onclick = () => sigCtx.clearRect(0, 0, 340, 90);
+
+  const team = await api('/team').catch(() => []);
+  const renderTeam = () => {
+    q('#teamList').innerHTML = (Array.isArray(team) ? team : []).map(m => `
+      <div class="scanrow"><span class="tick">✍</span><span><b>${esc(m.name)}</b> <small>${esc(m.role)} • ${m.id}</small>
+        ${m.signature ? `<img src="${m.signature}" style="height:22px;vertical-align:middle;margin-left:8px">` : ''}</span>
+        <span style="margin-left:auto"><button data-rt="${m.id}" style="font-size:10px;padding:4px 8px">remove</button></span></div>`).join('') || '<p class="muted" style="font-size:12px">No handlers yet.</p>';
+    document.querySelectorAll('[data-rt]').forEach(b => b.onclick = async () => {
+      await fetch('/api/team/' + b.dataset.rt, { method: 'DELETE', headers: { 'x-staff-key': localStorage.getItem('gemcore.staff') || '' } });
+      const i = team.findIndex(m => m.id === b.dataset.rt); if (i > -1) team.splice(i, 1); renderTeam();
+    });
+    const cur = localStorage.getItem('gemcore.me') || 'staff';
+    q('#mePick').innerHTML = '<option value="staff">staff (unassigned)</option>' +
+      (Array.isArray(team) ? team : []).map(m => `<option value="${esc(m.name)}" ${cur === m.name ? 'selected' : ''}>${esc(m.name)} — ${esc(m.role)}</option>`).join('');
+  };
+  renderTeam();
+  q('#mePick').onchange = e => localStorage.setItem('gemcore.me', e.target.value);
+  q('#tmAdd').onclick = async () => {
+    const name = q('#tmName').value.trim(); if (!name) return;
+    const m = await fetch('/api/team', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-staff-key': localStorage.getItem('gemcore.staff') || '' },
+      body: JSON.stringify({ name, role: q('#tmRole').value.trim(), signature: q('#sigPad').toDataURL() }) }).then(r => r.json());
+    if (m.id) { team.push(m); renderTeam(); q('#tmName').value = q('#tmRole').value = ''; sigCtx.clearRect(0, 0, 340, 90); }
+  };
   // cameras
   const roles = GemCoreCapture.getRoles();
   q('#scanDevs').onclick = async () => {
@@ -964,10 +1023,10 @@ async function qc() {
     <pre id="qcout"></pre>`);
   const out = document.querySelector('#qcout');
   document.querySelectorAll('[data-ok]').forEach(b => b.onclick = async () => {
-    out.textContent = JSON.stringify(await api(`/submissions/${b.dataset.ok}/qc`, { b: { approved: true, reviewer: 'Human QC' } }), null, 2); show('qc');
+    out.textContent = JSON.stringify(await api(`/submissions/${b.dataset.ok}/qc`, { b: { approved: true, reviewer: whoAmI() } }), null, 2); show('qc');
   });
   document.querySelectorAll('[data-no]').forEach(b => b.onclick = async () => {
-    out.textContent = JSON.stringify(await api(`/submissions/${b.dataset.no}/qc`, { b: { approved: false, reviewer: 'Human QC' } }), null, 2); show('qc');
+    out.textContent = JSON.stringify(await api(`/submissions/${b.dataset.no}/qc`, { b: { approved: false, reviewer: whoAmI() } }), null, 2); show('qc');
   });
 }
 

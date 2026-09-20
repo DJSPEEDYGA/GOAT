@@ -40,6 +40,10 @@ const clientsFile = path.join(dataDir, 'clients.json');
 if (!fs.existsSync(clientsFile)) fs.writeFileSync(clientsFile, '[]');
 const readClients = () => JSON.parse(fs.readFileSync(clientsFile, 'utf8'));
 const writeClients = x => fs.writeFileSync(clientsFile, JSON.stringify(x, null, 2));
+const teamFile = path.join(dataDir, 'team.json');
+if (!fs.existsSync(teamFile)) fs.writeFileSync(teamFile, '[]');
+const readTeam = () => JSON.parse(fs.readFileSync(teamFile, 'utf8'));
+const writeTeam = x => fs.writeFileSync(teamFile, JSON.stringify(x, null, 2));
 const sessions = new Map(); // token → {clientId, exp}
 
 const isStaff = q => !STAFF_KEY || q.get('x-staff-key') === STAFF_KEY;
@@ -613,6 +617,41 @@ app.post('/api/mp/explain/:certId', async (q, r) => {
     ], 160);
     r.json({ reply });
   } catch { r.status(503).json({ reply: 'Money Penny is offline right now — try again shortly.' }); }
+});
+
+// ── STAFF: team roster + assignments ────────────────────────────────────
+app.get('/api/team', (q, r) => r.json(readTeam()));
+app.post('/api/team', (q, r) => {
+  const { name, role, signature } = q.body || {};
+  if (!name) return r.status(400).json({ error: 'name required' });
+  const team = readTeam();
+  const member = { id: 'T-' + crypto.randomBytes(3).toString('hex'), name, role: role || 'grader',
+    signature: String(signature || '').slice(0, 200000), addedAt: new Date().toISOString() };
+  team.push(member); writeTeam(team);
+  audit(null, 'team-added', { member: member.id });
+  r.status(201).json(member);
+});
+app.patch('/api/team/:id', (q, r) => {
+  const team = readTeam();
+  const m = team.find(x => x.id === q.params.id);
+  if (!m) return r.sendStatus(404);
+  if (q.body.signature !== undefined) m.signature = String(q.body.signature).slice(0, 200000);
+  if (q.body.name) m.name = q.body.name;
+  if (q.body.role) m.role = q.body.role;
+  writeTeam(team);
+  r.json(m);
+});
+app.delete('/api/team/:id', (q, r) => {
+  writeTeam(readTeam().filter(m => m.id !== q.params.id));
+  audit(null, 'team-removed', { member: q.params.id });
+  r.json({ ok: true });
+});
+app.post('/api/submissions/:id/assign', (q, r) => {
+  const s = findSub(r, q.params.id); if (!s) return;
+  const member = readTeam().find(m => m.id === q.body.memberId);
+  const out = updateSub(s.id, x => { x.assignedTo = member ? member.id : null; });
+  audit(s.id, 'assigned', { memberId: out.assignedTo });
+  r.json({ ok: true, assignedTo: out.assignedTo });
 });
 
 // QR for slab labels / passports — encodes the public verify URL.
