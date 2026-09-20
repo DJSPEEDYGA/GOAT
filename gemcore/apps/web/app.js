@@ -382,7 +382,8 @@ async function detail(id) {
         <h3 style="margin-top:14px">OBSERVATIONS — click for evidence chain</h3>
         ${(s.observations || []).map(o => `<div class="obsrow" data-obs="${o.id}">${esc(o.note || o.type || 'observation')}
           <span class="pill ${o.reviewerDisposition}">${o.reviewerDisposition}</span>
-          <span class="chain">→ evidence ${o.evidenceId?.slice(0, 12)}… • src ${o.source} • conf ${o.confidence ?? '—'} • ${o.reviewer || 'awaiting reviewer'}</span></div>`).join('') || '<p class="muted" style="font-size:12px">none</p>'}
+          <span class="chain">→ evidence ${o.evidenceId?.slice(0, 12)}… • src ${o.source} • conf ${o.confidence ?? '—'} • ${o.reviewer || 'awaiting reviewer'}</span>
+          ${o.reviewerDisposition === 'pending' ? `<span class="obsbtns"><button class="primary" data-okobs="${o.id}" style="padding:2px 8px;font-size:10px">✓</button><button data-noobs="${o.id}" style="padding:2px 8px;font-size:10px">✗</button></span>` : ''}</div>`).join('') || '<p class="muted" style="font-size:12px">none</p>'}
       </div>
       <div class="panel"><h3>GRADING</h3>
         ${e ? `<div class="metric"><span>Internal index</span><b>${e.internalConditionIndex ?? '—'}/1000</b></div>
@@ -409,6 +410,16 @@ async function detail(id) {
     const cap = (s.captures || []).find(c => c.id === obs.evidenceId);
     dout({ observation: obs, evidence: cap || 'missing', chain: 'grade → defect → capture → confidence → reviewer decision' });
   });
+  document.querySelectorAll('[data-okobs]').forEach(b => b.onclick = async e => {
+    e.stopPropagation();
+    dout(await api(`/submissions/${id}/observations/${b.dataset.okobs}/review`, { b: { decision: 'confirmed', reviewer: 'Human QC' } }));
+    detail(id);
+  });
+  document.querySelectorAll('[data-noobs]').forEach(b => b.onclick = async e => {
+    e.stopPropagation();
+    dout(await api(`/submissions/${id}/observations/${b.dataset.noobs}/review`, { b: { decision: 'rejected', reviewer: 'Human QC' } }));
+    detail(id);
+  });
 }
 
 async function passport() {
@@ -421,7 +432,21 @@ async function passport() {
       : '<div class="tile">No submissions yet.</div>'}</div><div id="detail"></div>`);
   document.querySelectorAll('[data-open]').forEach(t => t.onclick = async () => {
     const p = await api(`/submissions/${t.dataset.open}/passport`);
-    document.querySelector('#detail').innerHTML = `<pre>${esc(JSON.stringify(p, null, 2))}</pre>`;
+    const link = location.origin + '/#verify-' + t.dataset.open;
+    document.querySelector('#detail').innerHTML = `
+      <div class="panel" style="margin-top:14px"><h3>${esc(p.submissionId || t.dataset.open)} — PASSPORT</h3>
+        <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start">
+          <img src="/api/qr?text=${encodeURIComponent(link)}" width="96" height="96" style="border-radius:8px;background:#fff;padding:4px">
+          <div style="flex:1;min-width:220px">
+            <p style="font-size:13px">${esc(p.item?.name || '')} — ${p.status}</p>
+            <p class="muted" style="font-size:11px">${(p.captures || []).length} evidence items • ${(p.observations || []).length} observations • QC ${p.qc?.approved ? 'approved' : 'pending'}</p>
+            <button class="primary" id="pCopy" style="margin-top:8px;font-size:11px">Copy verify link</button>
+          </div>
+        </div>
+        <pre style="margin-top:10px;max-height:280px;overflow:auto">${esc(JSON.stringify(p, null, 2))}</pre>
+      </div>`;
+    document.querySelector('#pCopy').onclick = () =>
+      navigator.clipboard?.writeText(link).then(() => document.querySelector('#pCopy').textContent = 'Copied ✓');
   });
 }
 
