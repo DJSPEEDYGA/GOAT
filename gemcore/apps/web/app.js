@@ -1118,6 +1118,7 @@ async function valueEstimator() {
 /* ── Public landing — submit for review, client login, verify ─────────── */
 function publicPage() {
   V.innerHTML = `<div class="page">
+    <img src="assets/banner-gcg.svg" style="width:100%;max-width:760px;border-radius:14px;display:block;margin:0 auto 16px" alt="GCG — GemCore Grading">
     <div class="eyebrow">GEMCORE GRADING • BY GOAT</div>
     <h1>The Standard Is Higher</h1>
     <p class="muted">Evidence-first collectible grading. Submit your item for review — if we take the job, you get a private login to watch it move through the lab.</p>
