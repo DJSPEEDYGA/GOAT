@@ -310,7 +310,12 @@ app.get('/api/mp/status', async (_q, r) => {
   } catch { r.json({ online: false, url: MP_URL }); }
 });
 
+const mpLastHit = new Map(); // per-IP cooldown — protects her GPU on public endpoints
 app.post('/api/mp/chat', async (q, r) => {
+  const ip = q.ip || 'x';
+  const now = Date.now();
+  if (now - (mpLastHit.get(ip) || 0) < 4000) return r.status(429).json({ reply: 'Easy — one question at a time. Money Penny is thinking.' });
+  mpLastHit.set(ip, now);
   const sub = q.body.submissionId ? read().find(v => v.id === q.body.submissionId) : null;
   const ctx = sub ? `\nCurrent submission: ${sub.id} — ${sub.item?.name || 'untitled'}, status ${sub.status}, ` +
     `captures ${(sub.captures || []).length}, observations ${(sub.observations || []).length}, ` +
