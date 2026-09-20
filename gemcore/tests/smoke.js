@@ -1,0 +1,1 @@
+const fs=require('fs');const paths=['apps/api/server.js','apps/web/index.html','apps/web/app.js','apps/web/styles.css'];for(const p of paths){if(!fs.existsSync(p))throw new Error('Missing '+p)}console.log('GemCore smoke test OK');
