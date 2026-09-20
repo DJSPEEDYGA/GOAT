@@ -73,7 +73,7 @@ async function lab() {
         <div class="slab" id="slab">
           <div class="label"><span>GEMCORE ${s?.demo ? '<small>DEMO</small>' : ''}<br><small>${esc(s?.item?.name || 'INSPECTION')}</small></span><b id="g">${ev?.publicGrade ?? '—'}</b></div>
           <div class="barcode">▌▎▌▌▎▌▎▎▌ &nbsp; ${s ? s.id : 'GC--------'}</div>
-          <div class="cardface"><img src="assets/card-demo.svg" alt="collectible"><small>${esc(s?.item?.name || 'DEMO COLLECTIBLE')} • DIGITAL INSPECTION TWIN</small></div>
+          <div class="cardface"><img src="assets/mock-card.png" alt="collectible"><small>${esc(s?.item?.name || 'DEMO COLLECTIBLE')} • DIGITAL INSPECTION TWIN</small></div>
         </div>
         <div class="baseglow"></div><div class="basemark">◆ GEMCORE GRADING</div>
         <div class="controls">
@@ -86,20 +86,20 @@ async function lab() {
 
       <div class="rightstack">
         <div class="panel assistant">
-          <div class="ahead"><img src="assets/jarvis.svg" alt="JARVIS"><div><b>JARVIS AI</b><br><span class="online">● Online</span></div></div>
+          <div class="ahead"><img src="assets/mock-jarvis.png" alt="JARVIS" style="border-radius:10px"><div><b>JARVIS AI</b><br><span class="online">● Online</span></div></div>
           <div class="bubble" id="jarvisMsg">Evidence-first inspection assistant. ${s ? 'Loaded ' + s.id + ' — ready to inspect.' : 'Select a submission to begin.'}</div>
           <div class="btnrow"><button class="primary" id="scan2">Run Deep Scan</button><button id="report">Generate Report</button></div>
         </div>
         <div class="panel"><h3>INSPECTION VIEWS</h3>
-          <div class="tabs"><button class="active">Microscope</button><button>Telescope</button><button>3D Model</button></div>
-          <div class="micro"><img src="assets/tex-surface.svg" alt="surface detail"><span>SURFACE DETAIL <b>40×</b></span><span class="tag4k">4K</span></div>
+          <div class="tabs"><button class="active" data-view="microscope">Microscope</button><button data-view="telescope">Telescope</button><button data-view="3d">3D Model</button></div>
+          <div class="micro"><img id="mainView" src="assets/mock-surface.png" alt="surface detail"><span id="viewLabel">SURFACE DETAIL <b>40×</b></span><span class="tag4k">4K</span></div>
           <div class="thumbs">
-            <i><img src="assets/tex-corner.svg"><em>Corner</em></i>
-            <i><img src="assets/tex-edge.svg"><em>Edge</em></i>
-            <i><img src="assets/tex-holo.svg"><em>Holo</em></i>
-            <i><img src="assets/tex-relief.svg"><em>Relief</em></i>
-            <i><img src="assets/tex-uv.svg"><em>UV</em></i>
-            <i><img src="assets/tex-texture.svg"><em>Texture</em></i>
+            <i data-thumb="mock-t1"><img src="assets/mock-t1.png"><em>Corner</em></i>
+            <i data-thumb="mock-t2"><img src="assets/mock-t2.png"><em>Edge</em></i>
+            <i data-thumb="mock-t3"><img src="assets/mock-t3.png"><em>Holo</em></i>
+            <i data-thumb="mock-t4"><img src="assets/mock-t4.png"><em>Relief</em></i>
+            <i data-thumb="mock-t5"><img src="assets/mock-t5.png"><em>UV</em></i>
+            <i data-thumb="mock-t6"><img src="assets/mock-t6.png"><em>Texture</em></i>
           </div>
         </div>
         <div class="panel"><h3>GRADE BREAKDOWN</h3>
@@ -116,14 +116,16 @@ async function lab() {
       <button id="v3d">View 3D Model</button>
       <button class="seal" id="seal" ${ev?.status === 'sealable' ? '' : 'disabled'}>✓ Seal Grade</button>
       <button id="report2">Generate Report</button>
-      <button>Add to Vault</button><button>Share Results</button>
+      <button id="addvault">Add to Vault</button><button id="share">Share Results</button>
     </div>
     <pre id="labOut" style="display:none"></pre>
 
     <div class="intel">
-      <div class="panel"><h3>MARKET INTELLIGENCE</h3><strong>$412.50 <small style="color:var(--green);font-size:11px">▲ +12.4%</small></strong>
-        <svg class="spark" viewBox="0 0 200 44" style="width:100%;height:40px"><polyline points="0,34 20,30 40,33 60,24 80,28 100,18 120,22 140,12 160,16 180,8 200,10" fill="none" stroke="#25f3e6" stroke-width="2"/><polyline points="0,40 200,40" stroke="#12344a"/></svg>
-        <p class="muted" style="font-size:10px">DEMO comparable data — never affects grade.</p></div>
+      <div class="panel"><h3>MARKET INTELLIGENCE</h3><strong id="mktPrice">$412.50 <small style="color:var(--green);font-size:11px">▲ +12.4%</small></strong>
+        <svg class="spark" viewBox="0 0 200 44" style="width:100%;height:40px"><polyline id="spark" points="0,34 20,30 40,33 60,24 80,28 100,18 120,22 140,12 160,16 180,8 200,10" fill="none" stroke="#25f3e6" stroke-width="2"/><polyline points="0,40 200,40" stroke="#12344a"/></svg>
+        <div class="tabs" style="margin-top:6px">${['7D','30D','90D','1Y','ALL'].map((t,i)=>`<button data-tf="${i}" class="${i===0?'active':''}">${t}</button>`).join('')}</div>
+        <p class="muted" style="font-size:10px">DEMO comparable data — never affects grade.</p>
+        <button class="primary" id="comparables" style="margin-top:8px;font-size:11px;width:100%">View Market Comparables</button></div>
       <div class="panel"><h3>POPULATION REPORT</h3><div class="donut" id="pop">POP</div><p class="muted" style="font-size:10px" id="popLine">Loading…</p></div>
       <div class="panel"><h3>ESTIMATED VALUE</h3><strong>$410 – $460</strong><p class="muted" style="font-size:12px">Market trend <b style="color:var(--green)">Bullish ↗</b><br><span style="font-size:10px">DEMO — never affects grade.</span></p></div>
       <div class="panel"><h3>EVIDENCE PASSPORT</h3><p style="font-size:12px;line-height:1.7">
@@ -176,7 +178,48 @@ function bindLab(s, ev) {
   q('#scan').onclick = runScan;
   q('#scan2').onclick = runScan;
   q('#retake').onclick = () => { q('#progress').style.width = '0'; q('#state').textContent = 'HUMAN QC REQUIRED'; };
-  q('#report').onclick = q('#report2').onclick = () => s ? out(JSON.stringify(s, null, 2)) : q('#jarvisMsg').textContent = 'No submission selected.';
+  q('#report').onclick = q('#report2').onclick = async () => {
+    if (!s) { q('#jarvisMsg').textContent = 'No submission selected.'; return; }
+    out(JSON.stringify(await api(`/submissions/${s.id}/passport`), null, 2));
+  };
+  q('#addvault').onclick = () => { q('#jarvisMsg').textContent = s ? s.id + ' queued for Vault.' : 'Select a submission first.'; };
+  q('#share').onclick = () => {
+    if (!s) { q('#jarvisMsg').textContent = 'Select a submission first.'; return; }
+    const link = location.origin + '/#verify-' + s.id;
+    (navigator.clipboard?.writeText(link) || Promise.reject()).then(
+      () => q('#jarvisMsg').textContent = 'Verify link copied: ' + link,
+      () => q('#jarvisMsg').textContent = 'Verify link: ' + link);
+  };
+
+  // inspection view tabs + thumbnails swap the main viewer
+  const views = { microscope: 'assets/mock-surface.png', telescope: 'assets/mock-chamber.png' };
+  const viewNames = { microscope: 'SURFACE DETAIL <b>40×</b>', telescope: 'MACRO / TELESCOPE <b>wide</b>', '3d': '3D MODEL <b>rotate</b>' };
+  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => {
+    document.querySelectorAll('[data-view]').forEach(x => x.classList.toggle('active', x === b));
+    const v = b.dataset.view;
+    if (v === '3d') { q('#mainView').src = 'assets/mock-card.png'; }
+    else q('#mainView').src = views[v];
+    q('#viewLabel').innerHTML = viewNames[v];
+  });
+  document.querySelectorAll('[data-thumb]').forEach(t => t.onclick = () => {
+    q('#mainView').src = 'assets/' + t.dataset.thumb + '.png';
+    q('#viewLabel').innerHTML = t.querySelector('em').textContent.toUpperCase() + ' <b>view</b>';
+  });
+
+  // market timeframe tabs switch demo sparkline
+  const sparks = [
+    '0,34 20,30 40,33 60,24 80,28 100,18 120,22 140,12 160,16 180,8 200,10',
+    '0,38 25,34 50,30 75,32 100,25 125,20 150,16 175,12 200,9',
+    '0,40 30,36 60,30 90,26 120,28 150,18 180,14 200,6',
+    '0,40 40,35 80,32 120,20 160,14 200,4',
+    '0,42 50,38 100,30 150,18 200,2'];
+  const prices = ['$412.50', '$398.20', '$371.00', '$344.60', '$289.00'];
+  document.querySelectorAll('[data-tf]').forEach(b => b.onclick = () => {
+    document.querySelectorAll('[data-tf]').forEach(x => x.classList.toggle('active', x === b));
+    q('#spark').setAttribute('points', sparks[+b.dataset.tf]);
+    q('#mktPrice').innerHTML = prices[+b.dataset.tf] + ' <small style="color:var(--green);font-size:11px">▲ demo</small>';
+  });
+  q('#comparables').onclick = () => show('market');
   q('#seal').onclick = async () => {
     if (!s) return;
     const res = await api(`/submissions/${s.id}/seal`);
