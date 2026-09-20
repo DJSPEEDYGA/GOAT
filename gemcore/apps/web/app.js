@@ -173,7 +173,12 @@ function bindLab(s, ev) {
   const askMp = async () => {
     const msg = q('#mpInput').value.trim(); if (!msg) return;
     q('#mpInput').value = ''; q('#jarvisMsg').textContent = 'Money Penny is thinking…';
-    const res = await api('/mp/chat', { b: { message: msg, submissionId: s?.id } });
+    const res = await api('/mp/chat', { b: { message: msg, submissionId: s?.id }, h: { 'x-mp-key': localStorage.getItem('gemcore.mpkey') || '' } });
+    if (res.locked) {
+      const key = prompt(res.reply + '\nEnter key:');
+      if (key) { localStorage.setItem('gemcore.mpkey', key); q('#mpInput').value = msg; return askMp(); }
+      q('#jarvisMsg').textContent = res.reply; return;
+    }
     let reply = res.reply || '';
     // she can drive the lab — parse [[ACTION:...]] tokens
     const actions = [...reply.matchAll(/\[\[ACTION:(\w+)(?::(\w+))?\]\]/g)];

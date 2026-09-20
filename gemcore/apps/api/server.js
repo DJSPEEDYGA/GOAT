@@ -340,8 +340,12 @@ async function mpCall(messages) {
   return j.choices?.[0]?.message?.content?.trim() || '';
 }
 
+const MP_KEY = process.env.GEMCORE_MP_KEY || ''; // when set, public chat needs the key
 const mpLastHit = new Map(); // per-IP cooldown — protects her GPU on public endpoints
 app.post('/api/mp/chat', async (q, r) => {
+  if (MP_KEY && q.get('x-mp-key') !== MP_KEY) {
+    return r.status(403).json({ locked: true, reply: 'Money Penny is keyed — unlock to talk to her.' });
+  }
   const ip = q.ip || 'x';
   const now = Date.now();
   if (now - (mpLastHit.get(ip) || 0) < 4000) return r.status(429).json({ reply: 'Easy — one question at a time. Money Penny is thinking.' });
