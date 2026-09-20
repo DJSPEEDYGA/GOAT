@@ -24,20 +24,39 @@ def pseudo_depth(img: Image.Image) -> np.ndarray:
     from scipy.ndimage import gaussian_filter  # optional; fallback below
     return gaussian_filter(g, sigma=12)
 
-def parallax_frames(img: Image.Image, depth: np.ndarray, n=48, amp=0.012):
-    """2.5D warp: shift pixels by depth * camera pan — the 'alive' look."""
+def parallax_frames(img: Image.Image, depth: np.ndarray, n=48, amp=0.012, fx='holo'):
+    """2.5D warp: shift pixels by depth * camera pan — the 'alive' look.
+    fx: holo sweep | sparkle particles | depth-blur rack focus | cinema grade."""
     src = np.asarray(img, dtype=np.float32)
     h, w = depth.shape
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    rng = np.random.default_rng(7)
+    sparks = np.column_stack([rng.random(60) * w, rng.random(60) * h, rng.random(60) * 2 * math.pi])
+    blurred = np.asarray(img.filter(ImageFilter.GaussianBlur(9)), dtype=np.float32)
     frames = []
     for i in range(n):
-        t = math.sin(i / n * 2 * math.pi)          # smooth loop
-        dx = (depth - depth.mean()) * amp * w * t  # near pixels move more
+        t = math.sin(i / n * 2 * math.pi)
+        dx = (depth - depth.mean()) * amp * w * t
         xi = np.clip(xx + dx, 0, w - 1).astype(np.int32)
         frame = np.take_along_axis(src, xi[..., None], axis=1)
-        # holo sweep
-        sweep = ((xx / w) - (i / n)) ** 2
-        frame += np.exp(-sweep * 40)[..., None] * 38
+        if fx in ('holo', 'sparkle'):
+            sweep = ((xx / w) - (i / n)) ** 2
+            frame += np.exp(-sweep * 40)[..., None] * 38
+        if fx == 'sparkle':
+            ph = i / n * 2 * math.pi
+            for sx, sy, sp in sparks:
+                tw = (math.sin(sp + ph * 3) + 1) / 2
+                if tw > .75:
+                    frame[int(sy) % h, int(sx) % w] = [255, 250, 220]
+        if fx == 'depth-blur':
+            # rack focus: near-plane stays sharp, far blurs (breathing focus)
+            mix = (np.abs(t) * .8 + .2)[..., None] if False else None
+            sharpness = np.clip(depth * 2 - .5 + t * .3, 0, 1)[..., None]
+            frame = frame * sharpness + np.take_along_axis(blurred, xi[..., None], axis=1) * (1 - sharpness)
+        if fx == 'cinema':
+            frame *= np.array([1.02, .98, .9])  # warm grade
+            bar = int(h * .09)
+            frame[:bar] = frame[-bar:] = 0
         frames.append(Image.fromarray(np.clip(frame, 0, 255).astype(np.uint8)))
     return frames
 
@@ -73,7 +92,9 @@ def run_job(jid, png_bytes, mode):
                 STATUS[jid] = {'state': 'fallback', 'note': f'no diffusion model ({type(e).__name__}) — depth parallax used'}
                 depth = pseudo_depth(img); frames = parallax_frames(img, depth)
         else:
-            depth = pseudo_depth(img); frames = parallax_frames(img, depth)
+            depth = pseudo_depth(img)
+            fx = mode if mode in ('holo', 'sparkle', 'depth-blur', 'cinema') else 'holo'
+            frames = parallax_frames(img, depth, fx=fx)
         out = write_mp4(frames, os.path.join(JOBS, jid + '.mp4'))
         STATUS[jid] = {'state': 'done', 'file': os.path.basename(out), 'frames': len(frames)}
     except Exception as e:
