@@ -34,6 +34,25 @@ if (!fs.existsSync(auditFile)) fs.writeFileSync(auditFile, '');
 const read = () => JSON.parse(fs.readFileSync(dbFile, 'utf8'));
 const write = x => fs.writeFileSync(dbFile, JSON.stringify(x, null, 2));
 
+// ── Staff gate + client portal ──────────────────────────────────────────
+const STAFF_KEY = process.env.GEMCORE_STAFF_KEY || '';
+const clientsFile = path.join(dataDir, 'clients.json');
+if (!fs.existsSync(clientsFile)) fs.writeFileSync(clientsFile, '[]');
+const readClients = () => JSON.parse(fs.readFileSync(clientsFile, 'utf8'));
+const writeClients = x => fs.writeFileSync(clientsFile, JSON.stringify(x, null, 2));
+const sessions = new Map(); // token → {clientId, exp}
+
+const isStaff = q => !STAFF_KEY || q.get('x-staff-key') === STAFF_KEY;
+const sha256 = s => crypto.createHash('sha256').update(s).digest('hex');
+
+// staff-gate middleware for internal surfaces (public + verify + mp stay open)
+app.use((q, r, next) => {
+  const pub = q.path.startsWith('/api/public') || q.path.startsWith('/api/verify') ||
+    q.path === '/api/qr' || q.path === '/api/health' || q.path.startsWith('/api/mp') || !q.path.startsWith('/api');
+  if (pub || isStaff(q)) return next();
+  r.status(403).json({ error: 'staff only' });
+});
+
 function audit(submissionId, action, detail = {}) {
   const rec = { submissionId, action, detail, at: new Date().toISOString() };
   fs.appendFileSync(auditFile, JSON.stringify(rec) + '\n');
@@ -63,7 +82,7 @@ app.use('/capture-core', express.static(path.join(root, 'packages/capture-core')
 app.get('/api/health', (_q, r) => r.json({
   ok: true, service: 'gemcore', version: '0.1.0-preactive',
   agents: agentBus.status().length, visionAdapters: vision.status().length,
-  rubric: RUBRIC_VERSION,
+  rubric: RUBRIC_VERSION, staffRequired: !!STAFF_KEY,
 }));
 
 app.get('/api/agents', (_q, r) => r.json(agentBus.status()));
@@ -460,6 +479,81 @@ app.post('/api/submissions/:id/vault', (q, r) => {
   const out = updateSub(s.id, x => { x.vaulted = q.body.vaulted !== false; });
   audit(s.id, 'vault', { vaulted: out.vaulted });
   r.json({ ok: true, vaulted: out.vaulted });
+});
+
+// ── PUBLIC: submit a card for review (no account needed) ────────────────
+app.post('/api/public/request', (q, r) => {
+  const { contact = {}, item = {}, notes = '' } = q.body || {};
+  if (!contact.email || !item.name) return r.status(400).json({ error: 'email + item name required' });
+  const sub = {
+    id: 'GC-' + crypto.randomBytes(5).toString('hex').toUpperCase(),
+    item: { name: item.name, set: item.set || '', year: item.year || '' },
+    demo: false, external: true,
+    status: 'review-request',
+    intake: { name: contact.name || '', email: contact.email, notes },
+    review: { status: 'pending', price: null },
+    captures: [], evidence: [], annotations: [], observations: [],
+    createdAt: new Date().toISOString(),
+  };
+  const all = read(); all.push(sub); write(all);
+  audit(sub.id, 'public-request', { email: contact.email });
+  r.status(201).json({ trackingId: sub.id });
+});
+
+// client login → session token (job-id + password the staff issued)
+app.post('/api/public/login', (q, r) => {
+  const { jobId, password } = q.body || {};
+  const c = readClients().find(x => x.submissionId === (jobId || '').toUpperCase().trim());
+  if (!c || !c.passHash || sha256(password || '') !== c.passHash)
+    return r.status(401).json({ error: 'invalid credentials' });
+  const token = crypto.randomBytes(24).toString('hex');
+  sessions.set(token, { clientId: c.id, exp: Date.now() + 86400e3 });
+  r.json({ token, jobId: c.submissionId });
+});
+
+// client job view — their job ONLY, sanitized fields
+app.get('/api/public/job', (q, r) => {
+  const sess = sessions.get(q.get('authorization')?.replace('Bearer ', ''));
+  if (!sess || sess.exp < Date.now()) return r.status(401).json({ error: 'login required' });
+  const c = readClients().find(x => x.id === sess.clientId);
+  const s = read().find(x => x.id === c?.submissionId);
+  if (!s) return r.sendStatus(404);
+  r.json({
+    jobId: s.id, item: s.item, status: s.status,
+    price: s.review?.price, stage: s.production?.stage || null,
+    grade: s.certificate?.publicGrade ?? null,
+    certId: s.certificate?.certId ?? null,
+    captureCount: (s.captures || []).length,
+    updated: s.certificate?.sealedAt || s.createdAt,
+  });
+});
+
+// ── STAFF: request queue + decisions (gate enforced by middleware) ──────
+app.get('/api/staff/requests', (q, r) => {
+  r.json(read().filter(s => s.external).map(s => ({
+    id: s.id, item: s.item, contact: s.intake, review: s.review,
+    status: s.status, createdAt: s.createdAt,
+  })));
+});
+
+app.post('/api/staff/decide', (q, r) => {
+  const { submissionId, accept, price, reviewer } = q.body || {};
+  const s = findSub(r, submissionId); if (!s) return;
+  const out = updateSub(s.id, x => {
+    x.review = { status: accept ? 'accepted' : 'declined', price: accept ? +price || null : null, reviewer: reviewer || 'staff', decidedAt: new Date().toISOString() };
+    if (accept) x.status = 'intake';
+  });
+  let password = null;
+  if (accept) {
+    password = 'GC' + crypto.randomBytes(4).toString('hex');
+    const clients = readClients();
+    const existing = clients.find(c => c.submissionId === s.id);
+    if (existing) existing.passHash = sha256(password);
+    else clients.push({ id: crypto.randomBytes(6).toString('hex'), submissionId: s.id, login: s.intake?.email || s.id, passHash: sha256(password), createdAt: new Date().toISOString() });
+    writeClients(clients);
+  }
+  audit(s.id, 'staff-decision', { accept, price: out.review.price });
+  r.json({ ok: true, review: out.review, clientPassword: password });
 });
 
 // QR for slab labels / passports — encodes the public verify URL.

@@ -9,13 +9,20 @@ let currentSub = localStorage.getItem('gemcore.sub') || null;
 let evLayerOn = true;
 
 const api = async (p, opts) => {
-  const r = await fetch('/api' + p, opts && {
-    method: opts.m || 'POST',
-    headers: { 'Content-Type': 'application/json', ...(opts.h || {}) },
-    body: opts.b ? JSON.stringify(opts.b) : undefined,
+  const r = await fetch('/api' + p, {
+    method: opts?.m || (opts?.b ? 'POST' : 'GET'),
+    headers: {
+      'Content-Type': 'application/json',
+      'x-staff-key': localStorage.getItem('gemcore.staff') || '',
+      ...(opts?.h || {}),
+    },
+    body: opts?.b ? JSON.stringify(opts.b) : undefined,
   });
   return r.json();
 };
+
+const isStaff = () => !!localStorage.getItem('gemcore.staff') || localStorage.getItem('gemcore.staffless') === '1';
+const INTERNAL = ['grade','intake','submissions','passport','population','production','vault','market','live','studio','photolab','tools','settings','qc','requests','command'];
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -956,8 +963,114 @@ async function community() {
   document.querySelector('#goMp').onclick = () => show('grade');
 }
 
+/* ── Public landing — submit for review, client login, verify ─────────── */
+function publicPage() {
+  V.innerHTML = `<div class="page">
+    <div class="eyebrow">GEMCORE GRADING • BY GOAT</div>
+    <h1>The Standard Is Higher</h1>
+    <p class="muted">Evidence-first collectible grading. Submit your item for review — if we take the job, you get a private login to watch it move through the lab.</p>
+    <div class="detailgrid" style="margin-top:14px">
+      <div class="panel"><h3>SUBMIT FOR REVIEW</h3>
+        <label>Your name<input id="pubName" placeholder="Collector name"></label>
+        <label>Email<input id="pubEmail" type="email" placeholder="you@email.com"></label>
+        <label>Item<input id="pubItem" placeholder="e.g. Charizard 1st Edition"></label>
+        <label>Set / year<input id="pubSet" placeholder="Pokémon Base Set • 1999"></label>
+        <label>Notes<textarea id="pubNotes" rows="2" placeholder="condition notes, provenance…"></textarea></label>
+        <button class="primary" id="pubGo" style="margin-top:10px">Request Review</button>
+        <pre id="pubOut"></pre>
+      </div>
+      <div class="panel"><h3>CLIENT LOGIN</h3>
+        <p class="muted" style="font-size:11px">Have a job with us? Log in to track it.</p>
+        <label>Job ID<input id="clJob" placeholder="GC-XXXXXXXXXX"></label>
+        <label>Password<input id="clPass" type="password" placeholder="issued when we accept your job"></label>
+        <button class="primary" id="clGo" style="margin-top:10px">View My Job</button>
+        <pre id="clOut"></pre>
+        <h3 style="margin-top:16px">VERIFY A CERTIFICATE</h3>
+        <div style="display:flex;gap:8px"><input id="pubCert" placeholder="GCG-…"><button id="pubVerify" style="font-size:11px">Verify</button></div>
+        <pre id="pvOut"></pre>
+      </div>
+    </div>
+    <p class="muted" style="font-size:10px;margin-top:16px">Staff? <a href="#" id="staffIn" style="color:var(--teal)">Enter staff key →</a></p>
+  </div>`;
+  const q = sel => document.querySelector(sel);
+  q('#pubGo').onclick = async () => {
+    const res = await fetch('/api/public/request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contact: { name: q('#pubName').value, email: q('#pubEmail').value }, item: { name: q('#pubItem').value, set: q('#pubSet').value }, notes: q('#pubNotes').value }) }).then(r => r.json());
+    q('#pubOut').textContent = res.trackingId ? 'Received. Tracking ID: ' + res.trackingId + '\nWe review every request — if we take it, you get a quote + login.' : 'Error: ' + res.error;
+  };
+  q('#clGo').onclick = async () => {
+    const res = await fetch('/api/public/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jobId: q('#clJob').value, password: q('#clPass').value }) }).then(r => r.json());
+    if (res.token) { localStorage.setItem('gemcore.client', res.token); show('portal'); }
+    else q('#clOut').textContent = res.error || 'login failed';
+  };
+  q('#pubVerify').onclick = async () => {
+    const res = await fetch('/api/verify/' + encodeURIComponent(q('#pubCert').value.trim())).then(r => r.json());
+    q('#pvOut').textContent = JSON.stringify(res, null, 2);
+  };
+  q('#staffIn').onclick = e => {
+    e.preventDefault();
+    const k = prompt('Staff key:');
+    if (k) { localStorage.setItem('gemcore.staff', k.trim()); show('command'); }
+  };
+}
+
+/* ── Client portal — their job ONLY ───────────────────────────────────── */
+async function portal() {
+  const tok = localStorage.getItem('gemcore.client');
+  if (!tok) return show('public');
+  const j = await fetch('/api/public/job', { headers: { authorization: 'Bearer ' + tok } }).then(r => r.json());
+  if (j.error) { localStorage.removeItem('gemcore.client'); return show('public'); }
+  const steps = ['review-request', 'intake', 'capturing', 'analyzing', 'qc', 'certified', 'production'];
+  const idx = steps.indexOf(j.status);
+  V.innerHTML = `<div class="page">
+    <div class="eyebrow">GEMCORE • CLIENT PORTAL</div><h1>${esc(j.item?.name || 'Your Job')}</h1>
+    <p class="muted">Job ${esc(j.jobId)}${j.item?.set ? ' • ' + esc(j.item.set) : ''}${j.item?.year ? ' • ' + esc(j.item.year) : ''}</p>
+    <div class="panel" style="margin-top:14px"><h3>STATUS</h3>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0">
+        ${steps.map((s, i) => `<span class="badge" style="${i === idx ? 'border-color:var(--green);color:var(--green)' : i < idx ? 'opacity:.6' : 'opacity:.3'}">${s}</span>`).join('')}
+      </div>
+      ${j.price ? `<p style="font-size:13px">Quoted price: <b>$${j.price}</b></p>` : ''}
+      ${j.stage ? `<p style="font-size:13px">Production stage: <b>${j.stage}</b></p>` : ''}
+      ${j.grade ? `<p style="font-size:20px;color:var(--teal)">Certified grade: <b>${j.grade}</b> <small class="muted">${esc(j.certId || '')}</small></p>` : ''}
+      <p class="muted" style="font-size:11px">${j.captureCount} evidence item(s) on file • updated ${new Date(j.updated).toLocaleString()}</p>
+      <button id="clOut2" style="margin-top:8px;font-size:11px">Log out</button>
+    </div></div>`;
+  document.querySelector('#clOut2').onclick = () => { localStorage.removeItem('gemcore.client'); show('public'); };
+}
+
+/* ── Staff: client request queue ──────────────────────────────────────── */
+async function requests() {
+  const list = await fetch('/api/staff/requests', { headers: { 'x-staff-key': localStorage.getItem('gemcore.staff') || '' } }).then(r => r.json()).catch(() => []);
+  V.innerHTML = page('Client Requests', 'Screen submissions — accept with a quote, decline, generate client logins',
+    Array.isArray(list) && list.length ? list.map(s => `
+      <div class="panel" style="margin-top:12px">
+        <b>${s.id}</b> <span class="badge ${s.review?.status === 'accepted' ? '' : 'warn'}">${s.review?.status || 'pending'}</span>
+        <p style="font-size:13px;margin:8px 0">${esc(s.item?.name)} ${s.item?.set ? '— ' + esc(s.item.set) : ''}</p>
+        <p class="muted" style="font-size:11px">${esc(s.contact?.name || '')} • ${esc(s.contact?.email || '')} • ${new Date(s.createdAt).toLocaleDateString()}</p>
+        ${s.review?.status === 'pending' ? `
+          <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+            <input id="p-${s.id}" type="number" placeholder="price $" style="width:110px;margin:0">
+            <button class="primary" data-acc="${s.id}" style="font-size:11px">Accept + generate login</button>
+            <button data-dec="${s.id}" style="font-size:11px">Decline</button>
+          </div>` : s.review?.price ? `<p class="muted" style="font-size:11px">Quoted $${s.review.price}</p>` : ''}
+      </div>`).join('') : '<div class="panel" style="margin-top:12px"><p class="muted">No external requests.</p></div>');
+  const hdrs = { 'Content-Type': 'application/json', 'x-staff-key': localStorage.getItem('gemcore.staff') || '' };
+  document.querySelectorAll('[data-acc]').forEach(b => b.onclick = async () => {
+    const price = +document.querySelector('#p-' + b.dataset.acc).value || null;
+    const res = await fetch('/api/staff/decide', { method: 'POST', headers: hdrs, body: JSON.stringify({ submissionId: b.dataset.acc, accept: true, price }) }).then(r => r.json());
+    alert(res.clientPassword ? `Accepted. Client login — Job ID: ${b.dataset.acc}  Password: ${res.clientPassword}\nSend these to the client.` : 'Accepted.');
+    show('requests');
+  });
+  document.querySelectorAll('[data-dec]').forEach(b => b.onclick = async () => {
+    await fetch('/api/staff/decide', { method: 'POST', headers: hdrs, body: JSON.stringify({ submissionId: b.dataset.dec, accept: false }) });
+    show('requests');
+  });
+}
+
 const pages = {
   command,
+  public: publicPage,
+  portal,
+  requests,
   grade: lab,
   intake,
   submissions,
@@ -977,13 +1090,24 @@ const pages = {
 };
 
 function show(k) {
+  // internal pages require staff key; public gets landing/portal/verify only
+  if (INTERNAL.includes(k) && !isStaff()) k = 'public';
   const f = pages[k] || pages.command;
-  document.querySelectorAll('[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page === k));
+  document.querySelectorAll('[data-page]').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === k);
+    if (INTERNAL.includes(b.dataset.page)) b.style.display = isStaff() ? '' : 'none';
+  });
   const r = f();
   if (r && r.then) r.catch(e => { V.innerHTML = page('Error', '', `<pre>${esc(e.message)}</pre>`); });
   nav();
 }
 applyAccent();
+// local/open servers have no staff key → don't lock yourself out
+api('/health').then(h => {
+  if (h && h.staffRequired === false) localStorage.setItem('gemcore.staffless', '1');
+  else if (h && h.staffRequired === true) localStorage.removeItem('gemcore.staffless');
+  nav();
+});
 nav();
 // deep links: /#verify-GCG-xxx opens the public cert page prefilled
 if (location.hash.startsWith('#verify-')) {
