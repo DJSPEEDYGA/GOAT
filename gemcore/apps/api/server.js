@@ -310,6 +310,36 @@ app.get('/api/mp/status', async (_q, r) => {
   } catch { r.json({ online: false, url: MP_URL }); }
 });
 
+// ── Money Penny's tool layer — real data access, allowlisted.
+//    She emits [[TOOL:name]] mid-reply; we run it and let her finish
+//    with the result. GOAT bridge = GEMCORE_GOAT_API when reachable.
+const GOAT_API = process.env.GEMCORE_GOAT_API || '';
+const MP_TOOLS = {
+  population: async () => {
+    const all = read();
+    const byGrade = {};
+    for (const s of all.filter(x => x.status === STATUSES.CERTIFIED && x.certificate)) byGrade[s.certificate.publicGrade] = (byGrade[s.certificate.publicGrade] || 0) + 1;
+    return { total: all.length, certified: Object.keys(byGrade).length ? byGrade : {}, inPipeline: all.filter(x => x.status !== STATUSES.CERTIFIED).length };
+  },
+  submissions: async () => read().slice(0, 10).map(s => ({ id: s.id, item: s.item?.name, status: s.status, captures: (s.captures || []).length, demo: !!s.demo })),
+  production: async () => read().filter(s => s.production).map(s => ({ id: s.id, stage: s.production.stage })),
+  goat_status: async () => {
+    if (!GOAT_API) return { reachable: false, note: 'GOAT Royalty endpoint not configured — set GEMCORE_GOAT_API' };
+    try { const c = new AbortController(); setTimeout(() => c.abort(), 4000); const res = await fetch(GOAT_API + '/api/health', { signal: c.signal }); return { reachable: res.ok, status: res.status }; }
+    catch { return { reachable: false, note: 'GOAT Royalty API unreachable at ' + GOAT_API }; }
+  },
+};
+
+async function mpCall(messages) {
+  const c = new AbortController(); setTimeout(() => c.abort(), 60000);
+  const res = await fetch(MP_URL + '/v1/chat/completions', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: c.signal,
+    body: JSON.stringify({ model: MP_MODEL, messages, max_tokens: 240, temperature: 0.7 }),
+  });
+  const j = await res.json();
+  return j.choices?.[0]?.message?.content?.trim() || '';
+}
+
 const mpLastHit = new Map(); // per-IP cooldown — protects her GPU on public endpoints
 app.post('/api/mp/chat', async (q, r) => {
   const ip = q.ip || 'x';
@@ -320,21 +350,21 @@ app.post('/api/mp/chat', async (q, r) => {
   const ctx = sub ? `\nCurrent submission: ${sub.id} — ${sub.item?.name || 'untitled'}, status ${sub.status}, ` +
     `captures ${(sub.captures || []).length}, observations ${(sub.observations || []).length}, ` +
     `QC ${sub.qc?.approved ? 'approved' : 'pending'}${sub.evaluation ? ', index ' + sub.evaluation.internalConditionIndex : ''}.` : '';
+  const toolDoc = `\nTOOLS (emit [[TOOL:name]] alone on a line to call, then answer with the result): ${Object.keys(MP_TOOLS).join(', ')}`;
   try {
-    const c = new AbortController(); setTimeout(() => c.abort(), 60000);
-    const res = await fetch(MP_URL + '/v1/chat/completions', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: c.signal,
-      body: JSON.stringify({
-        model: MP_MODEL,
-        messages: [
-          { role: 'system', content: 'You are Money Penny, the AI in control of GemCore Grading. You speak with calm precision — a trusted chief of staff, sharp and confident. Keep answers short.' + MP_KNOWLEDGE + ctx },
-          { role: 'user', content: q.body.message || '' },
-        ],
-        max_tokens: 220, temperature: 0.7,
-      }),
-    });
-    const j = await res.json();
-    r.json({ ok: true, reply: j.choices?.[0]?.message?.content?.trim() || '(empty reply)' });
+    const messages = [
+      { role: 'system', content: 'You are Money Penny, the AI in control of GemCore Grading. You speak with calm precision — a trusted chief of staff, sharp and confident. Keep answers short.' + MP_KNOWLEDGE + toolDoc + ctx },
+      { role: 'user', content: q.body.message || '' },
+    ];
+    let reply = await mpCall(messages);
+    const calls = [...reply.matchAll(/\[\[TOOL:(\w+)\]\]/g)];
+    for (const [, tool] of calls) {
+      const fn = MP_TOOLS[tool];
+      const result = fn ? await fn() : { error: 'unknown tool' };
+      messages.push({ role: 'assistant', content: reply }, { role: 'user', content: `TOOL RESULT ${tool}: ${JSON.stringify(result).slice(0, 1200)}` });
+      reply = await mpCall(messages); // she finishes with the real data
+    }
+    r.json({ ok: true, reply });
   } catch (e) {
     r.json({ ok: false, reply: 'Money Penny is offline — point GEMCORE_MP_URL at her server.', offline: true });
   }
