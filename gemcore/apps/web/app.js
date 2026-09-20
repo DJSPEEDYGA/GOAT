@@ -73,7 +73,7 @@ async function lab() {
         <div class="slab" id="slab">
           <div class="label"><span>GEMCORE ${s?.demo ? '<small>DEMO</small>' : ''}<br><small>${esc(s?.item?.name || 'INSPECTION')}</small></span><b id="g">${ev?.publicGrade ?? '—'}</b></div>
           <div class="barcode">▌▎▌▌▎▌▎▎▌ &nbsp; ${s ? s.id : 'GC--------'}</div>
-          <div class="cardface">${esc(s?.item?.name || 'COLLECTIBLE')}<br><small>DIGITAL INSPECTION TWIN</small></div>
+          <div class="cardface"><img src="assets/card-demo.svg" alt="collectible"><small>${esc(s?.item?.name || 'DEMO COLLECTIBLE')} • DIGITAL INSPECTION TWIN</small></div>
         </div>
         <div class="baseglow"></div><div class="basemark">◆ GEMCORE GRADING</div>
         <div class="controls">
@@ -85,14 +85,22 @@ async function lab() {
       </div>
 
       <div class="rightstack">
-        <div class="panel assistant"><b>JARVIS AI</b><span class="online">Online</span>
-          <p id="jarvisMsg">Evidence-first inspection assistant. ${s ? 'Loaded ' + s.id : 'Select a submission to begin.'}</p>
+        <div class="panel assistant">
+          <div class="ahead"><img src="assets/jarvis.svg" alt="JARVIS"><div><b>JARVIS AI</b><br><span class="online">● Online</span></div></div>
+          <div class="bubble" id="jarvisMsg">Evidence-first inspection assistant. ${s ? 'Loaded ' + s.id + ' — ready to inspect.' : 'Select a submission to begin.'}</div>
           <div class="btnrow"><button class="primary" id="scan2">Run Deep Scan</button><button id="report">Generate Report</button></div>
         </div>
         <div class="panel"><h3>INSPECTION VIEWS</h3>
           <div class="tabs"><button class="active">Microscope</button><button>Telescope</button><button>3D Model</button></div>
-          <div class="micro">SURFACE DETAIL <b>40×</b></div>
-          <div class="thumbs"><i>Corner</i><i>Edge</i><i>Holo</i><i>Relief</i><i>UV</i><i>Texture</i></div>
+          <div class="micro"><img src="assets/tex-surface.svg" alt="surface detail"><span>SURFACE DETAIL <b>40×</b></span><span class="tag4k">4K</span></div>
+          <div class="thumbs">
+            <i><img src="assets/tex-corner.svg"><em>Corner</em></i>
+            <i><img src="assets/tex-edge.svg"><em>Edge</em></i>
+            <i><img src="assets/tex-holo.svg"><em>Holo</em></i>
+            <i><img src="assets/tex-relief.svg"><em>Relief</em></i>
+            <i><img src="assets/tex-uv.svg"><em>UV</em></i>
+            <i><img src="assets/tex-texture.svg"><em>Texture</em></i>
+          </div>
         </div>
         <div class="panel"><h3>GRADE BREAKDOWN</h3>
           ${lanes}
@@ -113,9 +121,11 @@ async function lab() {
     <pre id="labOut" style="display:none"></pre>
 
     <div class="intel">
-      <div class="panel"><h3>MARKET INTELLIGENCE</h3><strong>Connect market feed</strong><div class="spark">╱╲__╱╲╱╲</div><p class="muted" style="font-size:10px">Context only — never affects grade.</p></div>
-      <div class="panel"><h3>POPULATION REPORT</h3><div class="donut" id="pop">${s ? s.id.slice(4) : 'POP'}</div><p class="muted" style="font-size:10px" id="popLine">Real population from certified certs.</p></div>
-      <div class="panel"><h3>ESTIMATED VALUE</h3><strong>—</strong><p class="muted">Market trend<br>Never affects grade.</p></div>
+      <div class="panel"><h3>MARKET INTELLIGENCE</h3><strong>$412.50 <small style="color:var(--green);font-size:11px">▲ +12.4%</small></strong>
+        <svg class="spark" viewBox="0 0 200 44" style="width:100%;height:40px"><polyline points="0,34 20,30 40,33 60,24 80,28 100,18 120,22 140,12 160,16 180,8 200,10" fill="none" stroke="#25f3e6" stroke-width="2"/><polyline points="0,40 200,40" stroke="#12344a"/></svg>
+        <p class="muted" style="font-size:10px">DEMO comparable data — never affects grade.</p></div>
+      <div class="panel"><h3>POPULATION REPORT</h3><div class="donut" id="pop">POP</div><p class="muted" style="font-size:10px" id="popLine">Loading…</p></div>
+      <div class="panel"><h3>ESTIMATED VALUE</h3><strong>$410 – $460</strong><p class="muted" style="font-size:12px">Market trend <b style="color:var(--green)">Bullish ↗</b><br><span style="font-size:10px">DEMO — never affects grade.</span></p></div>
       <div class="panel"><h3>EVIDENCE PASSPORT</h3><p style="font-size:12px;line-height:1.7">
         ${capCount ? '✓' : '○'} Full scan images (${capCount})<br>
         ${obs.length ? '✓' : '○'} AI analysis report (${obs.length} obs)<br>
@@ -139,6 +149,10 @@ function bindLab(s, ev) {
   q('#layers').onclick = e => { evLayerOn = !evLayerOn; q('#evidenceLayer').style.opacity = evLayerOn ? 1 : 0; e.target.textContent = 'Evidence Layers: ' + (evLayerOn ? 'ON' : 'OFF'); };
   q('#subpick').onchange = e => { currentSub = e.target.value || null; localStorage.setItem('gemcore.sub', currentSub || ''); show('grade'); };
   q('#viewPassport').onclick = () => show('passport');
+  api('/population').then(p => {
+    q('#pop').textContent = p.certified;
+    q('#popLine').textContent = `${p.certified} certified • ${p.inPipeline} in pipeline`;
+  }).catch(() => {});
 
   const out = t => { const p = q('#labOut'); p.style.display = 'block'; p.textContent = t; };
 
