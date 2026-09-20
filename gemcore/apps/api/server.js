@@ -281,35 +281,69 @@ app.get('/api/submissions/:id/passport', (q, r) => {
 
 // PUBLIC verification — privacy-safe subset only.
 app.get('/api/verify/:certId', (q, r) => {
-  const s = read().find(v => v.id === q.params.certId || (v.certificate || {}).certId === q.params.certId);
+  const all = read();
+  const s = all.find(v => v.id === q.params.certId || (v.certificate || {}).certId === q.params.certId);
   if (!s) return r.status(404).json({ verified: false, reason: 'unknown certificate' });
   const certified = s.status === STATUSES.CERTIFIED;
+  // CHRON + RANK — TAG's paid add-ons, ours are free
+  const certs = all.filter(x => x.status === STATUSES.CERTIFIED && x.certificate)
+    .sort((a, b) => new Date(a.certificate.sealedAt) - new Date(b.certificate.sealedAt));
+  const chron = certs.findIndex(x => x.id === s.id) + 1 || null;
+  const sameItem = certs.filter(x => x.item?.name === s.item?.name)
+    .sort((a, b) => b.certificate.publicGrade - a.certificate.publicGrade);
+  const rank = sameItem.findIndex(x => x.id === s.id) + 1 || null;
   r.json({
     verified: certified,
     certId: s.id,
     status: s.status,
     demo: !!s.demo,
     publicGrade: certified ? s.certificate.publicGrade : null,
+    internalIndex: certified ? s.evaluation?.internalConditionIndex ?? null : null,
     sealedAt: certified ? s.certificate.sealedAt : null,
     item: { name: s.item?.name || null, set: s.item?.set || null, year: s.item?.year || null },
     qcApproved: !!s.qc?.approved,
     algorithmVersion: s.certificate?.algorithmVersion || RUBRIC_VERSION,
+    chronology: chron, rankOfSameItem: rank, sameItemPopulation: sameItem.length,
+    lanes: certified ? s.evaluation?.lanes || null : null,
+    // DIG-style defect map — coords + lane + severity (no internal notes)
+    defects: certified ? (s.observations || [])
+      .filter(o => o.x != null && o.reviewerDisposition !== 'rejected')
+      .map(o => ({ x: o.x, y: o.y, lane: o.lane, severity: o.severity, source: o.source })) : [],
+    evidenceCount: (s.captures || []).length,
+    hasImage: (s.captures || []).some(c => c.storedData),
   });
+});
+
+// public card image for certified items — the DIG report's defect canvas
+app.get('/api/verify/:certId/image', (q, r) => {
+  const s = read().find(v => v.id === q.params.certId || (v.certificate || {}).certId === q.params.certId);
+  if (!s || s.status !== STATUSES.CERTIFIED) return r.sendStatus(404);
+  const cap = (s.captures || []).find(c => c.storedData && c.side === 'front') || (s.captures || []).find(c => c.storedData);
+  if (!cap) return r.sendStatus(404);
+  const m = cap.storedData.match(/^data:(image\/[\w+]+);base64,(.+)$/);
+  if (!m) return r.sendStatus(404);
+  r.type(m[1]).send(Buffer.from(m[2], 'base64'));
 });
 
 // ── Population report (derived, honest zeros) ────────────────────────────
 app.get('/api/population', (_q, r) => {
   const all = read();
+  const certs = all.filter(x => x.status === STATUSES.CERTIFIED && x.certificate)
+    .sort((a, b) => new Date(a.certificate.sealedAt) - new Date(b.certificate.sealedAt));
   const byGrade = {};
-  for (const s of all.filter(x => x.status === STATUSES.CERTIFIED && x.certificate)) {
-    const g = String(x.certificate.publicGrade);
+  for (const s of certs) {
+    const g = String(s.certificate.publicGrade);
     byGrade[g] = (byGrade[g] || 0) + 1;
   }
   r.json({
     total: all.length,
-    certified: all.filter(x => x.status === STATUSES.CERTIFIED).length,
+    certified: certs.length,
     inPipeline: all.filter(x => x.status !== STATUSES.CERTIFIED).length,
     byGrade,
+    leaderboard: certs.map((s, i) => ({
+      certId: s.certificate.certId || s.id, item: s.item?.name, grade: s.certificate.publicGrade,
+      index: s.evaluation?.internalConditionIndex ?? null, chronology: i + 1,
+    })).sort((a, b) => (b.index ?? 0) - (a.index ?? 0)),
   });
 });
 

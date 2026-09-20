@@ -457,14 +457,57 @@ async function passport() {
   });
 }
 
+/* ── Public cert report — DIG-killer: defect map, lanes, rank, chron ──── */
 async function verify() {
-  V.innerHTML = page('Verify a Certificate', 'Public verification — privacy-safe',
+  V.innerHTML = page('Certificate Report', 'Full transparency — defect map, sub-scores, rank & chronology. Free. Always.',
     `<div class="tile form" style="max-width:460px">
-      <label>Certificate ID<input id="cert" placeholder="GCG-…"></label>
-      <button class="primary" id="go" style="margin-top:14px">Verify</button><pre id="vout"></pre></div>`);
-  document.querySelector('#go').onclick = async () => {
-    const r = await api('/verify/' + encodeURIComponent(document.querySelector('#cert').value.trim()));
-    document.querySelector('#vout').textContent = JSON.stringify(r, null, 2);
+      <label>Certificate ID<input id="cert" placeholder="GC-…"></label>
+      <button class="primary" id="go" style="margin-top:14px">Open Report</button></div>
+    <div id="vout"></div>`);
+  const q = sel => document.querySelector(sel);
+  q('#go').onclick = async () => {
+    const id = q('#cert').value.trim();
+    const r = await api('/verify/' + encodeURIComponent(id));
+    if (!r.verified) { q('#vout').innerHTML = `<div class="panel" style="margin-top:14px"><p style="color:var(--danger)">✗ ${esc(r.reason || 'not certified')}</p></div>`; return; }
+    const laneName = { centering: 'Centering', corners: 'Corners', edges: 'Edges', surface: 'Surface', dimensions: 'Dimensions', authenticity: 'Authenticity' };
+    q('#vout').innerHTML = `
+      <div class="panel" style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+          <div><h3 style="margin:0">${esc(r.item?.name || 'Collectible')}</h3>
+            <p class="muted" style="font-size:11px">${esc(r.item?.set || '')} ${r.item?.year ? '• ' + r.item.year : ''} • cert ${esc(r.certId)} • sealed ${new Date(r.sealedAt).toLocaleDateString()}</p></div>
+          <div style="text-align:right"><div style="font-size:42px;font-weight:800;color:var(--teal);line-height:1">${r.publicGrade}</div>
+            <small class="muted">index ${r.internalIndex ?? '—'}/1000</small></div>
+        </div>
+        ${r.demo ? '<p class="badge warn" style="margin-top:8px">DEMO — not a certified grade</p>' : ''}
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:10px">
+          ${r.chronology ? `<span class="badge">CHRON #${r.chronology}</span>` : ''}
+          ${r.rankOfSameItem ? `<span class="badge">RANK #${r.rankOfSameItem} of ${r.sameItemPopulation} same-item</span>` : ''}
+          <span class="badge">${r.evidenceCount} sealed evidence</span>
+          <span class="badge">rubric ${esc(r.algorithmVersion)}</span>
+        </div>
+      </div>
+      <div class="detailgrid" style="margin-top:14px">
+        <div class="panel"><h3>DEFECT MAP</h3>
+          <div style="position:relative;max-width:340px;margin:0 auto">
+            <img src="/api/verify/${encodeURIComponent(r.certId)}/image" style="width:100%;border-radius:8px;border:1px solid var(--line)" onerror="this.parentElement.innerHTML='<p class=muted>no public image</p>'">
+            <div id="dmap" style="position:absolute;inset:0"></div>
+          </div>
+          <p class="muted" style="font-size:10px;margin-top:6px">${r.defects.length} defect pin(s) — real coordinates from the grading record</p></div>
+        <div class="panel"><h3>SUB-SCORES</h3>
+          ${Object.keys(laneName).map(l => r.lanes && r.lanes[l] != null ? `
+            <div class="metric"><span>${laneName[l]}</span>
+            <span style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:80px;height:6px;background:var(--line);border-radius:3px"><i style="display:block;height:100%;width:${r.lanes[l] / 10}%;background:var(--teal);border-radius:3px"></i></span><b>${(r.lanes[l] / 100).toFixed(1)}</b></span></div>` : '').join('')}
+          <div class="scanrow" style="margin-top:10px"><span class="tick">✓</span><span>Human QC approved • authenticity &amp; condition graded separately</span></div>
+        </div>
+      </div>`;
+    // draw defect pins over the image
+    const map = q('#dmap');
+    r.defects.forEach(d => {
+      const pin = document.createElement('i');
+      pin.style.cssText = `position:absolute;left:${d.x * 100}%;top:${d.y * 100}%;width:14px;height:14px;margin:-7px;border:2px solid ${d.severity > .6 ? 'var(--danger)' : 'var(--teal)'};border-radius:50%;opacity:.85`;
+      pin.title = `${d.lane} defect (sev ${d.severity})`;
+      map.appendChild(pin);
+    });
   };
 }
 
@@ -475,7 +518,10 @@ async function population() {
     <div class="tile"><h3>Certified</h3><strong style="font-size:28px;color:var(--green)">${p.certified}</strong></div>
     <div class="tile"><h3>In pipeline</h3><strong style="font-size:28px">${p.inPipeline}</strong></div></div>
     <div class="panel" style="margin-top:14px"><h3>BY GRADE</h3>
-    <table><tr><th>Grade</th><th>Count</th></tr>${Object.entries(p.byGrade).map(([g, c]) => `<tr><td>${g}</td><td>${c}</td></tr>`).join('') || '<tr><td colspan=2 class="muted">No certified items yet</td></tr>'}</table></div>`);
+    <table><tr><th>Grade</th><th>Count</th></tr>${Object.entries(p.byGrade).map(([g, c]) => `<tr><td>${g}</td><td>${c}</td></tr>`).join('') || '<tr><td colspan=2 class="muted">No certified items yet</td></tr>'}</table></div>
+    <div class="panel" style="margin-top:14px"><h3>LEADERBOARD — ranked by internal index</h3>
+    <table><tr><th>#</th><th>Cert</th><th>Item</th><th>Grade</th><th>Index</th><th>Chron</th></tr>
+    ${(p.leaderboard || []).map((s, i) => `<tr><td>${i + 1}</td><td>${esc(s.certId)}</td><td>${esc(s.item || '')}</td><td>${s.grade}</td><td>${s.index ?? '—'}</td><td>#${s.chronology}</td></tr>`).join('') || '<tr><td colspan=6 class="muted">No certified items yet</td></tr>'}</table></div>`);
 }
 
 /* ── Case Studio — physical slab/case designer with engraving ─────────── */
