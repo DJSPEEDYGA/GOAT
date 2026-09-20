@@ -11,7 +11,7 @@ let evLayerOn = true;
 const api = async (p, opts) => {
   const r = await fetch('/api' + p, opts && {
     method: opts.m || 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(opts.h || {}) },
     body: opts.b ? JSON.stringify(opts.b) : undefined,
   });
   return r.json();
@@ -233,12 +233,16 @@ function bindLab(s, ev) {
   };
   q('#scan').onclick = runScan;
   q('#scan2').onclick = runScan;
-  q('#retake').onclick = () => { q('#progress').style.width = '0'; q('#state').textContent = 'HUMAN QC REQUIRED'; };
+  q('#retake').onclick = () => { q('#progress').style.width = '0'; q('#state').textContent = 'HUMAN QC REQUIRED'; q('#jarvisMsg').textContent = 'Reset — re-capture or rescan when ready.'; runScan(); };
   q('#report').onclick = q('#report2').onclick = async () => {
     if (!s) { q('#jarvisMsg').textContent = 'No submission selected.'; return; }
     out(JSON.stringify(await api(`/submissions/${s.id}/passport`), null, 2));
   };
-  q('#addvault').onclick = () => { q('#jarvisMsg').textContent = s ? s.id + ' queued for Vault.' : 'Select a submission first.'; };
+  q('#addvault').onclick = async () => {
+    if (!s) { q('#jarvisMsg').textContent = 'Select a submission first.'; return; }
+    const res = await api(`/submissions/${s.id}/vault`, { b: { vaulted: !s.vaulted } });
+    q('#jarvisMsg').textContent = res.vaulted ? s.id + ' added to your Vault.' : s.id + ' removed from Vault.';
+  };
   q('#share').onclick = () => {
     if (!s) { q('#jarvisMsg').textContent = 'Select a submission first.'; return; }
     const link = location.origin + '/#verify-' + s.id;
@@ -638,9 +642,175 @@ async function production() {
   });
 }
 
+/* ── Command Center — clickable launchpad ─────────────────────────────── */
+function command() {
+  const items = [
+    ['grade', '⬡', 'Quantum Inspection', 'AI scan chamber + Money Penny'],
+    ['intake', '▤', 'Start a Submission', 'Capture & track collectibles'],
+    ['passport', '◇', 'Evidence Passport', 'Full transparency records'],
+    ['live', '◉', 'Live Grading Feed', 'Every lab event in real time'],
+    ['qc', '✓', 'Human QC Queue', 'Review & approve grades'],
+    ['population', '◫', 'Population Report', 'Real certified census'],
+    ['studio', '✦', 'GOATVERSE Studio', 'Design the physical slab'],
+    ['production', '▧', 'Slab Production', 'Label → weld → ship'],
+    ['vault', '▤', 'GemCore Vault', 'Your collection'],
+    ['market', '↗', 'Market Intelligence', 'Comparables & trends'],
+    ['verify', '✓', 'Verify a Cert', 'Public verification'],
+    ['community', '◔', 'Community & RP', 'GOAT Force ATL'],
+  ];
+  V.innerHTML = page('Command Center', 'Collect • Grade • Trade • Preserve • Belong',
+    `<div class="grid">${items.map(([k, ic, t, s]) =>
+      `<div class="tile" style="cursor:pointer" data-go="${k}"><h3>${ic} ${t}</h3><p class="muted">${s}</p></div>`).join('')}</div>`);
+  document.querySelectorAll('[data-go]').forEach(t => t.onclick = () => show(t.dataset.go));
+}
+
+/* ── Vault — vaulted + certified collection ───────────────────────────── */
+async function vault() {
+  const list = await subs();
+  const vaulted = list.filter(s => s.vaulted);
+  const certified = list.filter(s => s.status === 'certified');
+  const inReview = list.filter(s => !s.vaulted && s.status !== 'certified' && s.status !== 'returned');
+  const tile = s => `<div class="tile" style="cursor:pointer" data-open="${s.id}">
+    <b>${s.id}</b> ${s.demo ? '<span class="badge warn">DEMO</span>' : ''}
+    <p>${esc(s.item?.name || 'untitled')}</p>
+    <p class="muted">${s.status}${s.certificate ? ' • grade ' + s.certificate.publicGrade : ''}</p></div>`;
+  V.innerHTML = page('GemCore Vault', 'Your collection — vaulted, certified, in review',
+    `<h3 style="margin-top:14px">VAULTED</h3><div class="grid">${vaulted.map(tile).join('') || '<div class="tile"><p class="muted">Empty — use Add to Vault on any submission.</p></div>'}</div>
+    <h3 style="margin-top:14px">CERTIFIED</h3><div class="grid">${certified.map(tile).join('') || '<div class="tile"><p class="muted">No certified items yet.</p></div>'}</div>
+    <h3 style="margin-top:14px">IN REVIEW</h3><div class="grid">${inReview.map(tile).join('') || '<div class="tile"><p class="muted">Nothing in pipeline.</p></div>'}</div>
+    <div id="detail"></div>`);
+  document.querySelectorAll('[data-open]').forEach(t => t.onclick = async () => {
+    currentSub = t.dataset.open; localStorage.setItem('gemcore.sub', currentSub);
+    const p = await api(`/submissions/${t.dataset.open}/passport`);
+    document.querySelector('#detail').innerHTML = `<pre>${esc(JSON.stringify(p, null, 2))}</pre>`;
+  });
+}
+
+/* ── Market — population-derived stats + clearly-demo comparables ─────── */
+async function market() {
+  const p = await api('/population');
+  const list = await subs();
+  const certs = list.filter(s => s.status === 'certified');
+  V.innerHTML = page('Market Intelligence', 'Market value is displayed separately and never changes condition grade',
+    `<div class="grid">
+      <div class="tile"><h3>Certified population</h3><strong style="font-size:26px;color:var(--green)">${p.certified}</strong><p class="muted">real data</p></div>
+      <div class="tile"><h3>In pipeline</h3><strong style="font-size:26px;color:var(--teal)">${p.inPipeline}</strong><p class="muted">real data</p></div>
+      <div class="tile"><h3>Top grade seen</h3><strong style="font-size:26px">${Object.keys(p.byGrade).sort((a,b)=>b-a)[0] || '—'}</strong><p class="muted">real data</p></div>
+    </div>
+    <div class="panel" style="margin-top:14px"><h3>CERTIFIED MARKET (real)</h3>
+      ${certs.map(s => `<div class="scanrow"><span class="tick">✓</span><span>${esc(s.item?.name)} <small>grade ${s.certificate.publicGrade} • cert ${s.certificate.certId}</small></span></div>`).join('') || '<p class="muted">No certified items yet.</p>'}
+    </div>
+    <div class="panel" style="margin-top:14px"><h3>COMPARABLE SALES — DEMO DATA</h3>
+      <p class="muted" style="font-size:11px">Illustrative only — a real market feed is not wired. NEVER affects grading.</p>
+      <div id="cmpHost"></div></div>`);
+  const demos = [
+    ['Charizard 1st Ed — PSA 10', '$412.50', '+12.4%'],
+    ['BGS 9.5 same card', '$389.00', '+8.1%'],
+    ['CGC 9.5 same card', '$371.25', '+6.7%'],
+    ['Raw NM comp', '$96.00', '-2.0%'],
+  ];
+  document.querySelector('#cmpHost').innerHTML = demos.map(d =>
+    `<div class="scanrow"><span class="tick">↗</span><span>${d[0]}<small>${d[2]}</small></span><b style="margin-left:auto">${d[1]}</b></div>`).join('');
+}
+
+/* ── Live feed — real audit events, auto-refresh ──────────────────────── */
+async function live() {
+  const events = await api('/audit?limit=60').catch(() => []);
+  V.innerHTML = page('Live Grading', 'Every lab event — real audit trail, auto-refreshing',
+    `<div class="panel"><h3>EVENT FEED <button id="refLive" style="margin-left:10px;font-size:11px;padding:4px 10px">↻ refresh</button></h3>
+      <div id="feed">${events.length ? events.map(e =>
+        `<div class="scanrow"><span class="tick">◆</span><span><b>${esc(e.action)}</b> <small>${e.submissionId?.slice(0, 14)}… • ${new Date(e.at).toLocaleTimeString()}</small></span></div>`).join('')
+        : '<p class="muted">No events yet — run a scan or create a submission.</p>'}</div></div>`);
+  document.querySelector('#refLive').onclick = () => show('live');
+  clearInterval(window._liveTimer);
+  window._liveTimer = setInterval(() => { if (document.querySelector('#feed')) show('live'); else clearInterval(window._liveTimer); }, 15000);
+}
+
+/* ── QC queue — real pending reviews + approvals ──────────────────────── */
+async function qc() {
+  const list = await subs();
+  const needsQc = list.filter(s => s.evaluation && !s.qc?.approved && s.status !== 'certified');
+  const pendingObs = list.filter(s => (s.observations || []).some(o => o.reviewerDisposition === 'pending'));
+  V.innerHTML = page('Human QC', 'A certified grade cannot be sealed without verified evidence and reviewer approval',
+    `<div class="panel" style="margin-top:12px"><h3>REVIEW QUEUE (${needsQc.length})</h3>
+      ${needsQc.map(s => `<div class="scanrow"><span class="tick">◌</span><span>${s.id} — ${esc(s.item?.name)} <small>index ${s.evaluation.internalConditionIndex}/1000 • obs ${(s.observations||[]).length}</small></span>
+        <span style="margin-left:auto;display:flex;gap:6px"><button class="primary" data-ok="${s.id}" style="padding:4px 10px;font-size:11px">Approve</button><button data-no="${s.id}" style="padding:4px 10px;font-size:11px">Reject</button></span></div>`).join('')
+        || '<p class="muted">Queue empty.</p>'}
+    </div>
+    <div class="panel" style="margin-top:14px"><h3>PENDING OBSERVATIONS (${pendingObs.length})</h3>
+      ${pendingObs.map(s => `<div class="scanrow"><span class="tick">!</span><span>${s.id} <small>${(s.observations||[]).filter(o=>o.reviewerDisposition==='pending').length} unreviewed</small></span></div>`).join('')
+        || '<p class="muted">All observations reviewed.</p>'}</div>
+    <pre id="qcout"></pre>`);
+  const out = document.querySelector('#qcout');
+  document.querySelectorAll('[data-ok]').forEach(b => b.onclick = async () => {
+    out.textContent = JSON.stringify(await api(`/submissions/${b.dataset.ok}/qc`, { b: { approved: true, reviewer: 'Human QC' } }), null, 2); show('qc');
+  });
+  document.querySelectorAll('[data-no]').forEach(b => b.onclick = async () => {
+    out.textContent = JSON.stringify(await api(`/submissions/${b.dataset.no}/qc`, { b: { approved: false, reviewer: 'Human QC' } }), null, 2); show('qc');
+  });
+}
+
+/* ── Tools — working calculators ──────────────────────────────────────── */
+async function tools() {
+  const list = await subs();
+  const evald = list.filter(s => s.evaluation);
+  V.innerHTML = page('Tools & Calculators', 'Real math — value is demo-marked and never affects grade',
+    `<div class="detailgrid">
+      <div class="panel"><h3>GRADE → DEMO VALUE</h3>
+        <label>Grade (1–10)<input type="number" id="tGrade" step="0.5" min="1" max="10" value="9"></label>
+        <label>Raw item value $<input type="number" id="tRaw" value="50"></label>
+        <button class="primary" id="tCalc" style="margin-top:10px">Estimate</button>
+        <pre id="tOut"></pre></div>
+      <div class="panel"><h3>ROI CALCULATOR</h3>
+        <label>Cost (item + fees) $<input type="number" id="tCost" value="80"></label>
+        <label>Expected sale $<input type="number" id="tSale" value="400"></label>
+        <button class="primary" id="tRoi" style="margin-top:10px">Compute ROI</button>
+        <pre id="tRoiOut"></pre></div>
+    </div>
+    <div class="panel" style="margin-top:14px"><h3>COMPARE SUBMISSIONS</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <select id="tA">${evald.map(s => `<option value="${s.id}">${s.id} — ${esc(s.item?.name)}</option>`).join('')}</select>
+        <select id="tB">${evald.map(s => `<option value="${s.id}">${s.id} — ${esc(s.item?.name)}</option>`).join('')}</select>
+        <button class="primary" id="tCmp">Compare</button>
+      </div><pre id="tCmpOut"></pre></div>`);
+  const q = sel => document.querySelector(sel);
+  q('#tCalc').onclick = () => {
+    const g = +q('#tGrade').value, raw = +q('#tRaw').value;
+    const mult = Math.pow(g / 5, 2.2); // demo curve — higher grades multiply value
+    q('#tOut').textContent = `Grade ${g} demo estimate: $${(raw * mult).toFixed(2)}\n(DEMO curve — real comps feed not wired. Never affects grade.)`;
+  };
+  q('#tRoi').onclick = () => {
+    const c = +q('#tCost').value, s = +q('#tSale').value;
+    const roi = c ? ((s - c) / c * 100) : 0;
+    q('#tRoiOut').textContent = `Profit: $${(s - c).toFixed(2)}\nROI: ${roi.toFixed(1)}%`;
+  };
+  q('#tCmp').onclick = () => {
+    const a = evald.find(x => x.id === q('#tA').value), b = evald.find(x => x.id === q('#tB').value);
+    if (!a || !b) return;
+    const rows = Object.keys(a.evaluation.lanes).map(l =>
+      `  ${l.padEnd(14)} ${String(a.evaluation.lanes[l] ?? '—').padStart(4)}  vs  ${b.evaluation.lanes[l] ?? '—'}`).join('\n');
+    q('#tCmpOut').textContent = `${a.id} vs ${b.id}\n${rows}\nIndex: ${a.evaluation.internalConditionIndex} vs ${b.evaluation.internalConditionIndex}`;
+  };
+}
+
+/* ── Community ────────────────────────────────────────────────────────── */
+async function community() {
+  const certs = (await subs()).filter(s => s.status === 'certified');
+  V.innerHTML = page('Community', 'Collectors, chat & GOAT Force ATL',
+    `<div class="grid">
+      <div class="tile"><h3>◆ GOAT Force ATL — BrickSquaD-RP</h3><p class="muted">Our FiveM roleplay city — Money Penny is in-game too (/mp)</p>
+        <a href="https://cfx.re/join/3ygz8lo" target="_blank" class="primary" style="display:inline-block;margin-top:8px;padding:8px 16px;border-radius:8px;text-decoration:none">Join Server</a>
+        <a href="https://txadmin.2.25.68.216.nip.io/" target="_blank" class="muted" style="display:inline-block;margin:8px 0 0 10px;font-size:11px">txAdmin →</a></div>
+      <div class="tile"><h3>◆ Talk to Money Penny</h3><p class="muted">She runs the lab — and she's in the RP server</p>
+        <button class="primary" id="goMp" style="margin-top:8px;padding:8px 16px">Open Lab Chat</button></div>
+      <div class="tile"><h3>Showcase</h3><p class="muted">${certs.length} certified item(s) in the registry</p>
+        ${certs.map(s => `<p style="font-size:12px">${esc(s.item?.name)} — grade ${s.certificate.publicGrade}</p>`).join('') || '<p class="muted" style="font-size:11px">Certify an item to showcase it.</p>'}</div>
+    </div>`);
+  document.querySelector('#goMp').onclick = () => show('grade');
+}
+
 const pages = {
-  command: () => { V.innerHTML = page('Command Center', 'Collect • Grade • Trade • Preserve • Belong',
-    tiles(['Start a Submission', 'Quantum Inspection', 'Evidence Passport', 'Live Grading', 'Human QC', 'Population Report', 'Market Intelligence', 'GemCore Vault'])); },
+  command,
   grade: lab,
   intake,
   submissions,
@@ -648,22 +818,14 @@ const pages = {
   verify,
   population,
   production,
-  vault: () => { V.innerHTML = page('GemCore Vault', 'Your certified and in-review collection', tiles(['Certified', 'In Review', 'Returned Ungraded', 'Regrade Queue'])); },
-  market: () => { V.innerHTML = page('Market Intelligence', 'Market value is displayed separately and never changes condition grade', tiles(['Comparable Sales', 'Price History', 'Market Trend', 'Set Analytics'])); },
-  live: () => { V.innerHTML = page('Live Grading', 'Capture → VisionCore → Reviewer → Slab QA', tiles(['Capture Feed', 'VisionCore Events', 'Reviewer Queue', 'Slab QA'])); },
+  vault,
+  market,
+  live,
   studio: caseStudio,
-  community: () => { V.innerHTML = page('Community', 'Collectors, chat & GOAT Force ATL',
-    `<div class="grid">
-      <div class="tile"><h3>◆ GOAT Force ATL — BrickSquaD-RP</h3><p class="muted">Our FiveM roleplay community</p>
-        <a href="https://cfx.re/join/3ygz8lo" target="_blank" class="primary" style="display:inline-block;margin-top:8px;padding:8px 16px;border-radius:8px;text-decoration:none">Join Server</a>
-        <a href="https://txadmin.2.25.68.216.nip.io/" target="_blank" class="muted" style="display:inline-block;margin:8px 0 0 10px;font-size:11px">txAdmin →</a></div>
-      <div class="tile"><h3>Collector Lounge</h3><p class="muted">GemCore module</p></div>
-      <div class="tile"><h3>Showcase Feed</h3><p class="muted">GemCore module</p></div>
-      <div class="tile"><h3>Grading Stories</h3><p class="muted">GemCore module</p></div>
-    </div>`); },
-  tools: () => { V.innerHTML = page('Tools & Calculators', 'Value, ROI, compare', tiles(['Value Estimator', 'ROI Calculator', 'Compare Tool'])); },
+  community,
+  tools,
   settings: hardwareSettings,
-  qc: () => { V.innerHTML = page('Human QC', 'A certified grade cannot be sealed without verified evidence and reviewer approval', tiles(['Review Queue', 'Evidence Conflicts', 'Authenticity Gate', 'Final Seal'])); },
+  qc,
 };
 
 function show(k) {

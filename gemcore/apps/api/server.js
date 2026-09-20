@@ -445,6 +445,23 @@ app.post('/api/submissions/:id/production/advance', (q, r) => {
   r.json(out.production);
 });
 
+// global audit feed — every event across submissions (Live Grading page)
+app.get('/api/audit', (q, r) => {
+  const limit = Math.min(+q.query.limit || 60, 500);
+  try {
+    const lines = fs.readFileSync(auditFile, 'utf8').trim().split('\n').filter(Boolean);
+    r.json(lines.slice(-limit).reverse().map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean));
+  } catch { r.json([]); }
+});
+
+// vault flag — user's personal collection shelf
+app.post('/api/submissions/:id/vault', (q, r) => {
+  const s = findSub(r, q.params.id); if (!s) return;
+  const out = updateSub(s.id, x => { x.vaulted = q.body.vaulted !== false; });
+  audit(s.id, 'vault', { vaulted: out.vaulted });
+  r.json({ ok: true, vaulted: out.vaulted });
+});
+
 // QR for slab labels / passports — encodes the public verify URL.
 app.get('/api/qr', async (q, r) => {
   const text = q.query.text;
