@@ -294,4 +294,13 @@ app.get('/api/population', (_q, r) => {
   });
 });
 
+// QR for slab labels / passports — encodes the public verify URL.
+app.get('/api/qr', async (q, r) => {
+  const text = q.query.text;
+  if (!text || text.length > 512) return r.status(400).json({ error: 'text required (≤512 chars)' });
+  const QRCode = require('qrcode');
+  const svg = await QRCode.toString(String(text), { type: 'svg', margin: 1, color: { dark: '#0a1b2a', light: '#ffffff' } });
+  r.type('image/svg+xml').send(svg);
+});
+
 app.listen(PORT, () => console.log('GemCore standalone: http://localhost:' + PORT));

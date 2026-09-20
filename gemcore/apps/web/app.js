@@ -404,64 +404,126 @@ async function population() {
 }
 
 /* ── Case Studio — physical slab/case designer with engraving ─────────── */
+const LABEL_STYLES = {
+  gemcore: { band: '#f4f7f8', head: '#12344a', accent: '#0ea898', name: 'GemCore (emerald)' },
+  psa:     { band: '#c8323c', head: '#fff',    accent: '#c8323c', name: 'Classic red (PSA-style)' },
+  bgs:     { band: '#1a1a1a', head: '#d9b96a', accent: '#d9b96a', name: 'Gold subgrades (BGS-style)' },
+  cgc:     { band: '#e8f2f8', head: '#0d4d8a', accent: '#0d4d8a', name: 'Ultra-clear blue (CGC-style)' },
+  tag:     { band: '#0c1a26', head: '#25f3e6', accent: '#25f3e6', name: 'Minimal dark + QR (TAG-style)' },
+  ars:     { band: '#f4f7f8', head: '#12344a', accent: '#7fa8b8', name: 'Art-first (grade on back)' },
+};
+const SIZES = { std: [80, 130], thick: [80, 130], mini: [60, 100] };
+
 function slabSVG(d) {
-  const tints = { clear: 'rgba(190,230,245,.12)', smoke: 'rgba(60,80,95,.35)', black: 'rgba(8,14,20,.9)' };
-  const tint = tints[d.tint] || tints.clear;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="430" viewBox="0 0 300 430">
+  const L = LABEL_STYLES[d.style] || LABEL_STYLES.gemcore;
+  const horiz = d.orient === 'horizontal';
+  const W = horiz ? 430 : 300, H = horiz ? 300 : 430;
+  const tint = { clear: 'rgba(190,230,245,.12)', smoke: 'rgba(60,80,95,.35)', black: 'rgba(8,14,20,.9)' }[d.tint] || 'rgba(190,230,245,.12)';
+  const acc = d.accent || L.accent;
+  const labelH = 74, m = 10;
+  const artFirst = d.style === 'ars';
+  const qr = d.cert ? `<image href="/api/qr?text=${encodeURIComponent(location.origin + '/#verify-' + d.cert)}" x="${horiz ? W - 88 : 34}" y="${horiz ? 26 : 26}" width="${d.style === 'tag' ? 52 : 40}" height="${d.style === 'tag' ? 52 : 40}"/>` : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
     <linearGradient id="case" x1="0" y1="0" x2="1" y2="1">
       <stop stop-color="rgba(210,240,255,.28)"/><stop offset=".5" stop-color="${tint}"/><stop offset="1" stop-color="rgba(90,140,160,.18)"/>
     </linearGradient>
-    <linearGradient id="lbl" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f4f7f8"/><stop offset="1" stop-color="#d8e2e6"/></linearGradient>
     <filter id="etch"><feOffset dx="0" dy="1"/><feGaussianBlur stdDeviation=".4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs>
-  <rect x="10" y="10" width="280" height="410" rx="16" fill="url(#case)" stroke="rgba(190,235,255,.5)" stroke-width="2"/>
-  <rect x="18" y="18" width="264" height="394" rx="11" fill="none" stroke="rgba(190,235,255,.25)" stroke-width="1" stroke-dasharray="4 3"/>
-  <rect x="22" y="22" width="256" height="74" rx="9" fill="url(#lbl)" stroke="#b8c8cf"/>
-  <text x="34" y="44" font-family="Georgia,serif" font-size="13" font-weight="bold" fill="#12344a">◆ GEMCORE GRADING</text>
-  <text x="34" y="62" font-size="10.5" fill="#2a4a5e">${esc(d.name) || 'COLLECTIBLE'}</text>
-  <text x="34" y="77" font-size="9" fill="#5a7482">${esc(d.set) || ''} ${esc(d.year) || ''}</text>
-  <text x="258" y="70" text-anchor="end" font-size="34" font-weight="800" fill="#0ea898">${esc(d.grade) || '—'}</text>
-  <text x="150" y="92" text-anchor="middle" font-family="monospace" font-size="8" fill="#456">${esc(d.cert) || 'GC000000000'}</text>
-  <rect x="30" y="104" width="240" height="270" rx="8" fill="none" stroke="rgba(190,235,255,.3)" stroke-width="1.2"/>
-  ${d.holo ? '<rect x="34" y="360" width="90" height="14" rx="4" fill="url(#case)" stroke="#25f3e6" stroke-width=".7" opacity=".85"/><text x="79" y="370" text-anchor="middle" font-size="7" fill="#25f3e6">HOLO SEAL</text>' : ''}
-  <!-- engraved text: embossed look -->
-  <text x="150" y="398" text-anchor="middle" font-family="Georgia,serif" font-size="12" letter-spacing="2" fill="rgba(255,255,255,.55)" filter="url(#etch)">${esc(d.engrave) || ''}</text>
-  <text x="150" y="397.3" text-anchor="middle" font-family="Georgia,serif" font-size="12" letter-spacing="2" fill="rgba(0,0,0,.5)">${esc(d.engrave) || ''}</text>
-  <!-- weld seam dots -->
-  <g fill="rgba(190,235,255,.4)">${[26, 64, 236, 274].map(x => `<circle cx="${x}" cy="404" r="1.6"/>`).join('')}</g>
-  <!-- dimension marks -->
-  <g stroke="#25f3e6" stroke-width=".7" opacity=".6"><path d="M10 424h280M10 420v8M290 420v8"/></g>
-  <text x="150" y="428" text-anchor="middle" font-size="7" fill="#25f3e6">80 mm</text>
+  <rect x="${m}" y="${m}" width="${W - 20}" height="${H - 20}" rx="16" fill="url(#case)" stroke="rgba(190,235,255,.5)" stroke-width="2"/>
+  <rect x="${m + 8}" y="${m + 8}" width="${W - 36}" height="${H - 36}" rx="11" fill="none" stroke="${acc}" stroke-width="1" stroke-dasharray="4 3" opacity=".5"/>
+  <!-- label band -->
+  <rect x="${m + 12}" y="${m + 12}" width="${W - 44}" height="${labelH}" rx="9" fill="${L.band}" stroke="rgba(0,0,0,.2)"/>
+  <rect x="${m + 12}" y="${m + 12}" width="6" height="${labelH}" rx="3" fill="${acc}"/>
+  <text x="${m + 30}" y="${m + 34}" font-family="Georgia,serif" font-size="13" font-weight="bold" fill="${L.head}">◆ GEMCORE GRADING</text>
+  <text x="${m + 30}" y="${m + 52}" font-size="10.5" fill="${L.head}" opacity=".85">${esc(d.name) || 'COLLECTIBLE'}</text>
+  <text x="${m + 30}" y="${m + 67}" font-size="9" fill="${L.head}" opacity=".6">${esc(d.set) || ''} ${esc(d.year) || ''}</text>
+  ${artFirst ? `<text x="${m + 30}" y="${m + 80}" font-size="8" fill="${L.head}" opacity=".5">GRADE ON REVERSE</text>` : `<text x="${W - m - 22}" y="${m + 62}" text-anchor="end" font-size="34" font-weight="800" fill="${acc}">${esc(d.grade) || '—'}</text>`}
+  <text x="${W / 2}" y="${m + 82}" text-anchor="middle" font-family="monospace" font-size="8" fill="${L.head}" opacity=".7">${esc(d.cert) || 'GC000000000'}</text>
+  ${qr}
+  <!-- card window -->
+  <rect x="${m + 20}" y="${m + labelH + 18}" width="${W - 60}" height="${H - labelH - 96}" rx="8" fill="none" stroke="rgba(190,235,255,.3)" stroke-width="1.2"/>
+  ${d.holo ? `<rect x="${m + 24}" y="${H - m - 60}" width="90" height="14" rx="4" fill="url(#case)" stroke="${acc}" stroke-width=".7" opacity=".85"/><text x="${m + 69}" y="${H - m - 50}" text-anchor="middle" font-size="7" fill="${acc}">HOLO SEAL</text>` : ''}
+  <!-- engraving -->
+  <text x="${W / 2}" y="${H - m - 22}" text-anchor="middle" font-family="Georgia,serif" font-size="12" letter-spacing="2" fill="rgba(255,255,255,.55)" filter="url(#etch)">${esc(d.engrave) || ''}</text>
+  <text x="${W / 2}" y="${H - m - 22.7}" text-anchor="middle" font-family="Georgia,serif" font-size="12" letter-spacing="2" fill="rgba(0,0,0,.5)">${esc(d.engrave) || ''}</text>
+  <!-- weld dots + dimension -->
+  <g fill="rgba(190,235,255,.4)">${[m + 16, W / 2 - 40, W / 2 + 40, W - m - 16].map(x => `<circle cx="${x}" cy="${H - m - 6}" r="1.6"/>`).join('')}</g>
+  <g stroke="${acc}" stroke-width=".7" opacity=".6"><path d="M${m} ${H - 4}h${W - 20}"/></g>
+</svg>`;
+}
+
+/* Back label — subgrades, QR verify, authenticity note (BGS/TAG-style) */
+function slabSVGBack(d) {
+  const L = LABEL_STYLES[d.style] || LABEL_STYLES.gemcore;
+  const horiz = d.orient === 'horizontal';
+  const W = horiz ? 430 : 300, H = horiz ? 300 : 430;
+  const m = 10, labelH = 150;
+  const acc = d.accent || L.accent;
+  const subs = ['Centering', 'Corners', 'Edges', 'Surface'];
+  const qru = d.cert ? `<image href="/api/qr?text=${encodeURIComponent(location.origin + '/#verify-' + d.cert)}" x="${W - 96}" y="${m + 26}" width="62" height="62"/>` : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  <defs><linearGradient id="bcase" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="rgba(210,240,255,.22)"/><stop offset="1" stop-color="rgba(60,90,105,.2)"/></linearGradient>
+    <filter id="etch"><feOffset dx="0" dy="1"/><feGaussianBlur stdDeviation=".4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <rect x="${m}" y="${m}" width="${W - 20}" height="${H - 20}" rx="16" fill="url(#bcase)" stroke="rgba(190,235,255,.4)" stroke-width="2"/>
+  <rect x="${m + 12}" y="${m + 12}" width="${W - 44}" height="${labelH}" rx="9" fill="${L.band}" stroke="rgba(0,0,0,.2)"/>
+  <rect x="${m + 12}" y="${m + 12}" width="6" height="${labelH}" rx="3" fill="${acc}"/>
+  <text x="${m + 30}" y="${m + 32}" font-family="Georgia,serif" font-size="11" font-weight="bold" fill="${L.head}">GEMCORE CONDITION REPORT</text>
+  ${subs.map((n, i) => `<text x="${m + 30}" y="${m + 50 + i * 24}" font-size="9" fill="${L.head}" opacity=".8">${n}</text>
+  <rect x="${m + 100}" y="${m + 42 + i * 24}" width="${W - 220}" height="8" rx="4" fill="rgba(0,0,0,.15)"/>
+  <rect x="${m + 100}" y="${m + 42 + i * 24}" width="${(W - 220) * ((d.lanes?.[n.toLowerCase()] ?? 900) / 1000)}" height="8" rx="4" fill="${acc}"/>
+  <text x="${W - 100}" y="${m + 50 + i * 24}" font-size="9" font-weight="bold" fill="${L.head}">${((d.lanes?.[n.toLowerCase()] ?? 900) / 100).toFixed(1)}</text>`).join('')}
+  ${qru}
+  <text x="${W - 65}" y="${m + 100}" text-anchor="middle" font-size="6.5" fill="${L.head}" opacity=".7">SCAN TO VERIFY</text>
+  <text x="${m + 30}" y="${m + labelH - 8}" font-family="monospace" font-size="8" fill="${L.head}" opacity=".7">${esc(d.cert) || 'GC000000000'} • rubric ${esc(d.rubric || 'gemcore-rubric-0.1.0')}</text>
+  <rect x="${m + 20}" y="${m + labelH + 20}" width="${W - 60}" height="${H - labelH - 120}" rx="8" fill="none" stroke="rgba(190,235,255,.3)" stroke-width="1.2"/>
+  <text x="${W / 2}" y="${H - 60}" text-anchor="middle" font-size="8" fill="${acc}" letter-spacing="2">AUTHENTICITY &amp; CONDITION GRADED SEPARATELY</text>
+  <text x="${W / 2}" y="${H - 44}" text-anchor="middle" font-family="Georgia,serif" font-size="11" letter-spacing="2" fill="rgba(255,255,255,.55)" filter="url(#etch)">${esc(d.engrave) || ''}</text>
+  ${d.demo ? `<text x="${W / 2}" y="${H - 28}" text-anchor="middle" font-size="9" fill="#d9b96a" letter-spacing="2">DEMO — NOT A CERTIFIED GRADE</text>` : ''}
 </svg>`;
 }
 
 function caseStudio() {
-  V.innerHTML = page('Case Studio', 'Design the physical slab — label, tint, hologram, engraving',
+  V.innerHTML = page('Case Studio', 'Design the physical slab — label, tint, hologram, engraving, QR verify',
     `<div class="detailgrid">
       <div class="panel"><h3>SLAB DESIGN</h3>
         <label>Item name<input id="csName" placeholder="Charizard (1st Edition)"></label>
         <label>Set / year<input id="csSet" placeholder="Pokémon Base Set • 1999"></label>
-        <label>Certificate ID<input id="csCert" placeholder="GC000123456"></label>
+        <label>Certificate ID<input id="csCert" placeholder="GC000123456 (enables QR)"></label>
         <label>Grade<input id="csGrade" placeholder="10" style="width:80px"></label>
+        <label>Label style<select id="csStyle">${Object.entries(LABEL_STYLES).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join('')}</select></label>
+        <label>Orientation<select id="csOrient"><option>vertical</option><option>horizontal</option></select></label>
         <label>Case tint<select id="csTint"><option>clear</option><option>smoke</option><option>black</option></select></label>
+        <label>Accent color (color-match)<input type="color" id="csAccent" value="#0ea898" style="height:36px;padding:2px"></label>
         <label>Plastic engraving text<input id="csEngrave" placeholder="GEMCORE CERTIFIED"></label>
         <label><input type="checkbox" id="csHolo" checked style="width:auto"> Hologram strip</label>
         <div style="display:flex;gap:8px;margin-top:14px">
           <button class="primary" id="csSvg">Download SVG</button>
           <button id="csPng">Download PNG</button>
         </div>
-        <p class="muted" style="font-size:10px;margin-top:8px">SVG is vector — usable for laser engraving / case fabrication tooling.</p>
+        <p class="muted" style="font-size:10px;margin-top:8px">QR encodes the public verify URL — scannable on a printed label. SVG is vector for laser engraving / fabrication.</p>
       </div>
-      <div class="panel" style="text-align:center"><h3>PREVIEW</h3><div id="csPrev"></div></div>
+      <div class="panel" style="text-align:center"><h3>PREVIEW — FRONT &amp; BACK</h3><div id="csPrev" style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap"></div></div>
     </div>`);
   const q = sel => document.querySelector(sel);
-  const read = () => ({ name: q('#csName').value, set: q('#csSet').value, cert: q('#csCert').value, grade: q('#csGrade').value, tint: q('#csTint').value, engrave: q('#csEngrave').value, holo: q('#csHolo').checked });
-  const render = () => q('#csPrev').innerHTML = slabSVG(read());
-  ['csName', 'csSet', 'csCert', 'csGrade', 'csTint', 'csEngrave', 'csHolo'].forEach(id => q('#' + id).oninput = render);
+  const read = () => ({ name: q('#csName').value, set: q('#csSet').value, cert: q('#csCert').value, grade: q('#csGrade').value, style: q('#csStyle').value, orient: q('#csOrient').value, tint: q('#csTint').value, accent: q('#csAccent').value, engrave: q('#csEngrave').value, holo: q('#csHolo').checked, lanes: (window._subLanes || {}) });
+  const render = () => q('#csPrev').innerHTML = slabSVG(read()) + slabSVGBack(read());
+  ['csName', 'csSet', 'csCert', 'csGrade', 'csStyle', 'csOrient', 'csTint', 'csAccent', 'csEngrave', 'csHolo'].forEach(id => q('#' + id).oninput = render);
+  // prefill from selected submission if one exists
+  if (currentSub) api('/submissions/' + currentSub).then(s => {
+    if (s?.item) { q('#csName').value = s.item.name || ''; q('#csSet').value = (s.item.set || '') + (s.item.year ? ' • ' + s.item.year : ''); }
+    q('#csCert').value = s.id;
+    if (s.certificate) q('#csGrade').value = s.certificate.publicGrade;
+    if (s.evaluation) window._subLanes = s.evaluation.lanes;
+    render();
+  }).catch(() => {});
   render();
   const dl = (blob, name) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); };
-  q('#csSvg').onclick = () => dl(new Blob([slabSVG(read())], { type: 'image/svg+xml' }), 'gemcore-slab.svg');
+  q('#csSvg').onclick = () => {
+    dl(new Blob([slabSVG(read())], { type: 'image/svg+xml' }), 'gemcore-slab-front.svg');
+    dl(new Blob([slabSVGBack(read())], { type: 'image/svg+xml' }), 'gemcore-slab-back.svg');
+  };
   q('#csPng').onclick = () => {
     const img = new Image();
     img.onload = () => { const c = document.createElement('canvas'); c.width = 600; c.height = 860; c.getContext('2d').drawImage(img, 0, 0, 600, 860); c.toBlob(b => dl(b, 'gemcore-slab.png'), 'image/png'); };
