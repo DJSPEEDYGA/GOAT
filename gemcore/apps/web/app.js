@@ -1027,6 +1027,94 @@ async function community() {
   document.querySelector('#goMp').onclick = () => show('grade');
 }
 
+/* ── Grading scale — public rubric, the standard is higher ────────────── */
+function gradingScale() {
+  const SCALE = [
+    [10, 'GEM MINT', 'Virtually perfect. 950+ index. All lanes ≥ 920.', '#3ef08c'],
+    [9.5, 'PRISTINE', 'Exceptional. 920+ index. Microscopic flaws only.', '#3ef08c'],
+    [9, 'MINT', 'Near perfect. 870+ index. Minor print-line tolerable.', '#25f3e6'],
+    [8.5, 'NM-MINT+', 'Very minor wear on 1 lane.', '#25f3e6'],
+    [8, 'NM-MINT', 'Light wear, no structural flaws.', '#25f3e6'],
+    [7, 'NEAR MINT', 'Visible corner/edge wear, clean surface.', '#d9b96a'],
+    [6, 'EX-NM', 'Moderate wear, possible surface marks.', '#d9b96a'],
+    [5, 'EXCELLENT', 'Noticeable wear, mild creasing possible.', '#d9b96a'],
+    [4, 'VG-EX', 'Visible handling, edge whitening.', '#ff9d5d'],
+    [3, 'VERY GOOD', 'Rounded corners, surface wear.', '#ff9d5d'],
+    [2, 'GOOD', 'Heavy wear, creases, whitening.', '#ff5d73'],
+    [1, 'POOR', 'Severe damage. Certified for authenticity only.', '#ff5d73'],
+  ];
+  V.innerHTML = page('The GemCore Scale', 'A 1000-point internal index translated to 1–10 — every point traceable to evidence',
+    `<div class="panel"><h3>HOW THE MATH WORKS</h3>
+      <p style="font-size:13px;line-height:1.8">Every lane is scored <b>0–1000</b> from sealed evidence — not opinion.
+      <b>Final index = 60% weakest lane + 40% mean</b> — one bad corner can't hide behind three good ones.
+      Authenticity is a separate gate: <b>a fake never gets a grade.</b> Rubric <b>gemcore-rubric-0.1.0</b>.</p></div>
+    <div class="panel" style="margin-top:14px"><h3>THE SCALE</h3>
+      ${SCALE.map(([g, n, d, c]) => `<div class="scanrow"><span class="tick" style="color:${c}">◆</span>
+        <span><b>${g} — ${n}</b><small>${d}</small></span></div>`).join('')}</div>
+    <div class="panel" style="margin-top:14px"><h3>THE LANES</h3>
+      ${[['Centering', 'border ratios measured in pixels, both sides'],
+        ['Corners', 'whitening/fuzz detection per corner, both sides'],
+        ['Edges', 'edge integrity — chipping, rough cuts, whitening'],
+        ['Surface', 'defect cell analysis — scratches, print lines, stains'],
+        ['Dimensions', 'physical measurements vs spec tolerance'],
+        ['Authenticity', 'print pattern + stock + UV/IR — gate, not a score']].map(([n, d]) =>
+        `<div class="scanrow"><span class="tick">▣</span><span><b>${n}</b><small>${d}</small></span></div>`).join('')}</div>`);
+}
+
+/* ── Process — step-by-step visual pipeline for clients ───────────────── */
+function process() {
+  const steps = [
+    ['◉', 'REQUEST', 'You submit your item for review. We screen it — worth grading or not, honestly.', 'public'],
+    ['▤', 'INTAKE', 'Accepted → quote + private login. Item logged, intake photos sealed.', 'staff'],
+    ['▣', 'CAPTURE', 'Visible + raking + macro + UV/IR imaging. Every frame sha256-sealed, immutable.', 'evidence'],
+    ['⬡', 'VISIONCORE', 'Money Penny\'s CV engine measures centering, corners, edges, surface — real pixels, real coordinates.', 'ai'],
+    ['✓', 'HUMAN QC', 'A reviewer confirms every observation and the final call. AI proposes — humans certify.', 'human'],
+    ['◆', 'SEAL', 'Cert issued: 1000-pt index → 1–10 grade, QR + chronology + rank recorded.', 'cert'],
+    ['▧', 'SLAB', 'Label print → encapsulate → ultrasonic weld → verify → ship. Tracked in production.', 'production'],
+  ];
+  V.innerHTML = page('How We Grade', 'Every step, every technology — nothing hidden',
+    `<div class="panel" style="margin-top:12px">
+      ${steps.map(([ic, t, d], i) => `
+        <div style="display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)">
+          <div style="font-size:22px;color:var(--teal);min-width:36px;text-align:center">${ic}</div>
+          <div><b>STEP ${i + 1} — ${t}</b><p class="muted" style="font-size:12px;margin:4px 0 0">${d}</p></div>
+        </div>`).join('')}
+    </div>
+    <div class="panel" style="margin-top:14px"><h3>WHAT NOBODY ELSE DOES</h3>
+      <p style="font-size:13px;line-height:1.8">An AI you can actually talk to — Money Penny runs this lab and answers questions about YOUR cert.
+      Every defect pinned to pixel coordinates on sealed evidence. Every reviewer decision logged.
+      Rank + chronology free on every certificate. The slab QR opens the whole record.</p></div>`);
+}
+
+/* ── Value estimator — market + scarcity, transparent formula ─────────── */
+async function valueEstimator() {
+  const pop = await api('/population').catch(() => ({ byGrade: {}, leaderboard: [] }));
+  const items = [...new Set((pop.leaderboard || []).map(l => l.item).filter(Boolean))];
+  V.innerHTML = page('Value Estimator', 'Transparent math — market price × grade curve × scarcity. Never affects grading.',
+    `<div class="detailgrid">
+      <div class="panel"><h3>ESTIMATE</h3>
+        <label>Current raw market value $<input type="number" id="vRaw" value="50" min="0"></label>
+        <label>Expected GemCore grade<input type="number" id="vGrade" step="0.5" min="1" max="10" value="9"></label>
+        <label>Same-item certified population<input type="number" id="vPop" value="${items.length ? '1' : '0'}" min="0"></label>
+        <label>Market trend<select id="vTrend"><option value="1.1">Bullish ↗</option><option value="1" selected>Flat →</option><option value="0.9">Bearish ↘</option></select></label>
+        <button class="primary" id="vGo" style="margin-top:10px">Estimate Value</button><pre id="vOut"></pre></div>
+      <div class="panel"><h3>THE FORMULA (public)</h3>
+        <p style="font-size:12px;line-height:1.9">value = raw × gradeCurve × scarcity × trend<br><br>
+        gradeCurve = (grade/5)^2.2 — exponential; a 10 is worth far more than 2× a 9<br>
+        scarcity = 1 + 0.15 × (1 / (1+pop)) — fewer graded = more valuable<br>
+        trend = market direction multiplier<br><br>
+        <span class="muted" style="font-size:10px">Estimate only — real comps feed not wired. Value NEVER changes the grade.</span></p></div>
+    </div>`);
+  const q = sel => document.querySelector(sel);
+  q('#vGo').onclick = () => {
+    const raw = +q('#vRaw').value, g = Math.min(10, Math.max(1, +q('#vGrade').value));
+    const pop = +q('#vPop').value, trend = +q('#vTrend').value;
+    const curve = Math.pow(g / 5, 2.2), scarcity = 1 + 0.15 / (1 + pop);
+    const v = raw * curve * scarcity * trend;
+    q('#vOut').textContent = `Estimated graded value: $${v.toFixed(2)}\n(${raw} × ${curve.toFixed(2)} curve × ${scarcity.toFixed(3)} scarcity × ${trend} trend)`;
+  };
+}
+
 /* ── Public landing — submit for review, client login, verify ─────────── */
 function publicPage() {
   V.innerHTML = `<div class="page">
@@ -1054,6 +1142,11 @@ function publicPage() {
         <pre id="pvOut"></pre>
       </div>
     </div>
+    <div class="grid" style="margin-top:14px">
+      <div class="tile" style="cursor:pointer" data-go="scale"><h3>◆ The GemCore Scale</h3><p class="muted">1000-pt index → 1–10, public rubric</p></div>
+      <div class="tile" style="cursor:pointer" data-go="process"><h3>⬡ How We Grade</h3><p class="muted">Every step, every technology</p></div>
+      <div class="tile" style="cursor:pointer" data-go="value"><h3>↗ Value Estimator</h3><p class="muted">Market × grade × scarcity — transparent</p></div>
+    </div>
     <p class="muted" style="font-size:10px;margin-top:16px">Staff? <a href="#" id="staffIn" style="color:var(--teal)">Enter staff key →</a></p>
   </div>`;
   const q = sel => document.querySelector(sel);
@@ -1073,8 +1166,9 @@ function publicPage() {
   q('#staffIn').onclick = e => {
     e.preventDefault();
     const k = prompt('Staff key:');
-    if (k) { localStorage.setItem('gemcore.staff', k.trim()); show('command'); }
+    if (k) { localStorage.setItem('gemcore.staff', k.trim()); localStorage.removeItem('gemcore.staffless'); show('command'); }
   };
+  document.querySelectorAll('[data-go]').forEach(t => t.onclick = () => show(t.dataset.go));
 }
 
 /* ── Client portal — their job ONLY ───────────────────────────────────── */
@@ -1135,6 +1229,9 @@ const pages = {
   public: publicPage,
   portal,
   requests,
+  scale: gradingScale,
+  process,
+  value: valueEstimator,
   grade: lab,
   intake,
   submissions,
