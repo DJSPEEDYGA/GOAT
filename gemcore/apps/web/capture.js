@@ -69,6 +69,7 @@
         <button data-mode="macro">Macro</button><button data-mode="microscope">Microscope</button>
         <button data-mode="uv">UV</button><button data-mode="ir">IR</button>
         <button class="primary" id="snap">Capture Evidence</button>
+        <label style="display:inline-block"><input type="file" id="uploadEv" accept="image/*" multiple style="display:none"><span class="uploadbtn">⇪ Upload Image(s)</span></label>
       </div>
       <div class="muted" style="font-size:11px">Side: <b id="side">FRONT</b> • Light: <b id="mode">VISIBLE</b> • <span id="captureStatus">OFFLINE</span></div>
       <div style="display:flex;gap:10px;margin-top:10px">
@@ -87,6 +88,23 @@
     if (e.target.id === 'snap') snap(subId);
     if (e.target.dataset.side) { side = e.target.dataset.side; q('#side').textContent = side.toUpperCase(); }
     if (e.target.dataset.mode) { mode = e.target.dataset.mode; q('#mode').textContent = mode.toUpperCase(); }
+  });
+  document.addEventListener('change', async e => {
+    if (e.target.id !== 'uploadEv') return;
+    const subId = localStorage.getItem('gemcore.sub');
+    if (!subId) { q('#captureStatus').textContent = 'SELECT A SUBMISSION FIRST'; return; }
+    for (const f of e.target.files) {
+      const data = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(f); });
+      const buf = await crypto.subtle.digest('SHA-256', await f.arrayBuffer());
+      const sha = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+      const rec = await fetch('/api/submissions/' + subId + '/captures', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data, sha256: sha, side, mode, deviceMeta: { source: 'file-upload', name: f.name, bytes: f.size } }),
+      }).then(r => r.json());
+      q('#captureStatus').textContent = rec.id ? 'UPLOADED — sha ' + sha.slice(0, 10) + '…' : 'REJECTED: ' + (rec.error || '?');
+      if (rec.id) q('#lastCapture').src = data;
+    }
+    e.target.value = '';
   });
   window.addEventListener('beforeunload', () => dev?.stop());
 })();

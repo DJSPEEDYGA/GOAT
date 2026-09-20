@@ -86,7 +86,7 @@ async function lab() {
 
       <div class="rightstack">
         <div class="panel assistant">
-          <div class="ahead"><img src="assets/mock-jarvis.png" alt="Money Penny" style="border-radius:10px"><div><b>MONEY PENNY</b><br><span class="online" id="mpStatus">● checking…</span></div></div>
+          <div class="ahead"><img src="assets/moneypenny.svg" alt="Money Penny" style="border-radius:10px;width:44px;height:44px"><div><b>MONEY PENNY</b><br><span class="online" id="mpStatus">● checking…</span></div></div>
           <div class="bubble" id="jarvisMsg">Money Penny runs this lab. ${s ? 'Loaded ' + s.id + ' — ask me anything about it.' : 'Select a submission and I\'ll brief you.'}</div>
           <div class="btnrow"><button class="primary" id="scan2">Run Deep Scan</button><button id="report">Generate Report</button></div>
           <div style="display:flex;gap:6px;margin-top:8px">
@@ -510,7 +510,9 @@ function slabSVG(d) {
   <text x="${W / 2}" y="${m + 82}" text-anchor="middle" font-family="monospace" font-size="8" fill="${L.head}" opacity=".7">${esc(d.cert) || 'GC000000000'}</text>
   ${qr}
   <!-- card window -->
+  <clipPath id="cwin"><rect x="${m + 20}" y="${m + labelH + 18}" width="${W - 60}" height="${H - labelH - 96}" rx="8"/></clipPath>
   <rect x="${m + 20}" y="${m + labelH + 18}" width="${W - 60}" height="${H - labelH - 96}" rx="8" fill="none" stroke="rgba(190,235,255,.3)" stroke-width="1.2"/>
+  ${d.cardImg ? `<image href="${d.cardImg}" x="${m + 20}" y="${m + labelH + 18}" width="${W - 60}" height="${H - labelH - 96}" preserveAspectRatio="xMidYMid slice" clip-path="url(#cwin)"/>` : ''}
   ${d.holo ? `<rect x="${m + 24}" y="${H - m - 60}" width="90" height="14" rx="4" fill="url(#case)" stroke="${acc}" stroke-width=".7" opacity=".85"/><text x="${m + 69}" y="${H - m - 50}" text-anchor="middle" font-size="7" fill="${acc}">HOLO SEAL</text>` : ''}
   <!-- engraving -->
   <text x="${W / 2}" y="${H - m - 22}" text-anchor="middle" font-family="Georgia,serif" font-size="12" letter-spacing="2" fill="rgba(255,255,255,.55)" filter="url(#etch)">${esc(d.engrave) || ''}</text>
@@ -566,17 +568,22 @@ function caseStudio() {
         <label>Accent color (color-match)<input type="color" id="csAccent" value="#0ea898" style="height:36px;padding:2px"></label>
         <label>Plastic engraving text<input id="csEngrave" placeholder="GEMCORE CERTIFIED"></label>
         <label><input type="checkbox" id="csHolo" checked style="width:auto"> Hologram strip</label>
-        <div style="display:flex;gap:8px;margin-top:14px">
-          <button class="primary" id="csSvg">Download SVG</button>
-          <button id="csPng">Download PNG</button>
+        <label>Card photo<input type="file" id="csImg" accept="image/*" style="font-size:11px"></label>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <button class="primary" id="csSvg">Download SVG (front+back)</button>
+          <button id="csPng">Download PNG (front+back)</button>
         </div>
         <p class="muted" style="font-size:10px;margin-top:8px">QR encodes the public verify URL — scannable on a printed label. SVG is vector for laser engraving / fabrication.</p>
       </div>
       <div class="panel" style="text-align:center"><h3>PREVIEW — FRONT &amp; BACK</h3><div id="csPrev" style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap"></div></div>
     </div>`);
   const q = sel => document.querySelector(sel);
-  const read = () => ({ name: q('#csName').value, set: q('#csSet').value, cert: q('#csCert').value, grade: q('#csGrade').value, style: q('#csStyle').value, orient: q('#csOrient').value, tint: q('#csTint').value, accent: q('#csAccent').value, engrave: q('#csEngrave').value, holo: q('#csHolo').checked, lanes: (window._subLanes || {}) });
+  const read = () => ({ name: q('#csName').value, set: q('#csSet').value, cert: q('#csCert').value, grade: q('#csGrade').value, style: q('#csStyle').value, orient: q('#csOrient').value, tint: q('#csTint').value, accent: q('#csAccent').value, engrave: q('#csEngrave').value, holo: q('#csHolo').checked, lanes: (window._subLanes || {}), cardImg: window._csImg || '' });
   const render = () => q('#csPrev').innerHTML = slabSVG(read()) + slabSVGBack(read());
+  q('#csImg').onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const fr = new FileReader(); fr.onload = () => { window._csImg = fr.result; render(); }; fr.readAsDataURL(f);
+  };
   ['csName', 'csSet', 'csCert', 'csGrade', 'csStyle', 'csOrient', 'csTint', 'csAccent', 'csEngrave', 'csHolo'].forEach(id => q('#' + id).oninput = render);
   // prefill from selected submission if one exists
   if (currentSub) api('/submissions/' + currentSub).then(s => {
@@ -584,6 +591,8 @@ function caseStudio() {
     q('#csCert').value = s.id;
     if (s.certificate) q('#csGrade').value = s.certificate.publicGrade;
     if (s.evaluation) window._subLanes = s.evaluation.lanes;
+    const capImg = (s.captures || []).find(c => c.storedData && c.side === 'front') || (s.captures || []).find(c => c.storedData);
+    if (capImg) window._csImg = capImg.storedData;
     render();
   }).catch(() => {});
   render();
@@ -593,9 +602,13 @@ function caseStudio() {
     dl(new Blob([slabSVGBack(read())], { type: 'image/svg+xml' }), 'gemcore-slab-back.svg');
   };
   q('#csPng').onclick = () => {
-    const img = new Image();
-    img.onload = () => { const c = document.createElement('canvas'); c.width = 600; c.height = 860; c.getContext('2d').drawImage(img, 0, 0, 600, 860); c.toBlob(b => dl(b, 'gemcore-slab.png'), 'image/png'); };
-    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(slabSVG(read()))));
+    const horiz = read().orient === 'horizontal';
+    const [cw, ch] = horiz ? [860, 600] : [600, 860];
+    [['front', slabSVG(read())], ['back', slabSVGBack(read())]].forEach(([side, svg]) => {
+      const img = new Image();
+      img.onload = () => { const c = document.createElement('canvas'); c.width = cw; c.height = ch; c.getContext('2d').drawImage(img, 0, 0, cw, ch); c.toBlob(b => dl(b, `gemcore-slab-${side}.png`), 'image/png'); };
+      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+    });
   };
 }
 
@@ -722,6 +735,7 @@ function command() {
   const items = [
     ['grade', '⬡', 'Quantum Inspection', 'AI scan chamber + Money Penny'],
     ['intake', '▤', 'Start a Submission', 'Capture & track collectibles'],
+    ['photolab', '▣', 'Photo Lab', 'Inspect evidence, pin defects'],
     ['passport', '◇', 'Evidence Passport', 'Full transparency records'],
     ['live', '◉', 'Live Grading Feed', 'Every lab event in real time'],
     ['qc', '✓', 'Human QC Queue', 'Review & approve grades'],
@@ -868,6 +882,64 @@ async function tools() {
   };
 }
 
+/* ── Photo Lab — evidence viewer + defect pinning + adjustments ───────── */
+async function photoLab() {
+  const list = await subs();
+  const s = list.find(x => x.id === currentSub) || list[0];
+  const caps = s ? (s.captures || []).filter(c => c.storedData) : [];
+  V.innerHTML = page('Photo Lab', 'Inspect evidence, pin defects, adjust — everything writes to the chain',
+    `${subPicker(list)}
+    <div class="detailgrid" style="margin-top:12px">
+      <div class="panel"><h3>EVIDENCE ${caps.length ? `(${caps.length} stored)` : ''}</h3>
+        ${caps.map(c => `<div class="scanrow" data-cap="${c.id}" style="cursor:pointer"><span class="tick">▣</span><span>${c.id.slice(0, 10)}… <small>${c.side}/${c.mode} • sha ${c.sha256.slice(0, 8)}…</small></span></div>`).join('') || '<p class="muted">No stored captures — use intake camera or upload.</p>'}
+      </div>
+      <div class="panel"><h3>INSPECTOR <span class="muted" style="font-size:10px">— click image to pin a defect</span></h3>
+        <div style="position:relative"><canvas id="phView" style="width:100%;border-radius:8px;border:1px solid var(--line);cursor:crosshair"></canvas></div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center">
+          <label style="margin:0;font-size:11px">Brightness <input type="range" id="phBright" min="50" max="200" value="100" style="width:90px"></label>
+          <label style="margin:0;font-size:11px">Contrast <input type="range" id="phCon" min="50" max="200" value="100" style="width:90px"></label>
+          <select id="phLane">${['surface','edges','corners','centering','authenticity'].map(l => `<option>${l}</option>`).join('')}</select>
+        </div>
+        <div id="phPins"></div>
+      </div>
+    </div>`);
+  const q = sel => document.querySelector(sel);
+  q('#subpick').onchange = e => { currentSub = e.target.value; localStorage.setItem('gemcore.sub', currentSub); photoLab(); };
+  const cv = q('#phView'), ctx = cv.getContext('2d');
+  const img = new Image();
+  let cap = null;
+  const draw = () => {
+    if (!cap) return;
+    const b = +q('#phBright').value / 100, c = +q('#phCon').value / 100;
+    ctx.filter = `brightness(${b}) contrast(${c})`;
+    cv.width = img.width; cv.height = img.height;
+    ctx.drawImage(img, 0, 0);
+    // defect pins at real coords
+    (s?.observations || []).filter(o => o.evidenceId === cap.id && o.x != null).forEach(o => {
+      ctx.filter = 'none';
+      ctx.beginPath(); ctx.arc(o.x * cv.width, o.y * cv.height, 9, 0, 7);
+      ctx.strokeStyle = '#25f3e6'; ctx.lineWidth = 2; ctx.stroke();
+    });
+  };
+  const loadCap = c => { cap = c; img.onload = draw; img.src = c.storedData; drawPins(); };
+  const drawPins = () => {
+    q('#phPins').innerHTML = (s?.observations || []).filter(o => o.evidenceId === cap?.id).map(o =>
+      `<div class="scanrow"><span class="tick">${o.reviewerDisposition === 'confirmed' ? '✓' : o.reviewerDisposition === 'rejected' ? '✗' : '◌'}</span><span>${esc(o.note || o.type)} <small>@ ${(o.x * 100).toFixed(0)}%,${(o.y * 100).toFixed(0)}% • ${o.reviewerDisposition}</small></span></div>`).join('') || '<p class="muted" style="font-size:11px;margin-top:8px">No pins on this evidence yet.</p>';
+  };
+  document.querySelectorAll('[data-cap]').forEach(el => el.onclick = () => loadCap(caps.find(c => c.id === el.dataset.cap)));
+  if (caps.length) loadCap(caps[caps.length - 1]);
+  q('#phBright').oninput = q('#phCon').oninput = draw;
+  cv.onclick = async e => {
+    if (!cap || !s) return;
+    const rect = cv.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width, y = (e.clientY - rect.top) / rect.height;
+    const note = prompt('Defect note (e.g. "corner whiten", "surface scratch"):', 'surface anomaly');
+    if (note === null) return;
+    await api(`/submissions/${s.id}/observations`, { b: { evidenceId: cap.id, lane: q('#phLane').value, note, severity: 0.5, confidence: 0.9, source: 'human-photo-lab', x, y } });
+    const fresh = await api('/submissions/' + s.id); Object.assign(s, fresh); draw(); drawPins();
+  };
+}
+
 /* ── Community ────────────────────────────────────────────────────────── */
 async function community() {
   const certs = (await subs()).filter(s => s.status === 'certified');
@@ -896,6 +968,7 @@ const pages = {
   vault,
   market,
   live,
+  photolab: photoLab,
   studio: caseStudio,
   community,
   tools,
