@@ -26,7 +26,12 @@ const INTERNAL = ['grade','intake','submissions','passport','population','produc
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-const nav = () => document.querySelectorAll('[data-page]').forEach(b => b.onclick = () => show(b.dataset.page));
+const nav = () => {
+  document.querySelectorAll('[data-page]').forEach(b => b.onclick = () => show(b.dataset.page));
+  const g = document.querySelector('#btnGuide'), f = document.querySelector('#btnFull');
+  if (g) g.onclick = () => show('process');
+  if (f) f.onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+};
 
 const page = (t, s, b) => `<div class="page"><div class="eyebrow">GEMCORE • PRE-ACTIVE</div><h1>${t}</h1><p class="muted">${s}</p>${b}</div>`;
 const tiles = a => `<div class="grid">${a.map(x => `<div class="tile"><h3>${x}</h3><p class="muted">GemCore module</p></div>`).join('')}</div>`;
@@ -801,8 +806,20 @@ async function production() {
   });
 }
 
-/* ── Command Center — clickable launchpad ─────────────────────────────── */
-function command() {
+/* ── Command Center — pace stats, priority queue, agent bench, funnel ─── */
+async function command() {
+  const [list, agents, auditFeed] = await Promise.all([
+    subs(), api('/agents').catch(() => []), api('/audit').catch(() => []),
+  ]);
+  const today = new Date().toDateString();
+  const certToday = list.filter(s => s.certificate && new Date(s.certificate.sealedAt).toDateString() === today).length;
+  const recvToday = list.filter(s => new Date(s.createdAt).toDateString() === today).length;
+  const humanReview = list.filter(s => s.status === 'qc' || s.status === 'analyzing').length;
+  const turns = list.filter(s => s.certificate?.sealedAt).map(s => (new Date(s.certificate.sealedAt) - new Date(s.createdAt)) / 864e5).sort((a, b) => a - b);
+  const medianTurn = turns.length ? turns[turns.length >> 1].toFixed(1) : '—';
+  const funnel = [['RECEIVED', 'intake'], ['IMAGING', 'capturing'], ['AGENT REVIEW', 'analyzing'], ['HUMAN REVIEW', 'qc'], ['ENCAPSULATION', 'production'], ['CERTIFIED', 'certified']];
+  const queue = list.filter(s => ['qc', 'analyzing', 'review-request'].includes(s.status)).slice(0, 8);
+
   const items = [
     ['grade', '⬡', 'Quantum Inspection', 'AI scan chamber + Money Penny'],
     ['intake', '▤', 'Start a Submission', 'Capture & track collectibles'],
@@ -818,10 +835,54 @@ function command() {
     ['verify', '✓', 'Verify a Cert', 'Public verification'],
     ['community', '◔', 'Community & RP', 'GOAT Force ATL'],
   ];
-  V.innerHTML = page('Command Center', 'Collect • Grade • Trade • Preserve • Belong',
+  V.innerHTML = '<div id="cmdZone"></div><div id="cmdTiles">' +
     `<div class="grid">${items.map(([k, ic, t, s]) =>
-      `<div class="tile" style="cursor:pointer" data-go="${k}"><h3>${ic} ${t}</h3><p class="muted">${s}</p></div>`).join('')}</div>`);
+      `<div class="tile" style="cursor:pointer" data-go="${k}"><h3>${ic} ${t}</h3><p class="muted">${s}</p></div>`).join('')}</div></div>`;
   document.querySelectorAll('[data-go]').forEach(t => t.onclick = () => show(t.dataset.go));
+  commandDash(); // paints the live dashboard into #cmdZone
+}
+
+/* ── Command dashboard — pace, queue, agent bench, funnel (brickgrade-parity) ── */
+async function commandDash() {
+  const [list, agents, auditFeed] = await Promise.all([
+    subs(), api('/agents').catch(() => []), api('/audit').catch(() => []),
+  ]);
+  const today = new Date().toDateString();
+  const certToday = list.filter(s => s.certificate && new Date(s.certificate.sealedAt).toDateString() === today).length;
+  const recvToday = list.filter(s => new Date(s.createdAt).toDateString() === today).length;
+  const humanReview = list.filter(s => ['qc', 'analyzing'].includes(s.status)).length;
+  const turns = list.filter(s => s.certificate?.sealedAt).map(s => (new Date(s.certificate.sealedAt) - new Date(s.createdAt)) / 864e5).sort((a, b) => a - b);
+  const medianTurn = turns.length ? turns[turns.length >> 1].toFixed(1) : '—';
+  const funnel = [['RECEIVED', 'intake'], ['IMAGING', 'capturing'], ['AGENT REVIEW', 'analyzing'], ['HUMAN REVIEW', 'qc'], ['ENCAPSULATION', 'production'], ['CERTIFIED', 'certified']];
+  const queue = list.filter(s => ['qc', 'analyzing', 'review-request'].includes(s.status)).slice(0, 8);
+  const agentDefs = [['IN', 'Intake Agent', 'custody + intake checks'], ['ID', 'Identity Agent', 'set/year/variant match'], ['AU', 'Authentication', 'alteration + counterfeit flags'], ['CV', 'Condition Vision', 'centering/corners/edges/surface'], ['QA', 'Quality Gate', 'evidence agreement + policy']];
+  const zone = document.querySelector('#cmdZone') || V;
+  zone.innerHTML = page('Command Center', `${list.length} in system • ${humanReview} need human judgment`,
+    `<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
+      <div class="tile"><h3>Received today</h3><strong style="font-size:24px;color:var(--teal)">${recvToday}</strong></div>
+      <div class="tile"><h3>Human review</h3><strong style="font-size:24px;color:var(--gold)">${humanReview}</strong></div>
+      <div class="tile"><h3>Certified today</h3><strong style="font-size:24px;color:var(--green)">${certToday}</strong></div>
+      <div class="tile"><h3>Median turnaround</h3><strong style="font-size:24px;color:var(--teal)">${medianTurn}${medianTurn !== '—' ? 'd' : ''}</strong></div>
+      <div class="tile"><h3>Registry</h3><strong style="font-size:13px;color:var(--green)">${auditFeed.length} events sealed</strong></div>
+    </div>
+    <div class="panel" style="margin-top:14px"><h3>PRIORITY QUEUE — NEEDS A DECISION</h3>
+      ${queue.length ? queue.map(s => `<div class="scanrow" data-open="submissions" style="cursor:pointer">
+        <span class="tick">${s.status === 'qc' ? '!' : '◌'}</span>
+        <span><b>${esc(s.item?.name || 'Item')}</b> <small>${s.id} • ${s.status}${s.evaluation ? ' • ' + (s.evaluation.internalConditionIndex / 100).toFixed(1) + ' proj.' : ''}</small></span>
+        <span style="margin-left:auto" class="badge warn">${s.status}</span></div>`).join('')
+        : '<p class="muted" style="font-size:12px">Queue clear — nothing waiting on human judgment.</p>'}
+    </div>
+    <div class="detailgrid">
+      <div class="panel" style="margin-top:14px"><h3>AGENT BENCH — FIVE CHECKS, ONE AUDIT TRAIL</h3>
+        ${agentDefs.map(([ab, n, d]) => `<div class="scanrow"><span class="tick">●</span><span><b>${ab} · ${n}</b><small>${d}</small></span><span class="badge" style="margin-left:auto">live</span></div>`).join('')}
+        <p class="muted" style="font-size:10px;margin-top:8px">${Array.isArray(agents) ? agents.length : 8} agents registered on the bus • Money Penny supervises</p>
+      </div>
+      <div class="panel" style="margin-top:14px"><h3>LAB PIPELINE</h3>
+        ${funnel.map(([n, st]) => { const c = list.filter(s => s.status === st).length;
+          return `<div class="scanrow"><span class="tick">▣</span><span><b>${n}</b></span><span style="margin-left:auto"><b style="color:var(--teal)">${c}</b></span></div>`; }).join('')}
+      </div>
+    </div>`);
+  zone.querySelectorAll('[data-open]').forEach(t => t.onclick = () => show(t.dataset.open));
 }
 
 /* ── Vault — vaulted + certified collection ───────────────────────────── */
