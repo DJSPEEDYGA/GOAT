@@ -636,6 +636,33 @@ app.get('/api/submissions/:id/export.usdz', (q, r) => {
   r.set('Content-Type', 'model/vnd.usdz+zip').set('Content-Disposition', `attachment; filename="${s.id}.usdz"`).send(usdz);
 });
 
+// ── GemCore Imagine — local animation engine (Jetson) ───────────────────
+const IMAGINE_URL = process.env.GEMCORE_IMAGINE_URL || 'http://127.0.0.1:10090';
+app.post('/api/submissions/:id/animate', async (q, r) => {
+  const s = findSub(r, q.params.id); if (!s) return;
+  const cap = (s.captures || []).find(c => c.storedData && c.side === 'front') || (s.captures || []).find(c => c.storedData);
+  if (!cap?.storedData) return r.status(400).json({ error: 'no stored capture to animate' });
+  try {
+    const blob = new Blob([Buffer.from(cap.storedData.split(',')[1], 'base64')], { type: 'image/png' });
+    const fd = new FormData(); fd.append('file', blob, 'card.png');
+    const res = await fetch(`${IMAGINE_URL}/animate?mode=${encodeURIComponent(q.body.mode || 'depth')}`, { method: 'POST', body: fd });
+    const j = await res.json();
+    if (j.job) { updateSub(s.id, x => { x.animJob = j.job; }); audit(s.id, 'animate-queued', { job: j.job, mode: q.body.mode }); }
+    r.json(j);
+  } catch { r.status(503).json({ error: 'imagine engine offline — start imagine_server.py on the Jetson' }); }
+});
+app.get('/api/animate/:jid', async (q, r) => {
+  try { r.json(await (await fetch(`${IMAGINE_URL}/animate/${q.params.jid}`)).json()); }
+  catch { r.status(503).json({ state: 'offline' }); }
+});
+app.get('/api/animate/:jid/file', async (q, r) => {
+  try {
+    const res = await fetch(`${IMAGINE_URL}/animate/${q.params.jid}/file`);
+    r.set('Content-Type', res.headers.get('content-type') || 'video/mp4')
+     .send(Buffer.from(await res.arrayBuffer()));
+  } catch { r.sendStatus(503); }
+});
+
 // card fingerprint — perceptual hash seals the physical card to the cert
 app.post('/api/submissions/:id/fingerprint', (q, r) => {
   const s = findSub(r, q.params.id); if (!s) return;

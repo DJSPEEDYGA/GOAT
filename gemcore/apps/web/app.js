@@ -671,6 +671,14 @@ function caseStudio() {
           <span id="animMsg" class="muted" style="font-size:11px"></span>
         </div>
         <p class="muted" style="font-size:10px;margin-top:6px">GLB drops straight into Unreal Engine (glTF importer) or Blender. USDZ = iPhone AR Quick Look — scan cert QR → slab floats in the room. WebM = the "card comes alive" clip for socials/passport.</p>
+        <h3 style="margin-top:16px">GEMCORE IMAGINE — LOCAL ENGINE <span class="muted" style="font-size:9px">(no API, runs on the Jetson)</span></h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select id="imMode" style="width:auto"><option value="depth">Depth parallax (2.5D)</option><option value="diffuse">Diffusion video (SVD)</option></select>
+          <button class="primary" id="imGo" style="font-size:11px">◉ Animate Card</button>
+          <span id="imStatus" class="muted" style="font-size:11px"></span>
+        </div>
+        <video id="imVid" controls loop style="width:100%;max-width:340px;border-radius:12px;margin-top:8px;display:none"></video>
+        <p class="muted" style="font-size:10px;margin-top:4px">Depth parallax: real 2.5D float + holo sweep, rendered locally. Diffusion: img2video on the Orin when SVD/LTX models are installed — auto-falls back to depth mode.</p>
         <p class="muted" style="font-size:10px;margin-top:8px">QR encodes the public verify URL — scannable on a printed label. SVG is vector for laser engraving / fabrication.</p>
       </div>
       <div class="panel" style="text-align:center"><h3>PREVIEW — FRONT &amp; BACK</h3><div id="csPrev" style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap"></div></div>
@@ -758,6 +766,27 @@ function caseStudio() {
     };
     rec.start(); q('#animMsg').textContent = 'recording…';
     setTimeout(() => rec.stop(), 4000);
+  };
+  // ── GemCore Imagine — Jetson engine ──
+  q('#imGo').onclick = async () => {
+    if (!currentSub) return alert('Select a submission first');
+    const mode = q('#imMode').value;
+    q('#imStatus').textContent = 'queueing…';
+    const res = await api(`/submissions/${currentSub}/animate`, { b: { mode } });
+    if (!res.job) { q('#imStatus').textContent = res.error || 'engine offline'; return; }
+    const jid = res.job;
+    q('#imStatus').textContent = 'rendering on the Jetson…';
+    const poll = setInterval(async () => {
+      const st = await api('/animate/' + jid);
+      if (st.state === 'done' || st.state === 'fallback' && st.file) {
+        clearInterval(poll);
+        const v = q('#imVid');
+        v.src = `/api/animate/${jid}/file`; v.style.display = 'block'; v.play();
+        q('#imStatus').textContent = `${st.frames || ''} frames ✓ — real MP4`;
+      } else if (st.state === 'error' || st.state === 'offline') {
+        clearInterval(poll); q('#imStatus').textContent = st.error || 'engine offline — start imagine_server.py';
+      }
+    }, 3000);
   };
 }
 
@@ -901,6 +930,7 @@ const KIT = [
   ['Raking light', 'Low-angle LED bar — exposes hairline surface scratches naked eye misses', '$15–40'],
   ['Slab welder', '20KHz ultrasonic welder, 2000–3200W benchtop for sealing cases', '$1,000–2,800'],
   ['Label printer/cutter', 'Slab label cutter + printer for paper inserts (UV-cure engraving later)', '~$300'],
+  ['Cinema capture (pro tier)', 'Global shutter + RAW codec (BRAW/REDCODE) — no jello on pans, 15–17 stops DR preserves shadow+foil detail. Blackmagic Pyxis 6K / URSA class for lab masters', '$2.5k–30k'],
 ];
 
 /* ── Slab Production — certified cert → physical slab pipeline ────────── */

@@ -88,10 +88,15 @@ HARDWARE INTEL (advise users on capture quality):
 - Mobile capture: camera perfectly PARALLEL (tilt corrupts centering math),
   twin 45° diffused lights (no foil hotspots), matte black backdrop (clean
   edge detection for dark/silver-bordered cards).
+- Cinema tier (master capture): global shutter kills rolling-skew on pans,
+  RAW codecs (BRAW/REDCODE) keep grading latitude, 15–17 stops DR preserves
+  foil highlights + shadow detail in one frame. Pyxis 6K/URSA class.
 - Competitor tech: TAG=photometric stereo + 1000pt score; PSA/Genamint=
   card fingerprinting (paper fiber) + ingest CV; CardGrade=16-zone map;
   DCM Optic=sub-pixel centering %. We match with pixel-coordinate defect
   pins + sha256 evidence + public rank/chronology they charge for.
+- GemCore Imagine (local, no API): depth-parallax MP4 engine + optional
+  SVD/LTX diffusion on the Jetson; GLB for Unreal/Blender, USDZ for iOS AR.
 
 ACTIONS (only when asked or clearly needed — emit token alone on a line):
 [[ACTION:scan]] deep scan • [[ACTION:report]] passport report
