@@ -92,7 +92,11 @@ async function lab() {
         </div>
         <div class="panel"><h3>INSPECTION VIEWS</h3>
           <div class="tabs"><button class="active" data-view="microscope">Microscope</button><button data-view="telescope">Telescope</button><button data-view="3d">3D Model</button></div>
-          <div class="micro"><img id="mainView" src="assets/mock-surface.png" alt="surface detail"><span id="viewLabel">SURFACE DETAIL <b>40×</b></span><span class="tag4k">4K</span></div>
+          <div class="micro"><canvas id="viewer" style="width:100%;height:100%"></canvas><span id="viewLabel">SURFACE DETAIL <b id="zoomLabel">40×</b></span><span class="tag4k">4K</span></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <span class="muted" style="font-size:10px">ZOOM</span>
+            <input type="range" id="zoom" min="1" max="20" step="0.5" value="4" style="flex:1;margin:0">
+          </div>
           <div class="thumbs">
             <i data-thumb="mock-t1"><img src="assets/mock-t1.png"><em>Corner</em></i>
             <i data-thumb="mock-t2"><img src="assets/mock-t2.png"><em>Edge</em></i>
@@ -162,14 +166,32 @@ function bindLab(s, ev) {
     if (!s) { q('#jarvisMsg').textContent = 'Pick or create a submission first.'; return; }
     q('#scanner').classList.add('active');
     CHECKS.forEach((c, i) => setTimeout(() => { const t = q('#tick' + i); if (t) t.textContent = '✓'; const k = q('#ck' + i); if (k) k.textContent = 'Scanning…'; }, i * 160));
-    const res = await api(`/submissions/${s.id}/analyze`, { b: { capability: 'surface' } });
+
+    // REAL analysis: run local CV over the newest stored capture.
+    const cap = (s.captures || []).filter(c => c.storedData).pop();
+    if (!cap) {
+      q('#scanner').classList.remove('active');
+      q('#jarvisMsg').textContent = 'No evidence yet — capture the item first (camera on intake page). No results invented.';
+      return;
+    }
+    const res = await window.VisionLocal.analyze(cap.storedData);
+    if (!res.ok) {
+      q('#scanner').classList.remove('active');
+      q('#jarvisMsg').textContent = 'Analysis: ' + res.reason;
+      return;
+    }
+    // post real per-lane measurements + defect observations tied to the capture
+    for (const [lane, score] of Object.entries(res.lanes)) {
+      await api(`/submissions/${s.id}/measurements`, { b: { lane, score, captureId: cap.id, detail: { source: 'visioncore-local-cv' } } });
+    }
+    for (const d of res.defects.slice(0, 12)) {
+      await api(`/submissions/${s.id}/observations`, { b: { evidenceId: cap.id, lane: 'surface', note: 'surface anomaly', severity: +d.severity.toFixed(2), confidence: res.confidence / 100, source: 'visioncore-local-cv', x: d.x, y: d.y } });
+    }
     const grade = await api(`/submissions/${s.id}/grade`);
     q('#scanner').classList.remove('active');
-    CHECKS.forEach((c, i) => { const k = q('#ck' + i); if (k) k.textContent = res.status === 'ok' ? 'Analyzed' : 'Awaiting adapter'; });
+    CHECKS.forEach((c, i) => { const k = q('#ck' + i); if (k) k.textContent = 'Analyzed'; });
     q('#progress').style.width = '100%';
-    q('#jarvisMsg').textContent = res.status === 'ok'
-      ? 'Scan complete — visuals mapped to evidence.'
-      : 'Scan pipeline ready. VisionCore adapter required for analysis — no results invented.';
+    q('#jarvisMsg').textContent = `Real CV analysis complete — confidence ${res.confidence}%. ${res.defects.length} anomaly cell(s) found on ${cap.id.slice(0, 8)}… Reviewer confirmation required.`;
     if (grade.publicGrade !== null) { q('#score').textContent = grade.publicGrade; q('#g').textContent = grade.publicGrade; }
     q('#state').textContent = (grade.status || 'qc-required').toUpperCase();
     if (grade.status === 'sealable') q('#seal').disabled = false;
@@ -191,18 +213,53 @@ function bindLab(s, ev) {
       () => q('#jarvisMsg').textContent = 'Verify link: ' + link);
   };
 
-  // inspection view tabs + thumbnails swap the main viewer
-  const views = { microscope: 'assets/mock-surface.png', telescope: 'assets/mock-chamber.png' };
-  const viewNames = { microscope: 'SURFACE DETAIL <b>40×</b>', telescope: 'MACRO / TELESCOPE <b>wide</b>', '3d': '3D MODEL <b>rotate</b>' };
+  // ── real microscope/telescope viewer: pixel zoom on actual captures ──
+  const viewer = q('#viewer');
+  const vctx = viewer.getContext('2d');
+  let srcImg = new Image(), zoom = 4, panX = .5, panY = .5, vmode = 'microscope';
+  srcImg.src = (s?.captures || []).find(c => c.storedData)?.storedData || 'assets/mock-card.png';
+  const fitViewer = () => { const r = viewer.parentElement.getBoundingClientRect(); viewer.width = r.width; viewer.height = r.height; };
+
+  function drawView() {
+    fitViewer();
+    const iw = srcImg.width || 300, ih = srcImg.height || 200;
+    if (vmode === 'telescope') {
+      // full frame + defect markers at real coords
+      const sc = Math.min(viewer.width / iw, viewer.height / ih);
+      const dw = iw * sc, dh = ih * sc, ox = (viewer.width - dw) / 2, oy = (viewer.height - dh) / 2;
+      vctx.fillStyle = '#050508'; vctx.fillRect(0, 0, viewer.width, viewer.height);
+      vctx.drawImage(srcImg, ox, oy, dw, dh);
+      (s?.annotations || []).forEach(a => {
+        vctx.beginPath(); vctx.arc(ox + a.x * dw, oy + a.y * dh, 8, 0, 7);
+        vctx.strokeStyle = '#25f3e6'; vctx.lineWidth = 1.5; vctx.stroke();
+      });
+      return;
+    }
+    // microscope: crop-zoom around pan point
+    const zw = iw / zoom, zh = ih / zoom;
+    const sx = Math.max(0, Math.min(iw - zw, panX * iw - zw / 2));
+    const sy = Math.max(0, Math.min(ih - zh, panY * ih - zh / 2));
+    vctx.imageSmoothingEnabled = zoom < 8;
+    vctx.drawImage(srcImg, sx, sy, zw, zh, 0, 0, viewer.width, viewer.height);
+  }
+  srcImg.onload = drawView;
+
+  let vp = false;
+  viewer.onpointerdown = e => { vp = true; viewer.setPointerCapture(e.pointerId); };
+  viewer.onpointermove = e => { if (!vp) return; const r = viewer.getBoundingClientRect(); panX = Math.max(0, Math.min(1, panX - e.movementX / r.width / zoom * 2)); panY = Math.max(0, Math.min(1, panY - e.movementY / r.height / zoom * 2)); drawView(); };
+  viewer.onpointerup = () => vp = false;
+  q('#zoom').oninput = e => { zoom = +e.target.value; q('#zoomLabel').textContent = Math.round(zoom * 10) + '×'; drawView(); };
+
   document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => {
     document.querySelectorAll('[data-view]').forEach(x => x.classList.toggle('active', x === b));
-    const v = b.dataset.view;
-    if (v === '3d') { q('#mainView').src = 'assets/mock-card.png'; }
-    else q('#mainView').src = views[v];
-    q('#viewLabel').innerHTML = viewNames[v];
+    vmode = b.dataset.view;
+    q('#viewLabel').innerHTML = { microscope: 'SURFACE DETAIL <b id="zoomLabel">' + Math.round(zoom * 10) + '×</b>', telescope: 'MACRO / TELESCOPE <b>overview + markers</b>', '3d': '3D MODEL <b>rotatable</b>' }[vmode];
+    if (vmode === '3d') { srcImg.src = 'assets/mock-card.png'; srcImg.onload = drawView; }
+    drawView();
   });
   document.querySelectorAll('[data-thumb]').forEach(t => t.onclick = () => {
-    q('#mainView').src = 'assets/' + t.dataset.thumb + '.png';
+    srcImg = new Image(); srcImg.onload = () => { vmode = 'microscope'; drawView(); };
+    srcImg.src = 'assets/' + t.dataset.thumb + '.png';
     q('#viewLabel').innerHTML = t.querySelector('em').textContent.toUpperCase() + ' <b>view</b>';
   });
 
@@ -244,12 +301,15 @@ async function intake() {
       <label>Year<input id="year" placeholder="1999"></label>
       <label><input type="checkbox" id="demo" style="width:auto"> Mark as demo (can never certify)</label>
       <button class="primary" id="create" style="margin-top:14px">Create Submission</button>
-      <pre id="out"></pre></div>`);
+      <pre id="out"></pre></div>
+    <div id="capHost"></div>`);
   document.querySelector('#create').onclick = async () => {
     const s = await api('/submissions', { b: { item: { name: itemName(), set: q('#set').value, year: q('#year').value }, demo: q('#demo').checked } });
     currentSub = s.id; localStorage.setItem('gemcore.sub', s.id);
-    q('#out').textContent = 'Created ' + s.id + '\n' + JSON.stringify(s, null, 2);
+    q('#out').textContent = 'Created ' + s.id;
+    q('#capHost').innerHTML = window.GemCapturePanel(s.id);
   };
+  if (currentSub) document.querySelector('#capHost').innerHTML = window.GemCapturePanel(currentSub);
   const q = sel => document.querySelector(sel);
   const itemName = () => q('#item').value;
 }
@@ -343,6 +403,72 @@ async function population() {
     <table><tr><th>Grade</th><th>Count</th></tr>${Object.entries(p.byGrade).map(([g, c]) => `<tr><td>${g}</td><td>${c}</td></tr>`).join('') || '<tr><td colspan=2 class="muted">No certified items yet</td></tr>'}</table></div>`);
 }
 
+/* ── Case Studio — physical slab/case designer with engraving ─────────── */
+function slabSVG(d) {
+  const tints = { clear: 'rgba(190,230,245,.12)', smoke: 'rgba(60,80,95,.35)', black: 'rgba(8,14,20,.9)' };
+  const tint = tints[d.tint] || tints.clear;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="430" viewBox="0 0 300 430">
+  <defs>
+    <linearGradient id="case" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="rgba(210,240,255,.28)"/><stop offset=".5" stop-color="${tint}"/><stop offset="1" stop-color="rgba(90,140,160,.18)"/>
+    </linearGradient>
+    <linearGradient id="lbl" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f4f7f8"/><stop offset="1" stop-color="#d8e2e6"/></linearGradient>
+    <filter id="etch"><feOffset dx="0" dy="1"/><feGaussianBlur stdDeviation=".4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="10" y="10" width="280" height="410" rx="16" fill="url(#case)" stroke="rgba(190,235,255,.5)" stroke-width="2"/>
+  <rect x="18" y="18" width="264" height="394" rx="11" fill="none" stroke="rgba(190,235,255,.25)" stroke-width="1" stroke-dasharray="4 3"/>
+  <rect x="22" y="22" width="256" height="74" rx="9" fill="url(#lbl)" stroke="#b8c8cf"/>
+  <text x="34" y="44" font-family="Georgia,serif" font-size="13" font-weight="bold" fill="#12344a">◆ GEMCORE GRADING</text>
+  <text x="34" y="62" font-size="10.5" fill="#2a4a5e">${esc(d.name) || 'COLLECTIBLE'}</text>
+  <text x="34" y="77" font-size="9" fill="#5a7482">${esc(d.set) || ''} ${esc(d.year) || ''}</text>
+  <text x="258" y="70" text-anchor="end" font-size="34" font-weight="800" fill="#0ea898">${esc(d.grade) || '—'}</text>
+  <text x="150" y="92" text-anchor="middle" font-family="monospace" font-size="8" fill="#456">${esc(d.cert) || 'GC000000000'}</text>
+  <rect x="30" y="104" width="240" height="270" rx="8" fill="none" stroke="rgba(190,235,255,.3)" stroke-width="1.2"/>
+  ${d.holo ? '<rect x="34" y="360" width="90" height="14" rx="4" fill="url(#case)" stroke="#25f3e6" stroke-width=".7" opacity=".85"/><text x="79" y="370" text-anchor="middle" font-size="7" fill="#25f3e6">HOLO SEAL</text>' : ''}
+  <!-- engraved text: embossed look -->
+  <text x="150" y="398" text-anchor="middle" font-family="Georgia,serif" font-size="12" letter-spacing="2" fill="rgba(255,255,255,.55)" filter="url(#etch)">${esc(d.engrave) || ''}</text>
+  <text x="150" y="397.3" text-anchor="middle" font-family="Georgia,serif" font-size="12" letter-spacing="2" fill="rgba(0,0,0,.5)">${esc(d.engrave) || ''}</text>
+  <!-- weld seam dots -->
+  <g fill="rgba(190,235,255,.4)">${[26, 64, 236, 274].map(x => `<circle cx="${x}" cy="404" r="1.6"/>`).join('')}</g>
+  <!-- dimension marks -->
+  <g stroke="#25f3e6" stroke-width=".7" opacity=".6"><path d="M10 424h280M10 420v8M290 420v8"/></g>
+  <text x="150" y="428" text-anchor="middle" font-size="7" fill="#25f3e6">80 mm</text>
+</svg>`;
+}
+
+function caseStudio() {
+  V.innerHTML = page('Case Studio', 'Design the physical slab — label, tint, hologram, engraving',
+    `<div class="detailgrid">
+      <div class="panel"><h3>SLAB DESIGN</h3>
+        <label>Item name<input id="csName" placeholder="Charizard (1st Edition)"></label>
+        <label>Set / year<input id="csSet" placeholder="Pokémon Base Set • 1999"></label>
+        <label>Certificate ID<input id="csCert" placeholder="GC000123456"></label>
+        <label>Grade<input id="csGrade" placeholder="10" style="width:80px"></label>
+        <label>Case tint<select id="csTint"><option>clear</option><option>smoke</option><option>black</option></select></label>
+        <label>Plastic engraving text<input id="csEngrave" placeholder="GEMCORE CERTIFIED"></label>
+        <label><input type="checkbox" id="csHolo" checked style="width:auto"> Hologram strip</label>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="primary" id="csSvg">Download SVG</button>
+          <button id="csPng">Download PNG</button>
+        </div>
+        <p class="muted" style="font-size:10px;margin-top:8px">SVG is vector — usable for laser engraving / case fabrication tooling.</p>
+      </div>
+      <div class="panel" style="text-align:center"><h3>PREVIEW</h3><div id="csPrev"></div></div>
+    </div>`);
+  const q = sel => document.querySelector(sel);
+  const read = () => ({ name: q('#csName').value, set: q('#csSet').value, cert: q('#csCert').value, grade: q('#csGrade').value, tint: q('#csTint').value, engrave: q('#csEngrave').value, holo: q('#csHolo').checked });
+  const render = () => q('#csPrev').innerHTML = slabSVG(read());
+  ['csName', 'csSet', 'csCert', 'csGrade', 'csTint', 'csEngrave', 'csHolo'].forEach(id => q('#' + id).oninput = render);
+  render();
+  const dl = (blob, name) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); };
+  q('#csSvg').onclick = () => dl(new Blob([slabSVG(read())], { type: 'image/svg+xml' }), 'gemcore-slab.svg');
+  q('#csPng').onclick = () => {
+    const img = new Image();
+    img.onload = () => { const c = document.createElement('canvas'); c.width = 600; c.height = 860; c.getContext('2d').drawImage(img, 0, 0, 600, 860); c.toBlob(b => dl(b, 'gemcore-slab.png'), 'image/png'); };
+    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(slabSVG(read()))));
+  };
+}
+
 const pages = {
   command: () => { V.innerHTML = page('Command Center', 'Collect • Grade • Trade • Preserve • Belong',
     tiles(['Start a Submission', 'Quantum Inspection', 'Evidence Passport', 'Live Grading', 'Human QC', 'Population Report', 'Market Intelligence', 'GemCore Vault'])); },
@@ -355,7 +481,7 @@ const pages = {
   vault: () => { V.innerHTML = page('GemCore Vault', 'Your certified and in-review collection', tiles(['Certified', 'In Review', 'Returned Ungraded', 'Regrade Queue'])); },
   market: () => { V.innerHTML = page('Market Intelligence', 'Market value is displayed separately and never changes condition grade', tiles(['Comparable Sales', 'Price History', 'Market Trend', 'Set Analytics'])); },
   live: () => { V.innerHTML = page('Live Grading', 'Capture → VisionCore → Reviewer → Slab QA', tiles(['Capture Feed', 'VisionCore Events', 'Reviewer Queue', 'Slab QA'])); },
-  studio: () => { V.innerHTML = page('GOATVERSE Studio', '3D/4D interactive presentation', tiles(['3D Showcase', 'Spatial Reveal', 'AR Preview'])); },
+  studio: caseStudio,
   community: () => { V.innerHTML = page('Community', 'Collectors & chat', tiles(['Collector Lounge', 'Showcase Feed', 'Grading Stories'])); },
   tools: () => { V.innerHTML = page('Tools & Calculators', 'Value, ROI, compare', tiles(['Value Estimator', 'ROI Calculator', 'Compare Tool'])); },
   settings: () => { V.innerHTML = page('Settings & Calibration', 'Hardware, optics, lighting and rubric configuration', tiles(['Digital Microscope', 'Macro / Telescope Camera', 'Raking Light', 'UV / IR', 'Calibration Health', 'Rubric Version'])); },
