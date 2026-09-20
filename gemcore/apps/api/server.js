@@ -645,6 +645,7 @@ app.post('/api/submissions/:id/animate', async (q, r) => {
   try {
     const blob = new Blob([Buffer.from(cap.storedData.split(',')[1], 'base64')], { type: 'image/png' });
     const fd = new FormData(); fd.append('file', blob, 'card.png');
+    fd.append('meta', JSON.stringify({ name: s.item?.name, grade: s.certificate?.publicGrade, certId: s.certificate?.certId || s.id }));
     const res = await fetch(`${IMAGINE_URL}/animate?mode=${encodeURIComponent(q.body.mode || 'depth')}`, { method: 'POST', body: fd });
     const j = await res.json();
     if (j.job) { updateSub(s.id, x => { x.animJob = j.job; }); audit(s.id, 'animate-queued', { job: j.job, mode: q.body.mode }); }

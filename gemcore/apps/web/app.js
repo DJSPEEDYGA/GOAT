@@ -673,7 +673,7 @@ function caseStudio() {
         <p class="muted" style="font-size:10px;margin-top:6px">GLB drops straight into Unreal Engine (glTF importer) or Blender. USDZ = iPhone AR Quick Look — scan cert QR → slab floats in the room. WebM = the "card comes alive" clip for socials/passport.</p>
         <h3 style="margin-top:16px">GEMCORE IMAGINE — LOCAL ENGINE <span class="muted" style="font-size:9px">(no API, runs on the Jetson)</span></h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <select id="imMode" style="width:auto"><option value="depth">Depth parallax (2.5D)</option><option value="sparkle">Sparkle particles</option><option value="depth-blur">Rack focus blur</option><option value="cinema">Cinema grade</option><option value="diffuse">Diffusion video (SVD)</option></select>
+          <select id="imMode" style="width:auto"><option value="presenter">Money Penny presents the cert</option><option value="depth">Depth parallax (2.5D)</option><option value="sparkle">Sparkle particles</option><option value="depth-blur">Rack focus blur</option><option value="cinema">Cinema grade</option><option value="diffuse">Diffusion video (SVD)</option></select>
           <button class="primary" id="imGo" style="font-size:11px">◉ Animate Card</button>
           <span id="imStatus" class="muted" style="font-size:11px"></span>
         </div>

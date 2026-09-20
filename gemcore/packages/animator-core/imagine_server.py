@@ -7,7 +7,7 @@ Run:  pip3 install fastapi uvicorn pillow numpy  (opencv-python optional)
       python3 imagine_server.py   # serves :10090
 """
 import io, os, json, math, uuid, time, threading
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, Form
 from fastapi.responses import FileResponse, JSONResponse
 import numpy as np
 from PIL import Image, ImageFilter
@@ -60,6 +60,50 @@ def parallax_frames(img: Image.Image, depth: np.ndarray, n=48, amp=0.012, fx='ho
         frames.append(Image.fromarray(np.clip(frame, 0, 255).astype(np.uint8)))
     return frames
 
+def presenter_frames(img: Image.Image, meta: dict, n=72):
+    """Money Penny presents the cert: intro ring → card float-in → grade stamp."""
+    from PIL import ImageDraw, ImageFont
+    W, H = 640, 640
+    try:
+        f_big = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 72)
+        f_med = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 34)
+        f_sm = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 18)
+    except Exception:
+        f_big = f_med = f_sm = ImageFont.load_default()
+    card = img.copy(); card.thumbnail((380, 500))
+    frames = []
+    name = (meta.get('name') or 'Certified Collectible')[:30]
+    grade = meta.get('grade'); cert = meta.get('certId', '')
+    for i in range(n):
+        fr = Image.new('RGB', (W, H), (2, 7, 12))
+        d = ImageDraw.Draw(fr, 'RGBA')
+        t = i / n
+        # reactor ring — always alive
+        rr = 90 + 10 * math.sin(t * 6.28 * 2)
+        d.ellipse([W//2 - rr, 130 - rr, W//2 + rr, 130 + rr], outline=(217, 185, 106, 160), width=2)
+        d.ellipse([W//2 - rr*1.2, 130 - rr*1.2, W//2 + rr*1.2, 130 + rr*1.2], outline=(37, 243, 230, 60), width=1)
+        phase = t * 3
+        if phase < 1:   # intro — MP emblem
+            a = min(1, t * 4)
+            d.text((W//2, 118), 'MP', font=f_big, anchor='mm', fill=(217, 185, 106, int(255*a)))
+            d.text((W//2, 240), 'MONEY PENNY', font=f_med, anchor='mm', fill=(234, 253, 251, int(255*a)))
+            d.text((W//2, 280), 'presents', font=f_sm, anchor='mm', fill=(127, 168, 184, int(255*a)))
+        elif phase < 2: # card float-in with drift
+            rise = int(80 * (1 - (phase - 1)))
+            fr.paste(card, (W//2 - card.width//2, 150 - rise), card if card.mode == 'RGBA' else None)
+            d.text((W//2, 150 + card.height + 20 - rise), name, font=f_med, anchor='mm', fill=(234, 253, 251))
+            d.text((W//2, 150 + card.height + 52 - rise), 'GEMCORE CERTIFIED', font=f_sm, anchor='mm', fill=(37, 243, 230))
+        else:           # grade stamp
+            pop = min(1, (phase - 2) * 4)
+            gs = int(56 + 20 * pop)
+            fr.paste(card, (W//2 - card.width//2 - 60, 110))
+            d.text((W - 130, 240), str(grade or '—'), font=f_big, anchor='mm', fill=(37, 243, 230))
+            d.text((W - 130, 300), 'GRADE', font=f_sm, anchor='mm', fill=(217, 185, 106))
+            d.text((W - 130, 330), cert, font=f_sm, anchor='mm', fill=(127, 168, 184))
+            d.text((W//2, H - 60), 'the standard is higher', font=f_sm, anchor='mm', fill=(217, 185, 106, 200))
+        frames.append(fr)
+    return frames
+
 def write_mp4(frames, out):
     """Prefer imageio-ffmpeg → real mp4; fallback animated webp."""
     try:
@@ -72,12 +116,14 @@ def write_mp4(frames, out):
         frames[0].save(out, save_all=True, append_images=frames[1:], duration=42, loop=0)
         return out
 
-def run_job(jid, png_bytes, mode):
+def run_job(jid, png_bytes, mode, meta=None):
     STATUS[jid] = {'state': 'rendering', 'mode': mode, 'at': time.time()}
     try:
         img = Image.open(io.BytesIO(png_bytes)).convert('RGB')
         img.thumbnail((720, 720))
-        if mode == 'diffuse':
+        if mode == 'presenter':
+            frames = presenter_frames(img, meta or {})
+        elif mode == 'diffuse':
             # Tier 2 — real video diffusion if a local model is installed
             try:
                 from diffusers import StableVideoDiffusionPipeline
@@ -101,10 +147,12 @@ def run_job(jid, png_bytes, mode):
         STATUS[jid] = {'state': 'error', 'error': str(e)}
 
 @app.post('/animate')
-async def animate(file: UploadFile, mode: str = 'depth'):
+async def animate(file: UploadFile, mode: str = 'depth', meta: str = Form('{}')):
     jid = uuid.uuid4().hex[:12]
     data = await file.read()
-    threading.Thread(target=run_job, args=(jid, data, mode), daemon=True).start()
+    try: m = json.loads(meta)
+    except Exception: m = {}
+    threading.Thread(target=run_job, args=(jid, data, mode, m), daemon=True).start()
     return {'job': jid}
 
 @app.get('/animate/{jid}')
