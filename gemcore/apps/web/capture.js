@@ -10,12 +10,15 @@
     body: JSON.stringify(b || {}),
   }).then(r => r.json());
 
+  const MODE_ROLE = { visible: 'overview', raking: 'overview', macro: 'macro-telescope', microscope: 'microscope', uv: 'uv-ir', ir: 'uv-ir' };
+
   async function open(subId) {
     try {
-      dev = new GemCoreCapture.CaptureDevice({ role: 'inspection' });
-      stream = await dev.open({ video: { width: { ideal: 3840 }, height: { ideal: 2160 }, facingMode: { ideal: 'environment' } }, audio: false });
+      const { dev: d, stream: s } = await GemCoreCapture.openForRole(MODE_ROLE[mode] || 'overview');
+      dev = d; stream = s;
       q('#cam').srcObject = stream;
-      q('#captureStatus').textContent = 'CAMERA ONLINE';
+      const track = stream.getVideoTracks()[0];
+      q('#captureStatus').textContent = 'CAMERA ONLINE: ' + (track.label || 'camera');
       renderCaps();
     } catch (e) {
       q('#captureStatus').textContent = 'CAMERA PERMISSION / DEVICE REQUIRED';
@@ -39,7 +42,12 @@
     const data = c.toDataURL('image/jpeg', .92);
     // real evidence: server computes sha256 of this payload
     const rec = await api(`/submissions/${subId}/captures`, {
-      data, side, mode, deviceMeta: { ua: navigator.userAgent.slice(0, 60) },
+      data, side, mode,
+      deviceMeta: {
+        role: MODE_ROLE[mode] || 'overview',
+        device: stream.getVideoTracks()[0]?.label || 'unknown',
+        resolution: c.width + 'x' + c.height,
+      },
     });
     if (rec.id) {
       q('#lastCapture').src = data;

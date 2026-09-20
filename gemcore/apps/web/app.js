@@ -469,6 +469,51 @@ function caseStudio() {
   };
 }
 
+/* ── Settings: real hardware roles + calibration + recommended kit ────── */
+async function hardwareSettings() {
+  const KIT = [
+    ['Overview / macro camera', 'Any 1080p+ webcam or phone camera — front/back full-card captures', '$0–60'],
+    ['Digital microscope', 'USB/LCD scope 50–500× (Plugable 250×, Celestron MicroDirect, LinkMicro LM210S)', '$50–200'],
+    ['Macro / telescope', 'Phone telephoto or DSLR macro for card-surface wide shots', '$0–400'],
+    ['UV / IR source', '365nm UV torch + IR-sensitive camera for alterations/print check', '$20–80'],
+    ['Raking light', 'Low-angle LED bar for surface scratches', '$15–40'],
+    ['Slab welder', '20KHz ultrasonic welder, 2000–3200W benchtop for sealing cases', '$1,000–2,800'],
+    ['Label cutter', 'Slab label cutter for paper inserts', '~$300'],
+  ];
+  V.innerHTML = page('Settings & Calibration', 'Assign real hardware to inspection roles',
+    `<div class="detailgrid">
+      <div class="panel"><h3>CONNECTED CAMERAS</h3>
+        <button class="primary" id="scanDevs">Detect Cameras</button>
+        <div id="devList" style="margin-top:10px"></div>
+      </div>
+      <div class="panel"><h3>ROLE ASSIGNMENT</h3>
+        ${['overview', 'macro-telescope', 'microscope', 'uv-ir'].map(r =>
+          `<label>${r.toUpperCase()}<select data-role="${r}"><option value="">— auto —</option></select></label>`).join('')}
+        <p class="muted" style="font-size:11px;margin-top:10px">Captures record which physical device produced them (deviceMeta on each evidence record).</p>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:14px"><h3>RECOMMENDED KIT</h3>
+      <table><tr><th>Role</th><th>Suggested device</th><th>Cost</th></tr>
+      ${KIT.map(k => `<tr><td>${k[0]}</td><td class="muted">${k[1]}</td><td>${k[2]}</td></tr>`).join('')}</table>
+    </div>`);
+  const q = sel => document.querySelector(sel);
+  const roles = GemCoreCapture.getRoles();
+  q('#scanDevs').onclick = async () => {
+    // permission first so labels resolve
+    try { const s = await navigator.mediaDevices.getUserMedia({ video: true }); s.getTracks().forEach(t => t.stop()); } catch {}
+    const cams = await GemCoreCapture.enumerateCameras();
+    q('#devList').innerHTML = cams.length
+      ? cams.map(c => `<div class="scanrow"><span class="tick">●</span><span>${esc(c.label)}<small>${c.deviceId.slice(0, 12)}…</small></span></div>`).join('')
+      : '<p class="muted">No cameras detected.</p>';
+    document.querySelectorAll('[data-role]').forEach(sel => {
+      const r = sel.dataset.role;
+      sel.innerHTML = '<option value="">— auto —</option>' +
+        cams.map(c => `<option value="${c.deviceId}" ${roles[r] === c.deviceId ? 'selected' : ''}>${esc(c.label)}</option>`).join('');
+      sel.onchange = () => GemCoreCapture.setRole(r, sel.value || null);
+    });
+  };
+}
+
 const pages = {
   command: () => { V.innerHTML = page('Command Center', 'Collect • Grade • Trade • Preserve • Belong',
     tiles(['Start a Submission', 'Quantum Inspection', 'Evidence Passport', 'Live Grading', 'Human QC', 'Population Report', 'Market Intelligence', 'GemCore Vault'])); },
@@ -484,7 +529,7 @@ const pages = {
   studio: caseStudio,
   community: () => { V.innerHTML = page('Community', 'Collectors & chat', tiles(['Collector Lounge', 'Showcase Feed', 'Grading Stories'])); },
   tools: () => { V.innerHTML = page('Tools & Calculators', 'Value, ROI, compare', tiles(['Value Estimator', 'ROI Calculator', 'Compare Tool'])); },
-  settings: () => { V.innerHTML = page('Settings & Calibration', 'Hardware, optics, lighting and rubric configuration', tiles(['Digital Microscope', 'Macro / Telescope Camera', 'Raking Light', 'UV / IR', 'Calibration Health', 'Rubric Version'])); },
+  settings: hardwareSettings,
   qc: () => { V.innerHTML = page('Human QC', 'A certified grade cannot be sealed without verified evidence and reviewer approval', tiles(['Review Queue', 'Evidence Conflicts', 'Authenticity Gate', 'Final Seal'])); },
 };
 
