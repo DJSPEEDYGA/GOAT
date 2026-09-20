@@ -660,7 +660,17 @@ function caseStudio() {
         <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
           <button class="primary" id="csSvg">Download SVG (front+back)</button>
           <button id="csPng">Download PNG (front+back)</button>
+          <button id="csGlb">⬡ GLB (Unreal/Blender)</button>
+          <button id="csUsdz">◈ USDZ (iOS AR)</button>
         </div>
+        <h3 style="margin-top:16px">BRING TO LIFE — ANIMATED CARD</h3>
+        <canvas id="animCv" width="480" height="640" style="width:100%;max-width:340px;border-radius:12px;border:1px solid var(--line);touch-action:none"></canvas>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <select id="animMode" style="width:auto"><option value="parallax">Parallax tilt</option><option value="holo">Holo sweep</option><option value="spin">Reveal spin</option></select>
+          <button class="primary" id="animRec" style="font-size:11px">● Record WebM (4s)</button>
+          <span id="animMsg" class="muted" style="font-size:11px"></span>
+        </div>
+        <p class="muted" style="font-size:10px;margin-top:6px">GLB drops straight into Unreal Engine (glTF importer) or Blender. USDZ = iPhone AR Quick Look — scan cert QR → slab floats in the room. WebM = the "card comes alive" clip for socials/passport.</p>
         <p class="muted" style="font-size:10px;margin-top:8px">QR encodes the public verify URL — scannable on a printed label. SVG is vector for laser engraving / fabrication.</p>
       </div>
       <div class="panel" style="text-align:center"><h3>PREVIEW — FRONT &amp; BACK</h3><div id="csPrev" style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap"></div></div>
@@ -697,6 +707,57 @@ function caseStudio() {
       img.onload = () => { const c = document.createElement('canvas'); c.width = cw; c.height = ch; c.getContext('2d').drawImage(img, 0, 0, cw, ch); c.toBlob(b => dl(b, `gemcore-slab-${side}.png`), 'image/png'); };
       img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
     });
+  };
+  // ── 3D/AR exports ──
+  q('#csGlb').onclick = () => {
+    if (!currentSub) return alert('Select a submission with a front capture first');
+    location.href = `/api/submissions/${currentSub}/export.glb`;
+  };
+  q('#csUsdz').onclick = () => {
+    if (!currentSub) return alert('Select a submission with a front capture first');
+    location.href = `/api/submissions/${currentSub}/export.usdz`;
+  };
+  // ── Bring to Life animator — canvas + MediaRecorder WebM ──
+  const cv = q('#animCv'), ctx = cv.getContext('2d');
+  const cimg = new Image();
+  let animRAF;
+  const drawAnim = t => {
+    const mode = q('#animMode').value, T = (t / 1000) % 4;
+    ctx.fillStyle = '#02070c'; ctx.fillRect(0, 0, 480, 640);
+    ctx.save();
+    ctx.translate(240, 320);
+    if (cimg.src) {
+      if (mode === 'spin') { const s = Math.cos(T * Math.PI / 2); ctx.scale(Math.abs(s) || .02, 1); }
+      else if (mode === 'parallax') { ctx.rotate(Math.sin(T * Math.PI / 2) * .06); ctx.transform(1, Math.sin(T * 1.57) * .03, Math.cos(T * 1.57) * .05, 1, 0, 0); }
+      ctx.drawImage(cimg, -190, -280, 380, 560);
+      if (mode === 'holo' || mode === 'parallax') {
+        const g = ctx.createLinearGradient(-240, 0, 240, 0);
+        const p = (Math.sin(T * Math.PI) + 1) / 2;
+        g.addColorStop(Math.max(0, p - .18), 'rgba(255,255,255,0)');
+        g.addColorStop(p, 'rgba(150,240,255,.28)');
+        g.addColorStop(Math.min(1, p + .18), 'rgba(255,255,255,0)');
+        ctx.fillStyle = g; ctx.fillRect(-190, -280, 380, 560);
+      }
+    } else { ctx.fillStyle = '#25f3e6'; ctx.font = '14px Orbitron'; ctx.textAlign = 'center'; ctx.fillText('Upload a card photo above', 0, 0); }
+    ctx.restore();
+    ctx.fillStyle = 'rgba(37,243,230,.7)'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
+    ctx.fillText('◈ GEMCORE ANIMATE — ' + mode.toUpperCase(), 240, 628);
+    animRAF = requestAnimationFrame(drawAnim);
+  };
+  animRAF = requestAnimationFrame(drawAnim);
+  q('#csImg').addEventListener('change', () => { if (window._csImg) cimg.src = window._csImg; });
+  if (window._csImg) cimg.src = window._csImg;
+  q('#animRec').onclick = () => {
+    const stream = cv.captureStream(30);
+    const rec = new MediaRecorder(stream, { mimeType: 'video/webm' });
+    const chunks = []; rec.ondataavailable = e => chunks.push(e.data);
+    rec.onstop = () => {
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      dl(blob, `gemcore-animate-${currentSub || 'card'}.webm`);
+      q('#animMsg').textContent = 'saved ✓';
+    };
+    rec.start(); q('#animMsg').textContent = 'recording…';
+    setTimeout(() => rec.stop(), 4000);
   };
 }
 

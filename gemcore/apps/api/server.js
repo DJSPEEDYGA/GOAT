@@ -619,6 +619,23 @@ app.post('/api/mp/explain/:certId', async (q, r) => {
   } catch { r.status(503).json({ reply: 'Money Penny is offline right now — try again shortly.' }); }
 });
 
+// ── Animator: 3D/AR exports — GLB (Unreal/Blender) + USDZ (iOS AR) ─────
+const animator = require('../../packages/animator-core');
+app.get('/api/submissions/:id/export.glb', (q, r) => {
+  const s = findSub(r, q.params.id); if (!s) return;
+  const cap = (s.captures || []).find(c => c.storedData && c.side === 'front') || (s.captures || []).find(c => c.storedData);
+  const glb = animator.buildGLB(cap?.storedData || null, { name: `${s.id} ${s.item?.name || ''}` });
+  audit(s.id, 'export-glb', {});
+  r.set('Content-Type', 'model/gltf-binary').set('Content-Disposition', `attachment; filename="${s.id}.glb"`).send(glb);
+});
+app.get('/api/submissions/:id/export.usdz', (q, r) => {
+  const s = findSub(r, q.params.id); if (!s) return;
+  const cap = (s.captures || []).find(c => c.storedData && c.side === 'front') || (s.captures || []).find(c => c.storedData);
+  const usdz = animator.buildUSDZ(cap?.storedData || null, { name: s.id });
+  audit(s.id, 'export-usdz', {});
+  r.set('Content-Type', 'model/vnd.usdz+zip').set('Content-Disposition', `attachment; filename="${s.id}.usdz"`).send(usdz);
+});
+
 // ── STAFF: team roster + assignments ────────────────────────────────────
 app.get('/api/team', (q, r) => r.json(readTeam()));
 app.post('/api/team', (q, r) => {
