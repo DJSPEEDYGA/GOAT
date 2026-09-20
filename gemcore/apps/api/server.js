@@ -636,6 +636,24 @@ app.get('/api/submissions/:id/export.usdz', (q, r) => {
   r.set('Content-Type', 'model/vnd.usdz+zip').set('Content-Disposition', `attachment; filename="${s.id}.usdz"`).send(usdz);
 });
 
+// card fingerprint — perceptual hash seals the physical card to the cert
+app.post('/api/submissions/:id/fingerprint', (q, r) => {
+  const s = findSub(r, q.params.id); if (!s) return;
+  const hash = String(q.body.hash || '');
+  if (!/^[0-9a-f]{16}$/.test(hash)) return r.status(400).json({ error: 'hash = 16 hex chars' });
+  updateSub(s.id, x => { x.fingerprint = hash; });
+  audit(s.id, 'fingerprinted', { hash });
+  r.json({ ok: true, fingerprint: hash });
+});
+app.get('/api/verify/:certId/fp/:hash', (q, r) => {
+  const s = read().find(v => v.id === q.params.certId || (v.certificate || {}).certId === q.params.certId);
+  if (!s || !s.fingerprint) return r.status(404).json({ error: 'no fingerprint on file' });
+  // hamming distance between 64-bit hashes
+  const a = BigInt('0x' + s.fingerprint), b = BigInt('0x' + q.params.hash);
+  let x = a ^ b, d = 0; while (x) { d += Number(x & 1n); x >>= 1n; }
+  r.json({ match: d <= 12, distance: d, fingerprint: s.fingerprint, verdict: d <= 12 ? 'SAME CARD' : d <= 20 ? 'uncertain — recapture' : 'MISMATCH' });
+});
+
 // ── STAFF: team roster + assignments ────────────────────────────────────
 app.get('/api/team', (q, r) => r.json(readTeam()));
 app.post('/api/team', (q, r) => {

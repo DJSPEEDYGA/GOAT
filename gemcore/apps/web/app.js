@@ -1147,10 +1147,20 @@ async function photoLab() {
       </div>
       <div class="panel"><h3>INSPECTOR <span class="muted" style="font-size:10px">— click image to pin a defect</span></h3>
         <div style="position:relative"><canvas id="phView" style="width:100%;border-radius:8px;border:1px solid var(--line);cursor:crosshair"></canvas></div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" id="phFilters">
+          ${['visible', 'R', 'G', 'B', 'xray', 'edge', 'heat', 'relief'].map(f =>
+            `<button data-phf="${f}" class="${f === 'visible' ? 'primary' : ''}" style="font-size:10px;padding:5px 10px">${f.toUpperCase()}</button>`).join('')}
+        </div>
         <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center">
           <label style="margin:0;font-size:11px">Brightness <input type="range" id="phBright" min="50" max="200" value="100" style="width:90px"></label>
           <label style="margin:0;font-size:11px">Contrast <input type="range" id="phCon" min="50" max="200" value="100" style="width:90px"></label>
           <select id="phLane">${['surface','edges','corners','centering','authenticity'].map(l => `<option>${l}</option>`).join('')}</select>
+        </div>
+        <p class="muted" id="phFNote" style="font-size:10px;margin-top:4px"></p>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center">
+          <button id="phFp" style="font-size:10px;padding:5px 10px">⬡ Fingerprint Card</button>
+          <label style="margin:0"><input type="file" id="phRescan" accept="image/*" style="display:none"><span class="uploadbtn" style="font-size:10px;padding:5px 10px">↺ Re-scan Compare</span></label>
+          <span id="phFpOut" class="muted" style="font-size:10px"></span>
         </div>
         <div id="phPins"></div>
       </div>
@@ -1160,12 +1170,59 @@ async function photoLab() {
   const cv = q('#phView'), ctx = cv.getContext('2d');
   const img = new Image();
   let cap = null;
+  let phFilter = 'visible';
+  const PH_NOTES = {
+    visible: '', R: 'R channel — red-layer print dots; ink alterations show here first',
+    G: 'G channel — cleanest signal for surface scratches',
+    B: 'B channel — bleaching/whitening pops against stock',
+    xray: 'X-RAY VIEW — inverted luminance + hard contrast: exposes inserts, double-stock, density changes',
+    edge: 'EDGE MAP — luminance deltas: cut quality, re-trimming, surface texture breaks',
+    heat: 'FALSE-COLOR luminance — pressure/damage zones read as hot/cold fields',
+    relief: 'SURFACE RELIEF — photometric delta between captures: embosses scratches, dents, print topography',
+  };
   const draw = () => {
     if (!cap) return;
-    const b = +q('#phBright').value / 100, c = +q('#phCon').value / 100;
-    ctx.filter = `brightness(${b}) contrast(${c})`;
     cv.width = img.width; cv.height = img.height;
+    ctx.filter = `brightness(${+q('#phBright').value / 100}) contrast(${+q('#phCon').value / 100})`;
     ctx.drawImage(img, 0, 0);
+    if (phFilter !== 'visible') {
+      const d = ctx.getImageData(0, 0, cv.width, cv.height), p = d.data;
+      if (phFilter === 'R' || phFilter === 'G' || phFilter === 'B') {
+        const ch = { R: 0, G: 1, B: 2 }[phFilter];
+        for (let i = 0; i < p.length; i += 4) p[i] = p[i + 1] = p[i + 2] = p[i + ch];
+      } else if (phFilter === 'xray') {
+        for (let i = 0; i < p.length; i += 4) {
+          let l = 255 - (p[i] * .3 + p[i + 1] * .59 + p[i + 2] * .11);
+          l = l < 110 ? 0 : l > 200 ? 255 : ((l - 110) / 90) * 255;
+          p[i] = p[i + 1] = p[i + 2] = l;
+        }
+      } else if (phFilter === 'edge') {
+        const w = cv.width, lum = new Float32Array(p.length / 4);
+        for (let i = 0, j = 0; i < p.length; i += 4, j++) lum[j] = p[i] * .3 + p[i + 1] * .59 + p[i + 2] * .11;
+        for (let j = w; j < lum.length - w; j++) {
+          const e = Math.abs(lum[j] - lum[j - 1]) + Math.abs(lum[j] - lum[j - w]);
+          const v = Math.min(255, e * 3); const i = j * 4;
+          p[i] = p[i + 1] = p[i + 2] = v;
+        }
+      } else if (phFilter === 'relief') {
+        // photometric delta vs a paired capture — embosses surface topography
+        const pair = caps.find(c => c.id !== cap.id && c.side === cap.side) || caps.find(c => c.id !== cap.id);
+        if (pair && window._reliefLum) {
+          const lum2 = window._reliefLum, w = cv.width;
+          for (let i = 0, j = 0; i < p.length; i += 4, j++) {
+            const l = p[i] * .3 + p[i + 1] * .59 + p[i + 2] * .11;
+            const dlt = Math.min(255, Math.max(0, 128 + (l - lum2[j]) * 4));
+            p[i] = p[i + 1] = p[i + 2] = dlt;
+          }
+        }
+      } else if (phFilter === 'heat') {
+        for (let i = 0; i < p.length; i += 4) {
+          const l = (p[i] * .3 + p[i + 1] * .59 + p[i + 2] * .11) / 255;
+          p[i] = Math.min(255, l * 510); p[i + 1] = l > .25 && l < .75 ? 255 * (1 - Math.abs(l - .5) * 2) : 0; p[i + 2] = Math.min(255, (1 - l) * 510);
+        }
+      }
+      ctx.putImageData(d, 0, 0);
+    }
     // defect pins at real coords
     (s?.observations || []).filter(o => o.evidenceId === cap.id && o.x != null).forEach(o => {
       ctx.filter = 'none';
@@ -1181,6 +1238,53 @@ async function photoLab() {
   document.querySelectorAll('[data-cap]').forEach(el => el.onclick = () => loadCap(caps.find(c => c.id === el.dataset.cap)));
   if (caps.length) loadCap(caps[caps.length - 1]);
   q('#phBright').oninput = q('#phCon').oninput = draw;
+  document.querySelectorAll('[data-phf]').forEach(b => b.onclick = () => {
+    phFilter = b.dataset.phf; q('#phFNote').textContent = PH_NOTES[phFilter] || '';
+    document.querySelectorAll('[data-phf]').forEach(x => x.classList.toggle('primary', x === b));
+    if (phFilter === 'relief' && cap) {
+      const pair = caps.find(c => c.id !== cap.id && c.side === cap.side) || caps.find(c => c.id !== cap.id);
+      if (!pair) { q('#phFNote').textContent = 'RELIEF needs a second capture (raking pair works best)'; return; }
+      const img2 = new Image();
+      img2.onload = () => {
+        const c2 = document.createElement('canvas'); c2.width = cv.width; c2.height = cv.height;
+        c2.getContext('2d').drawImage(img2, 0, 0, cv.width, cv.height);
+        const d2 = c2.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
+        window._reliefLum = new Float32Array(d2.length / 4);
+        for (let i = 0, j = 0; i < d2.length; i += 4, j++) window._reliefLum[j] = d2[i] * .3 + d2[i + 1] * .59 + d2[i + 2] * .11;
+        draw();
+      };
+      img2.src = pair.storedData;
+      return;
+    }
+    draw();
+  });
+  // 64-bit perceptual fingerprint — seals the physical card to the cert
+  const fpHash = imgEl => {
+    const c = document.createElement('canvas'); c.width = 8; c.height = 8;
+    c.getContext('2d').drawImage(imgEl, 0, 0, 8, 8);
+    const d = c.getContext('2d').getImageData(0, 0, 8, 8).data;
+    const lum = []; for (let i = 0; i < 256; i += 4) lum.push(d[i] * .3 + d[i + 1] * .59 + d[i + 2] * .11);
+    const mean = lum.reduce((a, b) => a + b) / 64;
+    let bits = 0n; lum.forEach(l => { bits = (bits << 1n) | (l > mean ? 1n : 0n); });
+    return bits.toString(16).padStart(16, '0');
+  };
+  q('#phFp').onclick = async () => {
+    if (!cap || !s) return;
+    const hash = fpHash(img);
+    const res = await api(`/submissions/${s.id}/fingerprint`, { b: { hash } });
+    q('#phFpOut').textContent = res.ok ? `fingerprint sealed: ${hash}` : (res.error || 'failed');
+  };
+  q('#phRescan').onchange = async e => {
+    const f = e.target.files[0]; if (!f || !s) return;
+    const data = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(f); });
+    const im2 = new Image();
+    im2.onload = async () => {
+      const res = await fetch(`/api/verify/${s.id}/fp/${fpHash(im2)}`).then(r => r.json());
+      q('#phFpOut').textContent = res.verdict ? `re-scan: ${res.verdict} (distance ${res.distance}/64)` : (res.error || 'no fingerprint on file — fingerprint the card first');
+    };
+    im2.src = data;
+    e.target.value = '';
+  };
   cv.onclick = async e => {
     if (!cap || !s) return;
     const rect = cv.getBoundingClientRect();
