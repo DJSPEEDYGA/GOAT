@@ -599,37 +599,71 @@ function caseStudio() {
   };
 }
 
-/* ── Settings: real hardware roles + calibration + recommended kit ────── */
-async function hardwareSettings() {
-  const KIT = [
-    ['Overview / macro camera', 'Any 1080p+ webcam or phone camera — front/back full-card captures', '$0–60'],
-    ['Digital microscope', 'USB/LCD scope 50–500× (Plugable 250×, Celestron MicroDirect, LinkMicro LM210S)', '$50–200'],
-    ['Macro / telescope', 'Phone telephoto or DSLR macro for card-surface wide shots', '$0–400'],
-    ['UV / IR source', '365nm UV torch + IR-sensitive camera for alterations/print check', '$20–80'],
-    ['Raking light', 'Low-angle LED bar for surface scratches', '$15–40'],
-    ['Slab welder', '20KHz ultrasonic welder, 2000–3200W benchtop for sealing cases', '$1,000–2,800'],
-    ['Label cutter', 'Slab label cutter for paper inserts', '~$300'],
-  ];
-  V.innerHTML = page('Settings & Calibration', 'Assign real hardware to inspection roles',
+/* ── Settings: AI config, interface, data, diagnostics, hardware ──────── */
+async function settings() {
+  const health = await api('/health').catch(() => ({}));
+  const mpst = await api('/mp/status').catch(() => ({ online: false }));
+  const accent = localStorage.getItem('gemcore.accent') || '#25f3e6';
+  const mpKey = localStorage.getItem('gemcore.mpkey') || '';
+  V.innerHTML = page('Settings', 'Configure the lab — AI, interface, hardware, data',
     `<div class="detailgrid">
-      <div class="panel"><h3>CONNECTED CAMERAS</h3>
-        <button class="primary" id="scanDevs">Detect Cameras</button>
-        <div id="devList" style="margin-top:10px"></div>
+      <div class="panel"><h3>MONEY PENNY</h3>
+        <div class="scanrow"><span class="tick" style="color:${mpst.online ? 'var(--green)' : 'var(--danger)'}">●</span>
+          <span>Model endpoint <small>${mpst.online ? 'online — ' + esc(mpst.url || '') : 'offline'}</small></span></div>
+        <label style="margin-top:10px">Chat unlock key (public servers)<input id="sMpKey" placeholder="MP-…" value="${esc(mpKey)}" type="password"></label>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="primary" id="sKeySave" style="font-size:11px">Save key</button>
+          <button id="sKeyClear" style="font-size:11px">Clear</button>
+        </div>
       </div>
-      <div class="panel"><h3>ROLE ASSIGNMENT</h3>
-        ${['overview', 'macro-telescope', 'microscope', 'uv-ir'].map(r =>
-          `<label>${r.toUpperCase()}<select data-role="${r}"><option value="">— auto —</option></select></label>`).join('')}
-        <p class="muted" style="font-size:11px;margin-top:10px">Captures record which physical device produced them (deviceMeta on each evidence record).</p>
+      <div class="panel"><h3>INTERFACE</h3>
+        <label>Accent color<input type="color" id="sAccent" value="${accent}" style="height:36px;padding:2px"></label>
+        <label>Default page<select id="sHome">
+          ${['grade','command','submissions','vault','studio'].map(k => `<option value="${k}" ${localStorage.getItem('gemcore.home') === k ? 'selected' : ''}>${k}</option>`).join('')}
+        </select></label>
+        <button class="primary" id="sUiSave" style="margin-top:8px;font-size:11px">Apply</button>
       </div>
+    </div>
+    <div class="detailgrid" style="margin-top:14px">
+      <div class="panel"><h3>DATA & STATE</h3>
+        <p class="muted" style="font-size:11px">Selected submission: ${esc(currentSub || 'none')}</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button id="sClearSub" style="font-size:11px">Deselect submission</button>
+          <button id="sClearCams" style="font-size:11px">Reset camera roles</button>
+          <button id="sWipe" style="font-size:11px;border-color:var(--danger);color:var(--danger)">Wipe local state</button>
+        </div>
+      </div>
+      <div class="panel"><h3>DIAGNOSTICS</h3>
+        <div class="scanrow"><span class="tick">●</span><span>API <small>${esc(health.version || '?')} • rubric ${esc(health.rubric || '?')} • ${health.visionAdapters ?? '?'} vision adapters</small></span></div>
+        <div class="scanrow"><span class="tick">●</span><span>Money Penny <small>${mpst.online ? 'reachable via tunnel' : 'offline'}</small></span></div>
+        <div class="scanrow"><span class="tick">●</span><span>Storage <small>JSON ledger (SQLite migration pending)</small></span></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:14px"><h3>CONNECTED CAMERAS</h3>
+      <button class="primary" id="scanDevs">Detect Cameras</button>
+      <div id="devList" style="margin-top:10px"></div>
+      <h3 style="margin-top:14px">ROLE ASSIGNMENT</h3>
+      ${['overview', 'macro-telescope', 'microscope', 'uv-ir'].map(r =>
+        `<label>${r.toUpperCase()}<select data-role="${r}"><option value="">— auto —</option></select></label>`).join('')}
     </div>
     <div class="panel" style="margin-top:14px"><h3>RECOMMENDED KIT</h3>
       <table><tr><th>Role</th><th>Suggested device</th><th>Cost</th></tr>
       ${KIT.map(k => `<tr><td>${k[0]}</td><td class="muted">${k[1]}</td><td>${k[2]}</td></tr>`).join('')}</table>
     </div>`);
   const q = sel => document.querySelector(sel);
+  q('#sKeySave').onclick = () => { localStorage.setItem('gemcore.mpkey', q('#sMpKey').value.trim()); q('#sKeySave').textContent = 'Saved ✓'; };
+  q('#sKeyClear').onclick = () => { localStorage.removeItem('gemcore.mpkey'); q('#sMpKey').value = ''; q('#sKeyClear').textContent = 'Cleared'; };
+  q('#sUiSave').onclick = () => {
+    const a = q('#sAccent').value;
+    localStorage.setItem('gemcore.accent', a); localStorage.setItem('gemcore.home', q('#sHome').value);
+    applyAccent(); q('#sUiSave').textContent = 'Applied ✓';
+  };
+  q('#sClearSub').onclick = () => { currentSub = null; localStorage.removeItem('gemcore.sub'); show('settings'); };
+  q('#sClearCams').onclick = () => { localStorage.removeItem('gemcore.capture.roles'); show('settings'); };
+  q('#sWipe').onclick = () => { if (confirm('Clear all local GemCore state (selections, keys, camera roles)?')) { ['gemcore.sub','gemcore.mpkey','gemcore.accent','gemcore.home','gemcore.capture.roles'].forEach(k => localStorage.removeItem(k)); location.reload(); } };
+  // cameras
   const roles = GemCoreCapture.getRoles();
   q('#scanDevs').onclick = async () => {
-    // permission first so labels resolve
     try { const s = await navigator.mediaDevices.getUserMedia({ video: true }); s.getTracks().forEach(t => t.stop()); } catch {}
     const cams = await GemCoreCapture.enumerateCameras();
     q('#devList').innerHTML = cams.length
@@ -643,6 +677,22 @@ async function hardwareSettings() {
     });
   };
 }
+
+function applyAccent() {
+  const a = localStorage.getItem('gemcore.accent');
+  if (a) { document.documentElement.style.setProperty('--teal', a); document.documentElement.style.setProperty('--teal2', a); }
+}
+
+/* ── Settings: real hardware roles + calibration + recommended kit ────── */
+const KIT = [
+  ['Overview / macro camera', 'Any 1080p+ webcam or phone camera — front/back full-card captures', '$0–60'],
+  ['Digital microscope', 'USB/LCD scope 50–500× (Plugable 250×, Celestron MicroDirect, LinkMicro LM210S)', '$50–200'],
+  ['Macro / telescope', 'Phone telephoto or DSLR macro for card-surface wide shots', '$0–400'],
+  ['UV / IR source', '365nm UV torch + IR-sensitive camera for alterations/print check', '$20–80'],
+  ['Raking light', 'Low-angle LED bar for surface scratches', '$15–40'],
+  ['Slab welder', '20KHz ultrasonic welder, 2000–3200W benchtop for sealing cases', '$1,000–2,800'],
+  ['Label cutter', 'Slab label cutter for paper inserts', '~$300'],
+];
 
 /* ── Slab Production — certified cert → physical slab pipeline ────────── */
 async function production() {
@@ -849,7 +899,7 @@ const pages = {
   studio: caseStudio,
   community,
   tools,
-  settings: hardwareSettings,
+  settings,
   qc,
 };
 
@@ -860,6 +910,7 @@ function show(k) {
   if (r && r.then) r.catch(e => { V.innerHTML = page('Error', '', `<pre>${esc(e.message)}</pre>`); });
   nav();
 }
+applyAccent();
 nav();
 // deep links: /#verify-GCG-xxx opens the public cert page prefilled
 if (location.hash.startsWith('#verify-')) {
