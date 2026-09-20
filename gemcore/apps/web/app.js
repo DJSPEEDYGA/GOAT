@@ -769,13 +769,13 @@ function applyAccent() {
 
 /* ── Settings: real hardware roles + calibration + recommended kit ────── */
 const KIT = [
-  ['Overview / macro camera', 'Any 1080p+ webcam or phone camera — front/back full-card captures', '$0–60'],
-  ['Digital microscope', 'USB/LCD scope 50–500× (Plugable 250×, Celestron MicroDirect, LinkMicro LM210S)', '$50–200'],
-  ['Macro / telescope', 'Phone telephoto or DSLR macro for card-surface wide shots', '$0–400'],
-  ['UV / IR source', '365nm UV torch + IR-sensitive camera for alterations/print check', '$20–80'],
-  ['Raking light', 'Low-angle LED bar for surface scratches', '$15–40'],
+  ['Overview camera', 'Any 1080p+ webcam or phone camera — parallel to card, matte black backdrop, twin 45° diffused lights', '$0–60'],
+  ['CCD flatbed scanner', 'Epson Perfection V600 — CCD deep-focus reads cards THROUGH slabs (CIS scanners blur at 4–5mm standoff). Hobby gold standard.', '~$250'],
+  ['Digital microscope', 'LinkMicro LM210S or TOMLOV DM9 (10" screen, 4K) — pro graders work at 10–30×; over-zoom reveals non-grading flaws', '$80–200'],
+  ['UV / IR spectral', '365nm UV torch + IR camera — catches re-inking, erased marks, bleached stock. Enterprise tier: Foster+Freeman VSC8000/HS', '$20–80'],
+  ['Raking light', 'Low-angle LED bar — exposes hairline surface scratches naked eye misses', '$15–40'],
   ['Slab welder', '20KHz ultrasonic welder, 2000–3200W benchtop for sealing cases', '$1,000–2,800'],
-  ['Label cutter', 'Slab label cutter for paper inserts', '~$300'],
+  ['Label printer/cutter', 'Slab label cutter + printer for paper inserts (UV-cure engraving later)', '~$300'],
 ];
 
 /* ── Slab Production — certified cert → physical slab pipeline ────────── */

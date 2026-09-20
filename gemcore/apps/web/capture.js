@@ -72,6 +72,7 @@
         <label style="display:inline-block"><input type="file" id="uploadEv" accept="image/*" multiple style="display:none"><span class="uploadbtn">⇪ Upload Image(s)</span></label>
       </div>
       <div class="muted" style="font-size:11px">Side: <b id="side">FRONT</b> • Light: <b id="mode">VISIBLE</b> • <span id="captureStatus">OFFLINE</span></div>
+      <div class="muted" style="font-size:10px;margin-top:4px">PRO TIP — camera parallel to card (no tilt = clean centering), twin 45° lights (no hotspots on foils), matte black backdrop for edge detection.</div>
       <div style="display:flex;gap:10px;margin-top:10px">
         <video id="cam" autoplay playsinline muted style="width:48%;border-radius:8px;border:1px solid var(--line);background:#000"></video>
         <img id="lastCapture" style="width:48%;border-radius:8px;border:1px solid var(--line);object-fit:contain;background:#000">
