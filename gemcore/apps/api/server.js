@@ -330,20 +330,21 @@ const MP_TOOLS = {
   },
 };
 
-async function mpCall(messages) {
-  const c = new AbortController(); setTimeout(() => c.abort(), 60000);
+async function mpCall(messages, maxTokens = 240) {
+  const c = new AbortController(); setTimeout(() => c.abort(), 90000);
   const res = await fetch(MP_URL + '/v1/chat/completions', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: c.signal,
-    body: JSON.stringify({ model: MP_MODEL, messages, max_tokens: 240, temperature: 0.7 }),
+    body: JSON.stringify({ model: MP_MODEL, messages, max_tokens: maxTokens, temperature: 0.7 }),
   });
   const j = await res.json();
   return j.choices?.[0]?.message?.content?.trim() || '';
 }
 
 const MP_KEY = process.env.GEMCORE_MP_KEY || ''; // when set, public chat needs the key
+const mpAuthed = q => !MP_KEY || ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(q.ip) || q.get('x-mp-key') === MP_KEY;
 const mpLastHit = new Map(); // per-IP cooldown — protects her GPU on public endpoints
 app.post('/api/mp/chat', async (q, r) => {
-  if (MP_KEY && q.get('x-mp-key') !== MP_KEY) {
+  if (!mpAuthed(q)) {
     return r.status(403).json({ locked: true, reply: 'Money Penny is keyed — unlock to talk to her.' });
   }
   const ip = q.ip || 'x';
@@ -371,6 +372,38 @@ app.post('/api/mp/chat', async (q, r) => {
     r.json({ ok: true, reply });
   } catch (e) {
     r.json({ ok: false, reply: 'Money Penny is offline — point GEMCORE_MP_URL at her server.', offline: true });
+  }
+});
+
+// ── MP deploy bridge — she authors FiveM resources for BrickSquaD-RP.
+//    Localhost-only (called by the game server on this box).
+const FIVEM_RESOURCES = process.env.GEMCORE_FIVEM_RESOURCES || '/root/brick-squad-gaming/resources';
+
+app.post('/api/mp/deploy', async (q, r) => {
+  if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(q.ip)) {
+    return r.status(403).json({ error: 'local only' });
+  }
+  const name = String(q.body.name || '').replace(/[^a-z0-9_-]/gi, '').toLowerCase().slice(0, 40);
+  const brief = String(q.body.brief || '').slice(0, 500);
+  if (!name) return r.status(400).json({ error: 'resource name required' });
+  try {
+    const code = await mpCall([
+      { role: 'system', content: 'You are Money Penny, expert FiveM/QBCore developer. Output ONLY resource files in this exact format — no prose:\n=== fxmanifest.lua ===\n<content>\n=== server.lua ===\n<content>\n=== client.lua ===\n<content>\nRules: fx_version "cerulean", game "gta5", lua54 "yes". QBCore via exports["qb-core"]:GetCoreObject() when needed. Keep it small and working.' },
+      { role: 'user', content: `Build resource "${name}": ${brief}` },
+    ], 900);
+    const dir = path.join(FIVEM_RESOURCES, name);
+    const files = [...code.matchAll(/===\s*([\w.-]+)\s*===\n([\s\S]*?)(?====|\s*$)/g)];
+    if (!files.length) return r.status(502).json({ error: 'no files authored' });
+    fs.mkdirSync(dir, { recursive: true });
+    const written = [];
+    for (const [, fn, content] of files) {
+      if (!/^[\w.-]+$/.test(fn) || fn.includes('..')) continue;
+      fs.writeFileSync(path.join(dir, fn.trim()), content.trim() + '\n');
+      written.push(fn.trim());
+    }
+    r.json({ ok: true, resource: name, files: written });
+  } catch (e) {
+    r.status(500).json({ error: 'deploy failed: ' + e.message });
   }
 });
 
