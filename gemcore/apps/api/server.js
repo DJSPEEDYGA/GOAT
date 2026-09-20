@@ -294,6 +294,85 @@ app.get('/api/population', (_q, r) => {
   });
 });
 
+// ── Money Penny — the AI in control. Proxies to her llama.cpp server.
+//    GEMCORE_MP_URL points at an OpenAI-compatible endpoint
+//    (e.g. http://127.0.0.1:10086 on the Jetson). Honest offline state
+//    when she's unreachable — never fakes an answer.
+const MP_URL = process.env.GEMCORE_MP_URL || 'http://127.0.0.1:10086';
+const MP_MODEL = process.env.GEMCORE_MP_MODEL || 'moneypenny';
+const MP_KNOWLEDGE = require('../../packages/shared/moneypenny-knowledge');
+
+app.get('/api/mp/status', async (_q, r) => {
+  try {
+    const c = new AbortController(); setTimeout(() => c.abort(), 2500);
+    const res = await fetch(MP_URL + '/health', { signal: c.signal }).catch(() => null);
+    r.json({ online: !!res?.ok, url: MP_URL });
+  } catch { r.json({ online: false, url: MP_URL }); }
+});
+
+app.post('/api/mp/chat', async (q, r) => {
+  const sub = q.body.submissionId ? read().find(v => v.id === q.body.submissionId) : null;
+  const ctx = sub ? `\nCurrent submission: ${sub.id} — ${sub.item?.name || 'untitled'}, status ${sub.status}, ` +
+    `captures ${(sub.captures || []).length}, observations ${(sub.observations || []).length}, ` +
+    `QC ${sub.qc?.approved ? 'approved' : 'pending'}${sub.evaluation ? ', index ' + sub.evaluation.internalConditionIndex : ''}.` : '';
+  try {
+    const c = new AbortController(); setTimeout(() => c.abort(), 60000);
+    const res = await fetch(MP_URL + '/v1/chat/completions', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: c.signal,
+      body: JSON.stringify({
+        model: MP_MODEL,
+        messages: [
+          { role: 'system', content: 'You are Money Penny, the AI in control of GemCore Grading. You speak with calm precision — a trusted chief of staff, sharp and confident. Keep answers short.' + MP_KNOWLEDGE + ctx },
+          { role: 'user', content: q.body.message || '' },
+        ],
+        max_tokens: 220, temperature: 0.7,
+      }),
+    });
+    const j = await res.json();
+    r.json({ ok: true, reply: j.choices?.[0]?.message?.content?.trim() || '(empty reply)' });
+  } catch (e) {
+    r.json({ ok: false, reply: 'Money Penny is offline — point GEMCORE_MP_URL at her server.', offline: true });
+  }
+});
+
+// ── Slab production queue — certified cert → physical slab job ─────────
+const PROD_STAGES = ['label-print', 'encapsulate', 'weld-seal', 'verify', 'complete'];
+
+app.get('/api/production', (_q, r) => {
+  const jobs = read().filter(s => s.production).map(s => ({
+    id: s.id, item: s.item, cert: s.certificate?.certId || null,
+    grade: s.certificate?.publicGrade ?? null, stage: s.production.stage,
+    steps: s.production.steps, createdAt: s.production.createdAt, demo: !!s.demo,
+  }));
+  r.json(jobs);
+});
+
+app.post('/api/submissions/:id/production', (q, r) => {
+  const s = findSub(r, q.params.id); if (!s) return;
+  if (s.status !== STATUSES.CERTIFIED && !s.demo) {
+    return r.status(403).json({ error: 'only certified (or marked-demo) submissions enter production' });
+  }
+  const out = updateSub(s.id, x => {
+    x.production = { stage: PROD_STAGES[0], steps: [{ stage: PROD_STAGES[0], at: new Date().toISOString() }], createdAt: new Date().toISOString() };
+  });
+  audit(s.id, 'production-created', {});
+  r.status(201).json(out.production);
+});
+
+app.post('/api/submissions/:id/production/advance', (q, r) => {
+  const s = findSub(r, q.params.id); if (!s) return;
+  if (!s.production) return r.status(400).json({ error: 'no production job' });
+  const cur = PROD_STAGES.indexOf(s.production.stage);
+  const next = PROD_STAGES[cur + 1];
+  if (!next) return r.status(400).json({ error: 'already complete' });
+  const out = updateSub(s.id, x => {
+    x.production.stage = next;
+    x.production.steps.push({ stage: next, at: new Date().toISOString(), note: q.body.note || '' });
+  });
+  audit(s.id, 'production-advance', { stage: next });
+  r.json(out.production);
+});
+
 // QR for slab labels / passports — encodes the public verify URL.
 app.get('/api/qr', async (q, r) => {
   const text = q.query.text;

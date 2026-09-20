@@ -86,9 +86,13 @@ async function lab() {
 
       <div class="rightstack">
         <div class="panel assistant">
-          <div class="ahead"><img src="assets/mock-jarvis.png" alt="JARVIS" style="border-radius:10px"><div><b>JARVIS AI</b><br><span class="online">● Online</span></div></div>
-          <div class="bubble" id="jarvisMsg">Evidence-first inspection assistant. ${s ? 'Loaded ' + s.id + ' — ready to inspect.' : 'Select a submission to begin.'}</div>
+          <div class="ahead"><img src="assets/mock-jarvis.png" alt="Money Penny" style="border-radius:10px"><div><b>MONEY PENNY</b><br><span class="online" id="mpStatus">● checking…</span></div></div>
+          <div class="bubble" id="jarvisMsg">Money Penny runs this lab. ${s ? 'Loaded ' + s.id + ' — ask me anything about it.' : 'Select a submission and I\'ll brief you.'}</div>
           <div class="btnrow"><button class="primary" id="scan2">Run Deep Scan</button><button id="report">Generate Report</button></div>
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <input id="mpInput" placeholder="Ask Money Penny…" style="margin:0;font-size:12px">
+            <button class="primary" id="mpSend" style="padding:6px 14px">▸</button>
+          </div>
         </div>
         <div class="panel"><h3>INSPECTION VIEWS</h3>
           <div class="tabs"><button class="active" data-view="microscope">Microscope</button><button data-view="telescope">Telescope</button><button data-view="3d">3D Model</button></div>
@@ -121,6 +125,7 @@ async function lab() {
       <button class="seal" id="seal" ${ev?.status === 'sealable' ? '' : 'disabled'}>✓ Seal Grade</button>
       <button id="report2">Generate Report</button>
       <button id="addvault">Add to Vault</button><button id="share">Share Results</button>
+      <button id="toprod" ${s?.status === 'certified' ? '' : 'disabled title="certify first"'}>▧ Send to Production</button>
     </div>
     <pre id="labOut" style="display:none"></pre>
 
@@ -159,6 +164,30 @@ function bindLab(s, ev) {
     q('#pop').textContent = p.certified;
     q('#popLine').textContent = `${p.certified} certified • ${p.inPipeline} in pipeline`;
   }).catch(() => {});
+
+  // Money Penny — real LLM chat
+  api('/mp/status').then(st => {
+    q('#mpStatus').textContent = st.online ? '● Online' : '● Offline';
+    q('#mpStatus').style.color = st.online ? 'var(--green)' : 'var(--danger)';
+  }).catch(() => { q('#mpStatus').textContent = '● Offline'; q('#mpStatus').style.color = 'var(--danger)'; });
+  const askMp = async () => {
+    const msg = q('#mpInput').value.trim(); if (!msg) return;
+    q('#mpInput').value = ''; q('#jarvisMsg').textContent = 'Money Penny is thinking…';
+    const res = await api('/mp/chat', { b: { message: msg, submissionId: s?.id } });
+    let reply = res.reply || '';
+    // she can drive the lab — parse [[ACTION:...]] tokens
+    const actions = [...reply.matchAll(/\[\[ACTION:(\w+)(?::(\w+))?\]\]/g)];
+    reply = reply.replace(/\[\[ACTION:[^\]]*\]\]/g, '').trim();
+    q('#jarvisMsg').textContent = reply || 'Done.';
+    for (const [, act, arg] of actions) {
+      if (act === 'scan') runScan();
+      else if (act === 'report') q('#report').click();
+      else if (act === 'seal') q('#seal').click();
+      else if (act === 'page' && arg) show(arg);
+    }
+  };
+  q('#mpSend').onclick = askMp;
+  q('#mpInput').onkeydown = e => { if (e.key === 'Enter') askMp(); };
 
   const out = t => { const p = q('#labOut'); p.style.display = 'block'; p.textContent = t; };
 
@@ -277,6 +306,11 @@ function bindLab(s, ev) {
     q('#mktPrice').innerHTML = prices[+b.dataset.tf] + ' <small style="color:var(--green);font-size:11px">▲ demo</small>';
   });
   q('#comparables').onclick = () => show('market');
+  q('#toprod').onclick = async () => {
+    const res = await api(`/submissions/${s.id}/production`);
+    q('#jarvisMsg').textContent = res.stage ? s.id + ' entered production — stage: ' + res.stage : (res.error || 'Cannot enter production');
+    out(JSON.stringify(res, null, 2));
+  };
   q('#seal').onclick = async () => {
     if (!s) return;
     const res = await api(`/submissions/${s.id}/seal`);
@@ -576,6 +610,29 @@ async function hardwareSettings() {
   };
 }
 
+/* ── Slab Production — certified cert → physical slab pipeline ────────── */
+async function production() {
+  const jobs = await api('/production');
+  const STAGES = ['label-print', 'encapsulate', 'weld-seal', 'verify', 'complete'];
+  V.innerHTML = page('Slab Production', 'Certified → label print → encapsulate → ultrasonic weld → verify → complete',
+    jobs.length ? jobs.map(j => `
+      <div class="panel" style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <b>${j.id}</b> ${j.demo ? '<span class="badge warn">DEMO</span>' : ''}
+          <span class="muted" style="font-size:12px">${esc(j.item?.name || '')} • grade ${j.grade ?? '—'}</span>
+          <button class="primary" data-adv="${j.id}" ${j.stage === 'complete' ? 'disabled' : ''}>Advance →</button>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+          ${STAGES.map(st => `<span class="badge" style="${st === j.stage ? 'border-color:var(--green);color:var(--green)' : STAGES.indexOf(st) < STAGES.indexOf(j.stage) ? 'opacity:.5' : 'opacity:.3'}">${st}</span>`).join('')}
+        </div>
+      </div>`).join('')
+    : '<div class="panel" style="margin-top:12px"><p class="muted">No production jobs. Certify a submission in the Grading Lab, then Send to Production.</p></div>');
+  document.querySelectorAll('[data-adv]').forEach(b => b.onclick = async () => {
+    await api(`/submissions/${b.dataset.adv}/production/advance`);
+    show('production');
+  });
+}
+
 const pages = {
   command: () => { V.innerHTML = page('Command Center', 'Collect • Grade • Trade • Preserve • Belong',
     tiles(['Start a Submission', 'Quantum Inspection', 'Evidence Passport', 'Live Grading', 'Human QC', 'Population Report', 'Market Intelligence', 'GemCore Vault'])); },
@@ -585,6 +642,7 @@ const pages = {
   passport,
   verify,
   population,
+  production,
   vault: () => { V.innerHTML = page('GemCore Vault', 'Your certified and in-review collection', tiles(['Certified', 'In Review', 'Returned Ungraded', 'Regrade Queue'])); },
   market: () => { V.innerHTML = page('Market Intelligence', 'Market value is displayed separately and never changes condition grade', tiles(['Comparable Sales', 'Price History', 'Market Trend', 'Set Analytics'])); },
   live: () => { V.innerHTML = page('Live Grading', 'Capture → VisionCore → Reviewer → Slab QA', tiles(['Capture Feed', 'VisionCore Events', 'Reviewer Queue', 'Slab QA'])); },
@@ -603,4 +661,12 @@ function show(k) {
   nav();
 }
 nav();
-show('grade');
+// deep links: /#verify-GCG-xxx opens the public cert page prefilled
+if (location.hash.startsWith('#verify-')) {
+  const cert = decodeURIComponent(location.hash.slice(8));
+  const f = pages.verify; V.innerHTML = ''; f();
+  document.querySelector('#cert').value = cert;
+  document.querySelector('#go').click();
+} else {
+  show('grade');
+}
