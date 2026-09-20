@@ -647,7 +647,15 @@ const pages = {
   market: () => { V.innerHTML = page('Market Intelligence', 'Market value is displayed separately and never changes condition grade', tiles(['Comparable Sales', 'Price History', 'Market Trend', 'Set Analytics'])); },
   live: () => { V.innerHTML = page('Live Grading', 'Capture → VisionCore → Reviewer → Slab QA', tiles(['Capture Feed', 'VisionCore Events', 'Reviewer Queue', 'Slab QA'])); },
   studio: caseStudio,
-  community: () => { V.innerHTML = page('Community', 'Collectors & chat', tiles(['Collector Lounge', 'Showcase Feed', 'Grading Stories'])); },
+  community: () => { V.innerHTML = page('Community', 'Collectors, chat & GOAT Force ATL',
+    `<div class="grid">
+      <div class="tile"><h3>◆ GOAT Force ATL — BrickSquaD-RP</h3><p class="muted">Our FiveM roleplay community</p>
+        <a href="https://cfx.re/join/3ygz8lo" target="_blank" class="primary" style="display:inline-block;margin-top:8px;padding:8px 16px;border-radius:8px;text-decoration:none">Join Server</a>
+        <a href="https://txadmin.2.25.68.216.nip.io/" target="_blank" class="muted" style="display:inline-block;margin:8px 0 0 10px;font-size:11px">txAdmin →</a></div>
+      <div class="tile"><h3>Collector Lounge</h3><p class="muted">GemCore module</p></div>
+      <div class="tile"><h3>Showcase Feed</h3><p class="muted">GemCore module</p></div>
+      <div class="tile"><h3>Grading Stories</h3><p class="muted">GemCore module</p></div>
+    </div>`); },
   tools: () => { V.innerHTML = page('Tools & Calculators', 'Value, ROI, compare', tiles(['Value Estimator', 'ROI Calculator', 'Compare Tool'])); },
   settings: hardwareSettings,
   qc: () => { V.innerHTML = page('Human QC', 'A certified grade cannot be sealed without verified evidence and reviewer approval', tiles(['Review Queue', 'Evidence Conflicts', 'Authenticity Gate', 'Final Seal'])); },
