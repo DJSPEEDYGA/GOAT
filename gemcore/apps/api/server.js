@@ -267,7 +267,8 @@ app.post('/api/submissions/:id/seal', (q, r) => {
   // auto-queue the Money Penny presenter video — fire and forget
   const cap = (s.captures || []).find(c => c.storedData && c.side === 'front') || (s.captures || []).find(c => c.storedData);
   if (cap?.storedData) {
-    const blob = new Blob([Buffer.from(cap.storedData.split(',')[1], 'base64')], { type: 'image/png' });
+    const _b64 = (cap.storedData || '').split(',')[1] || (cap.storedData || '');
+    const blob = new Blob([Buffer.from(_b64, 'base64')], { type: 'image/png' });
     const fd = new FormData(); fd.append('file', blob, 'card.png');
     fd.append('meta', JSON.stringify({ name: s.item?.name, grade: res.publicGrade, certId: res.certId }));
     fetch(`${IMAGINE_URL}/animate?mode=presenter`, { method: 'POST', body: fd })
@@ -285,7 +286,8 @@ app.get('/api/verify/:certId/video', async (q, r) => {
     const cap = (s.captures || []).find(c => c.storedData && c.side === 'front') || (s.captures || []).find(c => c.storedData);
     if (!cap?.storedData) return r.status(404).json({ error: 'no evidence to render' });
     try {
-      const blob = new Blob([Buffer.from(cap.storedData.split(',')[1], 'base64')], { type: 'image/png' });
+      const _b64 = (cap.storedData || '').split(',')[1] || (cap.storedData || '');
+    const blob = new Blob([Buffer.from(_b64, 'base64')], { type: 'image/png' });
       const fd = new FormData(); fd.append('file', blob, 'card.png');
       fd.append('meta', JSON.stringify({ name: s.item?.name, grade: s.certificate.publicGrade, certId: s.certificate.certId }));
       const j = await (await fetch(`${IMAGINE_URL}/animate?mode=presenter`, { method: 'POST', body: fd })).json();
@@ -685,7 +687,8 @@ app.post('/api/submissions/:id/animate', async (q, r) => {
   const cap = (s.captures || []).find(c => c.storedData && c.side === 'front') || (s.captures || []).find(c => c.storedData);
   if (!cap?.storedData) return r.status(400).json({ error: 'no stored capture to animate' });
   try {
-    const blob = new Blob([Buffer.from(cap.storedData.split(',')[1], 'base64')], { type: 'image/png' });
+    const _b64 = (cap.storedData || '').split(',')[1] || (cap.storedData || '');
+    const blob = new Blob([Buffer.from(_b64, 'base64')], { type: 'image/png' });
     const fd = new FormData(); fd.append('file', blob, 'card.png');
     fd.append('meta', JSON.stringify({ name: s.item?.name, grade: s.certificate?.publicGrade, certId: s.certificate?.certId || s.id }));
     const res = await fetch(`${IMAGINE_URL}/animate?mode=${encodeURIComponent(q.body.mode || 'depth')}`, { method: 'POST', body: fd });
