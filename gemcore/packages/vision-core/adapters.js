@@ -39,20 +39,39 @@ const adapter = {
     out.centering = { lr: +lr.toFixed(1), tb: +tb.toFixed(1),
       score: Math.round(Math.min(lr, tb) * 10) };
 
-    // EDGES — variance along card perimeter (rough edge = high delta)
-    let ed = 0, en = 0;
-    for (let x = minX; x <= maxX; x++) { ed += Math.abs(g[minY * w + x] - g[Math.min(h - 1, minY + 3) * w + x]); en++; }
-    out.edges = { perimeterVariance: +(ed / en).toFixed(2), score: Math.max(0, Math.round(1000 - ed / en * 8)) };
-
-    // CORNERS — sharpness: luminance change at 4 corners
-    const corner = (cx, cy) => {
-      let s = 0, n = 0;
-      for (let dy = 0; dy < 6; dy++) for (let dx = 0; dx < 6; dx++) { const y = cy + dy, x = cx + dx; if (y < h && x < w) { s += g[y * w + x]; n++; } }
-      return s / (n || 1);
+    // EDGES — gradient discontinuity along all 4 borders (fraying = jagged profile)
+    const edgeVar = (x0, y0, x1, y1) => {
+      const n = 40; const vals = [];
+      for (let i = 0; i <= n; i++) {
+        const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n);
+        vals.push(g[Math.min(h - 1, y) * w + Math.min(w - 1, x)]);
+      }
+      let v = 0; for (let i = 1; i < vals.length; i++) v += Math.abs(vals[i] - vals[i - 1]);
+      return v / n;
     };
-    const corners = [corner(minX, minY), corner(maxX - 6, minY), corner(minX, maxY - 6), corner(maxX - 6, maxY - 6)];
-    const spread = Math.max(...corners) - Math.min(...corners);
-    out.corners = { readings: corners.map(c => +c.toFixed(1)), spread: +spread.toFixed(1), score: Math.round(1000 - Math.min(300, spread * 2)) };
+    const eN = edgeVar(minX, minY, maxX, minY), eS = edgeVar(minX, maxY, maxX, maxY);
+    const eW = edgeVar(minX, minY, minX, maxY), eE = edgeVar(maxX, minY, maxX, maxY);
+    const edgeMean = (eN + eS + eW + eE) / 4;
+    out.edges = { n: +eN.toFixed(1), s: +eS.toFixed(1), w: +eW.toFixed(1), e: +eE.toFixed(1),
+      score: Math.round(1000 - Math.min(400, edgeMean * 1.5)) };
+
+    // CORNERS — diagonal-gradient sharpness at each corner (rounded = soft)
+    const cornerSharp = (cx, cy, dx, dy) => {
+      let s = 0, n = 0;
+      for (let i = 1; i < 8; i++) {
+        const x1 = Math.round(cx + dx * i), y1 = Math.round(cy + dy * i);
+        const x2 = Math.round(cx + dx * (i - 1)), y2 = Math.round(cy + dy * (i - 1));
+        if (x1 < 0 || y1 < 0 || x1 >= w || y1 >= h || x2 < 0 || y2 < 0) continue;
+        s += Math.abs(g[y1 * w + x1] - g[y2 * w + x2]); n++;
+      }
+      return n ? s / n : 0;
+    };
+    const cvals = [
+      cornerSharp(minX, minY, 1, 1), cornerSharp(maxX, minY, -1, 1),
+      cornerSharp(minX, maxY, 1, -1), cornerSharp(maxX, maxY, -1, -1)];
+    const spread = Math.max(...cvals) - Math.min(...cvals);
+    out.corners = { sharpness: cvals.map(c => +c.toFixed(1)), spread: +spread.toFixed(1),
+      score: Math.round(1000 - Math.min(350, spread * 4) - Math.min(150, Math.max(0, 40 - Math.min(...cvals)) * 4)) };
 
     // SURFACE — count anomalous pixels (local outliers vs neighborhood)
     let anomalies = 0, total = 0;
