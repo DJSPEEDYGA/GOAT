@@ -1,0 +1,1 @@
+async function analyze(job){if(!job?.captureId)return{status:'unavailable',reason:'Source capture required'};return{status:'adapter-required',captureId:job.captureId,requested:['centering','corners','edges','surface','dimensions','captureQuality'],notice:'No synthetic measurements are generated without a configured model.'}}module.exports={analyze};
