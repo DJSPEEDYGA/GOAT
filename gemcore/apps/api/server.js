@@ -18,7 +18,8 @@ const { CAPTURE_MODES, CAPTURE_SIDES, STATUSES, RUBRIC_VERSION } = require('../.
 const agentDefs = require('./agents');
 const agentBus = new AgentBus();
 agentDefs.forEach(a => agentBus.register(a));
-const vision = new VisionCore(); // adapters register here when real models land
+const vision = new VisionCore();
+vision.registerAdapter(require('../../packages/vision-core/adapters').measuredCV);
 
 const app = express();
 const PORT = process.env.GEMCORE_PORT || 4300;
@@ -707,6 +708,40 @@ app.get('/api/animate/:jid/file', async (q, r) => {
     r.set('Content-Type', res.headers.get('content-type') || 'video/mp4')
      .send(Buffer.from(await res.arrayBuffer()));
   } catch { r.sendStatus(503); }
+});
+
+// ── Market comps + device bridge ────────────────────────────────────────
+const { MarketCore } = require('../../packages/market-core');
+const { DeviceBridge } = require('../../packages/device-bridge');
+const market = new MarketCore(dataDir);
+const devices = new DeviceBridge(dataDir);
+
+app.post('/api/comps', (q, r) => {
+  const { item, grade, price, source } = q.body || {};
+  if (!item || !price) return r.status(400).json({ error: 'item + price required' });
+  const rec = market.addComp({ item, grade, price: +price, source: source || 'staff' });
+  audit(null, 'comp-added', { item, price });
+  r.status(201).json(rec);
+});
+app.get('/api/comps', (q, r) => r.json(market.read().slice(-200)));
+app.get('/api/market/estimate', async (q, r) => {
+  const name = q.query.item || '', grade = +q.query.grade || 5, pop = +q.query.population || 0;
+  const local = market.estimate(name, grade, pop);
+  const ebay = await market.ebaySold(name);
+  r.json({ local, ebay });
+});
+
+// device bridge — welder/printer/agents register + poll
+app.post('/api/devices/register', (q, r) => r.json(devices.register(q.body.id, q.body.caps || [])));
+app.post('/api/devices/:id/heartbeat', (q, r) => { const d = devices.heartbeat(q.params.id, q.body.state || {}); d ? r.json(d) : r.sendStatus(404); });
+app.get('/api/devices', (q, r) => r.json(devices.status()));
+app.get('/api/devices/:id/poll', (q, r) => r.json({ job: devices.poll(q.params.id) }));
+app.post('/api/jobs/:jid/complete', (q, r) => { const j = devices.complete(q.params.jid, q.body.result || {}); j ? r.json(j) : r.sendStatus(404); });
+app.post('/api/submissions/:id/produce', (q, r) => {
+  const s = findSub(r, q.params.id); if (!s) return;
+  const job = devices.enqueue(q.body.deviceId || 'welder-01', { type: q.body.type || 'weld-slab', submissionId: s.id, certId: s.certificate?.certId });
+  audit(s.id, 'production-queued', { job: job.id, device: job.deviceId });
+  r.status(201).json(job);
 });
 
 // card fingerprint — perceptual hash seals the physical card to the cert

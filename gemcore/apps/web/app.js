@@ -953,24 +953,34 @@ const KIT = [
 
 /* ── Slab Production — certified cert → physical slab pipeline ────────── */
 async function production() {
-  const jobs = await api('/production');
+  const [jobs, devs] = await Promise.all([api('/production'), api('/devices').catch(() => [])]);
   const STAGES = ['label-print', 'encapsulate', 'weld-seal', 'verify', 'complete'];
   V.innerHTML = page('Slab Production', 'Certified → label print → encapsulate → ultrasonic weld → verify → complete',
-    jobs.length ? jobs.map(j => `
+    `<div class="panel"><h3>DEVICES — polled by the bridge on the lab machine</h3>
+      ${(devs || []).map(d => `<div class="scanrow"><span class="tick">${d.online ? '●' : '○'}</span><span><b>${esc(d.id)}</b><small>${(d.caps || []).join(', ') || 'no caps'} • last seen ${new Date(d.lastSeen).toLocaleTimeString()}</small></span><span class="badge" style="margin-left:auto;color:${d.online ? 'var(--green)' : 'var(--muted)'}">${d.online ? 'online' : 'offline'}</span></div>`).join('') || '<p class="muted" style="font-size:12px">No devices registered — run the bridge agent on the lab machine (it polls for weld/print jobs).</p>'}
+      <p class="muted" style="font-size:10px;margin-top:8px">Bridge pattern: device agent runs <code>POST /api/devices/register</code> then long-polls <code>/api/devices/&lt;id&gt;/poll</code>. No inbound connectivity needed on the device.</p>
+    </div>` +
+    (jobs.length ? jobs.map(j => `
       <div class="panel" style="margin-top:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
           <b>${j.id}</b> ${j.demo ? '<span class="badge warn">DEMO</span>' : ''}
           <span class="muted" style="font-size:12px">${esc(j.item?.name || '')} • grade ${j.grade ?? '—'}</span>
           <button class="primary" data-adv="${j.id}" ${j.stage === 'complete' ? 'disabled' : ''}>Advance →</button>
+          <button data-queue="${j.id}" style="font-size:11px" ${devs?.some(d => d.online) ? '' : 'disabled title="no devices online"'}>⬡ Queue to Device</button>
         </div>
         <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
           ${STAGES.map(st => `<span class="badge" style="${st === j.stage ? 'border-color:var(--green);color:var(--green)' : STAGES.indexOf(st) < STAGES.indexOf(j.stage) ? 'opacity:.5' : 'opacity:.3'}">${st}</span>`).join('')}
         </div>
       </div>`).join('')
-    : '<div class="panel" style="margin-top:12px"><p class="muted">No production jobs. Certify a submission in the Grading Lab, then Send to Production.</p></div>');
+    : '<div class="panel" style="margin-top:12px"><p class="muted">No production jobs. Certify a submission in the Grading Lab, then Send to Production.</p></div>'));
   document.querySelectorAll('[data-adv]').forEach(b => b.onclick = async () => {
     await api(`/submissions/${b.dataset.adv}/production/advance`);
     show('production');
+  });
+  document.querySelectorAll('[data-queue]').forEach(b => b.onclick = async () => {
+    const dev = devs.find(d => d.online) || { id: 'welder-01' };
+    const res = await api(`/submissions/${b.dataset.queue}/produce`, { b: { deviceId: dev.id, type: 'weld-slab' } });
+    b.textContent = res.id ? `queued → ${dev.id}` : 'failed';
   });
 }
 
@@ -1426,7 +1436,9 @@ async function valueEstimator() {
   V.innerHTML = page('Value Estimator', 'Transparent math — market price × grade curve × scarcity. Never affects grading.',
     `<div class="detailgrid">
       <div class="panel"><h3>ESTIMATE</h3>
+        <label>Item name<input id="vItem" placeholder="Charizard Base Set" value=""></label>
         <label>Current raw market value $<input type="number" id="vRaw" value="50" min="0"></label>
+        <button id="vComps" style="font-size:10px;margin-top:2px">pull real comps ↓</button><pre id="vCompsOut" style="font-size:10px"></pre>
         <label>Expected GemCore grade<input type="number" id="vGrade" step="0.5" min="1" max="10" value="9"></label>
         <label>Same-item certified population<input type="number" id="vPop" value="${items.length ? '1' : '0'}" min="0"></label>
         <label>Market trend<select id="vTrend"><option value="1.1">Bullish ↗</option><option value="1" selected>Flat →</option><option value="0.9">Bearish ↘</option></select></label>
@@ -1436,9 +1448,28 @@ async function valueEstimator() {
         gradeCurve = (grade/5)^2.2 — exponential; a 10 is worth far more than 2× a 9<br>
         scarcity = 1 + 0.15 × (1 / (1+pop)) — fewer graded = more valuable<br>
         trend = market direction multiplier<br><br>
-        <span class="muted" style="font-size:10px">Estimate only — real comps feed not wired. Value NEVER changes the grade.</span></p></div>
+        <span class="muted" style="font-size:10px">Estimate only — comps are staff-entered or eBay-key fed. Value NEVER changes the grade.</span></p></div>
+      <div class="panel"><h3>ADD A SOLD COMP</h3>
+        <label>Item<input id="cItem" placeholder="Charizard Base Set PSA 9"></label>
+        <label>Grade (market)<input id="cGrade" placeholder="9"></label>
+        <label>Sold price $<input type="number" id="cPrice" placeholder="420"></label>
+        <label>Source<input id="cSource" placeholder="eBay sold / auction"></label>
+        <button class="primary" id="cAdd" style="margin-top:8px;font-size:11px">Log Comp</button><pre id="cOut" style="font-size:10px"></pre></div>
     </div>`);
   const q = sel => document.querySelector(sel);
+  q('#vComps').onclick = async () => {
+    const name = q('#vItem').value.trim(); if (!name) return;
+    const res = await api(`/market/estimate?item=${encodeURIComponent(name)}&grade=${q('#vGrade').value}&population=${q('#vPop').value}`);
+    q('#vCompsOut').textContent =
+      (res.local?.status === 'ok' ? `local: median $${res.local.raw} from ${res.local.compCount} comps\n` : `local: ${res.local?.reason || 'no data'}\n`) +
+      (res.ebay?.status === 'ok' ? `ebay: median $${res.ebay.median} (${res.ebay.count} listings)\n` : `ebay: ${res.ebay?.reason || 'offline'}`);
+    if (res.local?.status === 'ok') q('#vRaw').value = res.local.raw;
+    else if (res.ebay?.status === 'ok') q('#vRaw').value = res.ebay.median;
+  };
+  q('#cAdd').onclick = async () => {
+    const res = await api('/comps', { b: { item: q('#cItem').value.trim(), grade: q('#cGrade').value.trim(), price: q('#cPrice').value, source: q('#cSource').value.trim() } });
+    q('#cOut').textContent = res.id ? `logged ${res.id}` : (res.error || 'failed');
+  };
   q('#vGo').onclick = () => {
     const raw = +q('#vRaw').value, g = Math.min(10, Math.max(1, +q('#vGrade').value));
     const pop = +q('#vPop').value, trend = +q('#vTrend').value;
