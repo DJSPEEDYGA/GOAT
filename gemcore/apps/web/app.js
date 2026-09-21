@@ -518,6 +518,10 @@ async function verify() {
         </div>
       </div>
       <div class="panel" style="margin-top:14px">
+        <div class="ahead"><img src="assets/moneypenny.svg" style="width:36px;height:36px;border-radius:8px"><div><b>MONEY PENNY PRESENTS</b><br><span class="muted" style="font-size:10px" id="mpVidStat">rendering your cert video…</span></div></div>
+        <video id="mpVid" controls loop playsinline style="width:100%;max-width:360px;border-radius:12px;display:none;margin:6px auto"></video>
+      </div>
+      <div class="panel" style="margin-top:14px">
         <div class="ahead"><img src="assets/moneypenny.svg" style="width:36px;height:36px;border-radius:8px"><div><b>ASK MONEY PENNY</b><br><span class="muted" style="font-size:10px">she graded this — ask her why</span></div></div>
         <div class="bubble" id="mpExplain">Scan me with a question — "why a ${r.publicGrade}?" or "what defects were found?"</div>
         <div style="display:flex;gap:6px;margin-top:8px">
@@ -535,6 +539,20 @@ async function verify() {
     };
     q('#mpEGo').onclick = askExplain;
     q('#mpEQ').onkeydown = e => { if (e.key === 'Enter') askExplain(); };
+    // presenter video — poll until the Jetson finishes, then play
+    const mpVidPoll = setInterval(async () => {
+      const st = await fetch('/api/verify/' + encodeURIComponent(r.certId) + '/video').then(x => x.json()).catch(() => ({}));
+      if (st.state === 'ready') {
+        clearInterval(mpVidPoll);
+        const v = q('#mpVid'); if (!v) return;
+        v.src = `/api/verify/${r.certId}/video/file`; v.style.display = 'block';
+        const s = q('#mpVidStat'); if (s) s.textContent = 'your cert video';
+      } else if (st.state === 'offline' || st.error) {
+        clearInterval(mpVidPoll);
+        const s = q('#mpVidStat'); if (s) s.textContent = 'video engine offline — cert data above is authoritative';
+      }
+    }, 5000);
+    setTimeout(() => clearInterval(mpVidPoll), 5 * 60 * 1000);
     // draw defect pins over the image
     const map = q('#dmap');
     r.defects.forEach(d => {

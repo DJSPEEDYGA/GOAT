@@ -264,7 +264,49 @@ app.post('/api/submissions/:id/seal', (q, r) => {
   if (!res.ok) return r.status(403).json(res);
   updateSub(s.id, x => { x.status = STATUSES.CERTIFIED; x.certificate = res; });
   audit(s.id, 'grade-sealed', { certId: res.certId, publicGrade: res.publicGrade });
+  // auto-queue the Money Penny presenter video — fire and forget
+  const cap = (s.captures || []).find(c => c.storedData && c.side === 'front') || (s.captures || []).find(c => c.storedData);
+  if (cap?.storedData) {
+    const blob = new Blob([Buffer.from(cap.storedData.split(',')[1], 'base64')], { type: 'image/png' });
+    const fd = new FormData(); fd.append('file', blob, 'card.png');
+    fd.append('meta', JSON.stringify({ name: s.item?.name, grade: res.publicGrade, certId: res.certId }));
+    fetch(`${IMAGINE_URL}/animate?mode=presenter`, { method: 'POST', body: fd })
+      .then(x => x.json()).then(j => { if (j.job) updateSub(s.id, v => { v.animJob = j.job; }); }).catch(() => {});
+  }
   r.json(res);
+});
+
+// Public cert video — Money Penny presents the grade (polled by report page)
+app.get('/api/verify/:certId/video', async (q, r) => {
+  const s = read().find(v => (v.certificate || {}).certId === q.params.certId || v.id === q.params.certId);
+  if (!s || !s.certificate) return r.status(404).json({ error: 'not certified' });
+  if (!s.animJob) {
+    // queue it on demand — public, first requester triggers render
+    const cap = (s.captures || []).find(c => c.storedData && c.side === 'front') || (s.captures || []).find(c => c.storedData);
+    if (!cap?.storedData) return r.status(404).json({ error: 'no evidence to render' });
+    try {
+      const blob = new Blob([Buffer.from(cap.storedData.split(',')[1], 'base64')], { type: 'image/png' });
+      const fd = new FormData(); fd.append('file', blob, 'card.png');
+      fd.append('meta', JSON.stringify({ name: s.item?.name, grade: s.certificate.publicGrade, certId: s.certificate.certId }));
+      const j = await (await fetch(`${IMAGINE_URL}/animate?mode=presenter`, { method: 'POST', body: fd })).json();
+      if (j.job) updateSub(s.id, v => { v.animJob = j.job; });
+      return r.json({ state: 'rendering' });
+    } catch { return r.status(503).json({ state: 'offline' }); }
+  }
+  try {
+    const st = await (await fetch(`${IMAGINE_URL}/animate/${s.animJob}`)).json();
+    r.json({ state: st.state === 'done' ? 'ready' : (st.state || 'rendering') });
+  } catch { r.status(503).json({ state: 'offline' }); }
+});
+app.get('/api/verify/:certId/video/file', async (q, r) => {
+  const s = read().find(v => (v.certificate || {}).certId === q.params.certId || v.id === q.params.certId);
+  if (!s?.animJob) return r.sendStatus(404);
+  try {
+    const res = await fetch(`${IMAGINE_URL}/animate/${s.animJob}/file`);
+    if (!res.ok) return r.sendStatus(404);
+    r.set('Content-Type', res.headers.get('content-type') || 'video/mp4')
+     .send(Buffer.from(await res.arrayBuffer()));
+  } catch { r.sendStatus(503); }
 });
 
 // ── Evidence passport (full chain) + privacy-safe public verify ─────────
