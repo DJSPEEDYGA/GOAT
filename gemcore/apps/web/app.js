@@ -29,6 +29,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 
 const nav = () => {
   document.querySelectorAll('[data-page]').forEach(b => b.onclick = () => show(b.dataset.page));
+  document.querySelectorAll('[data-ext]').forEach(b => b.onclick = () => { location.href = b.dataset.ext; });
   const g = document.querySelector('#btnGuide'), f = document.querySelector('#btnFull');
   if (g) g.onclick = () => show('process');
   if (f) f.onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
