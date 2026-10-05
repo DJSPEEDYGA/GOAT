@@ -1,4 +1,4 @@
-import MilitaryMissionControl from '../../page-military';
+import MilitaryMissionControl from '../page-military';
 
 export default function MilitaryHomePage() {
   return <MilitaryMissionControl />;

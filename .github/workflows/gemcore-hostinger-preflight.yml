@@ -1,0 +1,33 @@
+name: GemCore Hostinger Preflight
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Runtime inventory
+        run: |
+          node --version
+          npm --version
+          test -f package.json
+          test -f .gitignore
+          echo "GemCore Hostinger preflight OK"
+
+      - name: Guard against deploying tracked environment file
+        run: |
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "::error::.env is tracked. Rotate exposed credentials and remove .env from version control before production deployment."
+            exit 1
+          fi
+
+      - name: Deployment intentionally gated
+        run: |
+          echo "No production deployment runs until the Hostinger VPS target, service path, and protected credentials are verified."

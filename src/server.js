@@ -19,6 +19,7 @@ const loyaltyRoutes = require('./routes/loyalty');
 const activationRoutes = require('./routes/activation');
 const { logger, intrusionCheck } = require('./middleware/loyalty');
 const ragRoutes = require('./routes/rag');
+const gemcoreRoutes = require('./routes/gemcore');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -52,6 +53,8 @@ app.use('/api/', intrusionCheck);
 
 // Static files
 app.use('/uploads', express.static('uploads'));
+app.use('/app', express.static('web-app'));
+app.get('/gemcore', (_req, res) => res.redirect('/app/gemcore-grading.html'));
 
 // Health Check Route
 app.get('/health', (req, res) => {
@@ -74,6 +77,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/loyalty', loyaltyRoutes);
 app.use('/api/activation', activationRoutes);
 app.use('/api/rag', ragRoutes);
+app.use('/api/gemcore', gemcoreRoutes);
 
 // 404 Handler - handled by express router
 

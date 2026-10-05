@@ -23,16 +23,12 @@ export const initTikAPI = (apiKey: string) => {
 /**
  * Get the current TikAPI instance (initializes from env if needed)
  */
-const getAPI = () => {
-  if (!api) {
-    const key = process.env.NEXT_PUBLIC_TIKAPI_KEY;
-    if (key) {
-      api = TikAPI(key);
-    } else {
-      throw new Error('TikAPI not initialized — set NEXT_PUBLIC_TIKAPI_KEY in your .env.local');
-    }
-  }
-  return api;
+const getAPI = (): any => {
+  if (api) return api;
+
+  throw new Error(
+    'TikAPI integration is currently disabled. Configure a supported server-side TikTok provider before enabling this feature.'
+  );
 };
 
 /**

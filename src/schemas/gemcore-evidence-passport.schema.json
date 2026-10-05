@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GemCore Evidence Passport",
+  "type": "object",
+  "required": ["certId","status","item","captures","observations","qc","rubricVersion"],
+  "properties": {
+    "certId":{"type":"string"},
+    "status":{"enum":["intake","capturing","analyzing","qc-required","qc-approved","sealed","returned-ungraded"]},
+    "rubricVersion":{"type":"string"},
+    "item":{"type":"object","properties":{"name":{"type":"string"},"year":{"type":"string"},"set":{"type":"string"},"number":{"type":"string"},"variation":{"type":"string"}}},
+    "measurements":{"type":"object","properties":{"widthIn":{"type":"number"},"heightIn":{"type":"number"},"frontCentering":{"$ref":"#/$defs/centering"},"backCentering":{"$ref":"#/$defs/centering"}}},
+    "captures":{"type":"array","items":{"type":"object","required":["id","side","mode","sha256"],"properties":{"id":{"type":"string"},"side":{"enum":["front","back","other"]},"mode":{"enum":["raw","raking","macro","microscope","uv","ir","slab"]},"sha256":{"type":"string"},"calibrationId":{"type":"string"},"capturedAt":{"type":"string","format":"date-time"}}}},
+    "observations":{"type":"array","items":{"type":"object","required":["id","category","side","confidence","sourceCaptureId"],"properties":{"id":{"type":"string"},"category":{"enum":["centering","corner","edge","surface","dimension","authenticity"]},"type":{"type":"string"},"side":{"enum":["front","back","other"]},"x":{"type":"number","minimum":0,"maximum":1},"y":{"type":"number","minimum":0,"maximum":1},"severity":{"type":"number","minimum":0,"maximum":1},"confidence":{"type":"number","minimum":0,"maximum":1},"sourceCaptureId":{"type":"string"},"reviewerDisposition":{"enum":["pending","confirmed","rejected","modified"]}}}},
+    "scores":{"type":"object","properties":{"grade10":{"type":"number","minimum":1,"maximum":10},"conditionIndex":{"type":"integer","minimum":1,"maximum":1000},"centering":{"type":"number"},"corners":{"type":"number"},"edges":{"type":"number"},"surface":{"type":"number"}}},
+    "qc":{"type":"object","required":["approved"],"properties":{"approved":{"type":"boolean"},"reviewer":{"type":["string","null"]},"approvedAt":{"type":["string","null"],"format":"date-time"}}}
+  },
+  "$defs":{"centering":{"type":"object","properties":{"left":{"type":"number"},"right":{"type":"number"},"top":{"type":"number"},"bottom":{"type":"number"}}}}
+}

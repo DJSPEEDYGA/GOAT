@@ -1,0 +1,10 @@
+const agents=[
+{id:'visioncore',name:'VisionCore',role:'visual evidence analysis',run:async c=>({status:'adapter-required',message:'Awaiting calibrated VisionCore model/hardware adapter',input:c?.captureId||null})},
+{id:'capture-guardian',name:'Capture Guardian',role:'capture quality and calibration',run:async c=>({status:'review',checks:['focus','exposure','glare','framing','calibration'],captureId:c?.captureId||null})},
+{id:'evidence-auditor',name:'Evidence Auditor',role:'evidence integrity',run:async c=>({status:'review',checks:['source-link','checksum','provenance','annotation-separation'],submissionId:c?.submissionId||null})},
+{id:'authenticity',name:'Authenticity Sentinel',role:'authentication support',run:async c=>({status:'human-review-required',message:'Authentication remains separate from condition grading',submissionId:c?.submissionId||null})},
+{id:'qc-orchestrator',name:'QC Orchestrator',role:'human QC workflow',run:async c=>({status:'qc-required',submissionId:c?.submissionId||null})},
+{id:'passport',name:'Passport Builder',role:'certificate/evidence passport assembly',run:async c=>({status:'draft',message:'Certificate cannot seal until QC approval',submissionId:c?.submissionId||null})},
+{id:'market',name:'Market Intelligence',role:'market context',run:async c=>({status:'connector-required',message:'Market data is separate from grade',item:c?.item||null})},
+{id:'hardware',name:'Hardware Conductor',role:'microscope/camera/light/stage orchestration',run:async c=>({status:'device-discovery-required',requested:c?.action||'inventory'})}
+];module.exports=agents;
