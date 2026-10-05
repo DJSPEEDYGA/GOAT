@@ -33,10 +33,17 @@ const headers = { 'Content-Type': 'application/json', 'x-staff-key': STAFF };
 const api = (p, m = 'GET', b) =>
   fetch(API + p, { method: m, headers, body: b ? JSON.stringify(b) : undefined }).then(r => r.json());
 
+// roles → valid CAPTURE_MODES (evidence-core rejects anything else)
+const ROLE_MODE = {
+  overview: 'visible', macro: 'macro', microscope: 'microscope',
+  'uv-ir': 'uv', 'macro-telescope': 'macro', raking: 'raking', ir: 'ir',
+};
+
 function snap(devPath, outFile) {
   // one frame from v4l2 via ffmpeg; falls back to fswebcam if ffmpeg missing
   try {
-    execFileSync('ffmpeg', ['-y', '-f', 'v4l2', '-video_size', RES, '-i', devPath,
+    execFileSync('ffmpeg', ['-y', '-f', 'v4l2', '-input_format', 'mjpeg',
+      '-video_size', RES, '-i', devPath,
       '-frames:v', '1', '-q:v', '2', outFile], { stdio: 'pipe' });
     return true;
   } catch (_) {
@@ -58,7 +65,7 @@ async function execute(job) {
   const rec = await api(`/api/submissions/${job.submissionId}/captures`, 'POST', {
     data, sha256,
     side: job.side || 'front',
-    mode: job.mode || role,
+    mode: job.mode || ROLE_MODE[role] || 'visible',
     deviceMeta: { deviceId: ID, role, dev, res: RES, via: 'camera-agent' },
   });
   return { ok: true, captureId: rec.id, sha256 };

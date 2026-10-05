@@ -985,6 +985,22 @@ app.post('/api/devices/:id/heartbeat', (q, r) => { const d = devices.heartbeat(q
 app.get('/api/devices', (q, r) => r.json(devices.status()));
 app.get('/api/devices/:id/poll', (q, r) => r.json({ job: devices.poll(q.params.id) }));
 app.post('/api/jobs/:jid/complete', (q, r) => { const j = devices.complete(q.params.jid, q.body.result || {}); j ? r.json(j) : r.sendStatus(404); });
+app.get('/api/jobs/:jid', (q, r) => { const j = devices.jobs().find(x => x.id === q.params.jid); j ? r.json(j) : r.sendStatus(404); });
+
+// remote capture — queue a job for the lab camera rig; the camera agent
+// (device 'lab-cameras' or any registered capture-* device) snaps + seals it
+app.post('/api/submissions/:id/capture-job', (q, r) => {
+  const s = findSub(r, q.params.id); if (!s) return;
+  const deviceId = q.body.deviceId || 'lab-cameras';
+  const online = devices.status().find(d => d.id === deviceId && d.online);
+  if (!online) return r.status(503).json({ error: `device ${deviceId} offline — start camera-agent on the rig` });
+  const job = devices.enqueue(deviceId, {
+    type: 'capture', submissionId: s.id,
+    side: q.body.side || 'front', role: q.body.role || 'overview', mode: q.body.mode || null,
+  });
+  audit(s.id, 'capture-queued', { job: job.id, role: job.role, device: deviceId });
+  r.status(201).json(job);
+});
 app.post('/api/submissions/:id/produce', (q, r) => {
   const s = findSub(r, q.params.id); if (!s) return;
   const job = devices.enqueue(q.body.deviceId || 'welder-01', { type: q.body.type || 'weld-slab', submissionId: s.id, certId: s.certificate?.certId });

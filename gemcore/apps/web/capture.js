@@ -6,7 +6,7 @@
   let dev = null, stream = null, side = 'front', mode = 'visible';
   const q = s => document.querySelector(s);
   const api = (p, b) => fetch('/api' + p, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'x-staff-key': localStorage.getItem('gemcore.staff') || '' },
     body: JSON.stringify(b || {}),
   }).then(r => r.json());
 
@@ -81,7 +81,49 @@
       <div class="muted" id="captureMeta" style="font-size:11px;margin-top:6px"></div>
       <pre id="caps" style="display:none"></pre>
       <p id="captureError" style="color:var(--danger);font-size:11px"></p>
+      <div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px">
+        <b style="font-size:11px;letter-spacing:1px">LAB RIG — REMOTE CAMERA</b>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">
+          <span id="rigStatus" class="muted" style="font-size:11px">checking…</span>
+          <select id="rigRole" style="width:auto;margin:0">
+            <option value="overview">overview</option><option value="macro">macro</option>
+            <option value="microscope">microscope</option><option value="uv-ir">uv-ir</option>
+            <option value="raking">raking</option>
+          </select>
+          <button id="rigSnap" style="font-size:11px">Queue Remote Capture</button>
+          <span id="rigOut" class="muted" style="font-size:11px"></span>
+        </div>
+      </div>
     </div>`;
+
+  // lab rig status + remote snap
+  async function rigRefresh() {
+    const devs = await fetch('/api/devices', { headers: { 'x-staff-key': localStorage.getItem('gemcore.staff') || '' } }).then(r => r.json()).catch(() => []);
+    const rig = Array.isArray(devs) ? devs.find(d => d.id === 'lab-cameras') : null;
+    const el = q('#rigStatus');
+    if (el) el.innerHTML = rig ? (rig.online ? `<span style="color:var(--green)">● ${rig.id} online (${(rig.state?.cams || rig.caps || []).join(',')})</span>` : `<span style="color:var(--danger)">● ${rig.id} offline</span>`) : 'no rig registered';
+  }
+  rigRefresh(); setInterval(rigRefresh, 15000);
+
+  document.addEventListener('click', async e => {
+    if (e.target.id !== 'rigSnap') return;
+    const subId = localStorage.getItem('gemcore.sub');
+    const out = q('#rigOut');
+    if (!subId) { out.textContent = 'select a submission first'; return; }
+    out.textContent = 'queuing…';
+    const job = await api(`/submissions/${subId}/capture-job`, { side, role: q('#rigRole').value });
+    if (!job.id) { out.textContent = job.error || 'failed'; return; }
+    out.textContent = 'snapping on rig…';
+    const t = setInterval(async () => {
+      const j = await fetch('/api/jobs/' + job.id, { headers: { 'x-staff-key': localStorage.getItem('gemcore.staff') || '' } }).then(r => r.json()).catch(() => null);
+      if (!j || j.status !== 'done') return;
+      clearInterval(t);
+      const res = j.result || {};
+      out.textContent = res.captureId ? `sealed ${res.captureId}` : 'failed: ' + (res.error || res.note || '?');
+      if (res.captureId) document.dispatchEvent(new CustomEvent('gemcore:capture', { detail: { id: res.captureId } }));
+    }, 1500);
+    setTimeout(() => { clearInterval(t); if (!out.textContent.startsWith('sealed')) out.textContent = 'timed out waiting for rig'; }, 30000);
+  });
 
   document.addEventListener('click', e => {
     const subId = localStorage.getItem('gemcore.sub');
@@ -99,7 +141,7 @@
       const buf = await crypto.subtle.digest('SHA-256', await f.arrayBuffer());
       const sha = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
       const rec = await fetch('/api/submissions/' + subId + '/captures', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-staff-key': localStorage.getItem('gemcore.staff') || '' },
         body: JSON.stringify({ data, sha256: sha, side, mode, deviceMeta: { source: 'file-upload', name: f.name, bytes: f.size } }),
       }).then(r => r.json());
       q('#captureStatus').textContent = rec.id ? 'UPLOADED — sha ' + sha.slice(0, 10) + '…' : 'REJECTED: ' + (rec.error || '?');
