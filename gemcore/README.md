@@ -48,7 +48,20 @@ tests/smoke.js     end-to-end flow test
 - `GET  /api/submissions/:id/passport` — full evidence passport
 - `GET  /api/submissions/:id/audit` — append-only audit trail
 - `GET  /api/verify/:certId` — public, privacy-safe cert verification
+- `GET  /api/verify/:certId/image|evidence/:capId` — public sealed-evidence images
 - `GET  /api/population` — real certified population data
+- `GET  /api/public/population` — public pop report (per-item breakdown)
+- `GET|POST /api/public/registry` + `POST /api/registry/sets` — set registry
+- `GET  /api/public/collection/:name` — shareable collection showcase
+- `POST /api/public/prescreen` — free AI pre-grade + ROI (rate-limited)
+- `POST /api/public/fp-check` — "seen this card before?" fingerprint lookup
+- `GET  /api/public/service-tiers` — posted pricing + turnaround
+- `POST /api/submissions/bulk` — dealer CSV batch intake (≤200/batch)
+- `POST /api/submissions/:id/fingerprint` — perceptual hash seals card to cert
+- kiosk.html — touch-first card-show intake (public request + photo + crossover)
+
+Submissions may carry `serviceTier`, `dealer`, `crossover`, `notifyUrl`
+(webhook posts on every audit event). Client portal shows TAT timeline.
 
 ## Integrity rules (enforced in code)
 - Original captures immutable; annotations live on a separate layer.

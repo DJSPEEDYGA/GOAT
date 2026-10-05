@@ -23,7 +23,7 @@ const api = async (p, opts) => {
 
 const isStaff = () => !!localStorage.getItem('gemcore.staff') || localStorage.getItem('gemcore.staffless') === '1';
 const whoAmI = () => localStorage.getItem('gemcore.me') || 'staff';
-const INTERNAL = ['grade','intake','submissions','passport','population','production','vault','market','live','studio','photolab','tools','settings','qc','requests','command'];
+const INTERNAL = ['grade','intake','submissions','passport','production','vault','market','live','studio','photolab','tools','settings','qc','requests','command'];
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -351,24 +351,62 @@ function bindLab(s, ev) {
 
 /* ── Other pages ──────────────────────────────────────────────────────── */
 async function intake() {
+  const tiers = await api('/public/service-tiers').catch(() => ({}));
+  const tierOpts = sel => Object.entries(tiers).map(([k, t]) =>
+    `<option value="${k}" ${k === sel ? 'selected' : ''}>${k} — $${t.price} (${t.tat})</option>`).join('');
   V.innerHTML = page('Submit a Collectible', 'Create and track a new grading intake',
-    `<div class="tile form" style="max-width:460px">
-      <label>Collectible name<input id="item" placeholder="e.g. Charizard 1st Edition"></label>
-      <label>Set / series<input id="set" placeholder="e.g. Pokémon Base Set"></label>
-      <label>Year<input id="year" placeholder="1999"></label>
-      <label><input type="checkbox" id="demo" style="width:auto"> Mark as demo (can never certify)</label>
-      <button class="primary" id="create" style="margin-top:14px">Create Submission</button>
-      <pre id="out"></pre></div>
+    `<div class="detailgrid">
+      <div class="tile form">
+        <label>Collectible name<input id="item" placeholder="e.g. Charizard 1st Edition"></label>
+        <label>Set / series<input id="set" placeholder="e.g. Pokémon Base Set"></label>
+        <label>Year<input id="year" placeholder="1999"></label>
+        <label>Service tier<select id="tier">${tierOpts('regular')}</select></label>
+        <label>Dealer / group<input id="dealer" placeholder="optional"></label>
+        <label>Status webhook URL<input id="wh" placeholder="https://… — posts on every status event"></label>
+        <fieldset style="border:1px solid var(--line);border-radius:8px;padding:8px;margin:4px 0">
+          <legend class="muted" style="font-size:10px">CROSSOVER — already slabbed elsewhere?</legend>
+          <label>Company<input id="xoCo" placeholder="PSA / BGS / CGC / TAG"></label>
+          <div style="display:flex;gap:8px">
+            <label style="flex:1">Cert #<input id="xoNo" placeholder="12345678"></label>
+            <label style="width:90px">Grade<input id="xoG" type="number" step="0.5" min="1" max="10"></label>
+          </div>
+        </fieldset>
+        <label><input type="checkbox" id="demo" style="width:auto"> Mark as demo (can never certify)</label>
+        <button class="primary" id="create" style="margin-top:14px">Create Submission</button>
+        <pre id="out"></pre>
+      </div>
+      <div class="tile form">
+        <h3 style="margin:0 0 8px">DEALER BULK — CSV import</h3>
+        <p class="muted" style="font-size:11px">one card per line: <code>name, set, year</code></p>
+        <textarea id="bulkCsv" rows="7" placeholder="Charizard Holo, Base Set, 1999&#10;Pikachu Promo, —, 2000"></textarea>
+        <label>Tier<select id="bulkTier">${tierOpts('bulk')}</select></label>
+        <label>Dealer<input id="bulkDealer" placeholder="dealer name"></label>
+        <button class="primary" id="bulkGo" style="margin-top:10px">Import batch</button>
+        <pre id="bulkOut"></pre>
+      </div>
+    </div>
     <div id="capHost"></div>`);
+  const q = sel => document.querySelector(sel);
   document.querySelector('#create').onclick = async () => {
-    const s = await api('/submissions', { b: { item: { name: itemName(), set: q('#set').value, year: q('#year').value }, demo: q('#demo').checked } });
+    const crossover = q('#xoCo').value.trim()
+      ? { company: q('#xoCo').value.trim(), certNo: q('#xoNo').value.trim(), grade: +q('#xoG').value || null } : null;
+    const s = await api('/submissions', { b: {
+      item: { name: q('#item').value, set: q('#set').value, year: q('#year').value },
+      demo: q('#demo').checked, serviceTier: q('#tier').value,
+      dealer: q('#dealer').value.trim() || null, notifyUrl: q('#wh').value.trim() || null, crossover } });
     currentSub = s.id; localStorage.setItem('gemcore.sub', s.id);
-    q('#out').textContent = 'Created ' + s.id;
+    q('#out').textContent = 'Created ' + s.id + ' • ' + s.serviceTier;
     q('#capHost').innerHTML = window.GemCapturePanel(s.id);
   };
+  q('#bulkGo').onclick = async () => {
+    const items = q('#bulkCsv').value.split('\n').map(l => l.trim()).filter(Boolean)
+      .map(l => { const [name, set, year] = l.split(',').map(x => (x || '').trim()); return { name, set, year }; })
+      .filter(i => i.name);
+    if (!items.length) { q('#bulkOut').textContent = 'no valid rows — need at least a name'; return; }
+    const res = await api('/submissions/bulk', { b: { items, serviceTier: q('#bulkTier').value, dealer: q('#bulkDealer').value.trim() || null } });
+    q('#bulkOut').textContent = res.ids ? `created ${res.created} submissions • ${res.tier} • quoted $${res.quoted}` : 'error: ' + res.error;
+  };
   if (currentSub) document.querySelector('#capHost').innerHTML = window.GemCapturePanel(currentSub);
-  const q = sel => document.querySelector(sel);
-  const itemName = () => q('#item').value;
 }
 
 async function submissions() {
@@ -502,7 +540,22 @@ async function verify() {
           ${r.rankOfSameItem ? `<span class="badge">RANK #${r.rankOfSameItem} of ${r.sameItemPopulation} same-item</span>` : ''}
           <span class="badge">${r.evidenceCount} sealed evidence</span>
           <span class="badge">rubric ${esc(r.algorithmVersion)}</span>
+          ${r.crossover ? `<span class="badge" style="border-color:var(--gold);color:var(--gold)">CROSSOVER — was ${esc(r.crossover.company)} ${r.crossover.grade ?? ''} · cert ${esc(r.crossover.certNo || '—')}</span>` : ''}
         </div>
+      </div>
+      <div class="panel" style="margin-top:14px"><h3>SEALED EVIDENCE — the originals, unedited</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+        ${(r.evidence || []).filter(e => e.hasImage).map(e => `
+          <div style="text-align:center"><img src="/api/verify/${encodeURIComponent(r.certId)}/evidence/${e.id}" loading="lazy"
+            style="width:110px;height:150px;object-fit:cover;border-radius:8px;border:1px solid var(--line)">
+            <div class="muted" style="font-size:9px">${e.side} • ${e.mode}<br>sha ${e.sha256.slice(0, 8)}…</div></div>`).join('')
+          || '<p class="muted" style="font-size:11px">hash-only evidence — originals archived off-image</p>'}
+        </div></div>
+      <div class="panel" style="margin-top:14px"><h3>GRADED BY — accountable humans</h3>
+        ${r.team ? `
+        <div class="scanrow"><span class="tick">✓</span><span><b>Human QC — ${esc(r.team.qcReviewer || 'on file')}</b><small>${r.team.qcAt ? new Date(r.team.qcAt).toLocaleDateString() : ''}${r.team.reviewers.length ? ' • observation reviewers: ' + r.team.reviewers.map(esc).join(', ') : ''}</small></span></div>
+        <div class="scanrow"><span class="tick">◉</span><span><b>Machine assist</b><small>${r.team.measuredBy.length ? r.team.measuredBy.map(esc).join(', ') : 'manual measurement'} — AI proposes, humans certify</small></span></div>`
+        : '<p class="muted">—</p>'}
       </div>
       <div class="detailgrid" style="margin-top:14px">
         <div class="panel"><h3>DEFECT MAP</h3>
@@ -566,16 +619,21 @@ async function verify() {
 }
 
 async function population() {
-  const p = await api('/population');
-  V.innerHTML = page('Population Report', 'Population by grade — real certified data only',
-    `<div class="grid"><div class="tile"><h3>Total submissions</h3><strong style="font-size:28px;color:var(--teal)">${p.total}</strong></div>
-    <div class="tile"><h3>Certified</h3><strong style="font-size:28px;color:var(--green)">${p.certified}</strong></div>
+  const p = await api('/public/population');
+  V.innerHTML = page('Population Report', 'Public — every certified item, every grade, evidence-linked',
+    `<div class="grid"><div class="tile"><h3>Certified items</h3><strong style="font-size:28px;color:var(--green)">${p.certified}</strong></div>
     <div class="tile"><h3>In pipeline</h3><strong style="font-size:28px">${p.inPipeline}</strong></div></div>
-    <div class="panel" style="margin-top:14px"><h3>BY GRADE</h3>
+    <div class="detailgrid" style="margin-top:14px">
+    <div class="panel"><h3>BY ITEM — the pop report</h3>
+    <table><tr><th>Item</th><th>Set</th><th>Pop</th><th>Grades</th></tr>
+    ${(p.items || []).map(i => `<tr><td>${esc(i.item)}</td><td class="muted">${esc(i.set || '—')}</td><td>${i.total}</td><td class="muted" style="font-size:10px">${Object.entries(i.byGrade).map(([g, c]) => `${g}×${c}`).join(' ')}</td></tr>`).join('') || '<tr><td colspan=4 class="muted">No certified items yet</td></tr>'}</table></div>
+    <div class="panel"><h3>BY GRADE</h3>
     <table><tr><th>Grade</th><th>Count</th></tr>${Object.entries(p.byGrade).map(([g, c]) => `<tr><td>${g}</td><td>${c}</td></tr>`).join('') || '<tr><td colspan=2 class="muted">No certified items yet</td></tr>'}</table></div>
-    <div class="panel" style="margin-top:14px"><h3>LEADERBOARD — ranked by internal index</h3>
-    <table><tr><th>#</th><th>Cert</th><th>Item</th><th>Grade</th><th>Index</th><th>Chron</th></tr>
-    ${(p.leaderboard || []).map((s, i) => `<tr><td>${i + 1}</td><td>${esc(s.certId)}</td><td>${esc(s.item || '')}</td><td>${s.grade}</td><td>${s.index ?? '—'}</td><td>#${s.chronology}</td></tr>`).join('') || '<tr><td colspan=6 class="muted">No certified items yet</td></tr>'}</table></div>`);
+    </div>
+    <div class="panel" style="margin-top:14px"><h3>TOP INDEX — click a cert to open its public report</h3>
+    <table><tr><th>#</th><th>Cert</th><th>Item</th><th>Grade</th><th>Index</th></tr>
+    ${(p.leaderboard || []).map((s, i) => `<tr style="cursor:pointer" data-cert="${esc(s.certId)}"><td>${i + 1}</td><td style="color:var(--teal)">${esc(s.certId)}</td><td>${esc(s.item || '')}</td><td>${s.grade}</td><td>${s.index ?? '—'}</td></tr>`).join('') || '<tr><td colspan=5 class="muted">No certified items yet</td></tr>'}</table></div>`);
+  document.querySelectorAll('[data-cert]').forEach(tr => tr.onclick = () => { location.hash = 'verify-' + tr.dataset.cert; show('verify'); });
 }
 
 /* ── Case Studio — physical slab/case designer with engraving ─────────── */
@@ -1509,9 +1567,14 @@ function publicPage() {
       </div>
     </div>
     <div class="grid" style="margin-top:14px">
+      <div class="tile" style="cursor:pointer" data-go="prescreen"><h3>◉ Pre-Grade Screener</h3><p class="muted">Free AI look — is it worth grading?</p></div>
+      <div class="tile" style="cursor:pointer" data-go="population"><h3>◫ Pop Report</h3><p class="muted">Every certified item — evidence-linked</p></div>
+      <div class="tile" style="cursor:pointer" data-go="registry"><h3>▤ Set Registry</h3><p class="muted">Register certs — collector leaderboard</p></div>
+      <div class="tile" style="cursor:pointer" data-go="collection"><h3>▣ Collections</h3><p class="muted">Collector showcases — public vaults</p></div>
       <div class="tile" style="cursor:pointer" data-go="scale"><h3>◆ The GemCore Scale</h3><p class="muted">1000-pt index → 1–10, public rubric</p></div>
       <div class="tile" style="cursor:pointer" data-go="process"><h3>⬡ How We Grade</h3><p class="muted">Every step, every technology</p></div>
       <div class="tile" style="cursor:pointer" data-go="value"><h3>↗ Value Estimator</h3><p class="muted">Market × grade × scarcity — transparent</p></div>
+      <div class="tile" style="cursor:pointer" data-ext="kiosk.html"><h3>▦ Card-Show Kiosk</h3><p class="muted">Walk-up intake — touch, camera, done</p></div>
     </div>
     <p class="muted" style="font-size:10px;margin-top:16px">Staff? <a href="#" id="staffIn" style="color:var(--teal)">Enter staff key →</a></p>
   </div>`;
@@ -1555,10 +1618,124 @@ async function portal() {
       ${j.price ? `<p style="font-size:13px">Quoted price: <b>$${j.price}</b></p>` : ''}
       ${j.stage ? `<p style="font-size:13px">Production stage: <b>${j.stage}</b></p>` : ''}
       ${j.grade ? `<p style="font-size:20px;color:var(--teal)">Certified grade: <b>${j.grade}</b> <small class="muted">${esc(j.certId || '')}</small></p>` : ''}
-      <p class="muted" style="font-size:11px">${j.captureCount} evidence item(s) on file • updated ${new Date(j.updated).toLocaleString()}</p>
+      ${j.promisedTat ? `<p class="muted" style="font-size:11px">service tier <b>${esc(j.serviceTier)}</b> — promised turnaround ${esc(j.promisedTat)}</p>` : ''}
+      ${(j.timeline || []).length ? `<h3 style="margin-top:14px">TIMELINE — real events only</h3>
+        ${j.timeline.map(t => `<div class="scanrow"><span class="tick">◆</span><span><b>${esc(t.step)}</b><small>${new Date(t.at).toLocaleString()}</small></span></div>`).join('')}` : ''}
+      <p class="muted" style="font-size:11px;margin-top:10px">${j.captureCount} evidence item(s) on file • updated ${new Date(j.updated).toLocaleString()}</p>
       <button id="clOut2" style="margin-top:8px;font-size:11px">Log out</button>
     </div></div>`;
   document.querySelector('#clOut2').onclick = () => { localStorage.removeItem('gemcore.client'); show('public'); };
+}
+
+/* ── Set Registry — public, register sealed certs into sets ───────────── */
+async function registry() {
+  const reg = await api('/public/registry');
+  V.innerHTML = page('Set Registry', 'Register sealed certs — collector leaderboard, ranked by count & index',
+    `<div class="detailgrid">
+      <div class="panel"><h3>REGISTER A CERT</h3>
+        <label>Cert ID<input id="regCert" placeholder="GCG-…"></label>
+        <label>Collector name<input id="regName" placeholder="your display name"></label>
+        <label>Set<select id="regSet"><option value="">— no set —</option>
+          ${(reg.sets || []).map(s => `<option>${esc(s.name)}</option>`).join('')}</select></label>
+        <button class="primary" id="regGo" style="margin-top:10px">Register</button><pre id="regOut"></pre></div>
+      <div class="panel"><h3>COLLECTOR LEADERBOARD</h3>
+        <table><tr><th>#</th><th>Collector</th><th>Certs</th><th>Avg index</th><th></th></tr>
+        ${(reg.leaderboard || []).map((b, i) => `<tr><td>${i + 1}</td><td>${esc(b.collector)}</td><td>${b.certs}</td><td>${b.avgIndex ?? '—'}</td>
+          <td><a href="#" data-coll="${esc(b.collector)}" style="color:var(--teal)">collection →</a></td></tr>`).join('')
+          || '<tr><td colspan=5 class="muted">No registered certs yet — be first</td></tr>'}</table></div>
+    </div>
+    <div class="detailgrid" style="margin-top:14px">
+      <div class="panel"><h3>SETS</h3>
+        ${(reg.sets || []).map(s => `<div class="scanrow"><span class="tick">▤</span><span><b>${esc(s.name)}</b><small>${(s.checklist || []).length ? s.checklist.length + '-card checklist' : 'open set'}</small></span></div>`).join('')
+          || '<p class="muted" style="font-size:11px">No named sets yet — staff defines them. Register without a set meanwhile.</p>'}</div>
+      <div class="panel"><h3>RECENT REGISTRATIONS</h3>
+        ${(reg.entries || []).slice(0, 15).map(e => `<div class="scanrow"><span class="tick">◆</span><span><b>${esc(e.item || e.certId)}</b> — ${e.grade}<small>${esc(e.collector)}${e.set ? ' • ' + esc(e.set) : ''} • ${new Date(e.at).toLocaleDateString()}</small></span></div>`).join('')
+          || '<p class="muted">—</p>'}</div>
+    </div>`);
+  const q = sel => document.querySelector(sel);
+  q('#regGo').onclick = async () => {
+    const res = await api('/public/registry', { b: { certId: q('#regCert').value.trim(), collector: q('#regName').value.trim(), set: q('#regSet').value || null } });
+    q('#regOut').textContent = res.error ? 'error: ' + res.error : `Registered ${res.certId} → ${res.collector}`;
+    if (!res.error) setTimeout(registry, 800);
+  };
+  document.querySelectorAll('[data-coll]').forEach(a => a.onclick = e => {
+    e.preventDefault(); localStorage.setItem('gemcore.showcase', a.dataset.coll); show('collection');
+  });
+}
+
+/* ── Collection showcase — a collector's public vault page ────────────── */
+async function collection() {
+  const name = localStorage.getItem('gemcore.showcase') || '';
+  V.innerHTML = page('Collection Showcase', 'Public vault — a collector\'s registered GemCore certs',
+    `<div class="tile form" style="max-width:400px">
+      <label>Collector name<input id="collName" value="${esc(name)}" placeholder="collector display name"></label>
+      <button class="primary" id="collGo" style="margin-top:10px">Open Collection</button></div>
+    <div id="collOut" style="margin-top:14px"></div>`);
+  const q = sel => document.querySelector(sel);
+  const load = async () => {
+    const n = q('#collName').value.trim(); if (!n) return;
+    localStorage.setItem('gemcore.showcase', n);
+    const c = await api('/public/collection/' + encodeURIComponent(n));
+    q('#collOut').innerHTML = (c.items || []).length
+      ? `<h3>${esc(c.collector)} — ${c.items.length} registered cert(s)</h3>
+        <div class="grid">${c.items.map(i => `
+          <div class="tile" style="cursor:pointer" data-cert="${esc(i.certId)}">
+            <h3>${esc(i.item?.name || 'Collectible')}</h3>
+            <p class="muted">${esc(i.item?.set || '')} ${i.item?.year ? '• ' + i.item.year : ''}${i.set ? ' • ' + esc(i.set) : ''}</p>
+            <strong style="font-size:26px;color:var(--teal)">${i.grade}</strong>
+            <p class="muted" style="font-size:10px">${esc(i.certId)} • sealed ${new Date(i.sealedAt).toLocaleDateString()}</p></div>`).join('')}</div>`
+      : `<div class="panel"><p class="muted">No registered certs for "${esc(n)}" — register via the Set Registry.</p></div>`;
+    document.querySelectorAll('[data-cert]').forEach(t => t.onclick = () => { location.hash = 'verify-' + t.dataset.cert; show('verify'); });
+  };
+  q('#collGo').onclick = load;
+  if (name) load();
+}
+
+/* ── Pre-Grade Screener — free AI look + ROI before paying a fee ──────── */
+function prescreen() {
+  V.innerHTML = page('Pre-Grade Screener', 'Free VisionCore look before you pay — measured pixels, honest verdict',
+    `<div class="detailgrid">
+      <div class="panel"><h3>SCAN A CARD</h3>
+        <label>Card photo (front)<input type="file" id="psFile" accept="image/*" style="padding:8px"></label>
+        <label>Item name — for value comps<input id="psItem" placeholder="e.g. Charizard Base Set"></label>
+        <label>Service tier<select id="psTier"><option value="bulk">bulk — $12</option><option value="value">value — $20</option><option value="regular" selected>regular — $35</option><option value="express">express — $75</option></select></label>
+        <img id="psPrev" style="width:100%;max-width:260px;border-radius:8px;display:none;margin-top:8px">
+        <button class="primary" id="psGo" style="margin-top:10px" disabled>Run Pre-Screen</button></div>
+      <div class="panel"><h3>VERDICT</h3><div id="psOut"><p class="muted">Upload a photo — VisionCore measures centering, corners, edges &amp; surface from real pixels, estimates your grade, and checks whether the fee pays.</p></div></div>
+    </div>`);
+  const q = sel => document.querySelector(sel);
+  let dataUrl = null;
+  q('#psFile').onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      const sc = Math.min(1, 1400 / img.width);
+      c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      dataUrl = c.toDataURL('image/png'); // VisionCore reads PNG — re-encode honestly
+      q('#psPrev').src = dataUrl; q('#psPrev').style.display = 'block'; q('#psGo').disabled = false;
+    };
+    img.src = URL.createObjectURL(f);
+  };
+  q('#psGo').onclick = async () => {
+    q('#psOut').innerHTML = '<p class="muted">measuring pixels…</p>'; q('#psGo').disabled = true;
+    const r = await fetch('/api/public/prescreen', { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ data: dataUrl, item: q('#psItem').value.trim(), serviceTier: q('#psTier').value }) }).then(x => x.json()).catch(() => ({ error: 'request failed' }));
+    q('#psGo').disabled = false;
+    if (r.status !== 'ok') { q('#psOut').innerHTML = `<p style="color:var(--danger)">${esc(r.reason || r.error || 'analysis unavailable')}</p>`; return; }
+    const vc = { 'strong-grade-candidate': 'var(--green)', 'worth-grading': 'var(--teal)', 'grade-may-not-pay': 'var(--danger)', inconclusive: 'var(--muted)' }[r.verdict] || 'var(--muted)';
+    q('#psOut').innerHTML = `
+      <div style="font-size:40px;font-weight:800;color:${vc};line-height:1">${r.estimatedGrade ?? '—'}</div>
+      <p class="muted">estimated grade • index ${r.estimatedIndex ?? '—'}/1000</p>
+      <span class="badge" style="border-color:${vc};color:${vc}">${esc(r.verdict.replace(/-/g, ' '))}</span>
+      ${Object.entries(r.lanes || {}).map(([l, s]) => `<div class="metric" style="margin-top:6px"><span>${l}</span><b>${s == null ? '—' : (s / 100).toFixed(1)}</b></div>`).join('')}
+      ${r.roi != null ? `<div class="metric"><span>est. value − $${r.fee} ${r.tier} fee</span><b style="color:${r.roi >= 0 ? 'var(--green)' : 'var(--danger)'}">${r.roi >= 0 ? '+' : ''}$${r.roi}</b></div>`
+        : '<p class="muted" style="font-size:11px;margin-top:8px">no comps on file — value estimate unavailable</p>'}
+      <p class="muted" style="font-size:10px;margin-top:10px">${esc(r.honest)}</p>
+      <button class="primary" id="psSubmit" style="margin-top:8px;font-size:11px">Submit for real grading →</button>`;
+    const sb = q('#psSubmit'); if (sb) sb.onclick = () => show('public');
+  };
 }
 
 /* ── Staff: client request queue ──────────────────────────────────────── */
@@ -1611,6 +1788,9 @@ const pages = {
   photolab: photoLab,
   studio: caseStudio,
   community,
+  registry,
+  collection,
+  prescreen,
   tools,
   settings,
   qc,

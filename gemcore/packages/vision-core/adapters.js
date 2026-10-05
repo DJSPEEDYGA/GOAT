@@ -22,7 +22,7 @@ function cardBounds({ w, h, g }) {
 const adapter = {
   id: 'measured-cv-v1',
   name: 'MeasuredCV (deterministic pixel analysis)',
-  capabilities: ['centering', 'edges', 'corners', 'surface', 'calibration'],
+  capabilities: ['centering', 'edges', 'corners', 'surface', 'calibration', 'dimensions'],
   async analyze(rec) {
     if (!rec?.storedData && !rec?.data) return { status: 'unavailable', reason: 'no pixel data on evidence' };
     let im;
@@ -82,6 +82,24 @@ const adapter = {
     }
     const rate = total ? anomalies / total : 0;
     out.surface = { anomalyRate: +rate.toFixed(4), score: Math.round(1000 * (1 - rate * 3)) };
+
+    // DIMENSIONS — pixel size now; physical mm needs a calibrated scale marker
+    const cw = maxX - minX, chh = maxY - minY;
+    out.dimensions = { px: [cw, chh], aspect: +(cw / chh).toFixed(3),
+      note: 'physical dimensions require a scale marker in frame — pixel-only until calibration card is captured' };
+
+    // CALIBRATION — capture quality gate: sharpness (mean gradient energy)
+    // + usable resolution. Blurry captures must be retaken, not graded.
+    let ge = 0, gn = 0;
+    for (let y = minY + 1; y < maxY - 1; y += 3) for (let x = minX + 1; x < maxX - 1; x += 3) {
+      ge += Math.abs(g[y * w + x] - g[y * w + x - 1]) + Math.abs(g[y * w + x] - g[(y - 1) * w + x]); gn++;
+    }
+    const sharp = gn ? ge / (gn * 2) : 0;
+    out.calibration = {
+      sharpness: +sharp.toFixed(1), pixels: cw * chh,
+      adequate: sharp > 8 && cw * chh > 20000,
+      score: Math.round(Math.min(1000, sharp * 12 + Math.min(400, cw * chh / 2000))),
+    };
 
     // VisionCore contract: { result, confidence, coordinates }
     return {

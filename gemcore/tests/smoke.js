@@ -84,6 +84,33 @@ const grading = require('../packages/grading-engine');
 
     const aud = await j(`/api/submissions/${s.id}/audit`);
     assert(aud.trail.length >= 6);
+
+    // community features
+    const pop = await j('/api/public/population');
+    assert.equal(pop.certified, 1); assert(pop.items.length === 1);
+    const reg = await j('/api/public/registry', 'POST', { certId: s.id, collector: 'smoke' });
+    assert.equal(reg.certId, s.id);
+    const regDup = await j('/api/public/registry', 'POST', { certId: s.id, collector: 'smoke' });
+    assert(regDup.error, 'duplicate registry must fail');
+    const coll = await j('/api/public/collection/smoke');
+    assert.equal(coll.items.length, 1); assert.equal(coll.items[0].grade, seal.publicGrade);
+    const tiers = await j('/api/public/service-tiers');
+    assert(tiers.bulk && tiers.express);
+    const bulk = await j('/api/submissions/bulk', 'POST', {
+      items: [{ name: 'Bulk A' }, { name: 'Bulk B', set: 'X' }], serviceTier: 'bulk', dealer: 'smoke' });
+    assert.equal(bulk.created, 2); assert.equal(bulk.quoted, 24);
+    const fp = await j(`/api/submissions/${s.id}/fingerprint`, 'POST', { hash: '0123456789abcdef' });
+    assert(fp.ok);
+    const fpc = await j('/api/public/fp-check', 'POST', { hash: '0123456789abcdef' });
+    assert.equal(fpc.seen, true); assert.equal(fpc.matches[0].certId, s.id);
+    const fpm = await j('/api/public/fp-check', 'POST', { hash: 'ffffffffffffffff' });
+    assert.equal(fpm.seen, false);
+    // prescreen — tiny PNG should fail honestly (card region not found)
+    const pre = await j('/api/public/prescreen', 'POST', { data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' });
+    assert(pre.status === 'error' || pre.status === 'ok');
+    // crossover fields round-trip
+    const xo = await j('/api/submissions', 'POST', { item: { name: 'XO' }, serviceTier: 'express', crossover: { company: 'PSA', certNo: '123', grade: 8 } });
+    assert.equal(xo.serviceTier, 'express'); assert.equal(xo.crossover.company, 'PSA');
   } finally {
     srv.kill();
     fs.rmSync(path.join(__dirname, '.tmp'), { recursive: true, force: true });

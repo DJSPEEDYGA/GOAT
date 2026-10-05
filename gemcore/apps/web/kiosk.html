@@ -1,0 +1,60 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>GemCore Kiosk — Card-Show Intake</title>
+<style>
+:root{--bg:#060b14;--panel:#0d1622;--line:#1c2c40;--teal:#25f3e6;--text:#dceef5;--muted:#6b8296;--danger:#ff5d73}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#0d2233,var(--bg));color:var(--text);font-family:'Rajdhani',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:18px}
+h1{font-family:'Orbitron',sans-serif;letter-spacing:3px;margin:8px 0} .sub{color:var(--muted);letter-spacing:2px;font-size:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;width:100%;max-width:560px;margin-top:18px}
+label{display:block;font-size:12px;color:var(--muted);letter-spacing:1px;margin-top:12px}
+input,select,textarea{width:100%;margin-top:4px;padding:14px;border-radius:10px;border:1px solid var(--line);background:#0a121c;color:var(--text);font-size:18px;font-family:inherit}
+button{margin-top:16px;width:100%;padding:16px;border:none;border-radius:12px;background:linear-gradient(90deg,#0ea898,#25f3e6);color:#03110f;font-family:'Orbitron',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;cursor:pointer}
+button:disabled{opacity:.4}.tier{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.tier button{width:auto;flex:1;padding:12px 6px;font-size:12px;margin-top:0;background:#0a121c;color:var(--muted);border:1px solid var(--line)}
+.tier button.on{background:linear-gradient(90deg,#0ea898,#25f3e6);color:#03110f}
+#prev{max-width:100%;max-height:220px;border-radius:10px;margin-top:10px;display:none}
+#out{margin-top:14px;font-size:16px;line-height:1.5;white-space:pre-wrap}
+.ok{color:var(--teal)}.err{color:var(--danger)}
+</style></head><body>
+<h1>◆ GEMCORE</h1><div class="sub">CARD-SHOW INTAKE — GRADE IT HERE</div>
+<div class="panel" id="form">
+  <label>YOUR NAME<input id="name" autocomplete="name"></label>
+  <label>EMAIL<input id="email" type="email" autocomplete="email"></label>
+  <label>CARD<input id="item" placeholder="e.g. Charizard Base Set Holo"></label>
+  <label>SET / YEAR<input id="set" placeholder="Base Set • 1999"></label>
+  <label>SERVICE TIER</label>
+  <div class="tier" id="tiers">
+    <button data-t="value" type="button">VALUE<br>$20 · 15d</button>
+    <button data-t="regular" class="on" type="button">REGULAR<br>$35 · 7d</button>
+    <button data-t="express" type="button">EXPRESS<br>$75 · 2d</button>
+  </div>
+  <label>ALREADY SLABBED? (crossover)</label>
+  <div style="display:flex;gap:8px">
+    <input id="xoCo" placeholder="PSA / BGS / CGC" style="flex:1">
+    <input id="xoNo" placeholder="cert #" style="flex:1">
+    <input id="xoG" placeholder="grade" type="number" step="0.5" min="1" max="10" style="width:80px">
+  </div>
+  <label>QUICK PHOTO (optional)<input id="photo" type="file" accept="image/*" capture="environment" style="padding:10px"></label>
+  <img id="prev">
+  <label>NOTES<textarea id="notes" rows="2" placeholder="condition, provenance…"></textarea></label>
+  <button id="go" type="button">SUBMIT FOR REVIEW</button>
+  <div id="out"></div>
+</div>
+<script>
+'use strict';
+let tier='regular', photo=null;
+const q=s=>document.querySelector(s);
+document.querySelectorAll('#tiers button').forEach(b=>b.onclick=()=>{tier=b.dataset.t;document.querySelectorAll('#tiers button').forEach(x=>x.classList.toggle('on',x===b));});
+q('#photo').onchange=e=>{const f=e.target.files[0];if(!f)return;const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const sc=Math.min(1,1200/img.width);c.width=img.width*sc;c.height=img.height*sc;c.getContext('2d').drawImage(img,0,0,c.width,c.height);photo=c.toDataURL('image/jpeg',.85);q('#prev').src=photo;q('#prev').style.display='block'};img.src=URL.createObjectURL(f)};
+q('#go').onclick=async()=>{
+  const out=q('#out'); out.className=''; out.textContent='submitting…'; q('#go').disabled=true;
+  const crossover=q('#xoCo').value.trim()?{company:q('#xoCo').value.trim(),certNo:q('#xoNo').value.trim(),grade:+q('#xoG').value||null}:null;
+  try{
+    const r=await fetch('/api/public/request',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
+      contact:{name:q('#name').value.trim(),email:q('#email').value.trim()},
+      item:{name:q('#item').value.trim(),set:q('#set').value.trim()},
+      notes:q('#notes').value.trim(),serviceTier:tier,crossover,photo})}).then(x=>x.json());
+    if(r.trackingId){out.className='ok';out.innerHTML=`✓ RECEIVED — TRACKING ID\n\n<b style="font-size:26px">${r.trackingId}</b>\n\nShow this to staff. We screen every card — if we take it, you get a private login to watch it move through the lab.`;q('#form').querySelectorAll('input,textarea').forEach(i=>{if(i.type!=='file')i.value=''});photo=null;q('#prev').style.display='none';}
+    else{out.className='err';out.textContent='Error: '+(r.error||'try again');}
+  }catch(e){out.className='err';out.textContent='network error — is the lab online?';}
+  q('#go').disabled=false;
+};
+</script></body></html>

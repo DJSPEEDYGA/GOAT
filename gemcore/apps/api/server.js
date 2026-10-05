@@ -47,6 +47,14 @@ const readTeam = () => JSON.parse(fs.readFileSync(teamFile, 'utf8'));
 const writeTeam = x => fs.writeFileSync(teamFile, JSON.stringify(x, null, 2));
 const sessions = new Map(); // token → {clientId, exp}
 
+// service tiers — quoted per card at intake, honest turnaround promises
+const SERVICE_TIERS = {
+  bulk:    { price: 12, tat: '30 business days', blurb: 'Dealer/box submissions' },
+  value:   { price: 20, tat: '15 business days', blurb: 'Budget cards, no rush' },
+  regular: { price: 35, tat: '7 business days',  blurb: 'Standard service' },
+  express: { price: 75, tat: '2 business days',  blurb: 'Front of the queue' },
+};
+
 const isStaff = q => !STAFF_KEY || q.get('x-staff-key') === STAFF_KEY;
 const sha256 = s => crypto.createHash('sha256').update(s).digest('hex');
 
@@ -61,6 +69,32 @@ app.use((q, r, next) => {
 function audit(submissionId, action, detail = {}) {
   const rec = { submissionId, action, detail, at: new Date().toISOString() };
   fs.appendFileSync(auditFile, JSON.stringify(rec) + '\n');
+  // webhook notify — fire-and-forget, never blocks the audit write
+  if (submissionId) {
+    const s = read().find(x => x.id === submissionId);
+    if (s?.notifyUrl) fetch(s.notifyUrl, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(rec), signal: AbortSignal.timeout(4000),
+    }).catch(() => {});
+  }
+}
+
+// turnaround-time timeline — rebuilt from the append-only audit trail
+function timelineFor(s) {
+  const STEPS = [
+    ['submission-created', 'created'], ['staff-decision', 'staff decision'],
+    ['capture-recorded', 'first evidence'], ['analysis-run', 'first analysis'],
+    ['observation-reviewed', 'first review'], ['qc-review', 'QC decision'],
+    ['grade-evaluated', 'last evaluation'], ['grade-sealed', 'sealed'],
+    ['production-queued', 'production'], ['production-stage', 'stage change'],
+  ];
+  const trail = fs.readFileSync(auditFile, 'utf8').trim().split('\n').filter(Boolean)
+    .map(l => { try { return JSON.parse(l); } catch { return null; } })
+    .filter(e => e && e.submissionId === s.id);
+  return STEPS.map(([act, label]) => {
+    const evs = trail.filter(t => t.action === act);
+    return evs.length ? { step: label, at: evs[evs.length - 1].at } : null;
+  }).filter(Boolean);
 }
 
 function findSub(res, id) {
@@ -112,13 +146,41 @@ app.post('/api/submissions', (q, r) => {
     status: STATUSES.INTAKE,
     demo: !!q.body.demo,
     item: q.body.item || {},
+    serviceTier: SERVICE_TIERS[q.body.serviceTier] ? q.body.serviceTier : 'regular',
+    dealer: q.body.dealer || null,
+    crossover: q.body.crossover || null,
+    notifyUrl: /^https?:\/\//.test(q.body.notifyUrl || '') ? q.body.notifyUrl : null,
     captures: [], evidence: [], annotations: [], observations: [],
     measurements: {}, analysis: [],
     qc: { approved: false },
   };
   all.unshift(s); write(all);
-  audit(s.id, 'submission-created', { demo: s.demo });
+  audit(s.id, 'submission-created', { demo: s.demo, tier: s.serviceTier });
   r.status(201).json(s);
+});
+
+// dealer bulk intake — up to 200 cards in one batch, one service tier
+app.post('/api/submissions/bulk', (q, r) => {
+  const items = q.body.items;
+  if (!Array.isArray(items) || !items.length) return r.status(400).json({ error: 'items[] required' });
+  if (items.length > 200) return r.status(400).json({ error: 'max 200 per batch' });
+  const tier = SERVICE_TIERS[q.body.serviceTier] ? q.body.serviceTier : 'bulk';
+  const all = read(); const ids = [];
+  for (const [i, it] of items.entries()) {
+    const s = {
+      id: 'GCG-' + Date.now() + '-' + (i + 1),
+      createdAt: new Date().toISOString(),
+      status: STATUSES.INTAKE, demo: !!it.demo,
+      item: { name: it.name || '', set: it.set || '', year: it.year || '' },
+      serviceTier: tier, dealer: q.body.dealer || null, crossover: it.crossover || null,
+      captures: [], evidence: [], annotations: [], observations: [],
+      measurements: {}, analysis: [], qc: { approved: false },
+    };
+    all.unshift(s); ids.push(s.id);
+    audit(s.id, 'submission-created', { bulk: true, tier, dealer: s.dealer });
+  }
+  write(all);
+  r.status(201).json({ created: ids.length, ids, tier, quoted: SERVICE_TIERS[tier].price * ids.length });
 });
 
 app.get('/api/submissions/:id', (q, r) => {
@@ -354,6 +416,18 @@ app.get('/api/verify/:certId', (q, r) => {
     algorithmVersion: s.certificate?.algorithmVersion || RUBRIC_VERSION,
     chronology: chron, rankOfSameItem: rank, sameItemPopulation: sameItem.length,
     lanes: certified ? s.evaluation?.lanes || null : null,
+    // accountability — who graded and QC'd it, plus what machine measured
+    team: certified ? {
+      qcReviewer: s.qc?.reviewer || null, qcAt: s.qc?.at || null,
+      reviewers: [...new Set((s.observations || []).map(o => o.reviewer).filter(Boolean))],
+      measuredBy: [...new Set((s.analysis || []).map(a => a.adapter).filter(Boolean))],
+    } : null,
+    // crossover — if this card came in already slabbed elsewhere
+    crossover: s.crossover || null,
+    // evidence index — per-capture public images via /api/verify/:id/evidence/:capId
+    evidence: certified ? (s.captures || []).map(c => ({
+      id: c.id, side: c.side, mode: c.mode, sha256: c.sha256, hasImage: !!c.storedData,
+    })) : [],
     // DIG-style defect map — coords + lane + severity (no internal notes)
     defects: certified ? (s.observations || [])
       .filter(o => o.x != null && o.reviewerDisposition !== 'rejected')
@@ -373,6 +447,169 @@ app.get('/api/verify/:certId/image', (q, r) => {
   if (!m) return r.sendStatus(404);
   r.type(m[1]).send(Buffer.from(m[2], 'base64'));
 });
+
+// public per-capture evidence image — sealed originals, any light mode
+app.get('/api/verify/:certId/evidence/:capId', (q, r) => {
+  const s = read().find(v => v.id === q.params.certId || (v.certificate || {}).certId === q.params.certId);
+  if (!s || s.status !== STATUSES.CERTIFIED) return r.sendStatus(404);
+  const cap = (s.captures || []).find(c => c.id === q.params.capId && c.storedData);
+  if (!cap) return r.sendStatus(404);
+  const m = cap.storedData.match(/^data:(image\/[\w+]+);base64,(.+)$/);
+  if (!m) return r.sendStatus(404);
+  r.type(m[1]).send(Buffer.from(m[2], 'base64'));
+});
+
+// ── COMMUNITY: public pop report, registry, showcase, prescreen ─────────
+// public population — the PSA-style trust artifact, but every cert links to evidence
+app.get('/api/public/population', (_q, r) => {
+  const all = read();
+  const certs = all.filter(x => x.status === STATUSES.CERTIFIED && x.certificate);
+  const byGrade = {}, byItem = {};
+  for (const s of certs) {
+    const g = String(s.certificate.publicGrade);
+    byGrade[g] = (byGrade[g] || 0) + 1;
+    const n = s.item?.name || 'Unnamed';
+    const it = byItem[n] = byItem[n] || { item: n, set: s.item?.set || '', year: s.item?.year || null, total: 0, byGrade: {} };
+    it.total++; it.byGrade[g] = (it.byGrade[g] || 0) + 1;
+  }
+  r.json({
+    certified: certs.length,
+    inPipeline: all.filter(x => x.status !== STATUSES.CERTIFIED).length,
+    byGrade,
+    items: Object.values(byItem).sort((a, b) => b.total - a.total),
+    leaderboard: certs.map(s => ({
+      certId: s.certificate.certId || s.id, item: s.item?.name,
+      grade: s.certificate.publicGrade, index: s.evaluation?.internalConditionIndex ?? null,
+    })).sort((a, b) => (b.index ?? 0) - (a.index ?? 0)).slice(0, 25),
+  });
+});
+
+// set registry — collectors register sealed certs into named sets
+const registryFile = path.join(dataDir, 'registry.json');
+if (!fs.existsSync(registryFile)) fs.writeFileSync(registryFile, '{"sets":[],"entries":[]}');
+const readReg = () => JSON.parse(fs.readFileSync(registryFile, 'utf8'));
+const writeReg = x => fs.writeFileSync(registryFile, JSON.stringify(x, null, 2));
+
+app.get('/api/public/registry', (_q, r) => {
+  const reg = readReg(), all = read();
+  const certIds = new Set(all.filter(s => s.status === STATUSES.CERTIFIED).map(s => s.id));
+  const entries = reg.entries.filter(e => certIds.has(e.certId));
+  const board = {};
+  for (const e of entries) {
+    const s = all.find(x => x.id === e.certId);
+    const b = board[e.collector] = board[e.collector] || { collector: e.collector, certs: new Set(), idxSum: 0, idxN: 0 };
+    if (b.certs.has(e.certId)) continue;
+    b.certs.add(e.certId);
+    if (s?.evaluation?.internalConditionIndex != null) { b.idxSum += s.evaluation.internalConditionIndex; b.idxN++; }
+  }
+  r.json({
+    sets: reg.sets,
+    entries: entries.slice(-100).reverse(),
+    leaderboard: Object.values(board).map(b => ({
+      collector: b.collector, certs: b.certs.size,
+      avgIndex: b.idxN ? Math.round(b.idxSum / b.idxN) : null,
+    })).sort((a, b) => b.certs - a.certs || (b.avgIndex ?? 0) - (a.avgIndex ?? 0)),
+  });
+});
+
+app.post('/api/public/registry', (q, r) => {
+  const { certId, collector, set } = q.body || {};
+  if (!certId || !collector) return r.status(400).json({ error: 'certId + collector required' });
+  const s = read().find(x => x.id === certId || x.certificate?.certId === certId);
+  if (!s || s.status !== STATUSES.CERTIFIED) return r.status(400).json({ error: 'certId must be a sealed GemCore cert' });
+  const reg = readReg();
+  if (reg.entries.some(e => e.certId === s.id && e.collector === collector && (e.set || null) === (set || null)))
+    return r.status(400).json({ error: 'already registered' });
+  const rec = {
+    certId: s.id, collector: String(collector).slice(0, 60), set: set || null,
+    item: s.item?.name || null, grade: s.certificate.publicGrade, at: new Date().toISOString(),
+  };
+  reg.entries.push(rec); writeReg(reg);
+  r.status(201).json(rec);
+});
+
+// staff defines registry sets (name + optional checklist of item names)
+app.post('/api/registry/sets', (q, r) => {
+  const { name, checklist } = q.body || {};
+  if (!name) return r.status(400).json({ error: 'name required' });
+  const reg = readReg();
+  if (reg.sets.some(s => s.name === name)) return r.status(400).json({ error: 'set exists' });
+  const rec = { id: 'SET-' + Date.now(), name, checklist: checklist || [], createdAt: new Date().toISOString() };
+  reg.sets.push(rec); writeReg(reg); r.status(201).json(rec);
+});
+
+// shareable collection showcase — a collector's registered certs, public
+app.get('/api/public/collection/:name', (q, r) => {
+  const name = String(q.params.name || '').toLowerCase();
+  const reg = readReg(), all = read();
+  const mine = reg.entries.filter(e => e.collector.toLowerCase() === name);
+  const items = mine.map(e => {
+    const s = all.find(x => x.id === e.certId && x.status === STATUSES.CERTIFIED);
+    return s ? {
+      certId: s.id, item: s.item, grade: s.certificate.publicGrade,
+      index: s.evaluation?.internalConditionIndex ?? null,
+      sealedAt: s.certificate.sealedAt, set: e.set || null,
+    } : null;
+  }).filter(Boolean);
+  r.json({ collector: q.params.name, items });
+});
+
+// pre-grade AI screener — free look before you pay. Real pixel analysis →
+// estimated lanes → estimated index/grade → ROI vs tier fee. Rate-limited.
+const prescreenLast = new Map();
+app.post('/api/public/prescreen', async (q, r) => {
+  const last = prescreenLast.get(q.ip) || 0;
+  if (Date.now() - last < 5000) return r.status(429).json({ error: 'one screen every few seconds' });
+  prescreenLast.set(q.ip, Date.now());
+  const data = q.body?.data;
+  if (!data || typeof data !== 'string' || data.length > 8e6) {
+    return r.status(400).json({ error: 'image data-url required (PNG)' });
+  }
+  const rec = { id: 'PRESCAN', storedData: data, side: 'front', mode: 'visible' };
+  const res = await vision.analyze('centering', rec);
+  if (res.status !== 'ok') return r.json({ status: res.status, reason: res.reason || 'analysis unavailable — submit for a real look' });
+  const m = res.result || {};
+  const lanes = {
+    centering: m.centering?.score ?? null, corners: m.corners?.score ?? null,
+    edges: m.edges?.score ?? null, surface: m.surface?.score ?? null,
+  };
+  const idx = grading.combineLanes(lanes);
+  const estGrade = grading.indexToPublicGrade(idx);
+  const tier = SERVICE_TIERS[q.body.serviceTier] ? q.body.serviceTier : 'regular';
+  const fee = SERVICE_TIERS[tier].price;
+  const est = q.body.item ? market.estimate(q.body.item, estGrade ?? 5) : { status: 'no-data' };
+  const roi = est.status === 'ok' && est.estimate != null ? +(est.estimate - fee).toFixed(2) : null;
+  const verdict = idx === null ? 'inconclusive'
+    : estGrade >= 9 ? 'strong-grade-candidate'
+    : estGrade >= 7 ? 'worth-grading' : 'grade-may-not-pay';
+  r.json({
+    status: 'ok', lanes, estimatedIndex: idx, estimatedGrade: estGrade,
+    verdict, tier, fee, estimatedValue: est, roi,
+    honest: 'AI pre-screen only — sealed evidence + human QC decide the real grade',
+  });
+});
+
+// fingerprint lookup — "has this card been seen before?" hamming ≤ 12 ≈ same card
+app.post('/api/public/fp-check', (q, r) => {
+  const hash = String(q.body?.hash || '');
+  if (!/^[0-9a-f]{16}$/.test(hash)) return r.status(400).json({ error: 'hash = 16 hex chars' });
+  const b = BigInt('0x' + hash);
+  const matches = [];
+  for (const s of read()) {
+    if (!s.fingerprint) continue;
+    let x = BigInt('0x' + s.fingerprint) ^ b, d = 0;
+    while (x) { d += Number(x & 1n); x >>= 1n; }
+    if (d <= 12) matches.push({
+      certId: s.certificate?.certId || s.id, item: s.item?.name || null,
+      status: s.status, distance: d,
+    });
+  }
+  matches.sort((a, b2) => a.distance - b2.distance);
+  r.json({ seen: matches.length > 0, matches });
+});
+
+// public service tiers — posted pricing, posted TAT
+app.get('/api/public/service-tiers', (_q, r) => r.json(SERVICE_TIERS));
 
 // ── Population report (derived, honest zeros) ────────────────────────────
 app.get('/api/population', (_q, r) => {
@@ -566,14 +803,22 @@ app.post('/api/submissions/:id/vault', (q, r) => {
 
 // ── PUBLIC: submit a card for review (no account needed) ────────────────
 app.post('/api/public/request', (q, r) => {
-  const { contact = {}, item = {}, notes = '' } = q.body || {};
+  const { contact = {}, item = {}, notes = '', crossover = null, serviceTier = null } = q.body || {};
   if (!contact.email || !item.name) return r.status(400).json({ error: 'email + item name required' });
   const sub = {
     id: 'GC-' + crypto.randomBytes(5).toString('hex').toUpperCase(),
     item: { name: item.name, set: item.set || '', year: item.year || '' },
     demo: false, external: true,
     status: 'review-request',
-    intake: { name: contact.name || '', email: contact.email, notes },
+    serviceTier: SERVICE_TIERS[serviceTier] ? serviceTier : 'regular',
+    crossover: crossover && crossover.company ? {
+      company: String(crossover.company).slice(0, 40),
+      certNo: String(crossover.certNo || '').slice(0, 40),
+      grade: crossover.grade ?? null,
+    } : null,
+    // optional intake photo from kiosk/portal (bounded — evidence comes later)
+    intake: { name: contact.name || '', email: contact.email, notes,
+      photo: /^data:image\//.test(q.body.photo || '') ? String(q.body.photo).slice(0, 3e6) : null },
     review: { status: 'pending', price: null },
     captures: [], evidence: [], annotations: [], observations: [],
     createdAt: new Date().toISOString(),
@@ -608,6 +853,9 @@ app.get('/api/public/job', (q, r) => {
     certId: s.certificate?.certId ?? null,
     captureCount: (s.captures || []).length,
     updated: s.certificate?.sealedAt || s.createdAt,
+    serviceTier: s.serviceTier || 'regular',
+    promisedTat: SERVICE_TIERS[s.serviceTier]?.tat || null,
+    timeline: timelineFor(s), // turnaround tracking — real audit events only
   });
 });
 
