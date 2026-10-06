@@ -22,29 +22,19 @@ const vision = new VisionCore();
 vision.registerAdapter(require('../../packages/vision-core/adapters').measuredCV);
 
 const app = express();
-const PORT = process.env.GEMCORE_PORT || 4300;
+const PORT = parseInt(process.env.GEMCORE_PORT || '4300', 10);
 const root = path.resolve(__dirname, '../..');
 const dataDir = path.resolve(root, process.env.GEMCORE_DATA_DIR || 'data');
-const dbFile = path.join(dataDir, 'submissions.json');
-const auditFile = path.join(dataDir, 'audit.jsonl');
+const store = require('./store')(dataDir);
 
-fs.mkdirSync(dataDir, { recursive: true });
-if (!fs.existsSync(dbFile)) fs.writeFileSync(dbFile, '[]');
-if (!fs.existsSync(auditFile)) fs.writeFileSync(auditFile, '');
-
-const read = () => JSON.parse(fs.readFileSync(dbFile, 'utf8'));
-const write = x => fs.writeFileSync(dbFile, JSON.stringify(x, null, 2));
+const read = () => store.read();
 
 // ── Staff gate + client portal ──────────────────────────────────────────
 const STAFF_KEY = process.env.GEMCORE_STAFF_KEY || '';
-const clientsFile = path.join(dataDir, 'clients.json');
-if (!fs.existsSync(clientsFile)) fs.writeFileSync(clientsFile, '[]');
-const readClients = () => JSON.parse(fs.readFileSync(clientsFile, 'utf8'));
-const writeClients = x => fs.writeFileSync(clientsFile, JSON.stringify(x, null, 2));
-const teamFile = path.join(dataDir, 'team.json');
-if (!fs.existsSync(teamFile)) fs.writeFileSync(teamFile, '[]');
-const readTeam = () => JSON.parse(fs.readFileSync(teamFile, 'utf8'));
-const writeTeam = x => fs.writeFileSync(teamFile, JSON.stringify(x, null, 2));
+const readClients = () => store.kvGet('clients', []);
+const writeClients = x => store.kvSet('clients', x);
+const readTeam = () => store.kvGet('team', []);
+const writeTeam = x => store.kvSet('team', x);
 const sessions = new Map(); // token → {clientId, exp}
 
 // service tiers — quoted per card at intake, honest turnaround promises
@@ -68,10 +58,10 @@ app.use((q, r, next) => {
 
 function audit(submissionId, action, detail = {}) {
   const rec = { submissionId, action, detail, at: new Date().toISOString() };
-  fs.appendFileSync(auditFile, JSON.stringify(rec) + '\n');
+  store.appendAudit(rec);
   // webhook notify — fire-and-forget, never blocks the audit write
   if (submissionId) {
-    const s = read().find(x => x.id === submissionId);
+    const s = store.get(submissionId);
     if (s?.notifyUrl) fetch(s.notifyUrl, {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify(rec), signal: AbortSignal.timeout(4000),
@@ -88,9 +78,7 @@ function timelineFor(s) {
     ['grade-evaluated', 'last evaluation'], ['grade-sealed', 'sealed'],
     ['production-queued', 'production'], ['production-stage', 'stage change'],
   ];
-  const trail = fs.readFileSync(auditFile, 'utf8').trim().split('\n').filter(Boolean)
-    .map(l => { try { return JSON.parse(l); } catch { return null; } })
-    .filter(e => e && e.submissionId === s.id);
+  const trail = store.auditTrail(s.id);
   return STEPS.map(([act, label]) => {
     const evs = trail.filter(t => t.action === act);
     return evs.length ? { step: label, at: evs[evs.length - 1].at } : null;
@@ -104,12 +92,11 @@ function findSub(res, id) {
 }
 
 function updateSub(id, fn) {
-  const all = read();
-  const s = all.find(v => v.id === id);
+  const s = store.get(id);
   if (!s) return null;
   fn(s);
   s.updatedAt = new Date().toISOString();
-  write(all);
+  store.put(s);
   return s;
 }
 
@@ -121,7 +108,7 @@ app.use('/capture-core', express.static(path.join(root, 'packages/capture-core')
 app.get('/api/health', (_q, r) => r.json({
   ok: true, service: 'gemcore', version: '0.1.0-preactive',
   agents: agentBus.status().length, visionAdapters: vision.status().length,
-  rubric: RUBRIC_VERSION, staffRequired: !!STAFF_KEY,
+  rubric: RUBRIC_VERSION, staffRequired: !!STAFF_KEY, persistence: 'sqlite',
 }));
 
 app.get('/api/agents', (_q, r) => r.json(agentBus.status()));
@@ -139,7 +126,6 @@ app.get('/api/vision/status', (_q, r) => r.json({
 app.get('/api/submissions', (_q, r) => r.json(read()));
 
 app.post('/api/submissions', (q, r) => {
-  const all = read();
   const s = {
     id: 'GCG-' + Date.now(),
     createdAt: new Date().toISOString(),
@@ -154,7 +140,7 @@ app.post('/api/submissions', (q, r) => {
     measurements: {}, analysis: [],
     qc: { approved: false },
   };
-  all.unshift(s); write(all);
+  store.put(s);
   audit(s.id, 'submission-created', { demo: s.demo, tier: s.serviceTier });
   r.status(201).json(s);
 });
@@ -165,21 +151,22 @@ app.post('/api/submissions/bulk', (q, r) => {
   if (!Array.isArray(items) || !items.length) return r.status(400).json({ error: 'items[] required' });
   if (items.length > 200) return r.status(400).json({ error: 'max 200 per batch' });
   const tier = SERVICE_TIERS[q.body.serviceTier] ? q.body.serviceTier : 'bulk';
-  const all = read(); const ids = [];
-  for (const [i, it] of items.entries()) {
-    const s = {
-      id: 'GCG-' + Date.now() + '-' + (i + 1),
-      createdAt: new Date().toISOString(),
-      status: STATUSES.INTAKE, demo: !!it.demo,
-      item: { name: it.name || '', set: it.set || '', year: it.year || '' },
-      serviceTier: tier, dealer: q.body.dealer || null, crossover: it.crossover || null,
-      captures: [], evidence: [], annotations: [], observations: [],
-      measurements: {}, analysis: [], qc: { approved: false },
-    };
-    all.unshift(s); ids.push(s.id);
-    audit(s.id, 'submission-created', { bulk: true, tier, dealer: s.dealer });
-  }
-  write(all);
+  const ids = [];
+  store.tx(() => {
+    for (const [i, it] of items.entries()) {
+      const s = {
+        id: 'GCG-' + Date.now() + '-' + (i + 1),
+        createdAt: new Date().toISOString(),
+        status: STATUSES.INTAKE, demo: !!it.demo,
+        item: { name: it.name || '', set: it.set || '', year: it.year || '' },
+        serviceTier: tier, dealer: q.body.dealer || null, crossover: it.crossover || null,
+        captures: [], evidence: [], annotations: [], observations: [],
+        measurements: {}, analysis: [], qc: { approved: false },
+      };
+      store.put(s); ids.push(s.id);
+      audit(s.id, 'submission-created', { bulk: true, tier, dealer: s.dealer });
+    }
+  });
   r.status(201).json({ created: ids.length, ids, tier, quoted: SERVICE_TIERS[tier].price * ids.length });
 });
 
@@ -190,9 +177,7 @@ app.get('/api/submissions/:id', (q, r) => {
 
 app.get('/api/submissions/:id/audit', (q, r) => {
   const s = findSub(r, q.params.id); if (!s) return;
-  const lines = fs.readFileSync(auditFile, 'utf8').trim().split('\n').filter(Boolean);
-  const trail = lines.map(l => JSON.parse(l)).filter(e => e.submissionId === s.id);
-  r.json({ submissionId: s.id, trail });
+  r.json({ submissionId: s.id, trail: store.auditTrail(s.id) });
 });
 
 // ── Evidence captures (immutable originals) ─────────────────────────────
@@ -322,10 +307,10 @@ app.post('/api/submissions/:id/qc', (q, r) => {
 
 app.post('/api/submissions/:id/seal', (q, r) => {
   const s = findSub(r, q.params.id); if (!s) return;
-  const evaluation = s.evaluation || grading.evaluate(s);
+  const evaluation = grading.evaluate(s);   // always fresh — a stored eval can be stale (e.g. QC approved after /grade)
   const res = grading.seal(s, evaluation);
   if (!res.ok) return r.status(403).json(res);
-  updateSub(s.id, x => { x.status = STATUSES.CERTIFIED; x.certificate = res; });
+  updateSub(s.id, x => { x.status = STATUSES.CERTIFIED; x.certificate = res; x.evaluation = evaluation; });
   audit(s.id, 'grade-sealed', { certId: res.certId, publicGrade: res.publicGrade });
   // auto-queue the Money Penny presenter video — fire and forget
   const cap = (s.captures || []).find(c => c.storedData && c.side === 'front') || (s.captures || []).find(c => c.storedData);
@@ -485,10 +470,8 @@ app.get('/api/public/population', (_q, r) => {
 });
 
 // set registry — collectors register sealed certs into named sets
-const registryFile = path.join(dataDir, 'registry.json');
-if (!fs.existsSync(registryFile)) fs.writeFileSync(registryFile, '{"sets":[],"entries":[]}');
-const readReg = () => JSON.parse(fs.readFileSync(registryFile, 'utf8'));
-const writeReg = x => fs.writeFileSync(registryFile, JSON.stringify(x, null, 2));
+const readReg = () => store.kvGet('registry', { sets: [], entries: [] });
+const writeReg = x => store.kvSet('registry', x);
 
 app.get('/api/public/registry', (_q, r) => {
   const reg = readReg(), all = read();
@@ -787,10 +770,7 @@ app.post('/api/submissions/:id/production/advance', (q, r) => {
 // global audit feed — every event across submissions (Live Grading page)
 app.get('/api/audit', (q, r) => {
   const limit = Math.min(+q.query.limit || 60, 500);
-  try {
-    const lines = fs.readFileSync(auditFile, 'utf8').trim().split('\n').filter(Boolean);
-    r.json(lines.slice(-limit).reverse().map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean));
-  } catch { r.json([]); }
+  r.json(store.auditTrail(null, { limit }));
 });
 
 // vault flag — user's personal collection shelf
@@ -823,7 +803,7 @@ app.post('/api/public/request', (q, r) => {
     captures: [], evidence: [], annotations: [], observations: [],
     createdAt: new Date().toISOString(),
   };
-  const all = read(); all.push(sub); write(all);
+  store.put(sub);
   audit(sub.id, 'public-request', { email: contact.email });
   r.status(201).json({ trackingId: sub.id });
 });
@@ -1070,4 +1050,4 @@ app.get('/api/qr', async (q, r) => {
   r.type('image/svg+xml').send(svg);
 });
 
-app.listen(PORT, () => console.log('GemCore standalone: http://localhost:' + PORT));
+const httpServer = app.listen(PORT, () => console.log('GemCore standalone: http://localhost:' + httpServer.address().port));

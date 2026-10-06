@@ -37,13 +37,21 @@ const grading = require('../packages/grading-engine');
   const demo = grading.evaluate({ demo: true, captures: [{}], measurements: { centering: { score: 1000 } }, qc: { approved: true } });
   assert.equal(demo.status, 'demo'); // demo can never certify
 
-  // server flow
-  const PORT = 4399;
+  // server flow — ephemeral port so a stray dev server can't shadow the test
   const srv = spawn(process.execPath, ['apps/api/server.js'], {
-    env: { ...process.env, GEMCORE_PORT: String(PORT), GEMCORE_DATA_DIR: path.join(__dirname, '.tmp') },
-    stdio: 'ignore',
+    env: { ...process.env, GEMCORE_PORT: '0', GEMCORE_DATA_DIR: path.join(__dirname, '.tmp') },
+    stdio: ['ignore', 'pipe', 'inherit'],
   });
-  await new Promise(res => setTimeout(res, 1200));
+  const PORT = await new Promise((res, rej) => {
+    let buf = '';
+    srv.stdout.on('data', d => {
+      buf += d;
+      const m = buf.match(/localhost:(\d+)/);
+      if (m) res(+m[1]);
+    });
+    srv.on('exit', c => rej(new Error('server exited before listen: ' + c)));
+    setTimeout(() => rej(new Error('server listen timeout')), 10000);
+  });
   const j = async (p, m, b) => (await fetch('http://127.0.0.1:' + PORT + p,
     { method: m || 'GET', headers: { 'Content-Type': 'application/json' }, body: b ? JSON.stringify(b) : undefined })).json();
 

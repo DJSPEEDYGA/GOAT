@@ -11,7 +11,10 @@
 - evidence integrity helpers
 - versioned grading-engine foundation with low-category/major-defect guardrails
 - VisionCore adapter contract that refuses synthetic measurements
-- relational production schema
+- relational production schema, wired live — submissions/audit/registry/team/
+  clients persist to data/gemcore.db (SQLite, WAL); normalized evidence tables
+  are write-through projections of the authoritative document; legacy JSON
+  stores auto-import on first boot
 - Docker/Compose and smoke/engine verification scripts
 
 ## Requires real external inputs before production certification

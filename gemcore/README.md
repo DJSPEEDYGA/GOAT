@@ -29,7 +29,10 @@ packages/
   agent-core/      agent bus
   capture-core/    browser camera capture device
 database/          SQLite schema.sql + migrations + scripts/migrate.sh
-tests/smoke.js     end-to-end flow test
+  (live: the API persists to data/gemcore.db — SQLite via node:sqlite on
+  Node ≥22.13, better-sqlite3 elsewhere; schema auto-migrates on boot and
+  imports any pre-existing data/*.json stores once)
+tests/smoke.js     end-to-end flow test (ephemeral port)
 ```
 
 ## API surface

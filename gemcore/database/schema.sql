@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
   applied_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-CREATE TABLE submissions (
+CREATE TABLE IF NOT EXISTS submissions (
   id TEXT PRIMARY KEY,
   created_at TEXT NOT NULL,
   updated_at TEXT,
@@ -16,7 +16,7 @@ CREATE TABLE submissions (
   item_json TEXT NOT NULL DEFAULT '{}'      -- collectible descriptor
 );
 
-CREATE TABLE captures (                      -- immutable original evidence
+CREATE TABLE IF NOT EXISTS captures (                      -- immutable original evidence
   id TEXT PRIMARY KEY,
   submission_id TEXT NOT NULL REFERENCES submissions(id),
   created_at TEXT NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE captures (                      -- immutable original evidence
   device_meta_json TEXT NOT NULL DEFAULT '{}'
 );
 
-CREATE TABLE annotations (                   -- overlay layer, separate from originals
+CREATE TABLE IF NOT EXISTS annotations (                   -- overlay layer, separate from originals
   id TEXT PRIMARY KEY,
   capture_id TEXT NOT NULL REFERENCES captures(id),
   type TEXT NOT NULL DEFAULT 'defect',
@@ -36,7 +36,7 @@ CREATE TABLE annotations (                   -- overlay layer, separate from ori
   created_at TEXT NOT NULL
 );
 
-CREATE TABLE measurements (
+CREATE TABLE IF NOT EXISTS measurements (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   submission_id TEXT NOT NULL REFERENCES submissions(id),
   lane TEXT NOT NULL,                        -- centering|corners|edges|surface|dimensions|authenticity
@@ -46,7 +46,7 @@ CREATE TABLE measurements (
   created_at TEXT NOT NULL
 );
 
-CREATE TABLE observations (
+CREATE TABLE IF NOT EXISTS observations (
   id TEXT PRIMARY KEY,
   submission_id TEXT NOT NULL REFERENCES submissions(id),
   capture_id TEXT NOT NULL REFERENCES captures(id),  -- must cite evidence
@@ -61,7 +61,7 @@ CREATE TABLE observations (
   reviewed_at TEXT
 );
 
-CREATE TABLE qc_reviews (
+CREATE TABLE IF NOT EXISTS qc_reviews (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   submission_id TEXT NOT NULL REFERENCES submissions(id),
   approved INTEGER NOT NULL,
@@ -70,7 +70,7 @@ CREATE TABLE qc_reviews (
   created_at TEXT NOT NULL
 );
 
-CREATE TABLE certificates (
+CREATE TABLE IF NOT EXISTS certificates (
   cert_id TEXT PRIMARY KEY REFERENCES submissions(id),
   sealed_at TEXT NOT NULL,
   public_grade REAL NOT NULL,
@@ -79,16 +79,16 @@ CREATE TABLE certificates (
   qr_payload TEXT NOT NULL
 );
 
-CREATE TABLE audit_log (                     -- append-only trail
+CREATE TABLE IF NOT EXISTS audit_log (                     -- append-only trail
   seq INTEGER PRIMARY KEY AUTOINCREMENT,
-  submission_id TEXT NOT NULL REFERENCES submissions(id),
+  submission_id TEXT REFERENCES submissions(id),  -- NULL = global event (team/registry/system)
   action TEXT NOT NULL,
   actor TEXT NOT NULL DEFAULT 'system',
   detail_json TEXT NOT NULL DEFAULT '{}',
   created_at TEXT NOT NULL
 );
 
-CREATE INDEX idx_captures_sub ON captures(submission_id);
-CREATE INDEX idx_observations_sub ON observations(submission_id);
-CREATE INDEX idx_measurements_sub ON measurements(submission_id);
-CREATE INDEX idx_audit_sub ON audit_log(submission_id);
+CREATE INDEX IF NOT EXISTS idx_captures_sub ON captures(submission_id);
+CREATE INDEX IF NOT EXISTS idx_observations_sub ON observations(submission_id);
+CREATE INDEX IF NOT EXISTS idx_measurements_sub ON measurements(submission_id);
+CREATE INDEX IF NOT EXISTS idx_audit_sub ON audit_log(submission_id);
