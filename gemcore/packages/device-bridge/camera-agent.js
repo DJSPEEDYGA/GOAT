@@ -68,7 +68,7 @@ async function execute(job) {
     mode: job.mode || ROLE_MODE[role] || 'visible',
     deviceMeta: { deviceId: ID, role, dev, res: RES, via: 'camera-agent' },
   });
-  return { ok: true, captureId: rec.id, sha256 };
+  return { ok: true, captureId: rec.id, sha256: rec.sha256 || sha256 };
 }
 
 async function main() {
