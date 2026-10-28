@@ -13,6 +13,7 @@ const { AgentBus } = require('../../packages/agent-core');
 const { VisionCore } = require('../../packages/vision-core');
 const evidence = require('../../packages/evidence-core');
 const grading = require('../../packages/grading-engine');
+const { CompetitorWatch, secureEqual } = require('../../packages/competitor-watch');
 const { CAPTURE_MODES, CAPTURE_SIDES, STATUSES, RUBRIC_VERSION } = require('../../packages/shared');
 
 const agentDefs = require('./agents');
@@ -37,6 +38,8 @@ const write = x => fs.writeFileSync(dbFile, JSON.stringify(x, null, 2));
 
 // ── Staff gate + client portal ──────────────────────────────────────────
 const STAFF_KEY = process.env.GEMCORE_STAFF_KEY || '';
+const WATCH_INGEST_KEY = process.env.GEMCORE_WATCH_INGEST_KEY || '';
+const competitorWatch = new CompetitorWatch(dataDir);
 const clientsFile = path.join(dataDir, 'clients.json');
 if (!fs.existsSync(clientsFile)) fs.writeFileSync(clientsFile, '[]');
 const readClients = () => JSON.parse(fs.readFileSync(clientsFile, 'utf8'));
@@ -57,6 +60,17 @@ const SERVICE_TIERS = {
 
 const isStaff = q => !STAFF_KEY || q.get('x-staff-key') === STAFF_KEY;
 const sha256 = s => crypto.createHash('sha256').update(s).digest('hex');
+
+// Register the importer before general staff auth. The route-local credential
+// guard covers Express's case-insensitive and trailing-slash route matching.
+app.post('/api/competitor-watch/import', (q, r, next) => {
+  if (!WATCH_INGEST_KEY) return r.status(503).json({ error: 'Feed import is not configured' });
+  if (!secureEqual(q.get('x-watch-ingest-key'), WATCH_INGEST_KEY)) return r.status(403).json({ error: 'Feed import credential required' });
+  next();
+}, express.json({ limit: '1mb' }), (q, r) => {
+  try { r.json(competitorWatch.import(q.body)); }
+  catch (error) { r.status(400).json({ error: error.message }); }
+});
 
 // staff-gate middleware for internal surfaces (public + verify + mp stay open)
 app.use((q, r, next) => {
@@ -116,6 +130,14 @@ function updateSub(id, fn) {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(root, 'apps/web')));
 app.use('/capture-core', express.static(path.join(root, 'packages/capture-core')));
+
+// Competitor announcements are research evidence, separate from grading data.
+app.get('/api/competitor-watch', async (q, r) => {
+  // Also guard the route itself against case variants of the global prefix.
+  if (!isStaff(q)) return r.status(403).json({ error: 'staff only' });
+  r.set('Cache-Control', 'no-store').json(await competitorWatch.refresh());
+});
+void competitorWatch.refresh();
 
 // ── Health / agents ──────────────────────────────────────────────────────
 app.get('/api/health', (_q, r) => r.json({
