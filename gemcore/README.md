@@ -33,6 +33,9 @@ tests/smoke.js     end-to-end flow test
 ```
 
 ## API surface
+- `GET /api/competitor-watch` — staff dashboard research feed, comparisons, and delivery health
+- `POST /api/competitor-watch/import` — optional feed import, separate explicit ingest credential required
+- Competitor Watch: staff navigation and `/#competitors`; see [setup and research rules](docs/COMPETITOR-WATCH.md)
 - `GET  /api/health`, `GET /api/agents`, `POST /api/agents/:id/run`
 - `GET  /api/vision/status` — registered VisionCore adapters
 - `GET|POST /api/submissions`, `GET /api/submissions/:id`

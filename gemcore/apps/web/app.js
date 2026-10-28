@@ -23,7 +23,7 @@ const api = async (p, opts) => {
 
 const isStaff = () => !!localStorage.getItem('gemcore.staff') || localStorage.getItem('gemcore.staffless') === '1';
 const whoAmI = () => localStorage.getItem('gemcore.me') || 'staff';
-const INTERNAL = ['grade','intake','submissions','passport','production','vault','market','live','studio','photolab','tools','settings','qc','requests','command'];
+const INTERNAL = ['grade','intake','submissions','passport','production','vault','market','live','studio','photolab','tools','settings','qc','requests','command','competitors'];
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -1069,6 +1069,7 @@ async function command() {
     ['production', '▧', 'Slab Production', 'Label → weld → ship'],
     ['vault', '▤', 'GemCore Vault', 'Your collection'],
     ['market', '↗', 'Market Intelligence', 'Comparables & trends'],
+    ['competitors', '◈', 'Competitor Watch', 'Official changes & GemCore opportunities'],
     ['verify', '✓', 'Verify a Cert', 'Public verification'],
     ['community', '◔', 'Community & RP', 'GOAT Force ATL'],
   ];
@@ -1768,6 +1769,7 @@ async function requests() {
 }
 
 const pages = {
+  competitors: () => GemCoreWatch.render(V),
   command,
   public: publicPage,
   portal,
@@ -1800,6 +1802,8 @@ function show(k) {
   // internal pages require staff key; public gets landing/portal/verify only
   if (INTERNAL.includes(k) && !isStaff()) k = 'public';
   const f = pages[k] || pages.command;
+  if (k === 'competitors') history.replaceState(null, '', '#competitors');
+  else if (location.hash === '#competitors') history.replaceState(null, '', location.pathname + location.search);
   document.querySelectorAll('[data-page]').forEach(b => {
     b.classList.toggle('active', b.dataset.page === k);
     if (INTERNAL.includes(b.dataset.page)) b.style.display = isStaff() ? '' : 'none';
@@ -1810,11 +1814,11 @@ function show(k) {
 }
 applyAccent();
 // local/open servers have no staff key → don't lock yourself out
-api('/health').then(h => {
+const healthReady = api('/health').then(h => {
   if (h && h.staffRequired === false) localStorage.setItem('gemcore.staffless', '1');
   else if (h && h.staffRequired === true) localStorage.removeItem('gemcore.staffless');
   nav();
-});
+}).catch(() => {});
 nav();
 // deep links: /#verify-GCG-xxx opens the public cert page prefilled
 if (location.hash.startsWith('#verify-')) {
@@ -1822,6 +1826,8 @@ if (location.hash.startsWith('#verify-')) {
   const f = pages.verify; V.innerHTML = ''; f();
   document.querySelector('#cert').value = cert;
   document.querySelector('#go').click();
+} else if (location.hash === '#competitors') {
+  healthReady.then(() => show('competitors'));
 } else {
   show('grade');
 }

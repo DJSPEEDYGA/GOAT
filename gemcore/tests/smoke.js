@@ -40,14 +40,20 @@ const grading = require('../packages/grading-engine');
   // server flow
   const PORT = 4399;
   const srv = spawn(process.execPath, ['apps/api/server.js'], {
-    env: { ...process.env, GEMCORE_PORT: String(PORT), GEMCORE_DATA_DIR: path.join(__dirname, '.tmp') },
+    env: { ...process.env, GEMCORE_PORT: String(PORT), GEMCORE_DATA_DIR: path.join(__dirname, '.tmp'), GEMCORE_WATCH_FEED_URL: 'off' },
     stdio: 'ignore',
   });
-  await new Promise(res => setTimeout(res, 1200));
   const j = async (p, m, b) => (await fetch('http://127.0.0.1:' + PORT + p,
     { method: m || 'GET', headers: { 'Content-Type': 'application/json' }, body: b ? JSON.stringify(b) : undefined })).json();
 
   try {
+    // Wait for readiness instead of racing slow CI/container startup.
+    let ready = false;
+    for (let attempt = 0; attempt < 100; attempt++) {
+      try { if ((await j('/api/health')).ok) { ready = true; break; } } catch {}
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    assert(ready, 'GemCore test server did not become ready');
     const h = await j('/api/health');
     assert.equal(h.ok, true);
 
